@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 2 Mar 2015 14:50:19 +0800
+Subject: [PATCH] {CONSTIFY} scripts/kallsyms: constify things
+
+---
+ scripts/kallsyms.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
+index 5328df58149a..43c3af883662 100644
+--- a/scripts/kallsyms.c
++++ b/scripts/kallsyms.c
+@@ -200,7 +200,7 @@ static int symbol_valid(struct sym_entry *s)
+ 	 * after pass 1, they would be included in pass 2 when --all-symbols is
+ 	 * specified so exclude them to get a stable symbol list.
+ 	 */
+-	static char *special_symbols[] = {
++	static const char *const special_symbols[] = {
+ 		"kallsyms_addresses",
+ 		"kallsyms_num_syms",
+ 		"kallsyms_names",
+@@ -213,7 +213,7 @@ static int symbol_valid(struct sym_entry *s)
+ 		"_SDA2_BASE_",		/* ppc */
+ 		NULL };
+ 
+-	static char *special_suffixes[] = {
++	static const char *const special_suffixes[] = {
+ 		"_veneer",		/* arm */
+ 		NULL };
+ 
+@@ -283,7 +283,7 @@ static void read_map(FILE *in)
+ 	}
+ }
+ 
+-static void output_label(char *label)
++static void output_label(const char *label)
+ {
+ 	if (symbol_prefix_char)
+ 		printf(".globl %c%s\n", symbol_prefix_char, label);
+-- 

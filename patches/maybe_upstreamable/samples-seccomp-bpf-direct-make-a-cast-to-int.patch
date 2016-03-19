@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 27 May 2015 11:41:40 +0800
+Subject: [PATCH] {MAYBE UPS} samples/seccomp/bpf-direct: make a cast to int
+ explicit (shorten 64 to 32 bits)
+
+---
+ samples/seccomp/bpf-direct.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/samples/seccomp/bpf-direct.c b/samples/seccomp/bpf-direct.c
+index 151ec3f52189..6ed8f947f06b 100644
+--- a/samples/seccomp/bpf-direct.c
++++ b/samples/seccomp/bpf-direct.c
+@@ -69,7 +69,7 @@ static void emulator(int nr, siginfo_t *info, void *void_context)
+ 		return;
+ 	if (!ctx)
+ 		return;
+-	syscall = ctx->uc_mcontext.gregs[REG_SYSCALL];
++	syscall = (int) ctx->uc_mcontext.gregs[REG_SYSCALL];
+ 	buf = (char *) ctx->uc_mcontext.gregs[REG_ARG1];
+ 	len = (size_t) ctx->uc_mcontext.gregs[REG_ARG2];
+ 
+-- 

@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 4 Jul 2015 10:13:09 +0800
+Subject: [PATCH] {For LLVMLinux} Disable the use of clang integrated assembler
+
+---
+ Makefile | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index 0e271b4f1422..6710645dddca 100644
+--- a/Makefile
++++ b/Makefile
+@@ -680,6 +680,11 @@ KBUILD_CPPFLAGS += $(call cc-option,-Wno-unknown-warning-option,)
+ #KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
+ #KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
+ #KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
++
++# Use gas because IA does not support the gas assembly extensions used in the kernel code.
++KBUILD_CFLAGS += -no-integrated-as
++KBUILD_AFLAGS += -no-integrated-as
++
+ # Quiet clang warning: comparison of unsigned expression < 0 is always false
+ #KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
+ # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
+-- 

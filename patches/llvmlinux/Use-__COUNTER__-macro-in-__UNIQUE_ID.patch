@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 15 Jan 2016 19:19:36 +0100
+Subject: [PATCH] {For LLVMLinux} Use __COUNTER__ macro in __UNIQUE_ID
+
+Otherwise, errors like this happen because it falls back to __LINE__:
+
+/usr/src/linux/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c:598:1: error: redefinition of '__UNIQUE_ID_firmware598'
+BRCMF_FW_NVRAM_DEF(43143, "brcmfmac43143-sdio.bin", "brcmfmac43143-sdio.txt");
+^
+/usr/src/linux/drivers/net/wireless/broadcom/brcm80211/brcmfmac/firmware.h:50:44: note: expanded from macro 'BRCMF_FW_NVRAM_DEF'
+MODULE_FIRMWARE(BRCMF_FW_DEFAULT_PATH fw); \
+                                           ^
+/usr/src/linux/include/linux/module.h:278:36: note: expanded from macro 'MODULE_FIRMWARE'
+                                   ^
+/usr/src/linux/include/linux/module.h:171:32: note: expanded from macro 'MODULE_INFO'
+                               ^
+note: (skipping 2 expansions in backtrace; use -fmacro-backtrace-limit=0 to see all)
+/usr/src/linux/include/linux/compiler.h:51:22: note: expanded from macro '__PASTE'
+                     ^
+/usr/src/linux/include/linux/compiler.h:50:23: note: expanded from macro '___PASTE'
+                      ^
+<scratch space>:16:1: note: expanded from here
+__UNIQUE_ID_firmware598
+^
+---
+ include/linux/compiler-clang.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/include/linux/compiler-clang.h b/include/linux/compiler-clang.h
+index d1e49d52b640..45e55e7eedb8 100644
+--- a/include/linux/compiler-clang.h
++++ b/include/linux/compiler-clang.h
+@@ -10,3 +10,6 @@
+ #undef uninitialized_var
+ #define uninitialized_var(x) x = *(&(x))
+ #endif
++
++/* Use __COUNTER__ */
++#define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
+-- 

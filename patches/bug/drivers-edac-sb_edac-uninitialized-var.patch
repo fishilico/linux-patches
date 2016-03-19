@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 15 Jan 2016 13:51:48 +0100
+Subject: [PATCH] {BUG} drivers/edac/sb_edac: uninitialized var
+
+---
+ drivers/edac/sb_edac.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/edac/sb_edac.c b/drivers/edac/sb_edac.c
+index f5c6b97c8958..8d72f76da5cc 100644
+--- a/drivers/edac/sb_edac.c
++++ b/drivers/edac/sb_edac.c
+@@ -861,6 +861,7 @@ static char *knl_show_interleave_mode(u32 reg)
+ 		break;
+ 	default:
+ 		WARN_ON(1);
++		s = ""; /* BUG: uninitialized s (-Wsometimes-uninitialized from clang) */
+ 		break;
+ 	}
+ 
+-- 

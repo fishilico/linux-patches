@@ -1,0 +1,471 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 9 Mar 2015 21:20:30 +0800
+Subject: [PATCH] {CONSTIFY} lib/kobject_uevent: constify kobject_uevent_env
+ envp_ext parameter
+
+[TODO] This does not consider all architectures at all. A more progressive
+approach may be better to have such a patch upstreamed one day.
+---
+ block/genhd.c                                        | 4 ++--
+ drivers/acpi/dock.c                                  | 2 +-
+ drivers/ata/libata-acpi.c                            | 2 +-
+ drivers/block/virtio_blk.c                           | 2 +-
+ drivers/extcon/extcon.c                              | 2 +-
+ drivers/gpu/drm/drm_sysfs.c                          | 4 ++--
+ drivers/gpu/drm/i915/i915_irq.c                      | 8 ++++----
+ drivers/leds/led-triggers.c                          | 2 +-
+ drivers/md/bcache/super.c                            | 2 +-
+ drivers/md/dm-verity-target.c                        | 2 +-
+ drivers/md/dm.c                                      | 2 +-
+ drivers/md/md-cluster.c                              | 2 +-
+ drivers/net/ethernet/qlogic/qlcnic/qlcnic_minidump.c | 2 +-
+ drivers/net/wireless/ath/wil6210/interrupt.c         | 2 +-
+ drivers/scsi/qla2xxx/qla_os.c                        | 2 +-
+ drivers/scsi/qla4xxx/ql4_nx.c                        | 2 +-
+ drivers/scsi/scsi_lib.c                              | 2 +-
+ drivers/staging/unisys/visorbus/visorchipset.c       | 4 ++--
+ drivers/thermal/samsung/exynos_tmu.c                 | 2 +-
+ drivers/video/backlight/backlight.c                  | 2 +-
+ fs/gfs2/ops_fstype.c                                 | 6 +++---
+ fs/gfs2/recovery.c                                   | 2 +-
+ fs/gfs2/sys.c                                        | 2 +-
+ include/linux/kobject.h                              | 2 +-
+ lib/kobject.c                                        | 4 ++--
+ lib/kobject_uevent.c                                 | 2 +-
+ net/batman-adv/sysfs.c                               | 2 +-
+ net/wireless/reg.c                                   | 2 +-
+ sound/soc/codecs/da7218.c                            | 2 +-
+ 29 files changed, 38 insertions(+), 38 deletions(-)
+
+diff --git a/block/genhd.c b/block/genhd.c
+index 9f42526b4d62..d7bd77a16b3c 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -1362,7 +1362,7 @@ EXPORT_SYMBOL(put_disk);
+ static void set_disk_ro_uevent(struct gendisk *gd, int ro)
+ {
+ 	char event[] = "DISK_RO=1";
+-	char *envp[] = { event, NULL };
++	const char *envp[] = { event, NULL };
+ 
+ 	if (!ro)
+ 		event[8] = '0';
+@@ -1653,7 +1653,7 @@ static void disk_check_events(struct disk_events *ev,
+ 			      unsigned int *clearing_ptr)
+ {
+ 	struct gendisk *disk = ev->disk;
+-	char *envp[ARRAY_SIZE(disk_uevents) + 1] = { };
++	const char *envp[ARRAY_SIZE(disk_uevents) + 1] = { };
+ 	unsigned int clearing = *clearing_ptr;
+ 	unsigned int events;
+ 	unsigned long intv;
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index e8e128dede29..b6bd7242aa14 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -300,7 +300,7 @@ static void dock_event(struct dock_station *ds, u32 event, int num)
+ {
+ 	struct device *dev = &ds->dock_device->dev;
+ 	char event_string[13];
+-	char *envp[] = { event_string, NULL };
++	const char *envp[] = { event_string, NULL };
+ 	struct dock_dependent_device *dd;
+ 
+ 	if (num == UNDOCK_EVENT)
+diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
+index 97a14fe47de1..46220e61429e 100644
+--- a/drivers/ata/libata-acpi.c
++++ b/drivers/ata/libata-acpi.c
+@@ -149,7 +149,7 @@ static void ata_acpi_uevent(struct ata_port *ap, struct ata_device *dev,
+ {
+ 	struct kobject *kobj = NULL;
+ 	char event_string[20];
+-	char *envp[] = { event_string, NULL };
++	const char *envp[] = { event_string, NULL };
+ 
+ 	if (dev) {
+ 		if (dev->sdev)
+diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
+index 6ca35495a5be..568642dccf96 100644
+--- a/drivers/block/virtio_blk.c
++++ b/drivers/block/virtio_blk.c
+@@ -341,7 +341,7 @@ static void virtblk_config_changed_work(struct work_struct *work)
+ 	struct virtio_device *vdev = vblk->vdev;
+ 	struct request_queue *q = vblk->disk->queue;
+ 	char cap_str_2[10], cap_str_10[10];
+-	char *envp[] = { "RESIZE=1", NULL };
++	const char *const envp[] = { "RESIZE=1", NULL };
+ 	u64 capacity;
+ 
+ 	/* Host must always specify the capacity. */
+diff --git a/drivers/extcon/extcon.c b/drivers/extcon/extcon.c
+index 21a123cadf78..e7955f356a0a 100644
+--- a/drivers/extcon/extcon.c
++++ b/drivers/extcon/extcon.c
+@@ -260,7 +260,7 @@ int extcon_update_state(struct extcon_dev *edev, u32 mask, u32 state)
+ 	char name_buf[120];
+ 	char state_buf[120];
+ 	char *prop_buf;
+-	char *envp[3];
++	const char *envp[3];
+ 	int env_offset = 0;
+ 	int length;
+ 	int index;
+diff --git a/drivers/gpu/drm/drm_sysfs.c b/drivers/gpu/drm/drm_sysfs.c
+index d503f8e8c2d1..306569f1b7da 100644
+--- a/drivers/gpu/drm/drm_sysfs.c
++++ b/drivers/gpu/drm/drm_sysfs.c
+@@ -547,8 +547,8 @@ void drm_sysfs_connector_remove(struct drm_connector *connector)
+  */
+ void drm_sysfs_hotplug_event(struct drm_device *dev)
+ {
+-	char *event_string = "HOTPLUG=1";
+-	char *envp[] = { event_string, NULL };
++	const char *event_string = "HOTPLUG=1";
++	const char *envp[] = { event_string, NULL };
+ 
+ 	DRM_DEBUG("generating hotplug event\n");
+ 
+diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
+index fa8afa7860ae..6406c88ef6c0 100644
+--- a/drivers/gpu/drm/i915/i915_irq.c
++++ b/drivers/gpu/drm/i915/i915_irq.c
+@@ -1242,7 +1242,7 @@ static void ivybridge_parity_work(struct work_struct *work)
+ 		parity_event[5] = NULL;
+ 
+ 		kobject_uevent_env(&dev_priv->dev->primary->kdev->kobj,
+-				   KOBJ_CHANGE, parity_event);
++				   KOBJ_CHANGE, (const char **)parity_event);
+ 
+ 		DRM_DEBUG("Parity error: Slice = %d, Row = %d, Bank = %d, Sub bank = %d.\n",
+ 			  slice, row, bank, subbank);
+@@ -2471,9 +2471,9 @@ static void i915_reset_and_wakeup(struct drm_device *dev)
+ {
+ 	struct drm_i915_private *dev_priv = to_i915(dev);
+ 	struct i915_gpu_error *error = &dev_priv->gpu_error;
+-	char *error_event[] = { I915_ERROR_UEVENT "=1", NULL };
+-	char *reset_event[] = { I915_RESET_UEVENT "=1", NULL };
+-	char *reset_done_event[] = { I915_ERROR_UEVENT "=0", NULL };
++	const char *error_event[] = { I915_ERROR_UEVENT "=1", NULL };
++	const char *reset_event[] = { I915_RESET_UEVENT "=1", NULL };
++	const char *reset_done_event[] = { I915_ERROR_UEVENT "=0", NULL };
+ 	int ret;
+ 
+ 	kobject_uevent_env(&dev->primary->kdev->kobj, KOBJ_CHANGE, error_event);
+diff --git a/drivers/leds/led-triggers.c b/drivers/leds/led-triggers.c
+index e1e933424ac9..6ee1ee168887 100644
+--- a/drivers/leds/led-triggers.c
++++ b/drivers/leds/led-triggers.c
+@@ -112,7 +112,7 @@ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trig)
+ {
+ 	unsigned long flags;
+ 	char *event = NULL;
+-	char *envp[2];
++	const char *envp[2];
+ 	const char *name;
+ 
+ 	name = trig ? trig->name : "none";
+diff --git a/drivers/md/bcache/super.c b/drivers/md/bcache/super.c
+index 8d0ead98eb6e..0a4b50172808 100644
+--- a/drivers/md/bcache/super.c
++++ b/drivers/md/bcache/super.c
+@@ -869,7 +869,7 @@ void bch_cached_dev_run(struct cached_dev *dc)
+ 	bd_link_disk_holder(dc->bdev, dc->disk.disk);
+ 	/* won't show up in the uevent file, use udevadm monitor -e instead
+ 	 * only class / kset properties are persistent */
+-	kobject_uevent_env(&disk_to_dev(d->disk)->kobj, KOBJ_CHANGE, env);
++	kobject_uevent_env(&disk_to_dev(d->disk)->kobj, KOBJ_CHANGE, (const char **)env);
+ 	kfree(env[1]);
+ 	kfree(env[2]);
+ 
+diff --git a/drivers/md/dm-verity-target.c b/drivers/md/dm-verity-target.c
+index 5c5d30cb6ec5..8263060f5874 100644
+--- a/drivers/md/dm-verity-target.c
++++ b/drivers/md/dm-verity-target.c
+@@ -227,7 +227,7 @@ static int verity_handle_err(struct dm_verity *v, enum verity_block_type type,
+ 	snprintf(verity_env, DM_VERITY_ENV_LENGTH, "%s=%d,%llu",
+ 		DM_VERITY_ENV_VAR_NAME, type, block);
+ 
+-	kobject_uevent_env(&disk_to_dev(dm_disk(md))->kobj, KOBJ_CHANGE, envp);
++	kobject_uevent_env(&disk_to_dev(dm_disk(md))->kobj, KOBJ_CHANGE, (const char **)envp);
+ 
+ out:
+ 	if (v->mode == DM_VERITY_MODE_LOGGING)
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index dd834927bc66..73c767d562c4 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -3388,7 +3388,7 @@ int dm_kobject_uevent(struct mapped_device *md, enum kobject_action action,
+ 		       unsigned cookie)
+ {
+ 	char udev_cookie[DM_COOKIE_LENGTH];
+-	char *envp[] = { udev_cookie, NULL };
++	const char *envp[] = { udev_cookie, NULL };
+ 
+ 	if (!cookie)
+ 		return kobject_uevent(&disk_to_dev(md->disk)->kobj, action);
+diff --git a/drivers/md/md-cluster.c b/drivers/md/md-cluster.c
+index dd97d4245822..4eedb6a84f37 100644
+--- a/drivers/md/md-cluster.c
++++ b/drivers/md/md-cluster.c
+@@ -430,7 +430,7 @@ static void process_add_new_disk(struct mddev *mddev, struct cluster_msg *cmsg)
+ 	struct md_cluster_info *cinfo = mddev->cluster_info;
+ 	char event_name[] = "EVENT=ADD_DEVICE";
+ 	char raid_slot[16];
+-	char *envp[] = {event_name, disk_uuid, raid_slot, NULL};
++	const char *envp[] = {event_name, disk_uuid, raid_slot, NULL};
+ 	int len;
+ 
+ 	len = snprintf(disk_uuid, 64, "DEVICE_UUID=");
+diff --git a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_minidump.c b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_minidump.c
+index cda9e604a95f..1f5a013a9721 100644
+--- a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_minidump.c
++++ b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_minidump.c
+@@ -1296,7 +1296,7 @@ int qlcnic_dump_fw(struct qlcnic_adapter *adapter)
+ 	u32 ocm_window;
+ 	__le32 *buffer;
+ 	char mesg[64];
+-	char *msg[] = {mesg, NULL};
++	const char *msg[] = {mesg, NULL};
+ 
+ 	ahw = adapter->ahw;
+ 	tmpl_hdr = fw_dump->tmpl_hdr;
+diff --git a/drivers/net/wireless/ath/wil6210/interrupt.c b/drivers/net/wireless/ath/wil6210/interrupt.c
+index 4f2ffa5c6e17..6b77e200a216 100644
+--- a/drivers/net/wireless/ath/wil6210/interrupt.c
++++ b/drivers/net/wireless/ath/wil6210/interrupt.c
+@@ -311,7 +311,7 @@ static irqreturn_t wil6210_irq_tx(int irq, void *cookie)
+ static void wil_notify_fw_error(struct wil6210_priv *wil)
+ {
+ 	struct device *dev = &wil_to_ndev(wil)->dev;
+-	char *envp[3] = {
++	const char *envp[3] = {
+ 		[0] = "SOURCE=wil6210",
+ 		[1] = "EVENT=FW_ERROR",
+ 		[2] = NULL,
+diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
+index f6c7ce35b542..a725659f63e5 100644
+--- a/drivers/scsi/qla2xxx/qla_os.c
++++ b/drivers/scsi/qla2xxx/qla_os.c
+@@ -4053,7 +4053,7 @@ static void
+ qla2x00_uevent_emit(struct scsi_qla_host *vha, u32 code)
+ {
+ 	char event_string[40];
+-	char *envp[] = { event_string, NULL };
++	const char *envp[] = { event_string, NULL };
+ 
+ 	switch (code) {
+ 	case QLA_UEVENT_CODE_FW_DUMP:
+diff --git a/drivers/scsi/qla4xxx/ql4_nx.c b/drivers/scsi/qla4xxx/ql4_nx.c
+index ae87d6c19f17..5e54d816a9ac 100644
+--- a/drivers/scsi/qla4xxx/ql4_nx.c
++++ b/drivers/scsi/qla4xxx/ql4_nx.c
+@@ -3222,7 +3222,7 @@ md_failed:
+ static void qla4_8xxx_uevent_emit(struct scsi_qla_host *ha, u32 code)
+ {
+ 	char event_string[40];
+-	char *envp[] = { event_string, NULL };
++	const char *envp[] = { event_string, NULL };
+ 
+ 	switch (code) {
+ 	case QL4_UEVENT_CODE_FW_DUMP:
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 8c6e31874171..d8ecc934155a 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -2693,7 +2693,7 @@ EXPORT_SYMBOL(scsi_device_set_state);
+ static void scsi_evt_emit(struct scsi_device *sdev, struct scsi_event *evt)
+ {
+ 	int idx = 0;
+-	char *envp[3];
++	const char *envp[3];
+ 
+ 	switch (evt->evt_type) {
+ 	case SDEV_EVT_MEDIA_CHANGE:
+diff --git a/drivers/staging/unisys/visorbus/visorchipset.c b/drivers/staging/unisys/visorbus/visorchipset.c
+index 07594f43853d..591bfacc5833 100644
+--- a/drivers/staging/unisys/visorbus/visorchipset.c
++++ b/drivers/staging/unisys/visorbus/visorchipset.c
+@@ -1412,7 +1412,7 @@ static int
+ visorchipset_chipset_selftest(void)
+ {
+ 	char env_selftest[20];
+-	char *envp[] = { env_selftest, NULL };
++	const char *envp[] = { env_selftest, NULL };
+ 
+ 	sprintf(env_selftest, "SPARSP_SELFTEST=%d", 1);
+ 	kobject_uevent_env(&visorchipset_platform_device.dev.kobj, KOBJ_CHANGE,
+@@ -1562,7 +1562,7 @@ parahotplug_request_kickoff(struct parahotplug_request *req)
+ 	struct controlvm_message_packet *cmd = &req->msg.cmd;
+ 	char env_cmd[40], env_id[40], env_state[40], env_bus[40], env_dev[40],
+ 	    env_func[40];
+-	char *envp[] = {
++	const char *envp[] = {
+ 		env_cmd, env_id, env_state, env_bus, env_dev, env_func, NULL
+ 	};
+ 
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index fa61eff88496..59371330ca95 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -234,7 +234,7 @@ static void exynos_report_trigger(struct exynos_tmu_data *p)
+ 	}
+ 
+ 	snprintf(data, sizeof(data), "%u", i);
+-	kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, envp);
++	kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, (const char *const *)envp);
+ 	mutex_unlock(&tz->lock);
+ }
+ 
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index bddc8b17a4d8..f0f4fa3270ef 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -103,7 +103,7 @@ static inline void backlight_unregister_fb(struct backlight_device *bd)
+ static void backlight_generate_event(struct backlight_device *bd,
+ 				     enum backlight_update_reason reason)
+ {
+-	char *envp[2];
++	const char *envp[2];
+ 
+ 	switch (reason) {
+ 	case BACKLIGHT_UPDATE_SYSFS:
+diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
+index dbed9e243ea2..a16cccb54822 100644
+--- a/fs/gfs2/ops_fstype.c
++++ b/fs/gfs2/ops_fstype.c
+@@ -526,8 +526,8 @@ out:
+ 
+ static void gfs2_others_may_mount(struct gfs2_sbd *sdp)
+ {
+-	char *message = "FIRSTMOUNT=Done";
+-	char *envp[] = { message, NULL };
++	const char *message = "FIRSTMOUNT=Done";
++	const char *const envp[] = { message, NULL };
+ 
+ 	fs_info(sdp, "first mount done, others may mount\n");
+ 
+@@ -1032,7 +1032,7 @@ void gfs2_online_uevent(struct gfs2_sbd *sdp)
+ 	struct super_block *sb = sdp->sd_vfs;
+ 	char ro[20];
+ 	char spectator[20];
+-	char *envp[] = { ro, spectator, NULL };
++	const char *const envp[] = { ro, spectator, NULL };
+ 	sprintf(ro, "RDONLY=%d", (sb->s_flags & MS_RDONLY) ? 1 : 0);
+ 	sprintf(spectator, "SPECTATOR=%d", sdp->sd_args.ar_spectator ? 1 : 0);
+ 	kobject_uevent_env(&sdp->sd_kobj, KOBJ_ONLINE, envp);
+diff --git a/fs/gfs2/recovery.c b/fs/gfs2/recovery.c
+index 1b645773c98e..247897d060bf 100644
+--- a/fs/gfs2/recovery.c
++++ b/fs/gfs2/recovery.c
+@@ -434,7 +434,7 @@ static void gfs2_recovery_done(struct gfs2_sbd *sdp, unsigned int jid,
+ {
+ 	char env_jid[20];
+ 	char env_status[20];
+-	char *envp[] = { env_jid, env_status, NULL };
++	const char *const envp[] = { env_jid, env_status, NULL };
+ 	struct lm_lockstruct *ls = &sdp->sd_lockstruct;
+ 
+         ls->ls_recover_jid_done = jid;
+diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
+index c9ff1cf7d4f3..1263c3b4a8c5 100644
+--- a/fs/gfs2/sys.c
++++ b/fs/gfs2/sys.c
+@@ -652,7 +652,7 @@ int gfs2_sys_fs_add(struct gfs2_sbd *sdp)
+ 	int error;
+ 	char ro[20];
+ 	char spectator[20];
+-	char *envp[] = { ro, spectator, NULL };
++	const char *const envp[] = { ro, spectator, NULL };
+ 	int sysfs_frees_sdp = 0;
+ 
+ 	sprintf(ro, "RDONLY=%d", (sb->s_flags & MS_RDONLY) ? 1 : 0);
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index 46654530244c..89c19315c384 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -214,7 +214,7 @@ extern struct kobject *firmware_kobj;
+ 
+ int kobject_uevent(struct kobject *kobj, enum kobject_action action);
+ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+-			char *envp[]);
++			const char *const envp[]);
+ 
+ __printf(2, 3)
+ int add_uevent_var(struct kobj_uevent_env *env, const char *format, ...);
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 7cbccd2b4c72..1ad6fcc4b597 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -458,7 +458,7 @@ int kobject_rename(struct kobject *kobj, const char *new_name)
+ 	const char *devpath = NULL;
+ 	const char *dup_name = NULL, *name;
+ 	char *devpath_string = NULL;
+-	char *envp[2];
++	const char *envp[2];
+ 
+ 	kobj = kobject_get(kobj);
+ 	if (!kobj)
+@@ -520,7 +520,7 @@ int kobject_move(struct kobject *kobj, struct kobject *new_parent)
+ 	struct kobject *old_parent;
+ 	const char *devpath = NULL;
+ 	char *devpath_string = NULL;
+-	char *envp[2];
++	const char *envp[2];
+ 
+ 	kobj = kobject_get(kobj);
+ 	if (!kobj)
+diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+index f6c2c1e7779c..f19de1d45d5e 100644
+--- a/lib/kobject_uevent.c
++++ b/lib/kobject_uevent.c
+@@ -162,7 +162,7 @@ static void cleanup_uevent_env(struct subprocess_info *info)
+  * corresponding error when it fails.
+  */
+ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+-		       char *envp_ext[])
++		       const char *const envp_ext[])
+ {
+ 	struct kobj_uevent_env *env;
+ 	const char *action_string = kobject_actions[action];
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index d6104051960c..136e9fa261e3 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -947,7 +947,7 @@ int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
+ 			goto out;
+ 	}
+ 
+-	ret = kobject_uevent_env(bat_kobj, KOBJ_CHANGE, uevent_env);
++	ret = kobject_uevent_env(bat_kobj, KOBJ_CHANGE, (const char**)uevent_env);
+ out:
+ 	kfree(uevent_env[0]);
+ 	kfree(uevent_env[1]);
+diff --git a/net/wireless/reg.c b/net/wireless/reg.c
+index 547ceecc0523..39a2a0ac92de 100644
+--- a/net/wireless/reg.c
++++ b/net/wireless/reg.c
+@@ -572,7 +572,7 @@ static void reset_crda_timeouts(void)
+ static int call_crda(const char *alpha2)
+ {
+ 	char country[12];
+-	char *env[] = { country, NULL };
++	const char *env[] = { country, NULL };
+ 	int ret;
+ 
+ 	snprintf(country, sizeof(country), "COUNTRY=%c%c",
+diff --git a/sound/soc/codecs/da7218.c b/sound/soc/codecs/da7218.c
+index 93575f251866..33a7bb818890 100644
+--- a/sound/soc/codecs/da7218.c
++++ b/sound/soc/codecs/da7218.c
+@@ -2231,7 +2231,7 @@ EXPORT_SYMBOL_GPL(da7218_hpldet);
+ 
+ static void da7218_micldet_irq(struct snd_soc_codec *codec)
+ {
+-	char *envp[] = {
++	const char *const envp[] = {
+ 		"EVENT=MIC_LEVEL_DETECT",
+ 		NULL,
+ 	};
+-- 

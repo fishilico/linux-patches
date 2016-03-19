@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 8 Nov 2015 11:25:27 +0100
+Subject: [PATCH] {MAYBE UPS} lib/test_printf: constify format string
+
+clang reports:
+/mnt/data/src/linux/lib/test_printf.c:131:11: warning: format string is not a string literal (potentially insecure) [-Wformat-security]
+        test("", &nul);
+                 ^~~~
+/mnt/data/src/linux/lib/test_printf.c:123:33: note: expanded from macro 'test'
+        __test(expect, strlen(expect), fmt, ##__VA_ARGS__)
+                                       ^
+---
+ lib/test_printf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/test_printf.c b/lib/test_printf.c
+index 4cfdfacf2c48..44ab48368953 100644
+--- a/lib/test_printf.c
++++ b/lib/test_printf.c
+@@ -147,7 +147,7 @@ static void __init
+ test_basic(void)
+ {
+ 	/* Work around annoying "warning: zero-length gnu_printf format string". */
+-	char nul = '\0';
++	const char nul = '\0';
+ 
+ 	test("", &nul);
+ 	test("100%", "100%%");
+-- 

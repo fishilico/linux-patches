@@ -1,0 +1,326 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 17 Jun 2015 15:40:10 +0800
+Subject: [PATCH] {PRAGMA} ignore -Wduplicate-enum by design
+
+---
+ arch/x86/include/asm/fixmap.h                               |  7 +++++++
+ drivers/media/dvb-frontends/tda1002x.h                      |  7 +++++++
+ drivers/media/usb/cx231xx/cx231xx.h                         |  7 +++++++
+ drivers/net/wireless/ath/ath10k/htt.h                       |  7 +++++++
+ drivers/net/wireless/ath/carl9170/hw.h                      |  7 +++++++
+ drivers/net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h |  9 +++++++++
+ drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h         |  7 +++++++
+ drivers/staging/comedi/comedi.h                             |  7 +++++++
+ drivers/staging/rtl8723au/include/rtl8723a_cmd.h            |  7 +++++++
+ include/uapi/linux/netfilter/nf_conntrack_common.h          | 10 ++++++++++
+ include/uapi/linux/nl80211.h                                |  7 +++++++
+ sound/pci/pcxhr/pcxhr.h                                     |  8 ++++++++
+ 12 files changed, 90 insertions(+)
+
+diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
+index 6d7d0e52ed5a..ee57dbec13f4 100644
+--- a/arch/x86/include/asm/fixmap.h
++++ b/arch/x86/include/asm/fixmap.h
+@@ -100,6 +100,10 @@ enum fixed_addresses {
+ #ifdef	CONFIG_X86_INTEL_MID
+ 	FIX_LNW_VRTC,
+ #endif
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ 	__end_of_permanent_fixed_addresses,
+ 
+ 	/*
+@@ -119,6 +123,9 @@ enum fixed_addresses {
+ 	 ? __end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS -
+ 	   (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1))
+ 	 : __end_of_permanent_fixed_addresses,
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 	FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1,
+ #ifdef CONFIG_X86_32
+ 	FIX_WP_TEST,
+diff --git a/drivers/media/dvb-frontends/tda1002x.h b/drivers/media/dvb-frontends/tda1002x.h
+index 0d334613de1b..2f8fde5dd2a4 100644
+--- a/drivers/media/dvb-frontends/tda1002x.h
++++ b/drivers/media/dvb-frontends/tda1002x.h
+@@ -32,12 +32,19 @@ struct tda1002x_config {
+ 	u8 invert;
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum tda10023_output_mode {
+ 	TDA10023_OUTPUT_MODE_PARALLEL_A = 0xe0,
+ 	TDA10023_OUTPUT_MODE_PARALLEL_B = 0xa1,
+ 	TDA10023_OUTPUT_MODE_PARALLEL_C = 0xa0,
+ 	TDA10023_OUTPUT_MODE_SERIAL, /* TODO: not implemented */
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ struct tda10023_config {
+ 	/* the demodulator's i2c address */
+diff --git a/drivers/media/usb/cx231xx/cx231xx.h b/drivers/media/usb/cx231xx/cx231xx.h
+index ec6d3f5bc36d..bca672d5dfab 100644
+--- a/drivers/media/usb/cx231xx/cx231xx.h
++++ b/drivers/media/usb/cx231xx/cx231xx.h
+@@ -284,6 +284,10 @@ enum cx231xx_itype {
+ 	CX231XX_VMUX_DEBUG
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum cx231xx_v_input {
+ 	CX231XX_VIN_1_1 = 0x1,
+ 	CX231XX_VIN_2_1,
+@@ -296,6 +300,9 @@ enum cx231xx_v_input {
+ 	CX231XX_VIN_2_3,
+ 	CX231XX_VIN_3_3,
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ /* cx231xx has two audio inputs: tuner and line in */
+ enum cx231xx_amux {
+diff --git a/drivers/net/wireless/ath/ath10k/htt.h b/drivers/net/wireless/ath/ath10k/htt.h
+index 47ca048feaf0..d84efca0b0e1 100644
+--- a/drivers/net/wireless/ath/ath10k/htt.h
++++ b/drivers/net/wireless/ath/ath10k/htt.h
+@@ -522,6 +522,10 @@ struct htt_rx_indication_hdr {
+ #define HTT_RX_INDICATION_INFO2_SERVICE_MASK    0xFF000000
+ #define HTT_RX_INDICATION_INFO2_SERVICE_LSB     24
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum htt_rx_legacy_rate {
+ 	HTT_RX_OFDM_48 = 0,
+ 	HTT_RX_OFDM_24 = 1,
+@@ -542,6 +546,9 @@ enum htt_rx_legacy_rate {
+ 	HTT_RX_CCK_5_5_SP,
+ 	HTT_RX_CCK_2_SP
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ enum htt_rx_legacy_rate_type {
+ 	HTT_RX_LEGACY_RATE_OFDM = 0,
+diff --git a/drivers/net/wireless/ath/carl9170/hw.h b/drivers/net/wireless/ath/carl9170/hw.h
+index 0db874abde50..b93481003c28 100644
+--- a/drivers/net/wireless/ath/carl9170/hw.h
++++ b/drivers/net/wireless/ath/carl9170/hw.h
+@@ -740,6 +740,10 @@ enum cpu_clock {
+ };
+ 
+ /* USB endpoints */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum ar9170_usb_ep {
+ 	/*
+ 	 * Control EP is always EP 0 (USB SPEC)
+@@ -760,6 +764,9 @@ enum ar9170_usb_ep {
+ 
+ 	__AR9170_USB_NUM_MAX_EP		= 10
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ enum ar9170_usb_fifo {
+ 	__AR9170_USB_NUM_MAX_FIFO	= 10
+diff --git a/drivers/net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h b/drivers/net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h
+index 8ea372d1626e..5941cb4abdf2 100644
+--- a/drivers/net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h
++++ b/drivers/net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h
+@@ -50,6 +50,12 @@ enum version_8723e {
+ 	VERSION_UNKNOWN = 0xFF,
+ };
+ 
++
++/* XXX: not sure wether the enum conflict is expected? */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum rtl8723be_cmd {
+ 	H2C_8723BE_RSVDPAGE = 0,
+ 	H2C_8723BE_JOINBSSRPT = 1,
+@@ -80,6 +86,9 @@ enum rtl8723be_cmd {
+ 	H2C_8723BE_P2P_PS_CTW_CMD,
+ 	MAX_8723BE_H2CCMD
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ void rtl8723ae_firmware_selfreset(struct ieee80211_hw *hw);
+ void rtl8723be_firmware_selfreset(struct ieee80211_hw *hw);
+diff --git a/drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h b/drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h
+index 8f5b4aade3c9..1d6541c99c1f 100644
+--- a/drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h
++++ b/drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h
+@@ -151,6 +151,10 @@ enum rtl8812_c2h_evt {
+ 	MAX_8812_C2HEVENT
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum rtl8821a_h2c_cmd {
+ 	H2C_8821AE_RSVDPAGE = 0,
+ 	H2C_8821AE_MSRRPT = 1,
+@@ -182,6 +186,9 @@ enum rtl8821a_h2c_cmd {
+ 	H2C_8821AE_P2P_PS_CTW_CMD,
+ 	MAX_8821AE_H2CCMD
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ #define pagenum_128(_len)	(u32)(((_len)>>7) + ((_len)&0x7F ? 1 : 0))
+ 
+diff --git a/drivers/staging/comedi/comedi.h b/drivers/staging/comedi/comedi.h
+index 83bd309d011b..5e09707db18c 100644
+--- a/drivers/staging/comedi/comedi.h
++++ b/drivers/staging/comedi/comedi.h
+@@ -943,6 +943,10 @@ enum amplc_dio_ts_clock_src {
+  * Values for setting a gate source with INSN_CONFIG_SET_GATE_SRC for
+  * 8254 counter subdevices on Amplicon DIO boards (amplc_dio200 driver).
+  */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum amplc_dio_gate_source {
+ 	AMPLC_DIO_GAT_VCC,	/* internal high logic level */
+ 	AMPLC_DIO_GAT_GND,	/* internal low logic level */
+@@ -969,6 +973,9 @@ enum amplc_dio_gate_source {
+ 	AMPLC_DIO_GAT_NPAT_OCCURRED, /* negated "pattern occurred" */
+ 	AMPLC_DIO_GAT_NPAT_GONE	/* negated "pattern gone away" */
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ /*
+  * Values for setting a clock source with INSN_CONFIG_SET_CLOCK_SRC for
+diff --git a/drivers/staging/rtl8723au/include/rtl8723a_cmd.h b/drivers/staging/rtl8723au/include/rtl8723a_cmd.h
+index 014c02edded6..a63474e20a15 100644
+--- a/drivers/staging/rtl8723au/include/rtl8723a_cmd.h
++++ b/drivers/staging/rtl8723au/include/rtl8723a_cmd.h
+@@ -19,6 +19,10 @@
+ #define H2C_BT_FW_PATCH_LEN		3
+ #define H2C_BT_PWR_FORCE_LEN		3
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum cmd_msg_element_id
+ {
+ 	NONE_CMDMSG_EID,
+@@ -51,6 +55,9 @@ enum cmd_msg_element_id
+ 	H2C_RESET_TSF = 75,
+ 	MAX_CMDMSG_EID
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ struct cmd_msg_parm {
+ 	u8 eid; /* element id */
+diff --git a/include/uapi/linux/netfilter/nf_conntrack_common.h b/include/uapi/linux/netfilter/nf_conntrack_common.h
+index 319f47128db8..ad87ade143cc 100644
+--- a/include/uapi/linux/netfilter/nf_conntrack_common.h
++++ b/include/uapi/linux/netfilter/nf_conntrack_common.h
+@@ -3,6 +3,13 @@
+ /* Connection state tracking for netfilter.  This is separated from,
+    but required by, the NAT layer; it can also be used by an iptables
+    extension. */
++/* Having a duplicate value in this enum  is by design:
++ * IP_CT_ESTABLISHED_REPLY == IP_CT_IS_REPLY
++ */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum ip_conntrack_info {
+ 	/* Part of an established connection (either direction). */
+ 	IP_CT_ESTABLISHED,
+@@ -24,6 +31,9 @@ enum ip_conntrack_info {
+ 	/* Number of distinct IP_CT types (no NEW in reply dirn). */
+ 	IP_CT_NUMBER = IP_CT_IS_REPLY * 2 - 1
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ #define NF_CT_STATE_INVALID_BIT			(1 << 0)
+ #define NF_CT_STATE_BIT(ctinfo)			(1 << ((ctinfo) % IP_CT_IS_REPLY + 1))
+diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
+index 5b7b5ebe7ca8..9c27af01aaaf 100644
+--- a/include/uapi/linux/nl80211.h
++++ b/include/uapi/linux/nl80211.h
+@@ -3459,6 +3459,10 @@ enum nl80211_bss_status {
+  *	trying multiple times); this is invalid in netlink -- leave out
+  *	the attribute for this on CONNECT commands.
+  */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum nl80211_auth_type {
+ 	NL80211_AUTHTYPE_OPEN_SYSTEM,
+ 	NL80211_AUTHTYPE_SHARED_KEY,
+@@ -3471,6 +3475,9 @@ enum nl80211_auth_type {
+ 	NL80211_AUTHTYPE_MAX = __NL80211_AUTHTYPE_NUM - 1,
+ 	NL80211_AUTHTYPE_AUTOMATIC
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ /**
+  * enum nl80211_key_type - Key Type
+diff --git a/sound/pci/pcxhr/pcxhr.h b/sound/pci/pcxhr/pcxhr.h
+index 9e39e509a3ef..3e5496daf338 100644
+--- a/sound/pci/pcxhr/pcxhr.h
++++ b/sound/pci/pcxhr/pcxhr.h
+@@ -46,6 +46,11 @@ struct pcxhr_mgr;
+ struct pcxhr_stream;
+ struct pcxhr_pipe;
+ 
++/* pcxhr_clock_type seems to duplicate entries on purpose */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum pcxhr_clock_type {
+ 	PCXHR_CLOCK_TYPE_INTERNAL = 0,
+ 	PCXHR_CLOCK_TYPE_WORD_CLOCK,
+@@ -60,6 +65,9 @@ enum pcxhr_clock_type {
+ 	HR22_CLOCK_TYPE_AES_1,
+ 	HR22_CLOCK_TYPE_MAX = HR22_CLOCK_TYPE_AES_1,
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ struct pcxhr_mgr {
+ 	unsigned int num_cards;
+-- 

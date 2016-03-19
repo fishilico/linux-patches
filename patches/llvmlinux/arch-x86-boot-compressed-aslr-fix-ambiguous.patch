@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 19 Mar 2015 18:31:28 +0800
+Subject: [PATCH] {For LLVMLinux} arch/x86/boot/compressed/aslr: fix ambiguous
+ asm instruction
+
+[TODO] Check tree for other occurences of mulq vs mull in the kernel tree
+---
+ arch/x86/boot/compressed/aslr.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/boot/compressed/aslr.c b/arch/x86/boot/compressed/aslr.c
+index 6a9b96b4624d..9bc006a7c2fc 100644
+--- a/arch/x86/boot/compressed/aslr.c
++++ b/arch/x86/boot/compressed/aslr.c
+@@ -94,9 +94,15 @@ static unsigned long get_random_long(void)
+ 	}
+ 
+ 	/* Circular multiply for better bit diffusion */
+-	asm("mul %3"
++#ifdef CONFIG_X86_64
++	asm("mulq %3"
+ 	    : "=a" (random), "=d" (raw)
+ 	    : "a" (random), "rm" (mix_const));
++#else
++	asm("mull %3"
++	    : "=a" (random), "=d" (raw)
++	    : "a" (random), "rm" (mix_const));
++#endif
+ 	random += raw;
+ 
+ 	debug_putstr("...\n");
+-- 

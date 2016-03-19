@@ -1,0 +1,60 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 22 May 2015 10:49:13 +0800
+Subject: [PATCH] {MAYBE UPS} replace TRANSCODER_A with PIPE_A to fix
+ typechecking
+
+drivers/gpu/drm/i915/intel_display.c:2007:34: warning: implicit
+conversion from enumeration type 'enum transcoder' to different
+enumeration type 'enum pipe' [-Wenum-conversion]
+        assert_fdi_rx_enabled(dev_priv, TRANSCODER_A);
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+drivers/gpu/drm/i915/intel_display.c:1195:54: note: expanded from macro
+'assert_fdi_rx_enabled'
+                                                     ^
+drivers/gpu/drm/i915/intel_display.c:2098:20: warning: implicit
+conversion from enumeration type 'enum transcoder' to different
+enumeration type 'enum pipe' [-Wenum-conversion]
+                pch_transcoder = TRANSCODER_A;
+                               ~ ^~~~~~~~~~~~
+drivers/gpu/drm/i915/intel_display.c:4078:43: warning: implicit
+conversion from enumeration type 'enum transcoder' to different
+enumeration type 'enum pipe' [-Wenum-conversion]
+        assert_pch_transcoder_disabled(dev_priv, TRANSCODER_A);
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~           ^~~~~~~~~~~~
+---
+ drivers/gpu/drm/i915/intel_display.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
+index 46947fffd599..169e5028522f 100644
+--- a/drivers/gpu/drm/i915/intel_display.c
++++ b/drivers/gpu/drm/i915/intel_display.c
+@@ -2029,7 +2029,7 @@ static void lpt_enable_pch_transcoder(struct drm_i915_private *dev_priv,
+ 
+ 	/* FDI must be feeding us bits for PCH ports */
+ 	assert_fdi_tx_enabled(dev_priv, (enum pipe) cpu_transcoder);
+-	assert_fdi_rx_enabled(dev_priv, TRANSCODER_A);
++	assert_fdi_rx_enabled(dev_priv, PIPE_A);
+ 
+ 	/* Workaround: set timing override bit. */
+ 	val = I915_READ(TRANS_CHICKEN2(PIPE_A));
+@@ -2122,7 +2122,7 @@ static void intel_enable_pipe(struct intel_crtc *crtc)
+ 	assert_sprites_disabled(dev_priv, pipe);
+ 
+ 	if (HAS_PCH_LPT(dev_priv->dev))
+-		pch_transcoder = TRANSCODER_A;
++		pch_transcoder = PIPE_A;
+ 	else
+ 		pch_transcoder = pipe;
+ 
+@@ -4245,7 +4245,7 @@ static void lpt_pch_enable(struct drm_crtc *crtc)
+ 	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+ 	enum transcoder cpu_transcoder = intel_crtc->config->cpu_transcoder;
+ 
+-	assert_pch_transcoder_disabled(dev_priv, TRANSCODER_A);
++	assert_pch_transcoder_disabled(dev_priv, PIPE_A);
+ 
+ 	lpt_program_iclkip(crtc);
+ 
+-- 

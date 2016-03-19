@@ -1,0 +1,87 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 19 Nov 2015 09:39:19 +0100
+Subject: [PATCH] {NOT UPSTREAMABLE} (grsecurity) Make vDSO pages read-only
+
+From grsecurity-3.1-4.2.6-201511182042.patch
+This subject has been taken care on kernel-hardening@ ML
+---
+ arch/x86/entry/vdso/vdso2c.h              | 4 ++--
+ arch/x86/entry/vsyscall/vsyscall_emu_64.S | 2 +-
+ arch/x86/include/asm/cache.h              | 1 +
+ include/asm-generic/vmlinux.lds.h         | 1 +
+ include/linux/linkage.h                   | 1 +
+ 5 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/entry/vdso/vdso2c.h b/arch/x86/entry/vdso/vdso2c.h
+index 52df1972f25f..0b2b48b45099 100644
+--- a/arch/x86/entry/vdso/vdso2c.h
++++ b/arch/x86/entry/vdso/vdso2c.h
+@@ -140,7 +140,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
+ 	fprintf(outfile, "#include <asm/vdso.h>\n");
+ 	fprintf(outfile, "\n");
+ 	fprintf(outfile,
+-		"static unsigned char raw_data[%lu] __page_aligned_data = {",
++		"static unsigned char raw_data[%lu] __page_aligned_rodata = {",
+ 		mapping_size);
+ 	for (j = 0; j < stripped_len; j++) {
+ 		if (j % 10 == 0)
+@@ -150,7 +150,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
+ 	}
+ 	fprintf(outfile, "\n};\n\n");
+ 
+-	fprintf(outfile, "static struct page *pages[%lu];\n\n",
++	fprintf(outfile, "static struct page *pages[%lu] __read_only;\n\n",
+ 		mapping_size / 4096);
+ 
+ 	fprintf(outfile, "const struct vdso_image %s = {\n", name);
+diff --git a/arch/x86/entry/vsyscall/vsyscall_emu_64.S b/arch/x86/entry/vsyscall/vsyscall_emu_64.S
+index c9596a9af159..805b68db3087 100644
+--- a/arch/x86/entry/vsyscall/vsyscall_emu_64.S
++++ b/arch/x86/entry/vsyscall/vsyscall_emu_64.S
+@@ -12,7 +12,7 @@
+ #include <asm/page_types.h>
+ #include <asm/unistd_64.h>
+ 
+-__PAGE_ALIGNED_DATA
++.section ".data..read_only", "a"
+ 	.globl __vsyscall_page
+ 	.balign PAGE_SIZE, 0xcc
+ 	.type __vsyscall_page, @object
+diff --git a/arch/x86/include/asm/cache.h b/arch/x86/include/asm/cache.h
+index 48f99f15452e..982b21c5eb1f 100644
+--- a/arch/x86/include/asm/cache.h
++++ b/arch/x86/include/asm/cache.h
+@@ -8,6 +8,7 @@
+ #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
+ 
+ #define __read_mostly __attribute__((__section__(".data..read_mostly")))
++#define __read_only __attribute__((__section__(".data..read_only")))
+ 
+ #define INTERNODE_CACHE_SHIFT CONFIG_X86_INTERNODE_CACHE_SHIFT
+ #define INTERNODE_CACHE_BYTES (1 << INTERNODE_CACHE_SHIFT)
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index c4bd0e2c173c..e1f2a4d27a83 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -256,6 +256,7 @@
+ 	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
+ 		VMLINUX_SYMBOL(__start_rodata) = .;			\
+ 		*(.rodata) *(.rodata.*)					\
++		*(.data..read_only)					\
+ 		*(__vermagic)		/* Kernel version magic */	\
+ 		. = ALIGN(8);						\
+ 		VMLINUX_SYMBOL(__start___tracepoints_ptrs) = .;		\
+diff --git a/include/linux/linkage.h b/include/linux/linkage.h
+index a6a42dd02466..6c5ebcec6f32 100644
+--- a/include/linux/linkage.h
++++ b/include/linux/linkage.h
+@@ -36,6 +36,7 @@
+ #endif
+ 
+ #define __page_aligned_data	__section(.data..page_aligned) __aligned(PAGE_SIZE)
++#define __page_aligned_rodata	__read_only __aligned(PAGE_SIZE)
+ #define __page_aligned_bss	__section(.bss..page_aligned) __aligned(PAGE_SIZE)
+ 
+ /*
+-- 

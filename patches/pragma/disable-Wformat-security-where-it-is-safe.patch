@@ -1,0 +1,1591 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 18 Mar 2015 23:20:16 +0800
+Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
+
+---
+ arch/x86/kernel/cpu/mcheck/mce.c                   |  3 +++
+ arch/x86/kernel/cpu/mcheck/mce_amd.c               | 16 ++++++++++++
+ arch/x86/kernel/e820.c                             |  4 +++
+ arch/x86/xen/smp.c                                 |  5 +++-
+ crypto/pcrypt.c                                    |  3 +++
+ drivers/acpi/acpi_apd.c                            |  3 +++
+ drivers/acpi/acpi_lpss.c                           |  3 +++
+ drivers/base/power/sysfs.c                         |  3 +++
+ drivers/block/aoe/aoechr.c                         |  6 ++++-
+ drivers/cdrom/cdrom.c                              |  3 +++
+ drivers/char/mem.c                                 |  3 +++
+ drivers/cpufreq/powernow-k8.c                      |  3 +++
+ drivers/gpu/drm/ttm/ttm_memory.c                   |  6 +++++
+ drivers/infiniband/hw/qib/qib_file_ops.c           |  4 +++
+ drivers/input/tablet/aiptek.c                      |  3 +++
+ drivers/iommu/irq_remapping.c                      |  3 +++
+ drivers/isdn/hisax/config.c                        |  3 +++
+ drivers/isdn/hisax/hfc_pci.c                       |  3 +++
+ drivers/isdn/hisax/hfc_sx.c                        |  3 +++
+ drivers/isdn/hisax/q931.c                          |  9 +++++++
+ drivers/md/bcache/util.h                           | 22 ++++++++++++++++
+ drivers/media/pci/cx23885/cx23885-dvb.c            | 30 ++++++++++++++++++++++
+ drivers/media/pci/netup_unidvb/netup_unidvb_core.c |  4 +++
+ drivers/media/pci/saa7164/saa7164-dvb.c            | 15 +++++++++++
+ drivers/media/pci/smipcie/smipcie-main.c           |  3 +++
+ drivers/media/pci/zoran/zoran_card.c               |  8 ++++++
+ drivers/media/platform/s5p-tv/mixer_drv.c          |  6 ++++-
+ drivers/media/usb/dvb-usb-v2/dvbsky.c              | 15 +++++++++++
+ drivers/media/usb/dvb-usb-v2/rtl28xxu.c            | 15 +++++++++++
+ drivers/media/usb/dvb-usb/cxusb.c                  |  6 +++++
+ drivers/media/usb/em28xx/em28xx-dvb.c              |  9 +++++++
+ drivers/media/usb/pvrusb2/pvrusb2-std.c            |  4 +++
+ drivers/media/v4l2-core/v4l2-common.c              |  3 +++
+ drivers/misc/mic/scif/scif_main.c                  |  3 +++
+ drivers/misc/mic/scif/scif_nodeqp.c                |  3 +++
+ drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c |  4 +++
+ .../net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c    |  4 +++
+ drivers/net/fddi/defxx.c                           |  3 +++
+ drivers/net/hippi/rrunner.c                        |  3 +++
+ drivers/net/wireless/intel/ipw2x00/libipw_wx.c     |  3 +++
+ .../net/wireless/intersil/hostap/hostap_ioctl.c    |  3 +++
+ drivers/parport/share.c                            |  3 +++
+ drivers/pnp/interface.c                            |  4 +++
+ drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c  |  3 +++
+ drivers/staging/speakup/kobjects.c                 |  6 +++++
+ drivers/staging/unisys/visorhba/visorhba_main.c    |  4 +++
+ drivers/tty/serial/pch_uart.c                      |  3 +++
+ fs/btrfs/check-integrity.c                         |  6 +++++
+ fs/quota/dquot.c                                   |  4 +++
+ fs/reiserfs/prints.c                               |  4 +--
+ include/linux/kernel.h                             |  7 +++--
+ kernel/debug/kdb/kdb_io.c                          | 18 +++++++++++++
+ lib/test_printf.c                                  |  3 +++
+ net/tipc/netlink_compat.c                          |  3 +++
+ scripts/kconfig/conf.c                             | 18 +++++++++++++
+ scripts/kconfig/menu.c                             |  3 +++
+ sound/core/seq/seq_clientmgr.c                     |  3 +++
+ sound/core/sound.c                                 |  3 +++
+ sound/drivers/opl3/opl3_seq.c                      |  3 +++
+ sound/pci/hda/hda_bind.c                           |  4 +++
+ sound/pci/korg1212/korg1212.c                      |  3 +++
+ sound/pci/rme32.c                                  |  3 +++
+ sound/pci/rme96.c                                  |  3 +++
+ sound/usb/mixer_quirks.c                           |  3 +++
+ 64 files changed, 362 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 4c574b02516a..2ed556ca6da4 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -343,7 +343,10 @@ static void mce_panic(const char *msg, struct mce *final, char *exp)
+ 	if (!fake_panic) {
+ 		if (panic_timeout == 0)
+ 			panic_timeout = mca_cfg.panic_timeout;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		panic(msg);
++#pragma GCC diagnostic pop
+ 	} else
+ 		pr_emerg(HW_ERR "Fake kernel panic: %s\n", msg);
+ }
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd.c b/arch/x86/kernel/cpu/mcheck/mce_amd.c
+index e99b15077e94..681511c20843 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_amd.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_amd.c
+@@ -617,9 +617,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
+ 		per_cpu(threshold_banks, cpu)[bank]->blocks = b;
+ 	}
+ 
++/* bank4_names(b) and th_names[bank] are well-defined constant string */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	err = kobject_init_and_add(&b->kobj, &threshold_ktype,
+ 				   per_cpu(threshold_banks, cpu)[bank]->kobj,
+ 				   (bank == 4 ? bank4_names(b) : th_names[bank]));
++#pragma GCC diagnostic pop
+ 	if (err)
+ 		goto out_free;
+ recurse:
+@@ -657,13 +661,21 @@ static int __threshold_add_blocks(struct threshold_bank *b)
+ 	struct threshold_block *tmp = NULL;
+ 	int err = 0;
+ 
++/* b->blocks->kobj.name comes from allocate_threshold_blocks */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	err = kobject_add(&b->blocks->kobj, b->kobj, b->blocks->kobj.name);
++#pragma GCC diagnostic pop
+ 	if (err)
+ 		return err;
+ 
+ 	list_for_each_entry_safe(pos, tmp, head, miscj) {
+ 
++/* pos->kobj.name comes from allocate_threshold_blocks */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		err = kobject_add(&pos->kobj, b->kobj, pos->kobj.name);
++#pragma GCC diagnostic pop
+ 		if (err) {
+ 			list_for_each_entry_safe_reverse(pos, tmp, head, miscj)
+ 				kobject_del(&pos->kobj);
+@@ -689,7 +701,11 @@ static int threshold_create_bank(unsigned int cpu, unsigned int bank)
+ 		if (nb && nb->bank4) {
+ 			/* yes, use it */
+ 			b = nb->bank4;
++/* name is a constant string */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			err = kobject_add(b->kobj, &dev->kobj, name);
++#pragma GCC diagnostic pop
+ 			if (err)
+ 				goto out;
+ 
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 569c1e4f96fe..2e7f569a1d8c 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -803,8 +803,12 @@ unsigned long __init e820_end_of_low_ram_pfn(void)
+ 
+ static void early_panic(char *msg)
+ {
++/* format is safe here */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	early_printk(msg);
+ 	panic(msg);
++#pragma GCC diagnostic pop
+ }
+ 
+ static int userdef __initdata;
+diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+index 3f4ebf0261f2..929a94fa7ecf 100644
+--- a/arch/x86/xen/smp.c
++++ b/arch/x86/xen/smp.c
+@@ -337,13 +337,16 @@ static void __init xen_smp_prepare_cpus(unsigned int max_cpus)
+ 	unsigned int i;
+ 
+ 	if (skip_ioapic_setup) {
+-		char *m = (max_cpus == 0) ?
++		const char *m = (max_cpus == 0) ?
+ 			"The nosmp parameter is incompatible with Xen; " \
+ 			"use Xen dom0_max_vcpus=1 parameter" :
+ 			"The noapic parameter is incompatible with Xen";
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		xen_raw_printk(m);
+ 		panic(m);
++#pragma GCC diagnostic pop
+ 	}
+ 	xen_init_lock_cpu(0);
+ 
+diff --git a/crypto/pcrypt.c b/crypto/pcrypt.c
+index ee9cfb99fe25..32b30972d32a 100644
+--- a/crypto/pcrypt.c
++++ b/crypto/pcrypt.c
+@@ -392,7 +392,10 @@ static int pcrypt_sysfs_add(struct padata_instance *pinst, const char *name)
+ 	int ret;
+ 
+ 	pinst->kobj.kset = pcrypt_kset;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	ret = kobject_add(&pinst->kobj, NULL, name);
++#pragma GCC diagnostic pop
+ 	if (!ret)
+ 		kobject_uevent(&pinst->kobj, KOBJ_ADD);
+ 
+diff --git a/drivers/acpi/acpi_apd.c b/drivers/acpi/acpi_apd.c
+index d507cf6deda0..2c8095ceba83 100644
+--- a/drivers/acpi/acpi_apd.c
++++ b/drivers/acpi/acpi_apd.c
+@@ -64,7 +64,10 @@ static int acpi_apd_setup(struct apd_private_data *pdata)
+ 					dev_name(&pdata->adev->dev),
+ 					NULL, CLK_IS_ROOT,
+ 					dev_desc->fixed_clk_rate);
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		clk_register_clkdev(clk, NULL, dev_name(&pdata->adev->dev));
++#pragma GCC diagnostic pop
+ 		pdata->clk = clk;
+ 	}
+ 
+diff --git a/drivers/acpi/acpi_lpss.c b/drivers/acpi/acpi_lpss.c
+index 0872d5fecb82..3f57b01da854 100644
+--- a/drivers/acpi/acpi_lpss.c
++++ b/drivers/acpi/acpi_lpss.c
+@@ -367,7 +367,10 @@ out:
+ 		return PTR_ERR(clk);
+ 
+ 	pdata->clk = clk;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	clk_register_clkdev(clk, dev_desc->clk_con_id, devname);
++#pragma GCC diagnostic pop
+ 	return 0;
+ }
+ 
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index a7b46798c81d..990187a11bab 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -181,7 +181,10 @@ static ssize_t rtpm_status_show(struct device *dev,
+ 			return -EIO;
+ 		}
+ 	}
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	return sprintf(buf, p);
++#pragma GCC diagnostic pop
+ }
+ 
+ static DEVICE_ATTR(runtime_status, 0444, rtpm_status_show, NULL);
+diff --git a/drivers/block/aoe/aoechr.c b/drivers/block/aoe/aoechr.c
+index ab41be625a53..ece88bcd2e00 100644
+--- a/drivers/block/aoe/aoechr.c
++++ b/drivers/block/aoe/aoechr.c
+@@ -299,10 +299,14 @@ aoechr_init(void)
+ 	}
+ 	aoe_class->devnode = aoe_devnode;
+ 
+-	for (i = 0; i < ARRAY_SIZE(chardevs); ++i)
++	for (i = 0; i < ARRAY_SIZE(chardevs); ++i) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		device_create(aoe_class, NULL,
+ 			      MKDEV(AOE_MAJOR, chardevs[i].minor), NULL,
+ 			      chardevs[i].name);
++#pragma GCC diagnostic pop
++	}
+ 
+ 	return 0;
+ }
+diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
+index 1b257ea9776a..19c25055e8f2 100644
+--- a/drivers/cdrom/cdrom.c
++++ b/drivers/cdrom/cdrom.c
+@@ -3431,7 +3431,10 @@ static int cdrom_print_info(const char *header, int val, char *info,
+ 	struct cdrom_device_info *cdi;
+ 	int ret;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	ret = scnprintf(info + *pos, max_size - *pos, header);
++#pragma GCC diagnostic pop
+ 	if (!ret)
+ 		return 1;
+ 
+diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+index 4f6f94c43412..0d67b9af232a 100644
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -862,8 +862,11 @@ static int __init chr_dev_init(void)
+ 		if ((minor == DEVPORT_MINOR) && !arch_has_dev_port())
+ 			continue;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		device_create(mem_class, NULL, MKDEV(MEM_MAJOR, minor),
+ 			      NULL, devlist[minor].name);
++#pragma GCC diagnostic pop
+ 	}
+ 
+ 	return tty_init();
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index 0b5bf135b090..97214761604c 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -1184,7 +1184,10 @@ static void __request_acpi_cpufreq(void)
+ 
+  request:
+ 	pr_warn("This CPU is not supported anymore, using acpi-cpufreq instead.\n");
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(drv);
++#pragma GCC diagnostic pop
+ }
+ 
+ /* driver entry point for init */
+diff --git a/drivers/gpu/drm/ttm/ttm_memory.c b/drivers/gpu/drm/ttm/ttm_memory.c
+index a1803fbcc898..ce15c4be5eca 100644
+--- a/drivers/gpu/drm/ttm/ttm_memory.c
++++ b/drivers/gpu/drm/ttm/ttm_memory.c
+@@ -263,8 +263,11 @@ static int ttm_mem_init_kernel_zone(struct ttm_mem_global *glob,
+ 	zone->used_mem = 0;
+ 	zone->glob = glob;
+ 	glob->zone_kernel = zone;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	ret = kobject_init_and_add(
+ 		&zone->kobj, &ttm_mem_zone_kobj_type, &glob->kobj, zone->name);
++#pragma GCC diagnostic pop
+ 	if (unlikely(ret != 0)) {
+ 		kobject_put(&zone->kobj);
+ 		return ret;
+@@ -347,8 +350,11 @@ static int ttm_mem_init_dma32_zone(struct ttm_mem_global *glob,
+ 	zone->used_mem = 0;
+ 	zone->glob = glob;
+ 	glob->zone_dma32 = zone;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	ret = kobject_init_and_add(
+ 		&zone->kobj, &ttm_mem_zone_kobj_type, &glob->kobj, zone->name);
++#pragma GCC diagnostic pop
+ 	if (unlikely(ret != 0)) {
+ 		kobject_put(&zone->kobj);
+ 		return ret;
+diff --git a/drivers/infiniband/hw/qib/qib_file_ops.c b/drivers/infiniband/hw/qib/qib_file_ops.c
+index e449e394963f..fd7bb2ceb6d5 100644
+--- a/drivers/infiniband/hw/qib/qib_file_ops.c
++++ b/drivers/infiniband/hw/qib/qib_file_ops.c
+@@ -2288,7 +2288,11 @@ int qib_cdev_init(int minor, const char *name,
+ 
+ 	cdev->owner = THIS_MODULE;
+ 	cdev->ops = fops;
++/* All callers use semi-constants strings for name */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	kobject_set_name(&cdev->kobj, name);
++#pragma GCC diagnostic pop
+ 
+ 	ret = cdev_add(cdev, dev, 1);
+ 	if (ret < 0) {
+diff --git a/drivers/input/tablet/aiptek.c b/drivers/input/tablet/aiptek.c
+index 78ca44840d60..f9142e1ea89e 100644
+--- a/drivers/input/tablet/aiptek.c
++++ b/drivers/input/tablet/aiptek.c
+@@ -1372,7 +1372,10 @@ static ssize_t show_tabletDiagnosticMessage(struct device *dev, struct device_at
+ 	default:
+ 		return 0;
+ 	}
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	return snprintf(buf, PAGE_SIZE, retMsg);
++#pragma GCC diagnostic pop
+ }
+ 
+ static DEVICE_ATTR(diagnostic, S_IRUGO, show_tabletDiagnosticMessage, NULL);
+diff --git a/drivers/iommu/irq_remapping.c b/drivers/iommu/irq_remapping.c
+index 8adaaeae3268..cf0cc9a643fa 100644
+--- a/drivers/iommu/irq_remapping.c
++++ b/drivers/iommu/irq_remapping.c
+@@ -153,7 +153,10 @@ int __init irq_remap_enable_fault_handling(void)
+ void panic_if_irq_remap(const char *msg)
+ {
+ 	if (irq_remapping_enabled)
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		panic(msg);
++#pragma GCC diagnostic pop
+ }
+ 
+ void ir_ack_apic_edge(struct irq_data *data)
+diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.c
+index bf04d2a3cf4a..896ab91a2d01 100644
+--- a/drivers/isdn/hisax/config.c
++++ b/drivers/isdn/hisax/config.c
+@@ -1896,7 +1896,10 @@ static void EChannel_proc_rcv(struct hisax_d_if *d_if)
+ 				ptr--;
+ 				*ptr++ = '\n';
+ 				*ptr = 0;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 				HiSax_putstatus(cs, NULL, cs->dlog);
++#pragma GCC diagnostic pop
+ 			} else
+ 				HiSax_putstatus(cs, "LogEcho: ",
+ 						"warning Frame too big (%d)",
+diff --git a/drivers/isdn/hisax/hfc_pci.c b/drivers/isdn/hisax/hfc_pci.c
+index 90449e1e91e5..1fd599003780 100644
+--- a/drivers/isdn/hisax/hfc_pci.c
++++ b/drivers/isdn/hisax/hfc_pci.c
+@@ -901,7 +901,10 @@ Begin:
+ 					ptr--;
+ 					*ptr++ = '\n';
+ 					*ptr = 0;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 					HiSax_putstatus(cs, NULL, cs->dlog);
++#pragma GCC diagnostic pop
+ 				} else
+ 					HiSax_putstatus(cs, "LogEcho: ", "warning Frame too big (%d)", total - 3);
+ 			}
+diff --git a/drivers/isdn/hisax/hfc_sx.c b/drivers/isdn/hisax/hfc_sx.c
+index 13b2151c10f5..881dccab1315 100644
+--- a/drivers/isdn/hisax/hfc_sx.c
++++ b/drivers/isdn/hisax/hfc_sx.c
+@@ -674,7 +674,10 @@ receive_emsg(struct IsdnCardState *cs)
+ 					ptr--;
+ 					*ptr++ = '\n';
+ 					*ptr = 0;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 					HiSax_putstatus(cs, NULL, cs->dlog);
++#pragma GCC diagnostic pop
+ 				} else
+ 					HiSax_putstatus(cs, "LogEcho: ", "warning Frame too big (%d)", skb->len);
+ 			}
+diff --git a/drivers/isdn/hisax/q931.c b/drivers/isdn/hisax/q931.c
+index ba4beb25d872..17f7136033e6 100644
+--- a/drivers/isdn/hisax/q931.c
++++ b/drivers/isdn/hisax/q931.c
+@@ -1179,7 +1179,10 @@ LogFrame(struct IsdnCardState *cs, u_char *buf, int size)
+ 		dp--;
+ 		*dp++ = '\n';
+ 		*dp = 0;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		HiSax_putstatus(cs, NULL, cs->dlog);
++#pragma GCC diagnostic pop
+ 	} else
+ 		HiSax_putstatus(cs, "LogFrame: ", "warning Frame too big (%d)", size);
+ }
+@@ -1246,7 +1249,10 @@ dlogframe(struct IsdnCardState *cs, struct sk_buff *skb, int dir)
+ 	}
+ 	if (finish) {
+ 		*dp = 0;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		HiSax_putstatus(cs, NULL, cs->dlog);
++#pragma GCC diagnostic pop
+ 		return;
+ 	}
+ 	if ((0xfe & buf[0]) == PROTO_DIS_N0) {	/* 1TR6 */
+@@ -1509,5 +1515,8 @@ dlogframe(struct IsdnCardState *cs, struct sk_buff *skb, int dir)
+ 		dp += sprintf(dp, "Unknown protocol %x!", buf[0]);
+ 	}
+ 	*dp = 0;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	HiSax_putstatus(cs, NULL, cs->dlog);
++#pragma GCC diagnostic pop
+ }
+diff --git a/drivers/md/bcache/util.h b/drivers/md/bcache/util.h
+index eedfe339d057..bc829c233126 100644
+--- a/drivers/md/bcache/util.h
++++ b/drivers/md/bcache/util.h
+@@ -348,6 +348,27 @@ static inline int bch_strtoul_h(const char *cp, long *res)
+ 	_r;								\
+ })
+ 
++#ifdef __clang__
++#define snprint(buf, size, var)						\
++_Pragma("GCC diagnostic push") \
++_Pragma("GCC diagnostic ignored \"-Wformat\"") \
++	snprintf(buf, size,						\
++		__builtin_types_compatible_p(typeof(var), int)		\
++		     ? "%i\n" :						\
++		__builtin_types_compatible_p(typeof(var), unsigned)	\
++		     ? "%u\n" :						\
++		__builtin_types_compatible_p(typeof(var), long)		\
++		     ? "%li\n" :					\
++		__builtin_types_compatible_p(typeof(var), unsigned long)\
++		     ? "%lu\n" :					\
++		__builtin_types_compatible_p(typeof(var), int64_t)	\
++		     ? "%lli\n" :					\
++		__builtin_types_compatible_p(typeof(var), uint64_t)	\
++		     ? "%llu\n" :					\
++		__builtin_types_compatible_p(typeof(var), const char *)	\
++		     ? "%s\n" : "%i\n", var) \
++_Pragma("GCC diagnostic pop")
++#else
+ #define snprint(buf, size, var)						\
+ 	snprintf(buf, size,						\
+ 		__builtin_types_compatible_p(typeof(var), int)		\
+@@ -364,6 +385,7 @@ static inline int bch_strtoul_h(const char *cp, long *res)
+ 		     ? "%llu\n" :					\
+ 		__builtin_types_compatible_p(typeof(var), const char *)	\
+ 		     ? "%s\n" : "%i\n", var)
++#endif
+ 
+ ssize_t bch_hprint(char *buf, int64_t v);
+ 
+diff --git a/drivers/media/pci/cx23885/cx23885-dvb.c b/drivers/media/pci/cx23885/cx23885-dvb.c
+index 80319bb73d94..496deb372189 100644
+--- a/drivers/media/pci/cx23885/cx23885-dvb.c
++++ b/drivers/media/pci/cx23885/cx23885-dvb.c
+@@ -1150,7 +1150,10 @@ static int dvb_register_ci_mac(struct cx23885_tsport *port)
+ 		strlcpy(info.type, "sp2", I2C_NAME_SIZE);
+ 		info.addr = 0x40;
+ 		info.platform_data = &sp2_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(info.type);
++#pragma GCC diagnostic pop
+ 		client_ci = i2c_new_device(&i2c_bus2->i2c_adap, &info);
+ 		if (client_ci == NULL || client_ci->dev.driver == NULL)
+ 			return -ENODEV;
+@@ -1916,7 +1919,10 @@ static int dvb_register(struct cx23885_tsport *port)
+ 			strlcpy(info.type, "ts2020", I2C_NAME_SIZE);
+ 			info.addr = 0x60;
+ 			info.platform_data = &ts2020_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client_tuner = i2c_new_device(adapter, &info);
+ 			if (client_tuner == NULL ||
+ 					client_tuner->dev.driver == NULL)
+@@ -1953,7 +1959,10 @@ static int dvb_register(struct cx23885_tsport *port)
+ 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
+ 			info.addr = 0x64;
+ 			info.platform_data = &si2168_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client_demod = i2c_new_device(&i2c_bus->i2c_adap, &info);
+ 			if (client_demod == NULL ||
+ 					client_demod->dev.driver == NULL)
+@@ -1972,7 +1981,10 @@ static int dvb_register(struct cx23885_tsport *port)
+ 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
+ 			info.addr = 0x60;
+ 			info.platform_data = &si2157_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client_tuner = i2c_new_device(adapter, &info);
+ 			if (client_tuner == NULL ||
+ 					client_tuner->dev.driver == NULL)
+@@ -2000,7 +2012,10 @@ static int dvb_register(struct cx23885_tsport *port)
+ 		strlcpy(info.type, "si2168", I2C_NAME_SIZE);
+ 		info.addr = 0x64;
+ 		info.platform_data = &si2168_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(info.type);
++#pragma GCC diagnostic pop
+ 		client_demod = i2c_new_device(&i2c_bus->i2c_adap, &info);
+ 		if (client_demod == NULL || client_demod->dev.driver == NULL)
+ 			goto frontend_detach;
+@@ -2018,7 +2033,10 @@ static int dvb_register(struct cx23885_tsport *port)
+ 		strlcpy(info.type, "si2157", I2C_NAME_SIZE);
+ 		info.addr = 0x60;
+ 		info.platform_data = &si2157_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(info.type);
++#pragma GCC diagnostic pop
+ 		client_tuner = i2c_new_device(adapter, &info);
+ 		if (client_tuner == NULL ||
+ 				client_tuner->dev.driver == NULL)
+@@ -2048,7 +2066,10 @@ static int dvb_register(struct cx23885_tsport *port)
+ 		strlcpy(info.type, "ts2020", I2C_NAME_SIZE);
+ 		info.addr = 0x60;
+ 		info.platform_data = &ts2020_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(info.type);
++#pragma GCC diagnostic pop
+ 		client_tuner = i2c_new_device(adapter, &info);
+ 		if (client_tuner == NULL || client_tuner->dev.driver == NULL)
+ 			goto frontend_detach;
+@@ -2094,7 +2115,10 @@ static int dvb_register(struct cx23885_tsport *port)
+ 		strlcpy(info.type, "ts2020", I2C_NAME_SIZE);
+ 		info.addr = 0x60;
+ 		info.platform_data = &ts2020_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(info.type);
++#pragma GCC diagnostic pop
+ 		client_tuner = i2c_new_device(adapter, &info);
+ 		if (client_tuner == NULL || client_tuner->dev.driver == NULL)
+ 			goto frontend_detach;
+@@ -2139,7 +2163,10 @@ static int dvb_register(struct cx23885_tsport *port)
+ 		strlcpy(info.type, "si2168", I2C_NAME_SIZE);
+ 		info.addr = 0x64;
+ 		info.platform_data = &si2168_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(info.type);
++#pragma GCC diagnostic pop
+ 		client_demod = i2c_new_device(&i2c_bus->i2c_adap, &info);
+ 		if (client_demod == NULL || client_demod->dev.driver == NULL)
+ 			goto frontend_detach;
+@@ -2157,7 +2184,10 @@ static int dvb_register(struct cx23885_tsport *port)
+ 		strlcpy(info.type, "si2157", I2C_NAME_SIZE);
+ 		info.addr = 0x60;
+ 		info.platform_data = &si2157_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(info.type);
++#pragma GCC diagnostic pop
+ 		client_tuner = i2c_new_device(adapter, &info);
+ 		if (client_tuner == NULL ||
+ 				client_tuner->dev.driver == NULL)
+diff --git a/drivers/media/pci/netup_unidvb/netup_unidvb_core.c b/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
+index 525ebfefeee8..dad86a15936f 100644
+--- a/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
++++ b/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
+@@ -736,7 +736,11 @@ static int netup_unidvb_request_modules(struct device *dev)
+ 	int err;
+ 
+ 	while (*curr_mod != NULL) {
++/* The strings come from the array above */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		err = request_module(*curr_mod);
++#pragma GCC diagnostic pop
+ 		if (err) {
+ 			dev_warn(dev, "request_module(%s) failed: %d\n",
+ 				*curr_mod, err);
+diff --git a/drivers/media/pci/saa7164/saa7164-dvb.c b/drivers/media/pci/saa7164/saa7164-dvb.c
+index e9a783b71b45..15e56cb8704e 100644
+--- a/drivers/media/pci/saa7164/saa7164-dvb.c
++++ b/drivers/media/pci/saa7164/saa7164-dvb.c
+@@ -128,7 +128,10 @@ static int si2157_attach(struct saa7164_port *port, struct i2c_adapter *adapter,
+ 	bi.platform_data = cfg;
+ 	bi.addr = addr8bit >> 1;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(bi.type);
++#pragma GCC diagnostic pop
+ 
+ 	tuner = i2c_new_device(adapter, &bi);
+ 	if (tuner == NULL || tuner->dev.driver == NULL)
+@@ -652,7 +655,10 @@ int saa7164_dvb_register(struct saa7164_port *port)
+ 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
+ 			info.addr = 0xc8 >> 1;
+ 			info.platform_data = &si2168_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client_demod = i2c_new_device(&dev->i2c_bus[2].i2c_adap,
+ 						      &info);
+ 			if (!client_demod || !client_demod->dev.driver)
+@@ -672,7 +678,10 @@ int saa7164_dvb_register(struct saa7164_port *port)
+ 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
+ 			info.addr = 0xc0 >> 1;
+ 			info.platform_data = &si2157_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client_tuner = i2c_new_device(&dev->i2c_bus[0].i2c_adap,
+ 						      &info);
+ 			if (!client_tuner || !client_tuner->dev.driver) {
+@@ -697,7 +706,10 @@ int saa7164_dvb_register(struct saa7164_port *port)
+ 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
+ 			info.addr = 0xcc >> 1;
+ 			info.platform_data = &si2168_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client_demod = i2c_new_device(&dev->i2c_bus[2].i2c_adap,
+ 						      &info);
+ 			if (!client_demod || !client_demod->dev.driver)
+@@ -717,7 +729,10 @@ int saa7164_dvb_register(struct saa7164_port *port)
+ 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
+ 			info.addr = 0xc0 >> 1;
+ 			info.platform_data = &si2157_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client_tuner = i2c_new_device(&dev->i2c_bus[1].i2c_adap,
+ 						      &info);
+ 			if (!client_tuner || !client_tuner->dev.driver) {
+diff --git a/drivers/media/pci/smipcie/smipcie-main.c b/drivers/media/pci/smipcie/smipcie-main.c
+index b039a229b7d2..df7352826c80 100644
+--- a/drivers/media/pci/smipcie/smipcie-main.c
++++ b/drivers/media/pci/smipcie/smipcie-main.c
+@@ -492,7 +492,10 @@ static struct i2c_client *smi_add_i2c_client(struct i2c_adapter *adapter,
+ {
+ 	struct i2c_client *client;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(info->type);
++#pragma GCC diagnostic pop
+ 	client = i2c_new_device(adapter, info);
+ 	if (client == NULL || client->dev.driver == NULL)
+ 		goto err_add_i2c_client;
+diff --git a/drivers/media/pci/zoran/zoran_card.c b/drivers/media/pci/zoran/zoran_card.c
+index 9d2697f5b455..9827b8de16ef 100644
+--- a/drivers/media/pci/zoran/zoran_card.c
++++ b/drivers/media/pci/zoran/zoran_card.c
+@@ -1356,7 +1356,11 @@ static int zoran_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (zr->card.video_codec) {
+ 		codec_name = codecid_to_modulename(zr->card.video_codec);
+ 		if (codec_name) {
++/* codec_name is a constant string */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			result = request_module(codec_name);
++#pragma GCC diagnostic pop
+ 			if (result) {
+ 				dprintk(1,
+ 					KERN_ERR
+@@ -1368,7 +1372,11 @@ static int zoran_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (zr->card.video_vfe) {
+ 		vfe_name = codecid_to_modulename(zr->card.video_vfe);
+ 		if (vfe_name) {
++/* codec_name is a constant string */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			result = request_module(vfe_name);
++#pragma GCC diagnostic pop
+ 			if (result < 0) {
+ 				dprintk(1,
+ 					KERN_ERR
+diff --git a/drivers/media/platform/s5p-tv/mixer_drv.c b/drivers/media/platform/s5p-tv/mixer_drv.c
+index 5ef67774971d..7e570f4bb18a 100644
+--- a/drivers/media/platform/s5p-tv/mixer_drv.c
++++ b/drivers/media/platform/s5p-tv/mixer_drv.c
+@@ -507,8 +507,12 @@ static int __init mxr_init(void)
+ 	pr_info("%s\n", banner);
+ 
+ 	/* Loading auxiliary modules */
+-	for (i = 0; i < ARRAY_SIZE(mxr_output_conf); ++i)
++	for (i = 0; i < ARRAY_SIZE(mxr_output_conf); ++i) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(mxr_output_conf[i].module_name);
++#pragma GCC diagnostic pop
++	}
+ 
+ 	ret = platform_driver_register(&mxr_driver);
+ 	if (ret != 0) {
+diff --git a/drivers/media/usb/dvb-usb-v2/dvbsky.c b/drivers/media/usb/dvb-usb-v2/dvbsky.c
+index 1dd962535f97..a2bd8935d8d3 100644
+--- a/drivers/media/usb/dvb-usb-v2/dvbsky.c
++++ b/drivers/media/usb/dvb-usb-v2/dvbsky.c
+@@ -541,7 +541,10 @@ static int dvbsky_t680c_attach(struct dvb_usb_adapter *adap)
+ 	info.addr = 0x64;
+ 	info.platform_data = &si2168_config;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(info.type);
++#pragma GCC diagnostic pop
+ 	client_demod = i2c_new_device(&d->i2c_adap, &info);
+ 	if (client_demod == NULL ||
+ 			client_demod->dev.driver == NULL)
+@@ -558,7 +561,10 @@ static int dvbsky_t680c_attach(struct dvb_usb_adapter *adap)
+ 	info.addr = 0x60;
+ 	info.platform_data = &si2157_config;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(info.type);
++#pragma GCC diagnostic pop
+ 	client_tuner = i2c_new_device(i2c_adapter, &info);
+ 	if (client_tuner == NULL ||
+ 			client_tuner->dev.driver == NULL)
+@@ -576,7 +582,10 @@ static int dvbsky_t680c_attach(struct dvb_usb_adapter *adap)
+ 	info.addr = 0x40;
+ 	info.platform_data = &sp2_config;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(info.type);
++#pragma GCC diagnostic pop
+ 	client_ci = i2c_new_device(&d->i2c_adap, &info);
+ 
+ 	if (client_ci == NULL || client_ci->dev.driver == NULL)
+@@ -626,7 +635,10 @@ static int dvbsky_t330_attach(struct dvb_usb_adapter *adap)
+ 	info.addr = 0x64;
+ 	info.platform_data = &si2168_config;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(info.type);
++#pragma GCC diagnostic pop
+ 	client_demod = i2c_new_device(&d->i2c_adap, &info);
+ 	if (client_demod == NULL ||
+ 			client_demod->dev.driver == NULL)
+@@ -643,7 +655,10 @@ static int dvbsky_t330_attach(struct dvb_usb_adapter *adap)
+ 	info.addr = 0x60;
+ 	info.platform_data = &si2157_config;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(info.type);
++#pragma GCC diagnostic pop
+ 	client_tuner = i2c_new_device(i2c_adapter, &info);
+ 	if (client_tuner == NULL ||
+ 			client_tuner->dev.driver == NULL)
+diff --git a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
+index eb5787a3191e..0d4f0ba1e474 100644
+--- a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
++++ b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
+@@ -945,7 +945,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
+ 			mn88472_config.ts_clock = VARIABLE_TS_CLOCK;
+ 			info.addr = 0x18;
+ 			info.platform_data = &mn88472_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(&d->i2c_adap, &info);
+ 			if (client == NULL || client->dev.driver == NULL) {
+ 				dev->slave_demod = SLAVE_DEMOD_NONE;
+@@ -967,7 +970,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
+ 			strlcpy(info.type, "mn88473", I2C_NAME_SIZE);
+ 			info.addr = 0x18;
+ 			info.platform_data = &mn88473_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(&d->i2c_adap, &info);
+ 			if (client == NULL || client->dev.driver == NULL) {
+ 				dev->slave_demod = SLAVE_DEMOD_NONE;
+@@ -993,7 +999,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
+ 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
+ 			info.addr = 0x64;
+ 			info.platform_data = &si2168_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(&d->i2c_adap, &info);
+ 			if (client == NULL || client->dev.driver == NULL) {
+ 				dev->slave_demod = SLAVE_DEMOD_NONE;
+@@ -1185,7 +1194,10 @@ static int rtl2832u_tuner_attach(struct dvb_usb_adapter *adap)
+ 			info.addr = 0x64;
+ 			info.platform_data = &e4000_config;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(dev->demod_i2c_adapter, &info);
+ 			if (client == NULL || client->dev.driver == NULL)
+ 				break;
+@@ -1284,7 +1296,10 @@ static int rtl2832u_tuner_attach(struct dvb_usb_adapter *adap)
+ 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
+ 			info.addr = 0x60;
+ 			info.platform_data = &si2157_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(&d->i2c_adap, &info);
+ 			if (client == NULL || client->dev.driver == NULL)
+ 				break;
+diff --git a/drivers/media/usb/dvb-usb/cxusb.c b/drivers/media/usb/dvb-usb/cxusb.c
+index ab7151181728..646ea675e942 100644
+--- a/drivers/media/usb/dvb-usb/cxusb.c
++++ b/drivers/media/usb/dvb-usb/cxusb.c
+@@ -1335,7 +1335,10 @@ static int cxusb_mygica_t230_frontend_attach(struct dvb_usb_adapter *adap)
+ 	strlcpy(info.type, "si2168", I2C_NAME_SIZE);
+ 	info.addr = 0x64;
+ 	info.platform_data = &si2168_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(info.type);
++#pragma GCC diagnostic pop
+ 	client_demod = i2c_new_device(&d->i2c_adap, &info);
+ 	if (client_demod == NULL || client_demod->dev.driver == NULL)
+ 		return -ENODEV;
+@@ -1355,7 +1358,10 @@ static int cxusb_mygica_t230_frontend_attach(struct dvb_usb_adapter *adap)
+ 	strlcpy(info.type, "si2157", I2C_NAME_SIZE);
+ 	info.addr = 0x60;
+ 	info.platform_data = &si2157_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(info.type);
++#pragma GCC diagnostic pop
+ 	client_tuner = i2c_new_device(adapter, &info);
+ 	if (client_tuner == NULL || client_tuner->dev.driver == NULL) {
+ 		module_put(client_demod->dev.driver->owner);
+diff --git a/drivers/media/usb/em28xx/em28xx-dvb.c b/drivers/media/usb/em28xx/em28xx-dvb.c
+index bf5c24467c65..bc74d1f043a2 100644
+--- a/drivers/media/usb/em28xx/em28xx-dvb.c
++++ b/drivers/media/usb/em28xx/em28xx-dvb.c
+@@ -1637,7 +1637,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+ 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
+ 			info.addr = 0x64;
+ 			info.platform_data = &si2168_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
+ 			if (client == NULL || client->dev.driver == NULL) {
+ 				result = -ENODEV;
+@@ -1660,7 +1663,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+ 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
+ 			info.addr = 0x60;
+ 			info.platform_data = &si2157_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(adapter, &info);
+ 			if (client == NULL || client->dev.driver == NULL) {
+ 				module_put(dvb->i2c_client_demod->dev.driver->owner);
+@@ -1698,7 +1704,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+ 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
+ 			info.addr = 0x64;
+ 			info.platform_data = &si2168_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
+ 			if (client == NULL || client->dev.driver == NULL) {
+ 				result = -ENODEV;
+diff --git a/drivers/media/usb/pvrusb2/pvrusb2-std.c b/drivers/media/usb/pvrusb2/pvrusb2-std.c
+index 9a596a3a4c27..a875b5298a6c 100644
+--- a/drivers/media/usb/pvrusb2/pvrusb2-std.c
++++ b/drivers/media/usb/pvrusb2/pvrusb2-std.c
+@@ -215,8 +215,12 @@ unsigned int pvr2_std_id_to_str(char *bufPtr, unsigned int bufSize,
+ 			c1 += c2;
+ 			bufSize -= c2;
+ 			bufPtr += c2;
++/* ip->name are constants strings from the top of this file */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			c2 = scnprintf(bufPtr,bufSize,
+ 				       ip->name);
++#pragma GCC diagnostic pop
+ 			c1 += c2;
+ 			bufSize -= c2;
+ 			bufPtr += c2;
+diff --git a/drivers/media/v4l2-core/v4l2-common.c b/drivers/media/v4l2-core/v4l2-common.c
+index 5b808500e7e7..52ee6eed1d4a 100644
+--- a/drivers/media/v4l2-core/v4l2-common.c
++++ b/drivers/media/v4l2-core/v4l2-common.c
+@@ -268,7 +268,10 @@ struct v4l2_subdev *v4l2_spi_new_subdev(struct v4l2_device *v4l2_dev,
+ 	BUG_ON(!v4l2_dev);
+ 
+ 	if (info->modalias[0])
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(info->modalias);
++#pragma GCC diagnostic pop
+ 
+ 	spi = spi_new_device(master, info);
+ 
+diff --git a/drivers/misc/mic/scif/scif_main.c b/drivers/misc/mic/scif/scif_main.c
+index 36d847af1209..3ac4dac56cca 100644
+--- a/drivers/misc/mic/scif/scif_main.c
++++ b/drivers/misc/mic/scif/scif_main.c
+@@ -54,8 +54,11 @@ int scif_setup_intr_wq(struct scif_dev *scifdev)
+ 	if (!scifdev->intr_wq) {
+ 		snprintf(scifdev->intr_wqname, sizeof(scifdev->intr_wqname),
+ 			 "SCIF INTR %d", scifdev->node);
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		scifdev->intr_wq =
+ 			alloc_ordered_workqueue(scifdev->intr_wqname, 0);
++#pragma GCC diagnostic pop
+ 		if (!scifdev->intr_wq)
+ 			return -ENOMEM;
+ 		INIT_WORK(&scifdev->intr_bh, scif_intr_bh_handler);
+diff --git a/drivers/misc/mic/scif/scif_nodeqp.c b/drivers/misc/mic/scif/scif_nodeqp.c
+index c66ca1a5814e..845819ce0b0e 100644
+--- a/drivers/misc/mic/scif/scif_nodeqp.c
++++ b/drivers/misc/mic/scif/scif_nodeqp.c
+@@ -1234,8 +1234,11 @@ int scif_setup_loopback_qp(struct scif_dev *scifdev)
+ 	INIT_LIST_HEAD(&scif_info.loopb_recv_q);
+ 	snprintf(scif_info.loopb_wqname, sizeof(scif_info.loopb_wqname),
+ 		 "SCIF LOOPB %d", scifdev->node);
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	scif_info.loopb_wq =
+ 		alloc_ordered_workqueue(scif_info.loopb_wqname, 0);
++#pragma GCC diagnostic pop
+ 	if (!scif_info.loopb_wq) {
+ 		err = -ENOMEM;
+ 		goto destroy_intr;
+diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
+index b8517b00e706..b52f79532b17 100644
+--- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
++++ b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
+@@ -641,7 +641,11 @@ static void hns_gmac_get_strings(u32 stringset, u8 *data)
+ 		return;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(g_gmac_stats_string); i++) {
++/* g_gmac_stats_string is a constant array */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		snprintf(buff, ETH_GSTRING_LEN, g_gmac_stats_string[i].desc);
++#pragma GCC diagnostic pop
+ 		buff = buff + ETH_GSTRING_LEN;
+ 	}
+ }
+diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
+index 802d55457f19..e0ea3afc7c04 100644
+--- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
++++ b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
+@@ -764,7 +764,11 @@ static void hns_xgmac_get_strings(u32 stringset, u8 *data)
+ 		return;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(g_xgmac_stats_string); i++) {
++/* g_xgmac_stats_string is a constant array */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		snprintf(buff, ETH_GSTRING_LEN, g_xgmac_stats_string[i].desc);
++#pragma GCC diagnostic pop
+ 		buff = buff + ETH_GSTRING_LEN;
+ 	}
+ }
+diff --git a/drivers/net/fddi/defxx.c b/drivers/net/fddi/defxx.c
+index b0de8ecd7fe8..3359e4b12819 100644
+--- a/drivers/net/fddi/defxx.c
++++ b/drivers/net/fddi/defxx.c
+@@ -541,7 +541,10 @@ static int dfx_register(struct device *bdev)
+ 
+ 	if (!version_disp) {	/* display version info if adapter is found */
+ 		version_disp = 1;	/* set display flag to TRUE so that */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		printk(version);	/* we only display this string ONCE */
++#pragma GCC diagnostic pop
+ 	}
+ 
+ 	dev = alloc_fddidev(sizeof(*bp));
+diff --git a/drivers/net/hippi/rrunner.c b/drivers/net/hippi/rrunner.c
+index 95c0b45a68fb..24ff9dd346a1 100644
+--- a/drivers/net/hippi/rrunner.c
++++ b/drivers/net/hippi/rrunner.c
+@@ -128,7 +128,10 @@ static int rr_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		/* set display flag to TRUE so that */
+ 		/* we only display this string ONCE */
+ 		version_disp = 1;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		printk(version);
++#pragma GCC diagnostic pop
+ 	}
+ 
+ 	pci_read_config_byte(pdev, PCI_LATENCY_TIMER, &pci_latency);
+diff --git a/drivers/net/wireless/intel/ipw2x00/libipw_wx.c b/drivers/net/wireless/intel/ipw2x00/libipw_wx.c
+index dd29f46d086b..295d0238acf4 100644
+--- a/drivers/net/wireless/intel/ipw2x00/libipw_wx.c
++++ b/drivers/net/wireless/intel/ipw2x00/libipw_wx.c
+@@ -602,7 +602,10 @@ int libipw_wx_set_encodeext(struct libipw_device *ieee,
+ 
+ 	ops = lib80211_get_crypto_ops(alg);
+ 	if (ops == NULL) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(module);
++#pragma GCC diagnostic pop
+ 		ops = lib80211_get_crypto_ops(alg);
+ 	}
+ 	if (ops == NULL) {
+diff --git a/drivers/net/wireless/intersil/hostap/hostap_ioctl.c b/drivers/net/wireless/intersil/hostap/hostap_ioctl.c
+index 3e5fa7872b64..761df95f5476 100644
+--- a/drivers/net/wireless/intersil/hostap/hostap_ioctl.c
++++ b/drivers/net/wireless/intersil/hostap/hostap_ioctl.c
+@@ -3272,7 +3272,10 @@ static int prism2_ioctl_siwencodeext(struct net_device *dev,
+ 
+ 	ops = lib80211_get_crypto_ops(alg);
+ 	if (ops == NULL) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(module);
++#pragma GCC diagnostic pop
+ 		ops = lib80211_get_crypto_ops(alg);
+ 	}
+ 	if (ops == NULL) {
+diff --git a/drivers/parport/share.c b/drivers/parport/share.c
+index 3308427ed9f7..5c5dead343ec 100644
+--- a/drivers/parport/share.c
++++ b/drivers/parport/share.c
+@@ -493,7 +493,10 @@ struct parport *parport_register_port(unsigned long base, int irq, int dma,
+ 	tmp->name = name;
+ 	tmp->bus_dev.bus = &parport_bus_type;
+ 	tmp->bus_dev.release = free_port;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	dev_set_name(&tmp->bus_dev, name);
++#pragma GCC diagnostic pop
+ 	tmp->bus_dev.type = &parport_device_type;
+ 
+ 	for (device = 0; device < 5; device++)
+diff --git a/drivers/pnp/interface.c b/drivers/pnp/interface.c
+index 1f3c155771b9..5858a37d45fc 100644
+--- a/drivers/pnp/interface.c
++++ b/drivers/pnp/interface.c
+@@ -268,7 +268,11 @@ static ssize_t resources_show(struct device *dmdev,
+ 	list_for_each_entry(pnp_res, &dev->resources, list) {
+ 		res = &pnp_res->res;
+ 
++/* pnp_resource_type_name returns constant strings */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		pnp_printf(buffer, pnp_resource_type_name(res));
++#pragma GCC diagnostic pop
+ 
+ 		if (res->flags & IORESOURCE_DISABLED) {
+ 			pnp_printf(buffer, " disabled\n");
+diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
+index 208be5fc527a..64ac71fdfb04 100644
+--- a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
++++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
+@@ -593,7 +593,10 @@ int ieee80211_wx_set_encode_ext(struct ieee80211_device *ieee,
+ 
+ 	 ops = ieee80211_get_crypto_ops(alg);
+ 	if (ops == NULL) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		request_module(module);
++#pragma GCC diagnostic pop
+ 		ops = ieee80211_get_crypto_ops(alg);
+ 	}
+ 	if (ops == NULL) {
+diff --git a/drivers/staging/speakup/kobjects.c b/drivers/staging/speakup/kobjects.c
+index fdfeb42b2b8f..be454b49aea1 100644
+--- a/drivers/staging/speakup/kobjects.c
++++ b/drivers/staging/speakup/kobjects.c
+@@ -98,7 +98,10 @@ static void report_char_chartab_status(int reset, int received, int used,
+ 			snprintf(buf + (len - 1), sizeof(buf) - (len - 1),
+ 				 " with %d reject%s\n",
+ 				 rejected, rejected > 1 ? "s" : "");
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		printk(buf);
++#pragma GCC diagnostic pop
+ 	}
+ }
+ 
+@@ -735,7 +738,10 @@ static void report_msg_status(int reset, int received, int used,
+ 			snprintf(buf + (len - 1), sizeof(buf) - (len - 1),
+ 				 " with %d reject%s\n",
+ 				 rejected, rejected > 1 ? "s" : "");
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		printk(buf);
++#pragma GCC diagnostic pop
+ 	}
+ }
+ 
+diff --git a/drivers/staging/unisys/visorhba/visorhba_main.c b/drivers/staging/unisys/visorhba/visorhba_main.c
+index d5178b44ba8c..5d44b802ae23 100644
+--- a/drivers/staging/unisys/visorhba/visorhba_main.c
++++ b/drivers/staging/unisys/visorhba/visorhba_main.c
+@@ -167,7 +167,11 @@ static int visor_thread_start(struct visor_thread_info *thrinfo,
+ {
+ 	/* used to stop the thread */
+ 	init_completion(&thrinfo->has_stopped);
++/* "name" is always a const string */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	thrinfo->task = kthread_run(threadfn, thrcontext, name);
++#pragma GCC diagnostic pop
+ 	if (IS_ERR(thrinfo->task)) {
+ 		thrinfo->id = 0;
+ 		return PTR_ERR(thrinfo->task);
+diff --git a/drivers/tty/serial/pch_uart.c b/drivers/tty/serial/pch_uart.c
+index ea4ffc2ebb2f..be17b89578c3 100644
+--- a/drivers/tty/serial/pch_uart.c
++++ b/drivers/tty/serial/pch_uart.c
+@@ -1091,7 +1091,10 @@ static void pch_uart_err_ir(struct eg20t_port *priv, unsigned int lsr)
+ 
+ 	if (tty == NULL) {
+ 		for (i = 0; error_msg[i] != NULL; i++)
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			dev_err(&priv->pdev->dev, error_msg[i]);
++#pragma GCC diagnostic pop
+ 	} else {
+ 		tty_kref_put(tty);
+ 	}
+diff --git a/fs/btrfs/check-integrity.c b/fs/btrfs/check-integrity.c
+index 861d472564c1..ab5a2cdf672e 100644
+--- a/fs/btrfs/check-integrity.c
++++ b/fs/btrfs/check-integrity.c
+@@ -2651,7 +2651,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
+ 		printk("[...]\n");
+ 		return;
+ 	}
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	printk(buf);
++#pragma GCC diagnostic pop
+ 	indent_level += indent_add;
+ 	if (list_empty(&block->ref_to_list)) {
+ 		printk("\n");
+@@ -2680,7 +2683,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
+ 			continue;
+ 		}
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		printk(buf);
++#pragma GCC diagnostic pop
+ 
+ 		btrfsic_dump_tree_sub(state, l->block_ref_to,
+ 				      indent_level + indent_add);
+diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
+index 3c3b81bb6dfe..c8e20b4a8edc 100644
+--- a/fs/quota/dquot.c
++++ b/fs/quota/dquot.c
+@@ -198,8 +198,12 @@ static struct quota_format_type *find_quota_format(int id)
+ 		for (qm = 0; module_names[qm].qm_fmt_id &&
+ 			     module_names[qm].qm_fmt_id != id; qm++)
+ 			;
++
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		if (!module_names[qm].qm_fmt_id ||
+ 		    request_module(module_names[qm].qm_mod_name))
++#pragma GCC diagnostic pop
+ 			return NULL;
+ 
+ 		spin_lock(&dq_list_lock);
+diff --git a/fs/reiserfs/prints.c b/fs/reiserfs/prints.c
+index 42d82f436cdd..5ee76629b048 100644
+--- a/fs/reiserfs/prints.c
++++ b/fs/reiserfs/prints.c
+@@ -289,7 +289,7 @@ void reiserfs_info(struct super_block *sb, const char *fmt, ...)
+ static __printf(1, 2) void reiserfs_printk(const char *fmt, ...)
+ {
+ 	do_reiserfs_warning(fmt);
+-	printk(error_buf);
++	printk("%s", error_buf);
+ }
+ 
+ void reiserfs_debug(struct super_block *s, int level, const char *fmt, ...)
+@@ -377,7 +377,7 @@ void __reiserfs_error(struct super_block *sb, const char *id,
+ 	BUG_ON(sb == NULL);
+ 
+ 	if (reiserfs_error_panic(sb))
+-		__reiserfs_panic(sb, id, function, error_buf);
++		__reiserfs_panic(sb, id, function, "%s", error_buf);
+ 
+ 	if (id && id[0])
+ 		printk(KERN_CRIT "REISERFS error (device %s): %s %s: %s\n",
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index f31638c6e873..1adac8c4da1b 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -641,9 +641,12 @@ do {									\
+ 									\
+ 	__trace_printk_check_format(fmt, ##args);			\
+ 									\
+-	if (__builtin_constant_p(fmt))					\
++	if (__builtin_constant_p(fmt)) {					\
++_Pragma("GCC diagnostic push") \
++_Pragma("GCC diagnostic ignored \"-Wformat-security\"") \
+ 		__trace_bprintk(_THIS_IP_, trace_printk_fmt, ##args);	\
+-	else								\
++_Pragma("GCC diagnostic pop") \
++	} else								\
+ 		__trace_printk(_THIS_IP_, fmt, ##args);			\
+ } while (0)
+ 
+diff --git a/kernel/debug/kdb/kdb_io.c b/kernel/debug/kdb/kdb_io.c
+index fc1ef736253c..44b3c95abe6e 100644
+--- a/kernel/debug/kdb/kdb_io.c
++++ b/kernel/debug/kdb/kdb_io.c
+@@ -249,7 +249,10 @@ poll_again:
+ 			kdb_printf("\b%s \r", cp);
+ 			tmp = *cp;
+ 			*cp = '\0';
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			kdb_printf(kdb_prompt_str);
++#pragma GCC diagnostic pop
+ 			kdb_printf("%s", buffer);
+ 			*cp = tmp;
+ 		}
+@@ -271,7 +274,10 @@ poll_again:
+ 			kdb_printf("%s \r", cp);
+ 			tmp = *cp;
+ 			*cp = '\0';
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			kdb_printf(kdb_prompt_str);
++#pragma GCC diagnostic pop
+ 			kdb_printf("%s", buffer);
+ 			*cp = tmp;
+ 		}
+@@ -279,7 +285,10 @@ poll_again:
+ 	case 1: /* Home */
+ 		if (cp > buffer) {
+ 			kdb_printf("\r");
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			kdb_printf(kdb_prompt_str);
++#pragma GCC diagnostic pop
+ 			cp = buffer;
+ 		}
+ 		break;
+@@ -357,7 +366,10 @@ poll_again:
+ 			if (i >= dtab_count)
+ 				kdb_printf("...");
+ 			kdb_printf("\n");
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			kdb_printf(kdb_prompt_str);
++#pragma GCC diagnostic pop
+ 			kdb_printf("%s", buffer);
+ 		} else if (tab != 2 && count > 0) {
+ 			len_tmp = strlen(p_tmp);
+@@ -382,7 +394,10 @@ poll_again:
+ 				++cp;
+ 				tmp = *cp;
+ 				*cp = '\0';
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 				kdb_printf(kdb_prompt_str);
++#pragma GCC diagnostic pop
+ 				kdb_printf("%s", buffer);
+ 				*cp = tmp;
+ 			} else {
+@@ -443,7 +458,10 @@ char *kdb_getstr(char *buffer, size_t bufsize, const char *prompt)
+ {
+ 	if (prompt && kdb_prompt_str != prompt)
+ 		strncpy(kdb_prompt_str, prompt, CMD_BUFLEN);
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	kdb_printf(kdb_prompt_str);
++#pragma GCC diagnostic pop
+ 	kdb_nextline = 1;	/* Prompt and input resets line number */
+ 	return kdb_read(buffer, bufsize);
+ }
+diff --git a/lib/test_printf.c b/lib/test_printf.c
+index 44ab48368953..5d71bdca333e 100644
+--- a/lib/test_printf.c
++++ b/lib/test_printf.c
+@@ -149,7 +149,10 @@ test_basic(void)
+ 	/* Work around annoying "warning: zero-length gnu_printf format string". */
+ 	const char nul = '\0';
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	test("", &nul);
++#pragma GCC diagnostic pop
+ 	test("100%", "100%%");
+ 	test("xxx%yyy", "xxx%cyyy", '%');
+ 	__test("xxx\0yyy", 7, "xxx%cyyy", '\0');
+diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
+index f7431cb57c51..53f7a782070b 100644
+--- a/net/tipc/netlink_compat.c
++++ b/net/tipc/netlink_compat.c
+@@ -742,7 +742,10 @@ static int tipc_nl_compat_name_table_dump_header(struct tipc_nl_compat_msg *msg)
+ 	if (depth > 4)
+ 		depth = 4;
+ 	for (i = 0; i < depth; i++)
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		tipc_tlv_sprintf(msg->rep, header[i]);
++#pragma GCC diagnostic pop
+ 	tipc_tlv_sprintf(msg->rep, "\n");
+ 
+ 	return 0;
+diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
+index c3a43ab40e93..8106231b5b3e 100644
+--- a/scripts/kconfig/conf.c
++++ b/scripts/kconfig/conf.c
+@@ -75,9 +75,12 @@ static void strip(char *str)
+ static void check_stdin(void)
+ {
+ 	if (!valid_stdin) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		printf(_("aborted!\n\n"));
+ 		printf(_("Console input/output is redirected. "));
+ 		printf(_("Run 'make oldconfig' to update configuration.\n\n"));
++#pragma GCC diagnostic pop
+ 		exit(1);
+ 	}
+ }
+@@ -87,7 +90,10 @@ static int conf_askvalue(struct symbol *sym, const char *def)
+ 	enum symbol_type type = sym_get_type(sym);
+ 
+ 	if (!sym_has_value(sym))
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		printf(_("(NEW) "));
++#pragma GCC diagnostic pop
+ 
+ 	line[0] = '\n';
+ 	line[1] = 0;
+@@ -288,7 +294,10 @@ static int conf_choice(struct menu *menu)
+ 			if (child->sym->name)
+ 				printf(" (%s)", child->sym->name);
+ 			if (!sym_has_value(child->sym))
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 				printf(_(" (NEW)"));
++#pragma GCC diagnostic pop
+ 			printf("\n");
+ 		}
+ 		printf(_("%*schoice"), indent - 1, "");
+@@ -436,7 +445,10 @@ static void check_conf(struct menu *menu)
+ 				}
+ 			} else if (input_mode != olddefconfig) {
+ 				if (!conf_cnt++)
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 					printf(_("*\n* Restart config...\n*\n"));
++#pragma GCC diagnostic pop
+ 				rootEntry = menu_get_parent_menu(menu);
+ 				conf(rootEntry);
+ 			}
+@@ -637,8 +649,11 @@ int main(int ac, char **av)
+ 		if (conf_get_changed()) {
+ 			name = getenv("KCONFIG_NOSILENTUPDATE");
+ 			if (name && *name) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 				fprintf(stderr,
+ 					_("\n*** The configuration requires explicit update.\n\n"));
++#pragma GCC diagnostic pop
+ 				return 1;
+ 			}
+ 		}
+@@ -690,6 +705,8 @@ int main(int ac, char **av)
+ 		/* silentoldconfig is used during the build so we shall update autoconf.
+ 		 * All other commands are only used to generate a config.
+ 		 */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		if (conf_get_changed() && conf_write(NULL)) {
+ 			fprintf(stderr, _("\n*** Error during writing of the configuration.\n\n"));
+ 			exit(1);
+@@ -709,6 +726,7 @@ int main(int ac, char **av)
+ 			fprintf(stderr, _("\n*** Error during writing of the configuration.\n\n"));
+ 			exit(1);
+ 		}
++#pragma GCC diagnostic pop
+ 	}
+ 	return 0;
+ }
+diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
+index e8b0cd2ae19e..1d68adbdc0cd 100644
+--- a/scripts/kconfig/menu.c
++++ b/scripts/kconfig/menu.c
+@@ -584,7 +584,10 @@ static void get_prompt_str(struct gstr *r, struct property *prop,
+ 	}
+ 
+ 	if (i > 0) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		str_printf(r, _("  Location:\n"));
++#pragma GCC diagnostic pop
+ 		for (j = 4; --i >= 0; j += 2) {
+ 			menu = submenu[i];
+ 			if (jump && menu == location)
+diff --git a/sound/core/seq/seq_clientmgr.c b/sound/core/seq/seq_clientmgr.c
+index 58e79e02f217..51455cb4662d 100644
+--- a/sound/core/seq/seq_clientmgr.c
++++ b/sound/core/seq/seq_clientmgr.c
+@@ -2467,7 +2467,10 @@ static void snd_seq_info_dump_subscribers(struct snd_info_buffer *buffer,
+ 		up_read(&group->list_mutex);
+ 		return;
+ 	}
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	snd_iprintf(buffer, msg);
++#pragma GCC diagnostic pop
+ 	list_for_each(p, &group->list_head) {
+ 		if (is_src)
+ 			s = list_entry(p, struct snd_seq_subscribers, src_list);
+diff --git a/sound/core/sound.c b/sound/core/sound.c
+index 175f9e4e01c8..4757abeba5dc 100644
+--- a/sound/core/sound.c
++++ b/sound/core/sound.c
+@@ -86,7 +86,10 @@ static void snd_request_other(int minor)
+ 	case SNDRV_MINOR_TIMER:		str = "snd-timer";	break;
+ 	default:			return;
+ 	}
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	request_module(str);
++#pragma GCC diagnostic pop
+ }
+ 
+ #endif	/* modular kernel */
+diff --git a/sound/drivers/opl3/opl3_seq.c b/sound/drivers/opl3/opl3_seq.c
+index fdae5d7f421f..cb8a46fab811 100644
+--- a/sound/drivers/opl3/opl3_seq.c
++++ b/sound/drivers/opl3/opl3_seq.c
+@@ -235,9 +235,12 @@ static int snd_opl3_seq_probe(struct device *_dev)
+ 	/* allocate new client */
+ 	opl_ver = (opl3->hardware & OPL3_HW_MASK) >> 8;
+ 	sprintf(name, "OPL%i FM synth", opl_ver);
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	client = opl3->seq_client =
+ 		snd_seq_create_kernel_client(opl3->card, opl3->seq_dev_num,
+ 					     name);
++#pragma GCC diagnostic pop
+ 	if (client < 0)
+ 		return client;
+ 
+diff --git a/sound/pci/hda/hda_bind.c b/sound/pci/hda/hda_bind.c
+index 6efadbfb3fe3..c1a025c08e4b 100644
+--- a/sound/pci/hda/hda_bind.c
++++ b/sound/pci/hda/hda_bind.c
+@@ -198,8 +198,12 @@ static void request_codec_module(struct hda_codec *codec)
+ 		break;
+ 	}
+ 
++/* snd_hdac_codec_modalias never returns a string with % */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	if (mod)
+ 		request_module(mod);
++#pragma GCC diagnostic pop
+ #endif /* MODULE */
+ }
+ 
+diff --git a/sound/pci/korg1212/korg1212.c b/sound/pci/korg1212/korg1212.c
+index 9e1ad119a3ce..7cdb343a8329 100644
+--- a/sound/pci/korg1212/korg1212.c
++++ b/sound/pci/korg1212/korg1212.c
+@@ -2048,7 +2048,10 @@ static void snd_korg1212_proc_read(struct snd_info_entry *entry,
+ 	int n;
+ 	struct snd_korg1212 *korg1212 = entry->private_data;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	snd_iprintf(buffer, korg1212->card->longname);
++#pragma GCC diagnostic pop
+ 	snd_iprintf(buffer, " (index #%d)\n", korg1212->card->number + 1);
+ 	snd_iprintf(buffer, "\nGeneral settings\n");
+ 	snd_iprintf(buffer, "    period size: %Zd bytes\n", K1212_PERIOD_BYTES);
+diff --git a/sound/pci/rme32.c b/sound/pci/rme32.c
+index cd94ac548ba3..745bc1826b1e 100644
+--- a/sound/pci/rme32.c
++++ b/sound/pci/rme32.c
+@@ -1467,7 +1467,10 @@ snd_rme32_proc_read(struct snd_info_entry * entry, struct snd_info_buffer *buffe
+ 
+ 	rme32->rcreg = readl(rme32->iobase + RME32_IO_CONTROL_REGISTER);
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	snd_iprintf(buffer, rme32->card->longname);
++#pragma GCC diagnostic pop
+ 	snd_iprintf(buffer, " (index #%d)\n", rme32->card->number + 1);
+ 
+ 	snd_iprintf(buffer, "\nGeneral settings\n");
+diff --git a/sound/pci/rme96.c b/sound/pci/rme96.c
+index 41c31db65039..42bbdd92ad2d 100644
+--- a/sound/pci/rme96.c
++++ b/sound/pci/rme96.c
+@@ -1727,7 +1727,10 @@ snd_rme96_proc_read(struct snd_info_entry *entry, struct snd_info_buffer *buffer
+ 	
+ 	rme96->rcreg = readl(rme96->iobase + RME96_IO_CONTROL_REGISTER);
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	snd_iprintf(buffer, rme96->card->longname);
++#pragma GCC diagnostic pop
+ 	snd_iprintf(buffer, " (index #%d)\n", rme96->card->number + 1);
+ 
+ 	snd_iprintf(buffer, "\nGeneral settings\n");
+diff --git a/sound/usb/mixer_quirks.c b/sound/usb/mixer_quirks.c
+index 279025650568..0969abcdd9ff 100644
+--- a/sound/usb/mixer_quirks.c
++++ b/sound/usb/mixer_quirks.c
+@@ -100,7 +100,10 @@ static int snd_create_std_mono_ctl_offset(struct usb_mixer_interface *mixer,
+ 	}
+ 
+ 	/* Set name */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	snprintf(kctl->id.name, sizeof(kctl->id.name), name);
++#pragma GCC diagnostic pop
+ 	kctl->private_free = snd_usb_mixer_elem_free;
+ 
+ 	/* set TLV */
+-- 

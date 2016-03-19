@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 2 Mar 2015 16:30:33 +0800
+Subject: [PATCH] {NOT UPSTREAMABLE} arch/x86/kernel/quirks: ugly fix
+
+---
+ arch/x86/kernel/quirks.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
+index cc457ff818ad..a7624410da60 100644
+--- a/arch/x86/kernel/quirks.c
++++ b/arch/x86/kernel/quirks.c
+@@ -34,7 +34,7 @@ static void quirk_intel_irqbalance(struct pci_dev *dev)
+ 	if (!(word & (1 << 13))) {
+ 		dev_info(&dev->dev, "Intel E7520/7320/7525 detected; "
+ 			"disabling irq balancing and affinity\n");
+-		noirqdebug_setup("");
++		noirqdebug_setup((char *)""); /* XXX: this is ugly. The real solution would be to make __setup function parameters const char* */
+ #ifdef CONFIG_PROC_FS
+ 		no_irq_affinity = 1;
+ #endif
+-- 

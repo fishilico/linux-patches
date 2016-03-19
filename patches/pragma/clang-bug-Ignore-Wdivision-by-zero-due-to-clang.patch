@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 6 Feb 2016 13:14:01 +0100
+Subject: [PATCH] {PRAGMA} (clang bug) Ignore -Wdivision-by-zero due to clang
+ misanalyzing ternary expressions
+
+  CC [M]  drivers/regulator/da903x.o
+drivers/regulator/da903x.c:395:2: error: division by zero is
+      undefined [-Werror,-Wdivision-by-zero]
+        DA9030_LDO(13, 2100, 2100, 0, INVAL, 0, 0, RCTL11, 3), /* fixed @2.1V */
+        ^                          ~
+drivers/regulator/da903x.c:359:2: note: expanded from macro
+      'DA9030_LDO'
+        DA903x_LDO(DA9030, _id, min, max, step, vreg, shift, nbits, ereg, ebit)
+        ^
+drivers/regulator/da903x.c:320:39: note: expanded from macro
+      'DA903x_LDO'
+                .n_voltages = (step) ? ((max - min) / step + 1) : 1,    \
+                                                    ^
+drivers/regulator/da903x.c:415:2: error: division by zero is
+      undefined [-Werror,-Wdivision-by-zero]
+        DA9034_LDO(5, 3100, 3100, 0, INVAL, 0, 0, OVER3, 7), /* fixed @3.1V */
+        ^                         ~
+drivers/regulator/da903x.c:356:2: note: expanded from macro
+      'DA9034_LDO'
+        DA903x_LDO(DA9034, _id, min, max, step, vreg, shift, nbits, ereg, ebit)
+        ^
+drivers/regulator/da903x.c:320:39: note: expanded from macro
+      'DA903x_LDO'
+                .n_voltages = (step) ? ((max - min) / step + 1) : 1,    \
+                                                    ^
+---
+ drivers/regulator/da903x.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
+index 33e8f3b8d2bd..a3efc2f27dd5 100644
+--- a/drivers/regulator/da903x.c
++++ b/drivers/regulator/da903x.c
+@@ -370,6 +370,13 @@ static const struct regulator_ops da9034_regulator_ldo12_ops = {
+ 	DA903x_DVC(DA9035, _id, min, max, step, vreg, nbits, ureg, ubit, \
+ 		   ereg, ebit)
+ 
++/* clang tests the ternary in DA903x_LDO macro:
++    .n_voltages = (step) ? ((max - min) / step + 1) : 1,
++ */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wdivision-by-zero"
++#endif
+ static struct da903x_regulator_info da903x_regulator_info[] = {
+ 	/* DA9030 */
+ 	DA9030_DVC(BUCK2, 850, 1625, 25, BUCK2DVM1, 5, BUCK2DVM1, 7, RCTL11, 0),
+@@ -417,6 +424,9 @@ static struct da903x_regulator_info da903x_regulator_info[] = {
+ 	/* DA9035 */
+ 	DA9035_DVC(BUCK3, 1800, 2200, 100, 3DTV1, 3, VCC2, 0, OVER3, 3),
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ static inline struct da903x_regulator_info *find_regulator_info(int id)
+ {
+-- 

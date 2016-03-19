@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 28 Feb 2015 12:08:56 +0800
+Subject: [PATCH] {MAYBE UPS} drivers: remove unused-but-set-parameter warning
+
+---
+ drivers/input/mouse/cyapa_gen3.c                    | 2 +-
+ drivers/net/bonding/bond_3ad.c                      | 4 ++--
+ drivers/net/ethernet/qlogic/qlcnic/qlcnic_83xx_hw.c | 3 +--
+ drivers/net/ethernet/ti/tlan.c                      | 3 +--
+ 4 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/input/mouse/cyapa_gen3.c b/drivers/input/mouse/cyapa_gen3.c
+index 1a9d12ae7538..f3e33b0b6c9c 100644
+--- a/drivers/input/mouse/cyapa_gen3.c
++++ b/drivers/input/mouse/cyapa_gen3.c
+@@ -950,7 +950,7 @@ static u16 cyapa_get_wait_time_for_pwr_cmd(u8 pwr_mode)
+  * Device power mode can only be set when device is in operational mode.
+  */
+ static int cyapa_gen3_set_power_mode(struct cyapa *cyapa, u8 power_mode,
+-		u16 always_unused, bool is_suspend_unused)
++		u16 always_unused __always_unused, bool is_suspend_unused __always_unused)
+ {
+ 	int ret;
+ 	u8 power;
+diff --git a/drivers/net/bonding/bond_3ad.c b/drivers/net/bonding/bond_3ad.c
+index 4cbb8b27a891..34b2a0c6d742 100644
+--- a/drivers/net/bonding/bond_3ad.c
++++ b/drivers/net/bonding/bond_3ad.c
+@@ -1875,8 +1875,8 @@ static void ad_marker_info_received(struct bond_marker *marker_info,
+  * response for marker PDU's, in this stage, but only to respond to marker
+  * information.
+  */
+-static void ad_marker_response_received(struct bond_marker *marker,
+-					struct port *port)
++static void ad_marker_response_received(struct bond_marker *marker __always_unused,
++					struct port *port __always_unused)
+ {
+ 	/* DO NOTHING, SINCE WE DECIDED NOT TO IMPLEMENT THIS FEATURE FOR NOW */
+ }
+diff --git a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_83xx_hw.c b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_83xx_hw.c
+index 37a731be7d39..d58cf8107ecf 100644
+--- a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_83xx_hw.c
++++ b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_83xx_hw.c
+@@ -2153,13 +2153,12 @@ static void qlcnic_83xx_configure_mac(struct qlcnic_adapter *adapter, u8 *mac,
+ }
+ 
+ int qlcnic_83xx_get_mac_address(struct qlcnic_adapter *adapter, u8 *mac,
+-				u8 function)
++				u8 function __always_unused)
+ {
+ 	int err, i;
+ 	struct qlcnic_cmd_args cmd;
+ 	u32 mac_low, mac_high;
+ 
+-	function = 0;
+ 	err = qlcnic_alloc_mbx_args(&cmd, adapter, QLCNIC_CMD_MAC_ADDRESS);
+ 	if (err)
+ 		return err;
+diff --git a/drivers/net/ethernet/ti/tlan.c b/drivers/net/ethernet/ti/tlan.c
+index a274cd49afe9..94b3cc0eb037 100644
+--- a/drivers/net/ethernet/ti/tlan.c
++++ b/drivers/net/ethernet/ti/tlan.c
+@@ -1644,14 +1644,13 @@ static u32 tlan_handle_dummy(struct net_device *dev, u16 host_int)
+  *
+  **************************************************************/
+ 
+-static u32 tlan_handle_tx_eoc(struct net_device *dev, u16 host_int)
++static u32 tlan_handle_tx_eoc(struct net_device *dev, u16 host_int __always_unused)
+ {
+ 	struct tlan_priv	*priv = netdev_priv(dev);
+ 	struct tlan_list		*head_list;
+ 	dma_addr_t		head_list_phys;
+ 	u32			ack = 1;
+ 
+-	host_int = 0;
+ 	if (priv->tlan_rev < 0x30) {
+ 		TLAN_DBG(TLAN_DEBUG_TX,
+ 			 "TRANSMIT:  handling TX EOC (Head=%d Tail=%d) -- IRQ\n",
+-- 

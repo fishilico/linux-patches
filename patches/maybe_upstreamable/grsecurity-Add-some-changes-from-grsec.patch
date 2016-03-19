@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 28 Feb 2015 11:07:33 +0800
+Subject: [PATCH] {MAYBE UPS} (grsecurity) Add some changes from grsec
+
+---
+ drivers/net/macvtap.c | 2 +-
+ net/socket.c          | 8 +++++---
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/macvtap.c b/drivers/net/macvtap.c
+index d636d051fac8..3c9fb02f748f 100644
+--- a/drivers/net/macvtap.c
++++ b/drivers/net/macvtap.c
+@@ -1091,7 +1091,7 @@ static long macvtap_ioctl(struct file *file, unsigned int cmd,
+ 
+ 		ret = 0;
+ 		u = q->flags;
+-		if (copy_to_user(&ifr->ifr_name, vlan->dev->name, IFNAMSIZ) ||
++		if (copy_to_user(ifr->ifr_name, vlan->dev->name, IFNAMSIZ) ||  /* Found in grsecurity patch 2015-02-27 */
+ 		    put_user(u, &ifr->ifr_flags))
+ 			ret = -EFAULT;
+ 		macvtap_put_vlan(vlan);
+diff --git a/net/socket.c b/net/socket.c
+index c044d1e8508c..3a097cf966d4 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1099,6 +1099,8 @@ int __sock_create(struct net *net, int family, int type, int protocol,
+ 		return -EAFNOSUPPORT;
+ 	if (type < 0 || type >= SOCK_MAX)
+ 		return -EINVAL;
++	if (protocol < 0)  /* Found in grsecurity patch 2015-02-27 */
++		return -EINVAL;
+ 
+ 	/* Compatibility.
+ 
+@@ -1679,7 +1681,7 @@ SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,
+ 	struct socket *sock;
+ 	struct iovec iov;
+ 	struct msghdr msg;
+-	struct sockaddr_storage address;
++	struct sockaddr_storage address = { };  /* Found in grsecurity patch 2015-02-27 */
+ 	int err, err2;
+ 	int fput_needed;
+ 
+@@ -2073,7 +2075,7 @@ static int ___sys_recvmsg(struct socket *sock, struct user_msghdr __user *msg,
+ 	ssize_t err;
+ 
+ 	/* kernel mode address */
+-	struct sockaddr_storage addr;
++	struct sockaddr_storage addr = { };  /* Found in grsecurity patch 2015-02-27 */
+ 
+ 	/* user mode address pointers */
+ 	struct sockaddr __user *uaddr;
+@@ -2719,7 +2721,7 @@ static int ethtool_ioctl(struct net *net, struct compat_ifreq __user *ifr32)
+ 	ifr = compat_alloc_user_space(buf_size);
+ 	rxnfc = (void __user *)ifr + ALIGN(sizeof(struct ifreq), 8);
+ 
+-	if (copy_in_user(&ifr->ifr_name, &ifr32->ifr_name, IFNAMSIZ))
++	if (copy_in_user(ifr->ifr_name, ifr32->ifr_name, IFNAMSIZ))  /* Found in grsecurity patch 2015-02-27 */
+ 		return -EFAULT;
+ 
+ 	if (put_user(convert_in ? rxnfc : compat_ptr(data),
+-- 

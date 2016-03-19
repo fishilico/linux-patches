@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 14 May 2015 11:31:54 +0800
+Subject: [PATCH] {NOT UPSTREAMABLE} scripts/kconfig/nconf.gui: remplace
+ variable-length arrays with alloca
+
+---
+ scripts/kconfig/nconf.gui.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/kconfig/nconf.gui.c b/scripts/kconfig/nconf.gui.c
+index b69fefd10e11..cb6d0964e1e5 100644
+--- a/scripts/kconfig/nconf.gui.c
++++ b/scripts/kconfig/nconf.gui.c
+@@ -5,6 +5,7 @@
+  * Derived from menuconfig.
+  *
+  */
++#include <alloca.h>
+ #include "nconf.h"
+ 
+ /* a list of all the different widgets we use */
+@@ -221,7 +222,7 @@ void fill_window(WINDOW *win, const char *text)
+ 	/* do not go over end of line */
+ 	total_lines = min(total_lines, y);
+ 	for (i = 0; i < total_lines; i++) {
+-		char tmp[x+10];
++		char *tmp = alloca((size_t)(x+10));
+ 		const char *line = get_line(text, i);
+ 		int len = get_line_length(line);
+ 		strncpy(tmp, line, min(len, x));
+@@ -251,10 +252,11 @@ int btn_dialog(WINDOW *main_window, const char *msg, int btn_num, ...)
+ 	WINDOW *msg_win;
+ 	WINDOW *menu_win;
+ 	MENU *menu;
+-	ITEM *btns[btn_num+1];
++	ITEM **btns;
+ 	int i, x, y;
+ 	int res = -1;
+ 
++	btns = alloca((btn_num+1) * sizeof(ITEM *));
+ 
+ 	va_start(ap, btn_num);
+ 	for (i = 0; i < btn_num; i++) {
+-- 

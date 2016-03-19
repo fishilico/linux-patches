@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 24 Jun 2015 09:08:28 +0800
+Subject: [PATCH] {LLVMLinux} Use cc-option to filter out GCC-specific options
+ in x86 Makefile
+
+---
+ arch/x86/Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 4086abca0b32..9fce64d82a03 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -88,10 +88,10 @@ else
+         KBUILD_CFLAGS += -m64
+ 
+         # Align jump targets to 1 byte, not the default 16 bytes:
+-        KBUILD_CFLAGS += -falign-jumps=1
++        KBUILD_CFLAGS += $(call cc-option,-falign-jumps=1)
+ 
+         # Pack loops tightly as well:
+-        KBUILD_CFLAGS += -falign-loops=1
++        KBUILD_CFLAGS += $(call cc-option,-falign-loops=1)
+ 
+         # Don't autogenerate traditional x87 instructions
+         KBUILD_CFLAGS += $(call cc-option,-mno-80387)
+-- 

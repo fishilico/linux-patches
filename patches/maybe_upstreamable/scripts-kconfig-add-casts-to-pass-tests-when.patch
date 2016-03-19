@@ -1,0 +1,81 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 2 Mar 2015 16:00:53 +0800
+Subject: [PATCH] {MAYBE UPS} scripts/kconfig: add casts to pass tests when
+ clang ensures constification
+
+---
+ scripts/kconfig/lkc.h    |  2 +-
+ scripts/kconfig/menu.c   |  4 ++--
+ scripts/kconfig/symbol.c | 16 ++++++++--------
+ 3 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
+index 91ca126ea080..fa338a3240e6 100644
+--- a/scripts/kconfig/lkc.h
++++ b/scripts/kconfig/lkc.h
+@@ -103,7 +103,7 @@ void menu_add_entry(struct symbol *sym);
+ void menu_end_entry(void);
+ void menu_add_dep(struct expr *dep);
+ void menu_add_visibility(struct expr *dep);
+-struct property *menu_add_prompt(enum prop_type type, char *prompt, struct expr *dep);
++struct property *menu_add_prompt(enum prop_type type, const char *prompt, struct expr *dep);
+ void menu_add_expr(enum prop_type type, struct expr *expr, struct expr *dep);
+ void menu_add_symbol(enum prop_type type, struct symbol *sym, struct expr *dep);
+ void menu_add_option(int token, char *arg);
+diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
+index aed678e8a777..59f0d152667a 100644
+--- a/scripts/kconfig/menu.c
++++ b/scripts/kconfig/menu.c
+@@ -125,7 +125,7 @@ void menu_set_type(int type)
+ 		sym_type_name(sym->type), sym_type_name(type));
+ }
+ 
+-static struct property *menu_add_prop(enum prop_type type, char *prompt, struct expr *expr, struct expr *dep)
++static struct property *menu_add_prop(enum prop_type type, const char *prompt, struct expr *expr, struct expr *dep)
+ {
+ 	struct property *prop = prop_alloc(type, current_entry->sym);
+ 
+@@ -175,7 +175,7 @@ static struct property *menu_add_prop(enum prop_type type, char *prompt, struct
+ 	return prop;
+ }
+ 
+-struct property *menu_add_prompt(enum prop_type type, char *prompt, struct expr *dep)
++struct property *menu_add_prompt(enum prop_type type, const char *prompt, struct expr *dep)
+ {
+ 	return menu_add_prop(type, prompt, NULL, dep);
+ }
+diff --git a/scripts/kconfig/symbol.c b/scripts/kconfig/symbol.c
+index 25cf0c2c0c79..d67637ddc9a9 100644
+--- a/scripts/kconfig/symbol.c
++++ b/scripts/kconfig/symbol.c
+@@ -12,20 +12,20 @@
+ #include "lkc.h"
+ 
+ struct symbol symbol_yes = {
+-	.name = "y",
+-	.curr = { "y", yes },
++	.name = (char *)"y",
++	.curr = { (void *)"y", yes },
+ 	.flags = SYMBOL_CONST|SYMBOL_VALID,
+ }, symbol_mod = {
+-	.name = "m",
+-	.curr = { "m", mod },
++	.name = (char *)"m",
++	.curr = { (void *)"m", mod },
+ 	.flags = SYMBOL_CONST|SYMBOL_VALID,
+ }, symbol_no = {
+-	.name = "n",
+-	.curr = { "n", no },
++	.name = (char *)"n",
++	.curr = { (void *)"n", no },
+ 	.flags = SYMBOL_CONST|SYMBOL_VALID,
+ }, symbol_empty = {
+-	.name = "",
+-	.curr = { "", no },
++	.name = (char *)"",
++	.curr = { (void *)"", no },
+ 	.flags = SYMBOL_VALID,
+ };
+ 
+-- 

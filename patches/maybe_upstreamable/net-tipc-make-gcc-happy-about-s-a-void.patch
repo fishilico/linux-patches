@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 9 Mar 2015 16:38:49 +0800
+Subject: [PATCH] {MAYBE UPS} net/tipc: make gcc happy about %s a void*
+
+---
+ net/tipc/netlink_compat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
+index 2c016fdefe97..971ca4773ab2 100644
+--- a/net/tipc/netlink_compat.c
++++ b/net/tipc/netlink_compat.c
+@@ -474,7 +474,7 @@ static int tipc_nl_compat_link_stat_dump(struct tipc_nl_compat_msg *msg,
+ 		return 0;
+ 
+ 	tipc_tlv_sprintf(msg->rep, "\nLink <%s>\n",
+-			 nla_data(link[TIPC_NLA_LINK_NAME]));
++			 (char *)nla_data(link[TIPC_NLA_LINK_NAME]));
+ 
+ 	if (link[TIPC_NLA_LINK_BROADCAST]) {
+ 		__fill_bc_link_stat(msg, prop, stats);
+-- 

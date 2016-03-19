@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 16 Oct 2015 19:45:53 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/scsi/mpt3sas/mpt3sas_scsih: fix format
+ string bug by removing useless firmware_event_name struct member
+
+---
+ drivers/scsi/mpt3sas/mpt3sas_base.h  | 2 --
+ drivers/scsi/mpt3sas/mpt3sas_scsih.c | 4 +---
+ 2 files changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/drivers/scsi/mpt3sas/mpt3sas_base.h b/drivers/scsi/mpt3sas/mpt3sas_base.h
+index 5ad271efbd45..b614118a4f8d 100644
+--- a/drivers/scsi/mpt3sas/mpt3sas_base.h
++++ b/drivers/scsi/mpt3sas/mpt3sas_base.h
+@@ -797,7 +797,6 @@ typedef void (*MPT3SAS_FLUSH_RUNNING_CMDS)(struct MPT3SAS_ADAPTER *ioc);
+  * @fault_reset_work_q_name: fw fault work queue
+  * @fault_reset_work_q: ""
+  * @fault_reset_work: ""
+- * @firmware_event_name: fw event work queue
+  * @firmware_event_thread: ""
+  * @fw_event_lock:
+  * @fw_event_list: list of fw events
+@@ -953,7 +952,6 @@ struct MPT3SAS_ADAPTER {
+ 	struct delayed_work fault_reset_work;
+ 
+ 	/* fw event handler */
+-	char		firmware_event_name[20];
+ 	struct workqueue_struct	*firmware_event_thread;
+ 	spinlock_t	fw_event_lock;
+ 	struct list_head fw_event_list;
+diff --git a/drivers/scsi/mpt3sas/mpt3sas_scsih.c b/drivers/scsi/mpt3sas/mpt3sas_scsih.c
+index 9ab77b06434d..42f9a75d59a3 100644
+--- a/drivers/scsi/mpt3sas/mpt3sas_scsih.c
++++ b/drivers/scsi/mpt3sas/mpt3sas_scsih.c
+@@ -8575,10 +8575,8 @@ _scsih_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	scsi_host_set_guard(shost, SHOST_DIX_GUARD_CRC);
+ 
+ 	/* event thread */
+-	snprintf(ioc->firmware_event_name, sizeof(ioc->firmware_event_name),
+-	    "fw_event_%s%d", ioc->driver_name, ioc->id);
+ 	ioc->firmware_event_thread = alloc_ordered_workqueue(
+-	    ioc->firmware_event_name, WQ_MEM_RECLAIM);
++	    "fw_event %s%d", WQ_MEM_RECLAIM, ioc->driver_name, ioc->id); /* printf format string bug in mainline kernels */
+ 	if (!ioc->firmware_event_thread) {
+ 		pr_err(MPT3SAS_FMT "failure at %s:%d/%s()!\n",
+ 		    ioc->name, __FILE__, __LINE__, __func__);
+-- 

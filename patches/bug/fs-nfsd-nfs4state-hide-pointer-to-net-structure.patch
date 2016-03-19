@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 6 Mar 2015 12:10:58 +0800
+Subject: [PATCH] {BUG} fs/nfsd/nfs4state: hide pointer to net structure
+
+It is quite strange to have this in the logs:
+[   24.218302] NFSD: starting 90-second grace period (net ffffffff818b0180)
+
+TODO: This is not changed in grsecurity:
+https://github.com/linux-scraping/linux-grsecurity/blob/grsec-4.4/fs/nfsd/nfs4state.c#L6750
+---
+ fs/nfsd/nfs4state.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/nfsd/nfs4state.c b/fs/nfsd/nfs4state.c
+index c484a2b6cd10..a405330e1ac0 100644
+--- a/fs/nfsd/nfs4state.c
++++ b/fs/nfsd/nfs4state.c
+@@ -6775,7 +6775,7 @@ nfs4_state_start_net(struct net *net)
+ 	nn->nfsd4_manager.block_opens = true;
+ 	locks_start_grace(net, &nn->nfsd4_manager);
+ 	nfsd4_client_tracking_init(net);
+-	printk(KERN_INFO "NFSD: starting %ld-second grace period (net %p)\n",
++	printk(KERN_INFO "NFSD: starting %ld-second grace period (net %pK)\n",
+ 	       nn->nfsd4_grace, net);
+ 	queue_delayed_work(laundry_wq, &nn->laundromat_work, nn->nfsd4_grace * HZ);
+ 	return 0;
+-- 

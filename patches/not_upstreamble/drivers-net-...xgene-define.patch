@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 26 Jun 2015 20:21:25 +0800
+Subject: [PATCH] {NOT UPSTREAMABLE} drivers/net/...xgene: define
+ xgene_enet_of_match as an empty list
+
+... to work around clang warning:
+
+      CC [M]  drivers/net/ethernet/apm/xgene/xgene_enet_main.o
+    /mnt/data/src/linux/drivers/net/ethernet/apm/xgene/xgene_enet_main.c:31:34:
+    error: tentative array definition assumed to have one element [-Werror]
+    static const struct of_device_id xgene_enet_of_match[];
+                                     ^
+---
+ drivers/net/ethernet/apm/xgene/xgene_enet_main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/net/ethernet/apm/xgene/xgene_enet_main.c b/drivers/net/ethernet/apm/xgene/xgene_enet_main.c
+index 5eb9b20c0eea..81c95a4cabf2 100644
+--- a/drivers/net/ethernet/apm/xgene/xgene_enet_main.c
++++ b/drivers/net/ethernet/apm/xgene/xgene_enet_main.c
+@@ -1560,6 +1560,10 @@ static const struct of_device_id xgene_enet_of_match[] = {
+ };
+ 
+ MODULE_DEVICE_TABLE(of, xgene_enet_of_match);
++#else
++static const struct of_device_id xgene_enet_of_match[] = {
++	{},
++};
+ #endif
+ 
+ static struct platform_driver xgene_enet_driver = {
+-- 

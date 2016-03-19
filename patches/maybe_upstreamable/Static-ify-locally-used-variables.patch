@@ -1,0 +1,216 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 28 Jun 2015 15:40:23 +0800
+Subject: [PATCH] {MAYBE UPS} Static-ify locally-used variables
+
+---
+ arch/x86/entry/vdso/vdso2c.c            | 6 +++---
+ arch/x86/kernel/cpu/mkcapflags.sh       | 1 +
+ scripts/basic/fixdep.c                  | 6 +++---
+ scripts/conmakehash.c                   | 4 ++--
+ scripts/kallsyms.c                      | 6 +++---
+ scripts/kconfig/conf.c                  | 2 +-
+ scripts/kconfig/confdata.c              | 2 +-
+ scripts/kconfig/symbol.c                | 5 +++--
+ scripts/kconfig/zconf.lex.c_shipped     | 2 +-
+ scripts/selinux/genheaders/genheaders.c | 2 +-
+ scripts/unifdef.c                       | 2 +-
+ security/selinux/include/classmap.h     | 1 +
+ 12 files changed, 21 insertions(+), 18 deletions(-)
+
+diff --git a/arch/x86/entry/vdso/vdso2c.c b/arch/x86/entry/vdso/vdso2c.c
+index 0b81cfd03555..50c14f29fe97 100644
+--- a/arch/x86/entry/vdso/vdso2c.c
++++ b/arch/x86/entry/vdso/vdso2c.c
+@@ -66,7 +66,7 @@
+ #include <linux/elf.h>
+ #include <linux/types.h>
+ 
+-const char *outfilename;
++static const char *outfilename;
+ 
+ /* Symbols that we need in vdso2c. */
+ enum {
+@@ -78,7 +78,7 @@ enum {
+ 	sym_VDSO_FAKE_SECTION_TABLE_END,
+ };
+ 
+-const int special_pages[] = {
++static const int special_pages[] = {
+ 	sym_vvar_page,
+ 	sym_hpet_page,
+ 	sym_pvclock_page,
+@@ -89,7 +89,7 @@ struct vdso_sym {
+ 	bool export;
+ };
+ 
+-struct vdso_sym required_syms[] = {
++static struct vdso_sym required_syms[] = {
+ 	[sym_vvar_start] = {"vvar_start", true},
+ 	[sym_vvar_page] = {"vvar_page", true},
+ 	[sym_hpet_page] = {"hpet_page", true},
+diff --git a/arch/x86/kernel/cpu/mkcapflags.sh b/arch/x86/kernel/cpu/mkcapflags.sh
+index 3f20710a5b23..51cc23fece08 100644
+--- a/arch/x86/kernel/cpu/mkcapflags.sh
++++ b/arch/x86/kernel/cpu/mkcapflags.sh
+@@ -16,6 +16,7 @@ dump_array()
+ 	PFX_SZ=$(echo $PFX | wc -c)
+ 	TABS="$(printf '\t\t\t\t\t')"
+ 
++	echo "extern const char * const $ARRAY[];"
+ 	echo "const char * const $ARRAY[$SIZE] = {"
+ 
+ 	# Iterate through any input lines starting with #define $PFX
+diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
+index e894a831ba4d..44ef7e15b92f 100644
+--- a/scripts/basic/fixdep.c
++++ b/scripts/basic/fixdep.c
+@@ -120,9 +120,9 @@
+ #define INT_NFIG ntohl(0x4e464947)
+ #define INT_FIG_ ntohl(0x4649475f)
+ 
+-char *target;
+-char *depfile;
+-char *cmdline;
++static char *target;
++static char *depfile;
++static char *cmdline;
+ 
+ static void usage(void)
+ {
+diff --git a/scripts/conmakehash.c b/scripts/conmakehash.c
+index 61bbda54cf13..9f6e87806f96 100644
+--- a/scripts/conmakehash.c
++++ b/scripts/conmakehash.c
+@@ -45,9 +45,9 @@ static int getunicode(char **p0)
+   return strtol(p+2,0,16);
+ }
+ 
+-unicode unitable[MAX_FONTLEN][255];
++static unicode unitable[MAX_FONTLEN][255];
+ 				/* Massive overkill, but who cares? */
+-int unicount[MAX_FONTLEN];
++static int unicount[MAX_FONTLEN];
+ 
+ static void addpair(int fp, int un)
+ {
+diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
+index 76715ab58323..5328df58149a 100644
+--- a/scripts/kallsyms.c
++++ b/scripts/kallsyms.c
+@@ -62,11 +62,11 @@ static int absolute_percpu = 0;
+ static char symbol_prefix_char = '\0';
+ static unsigned long long kernel_start_addr = 0;
+ 
+-int token_profit[0x10000];
++static int token_profit[0x10000];
+ 
+ /* the table that holds the result of the compression */
+-unsigned char best_table[256][2];
+-unsigned char best_table_len[256];
++static unsigned char best_table[256][2];
++static unsigned char best_table_len[256];
+ 
+ 
+ static void usage(void)
+diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
+index 224c7e065bee..c3a43ab40e93 100644
+--- a/scripts/kconfig/conf.c
++++ b/scripts/kconfig/conf.c
+@@ -22,7 +22,7 @@ static void conf(struct menu *menu);
+ static void check_conf(struct menu *menu);
+ static void xfgets(char *str, int size, FILE *in);
+ 
+-enum input_mode {
++static enum input_mode {
+ 	oldaskconfig,
+ 	silentoldconfig,
+ 	oldconfig,
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index b3b5c146dc0c..9d7b5f8d708e 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -30,7 +30,7 @@ static void conf_message(const char *fmt, ...)
+ static const char *conf_filename;
+ static int conf_lineno, conf_warnings, conf_unsaved;
+ 
+-const char conf_defname[] = "arch/$ARCH/defconfig";
++static const char conf_defname[] = "arch/$ARCH/defconfig";
+ 
+ static __attribute__ ((format(printf, 1, 2)))
+ void conf_warning(const char *fmt, ...)
+diff --git a/scripts/kconfig/symbol.c b/scripts/kconfig/symbol.c
+index 8621553d6777..cfdb8fd8104a 100644
+--- a/scripts/kconfig/symbol.c
++++ b/scripts/kconfig/symbol.c
+@@ -23,7 +23,8 @@ struct symbol symbol_yes = {
+ 	.name = (char *)"n",
+ 	.curr = { (void *)"n", no },
+ 	.flags = SYMBOL_CONST|SYMBOL_VALID,
+-}, symbol_empty = {
++};
++static struct symbol symbol_empty = {
+ 	.name = (char *)"",
+ 	.curr = { (void *)"", no },
+ 	.flags = SYMBOL_VALID,
+@@ -31,7 +32,7 @@ struct symbol symbol_yes = {
+ 
+ struct symbol *sym_defconfig_list;
+ struct symbol *modules_sym;
+-tristate modules_val;
++static tristate modules_val;
+ 
+ struct expr *sym_env_list;
+ 
+diff --git a/scripts/kconfig/zconf.lex.c_shipped b/scripts/kconfig/zconf.lex.c_shipped
+index 37fdf6123505..a8fcabebca5f 100644
+--- a/scripts/kconfig/zconf.lex.c_shipped
++++ b/scripts/kconfig/zconf.lex.c_shipped
+@@ -818,7 +818,7 @@ struct buffer {
+ 	YY_BUFFER_STATE state;
+ };
+ 
+-struct buffer *current_buf;
++static struct buffer *current_buf;
+ 
+ static int last_ts, first_ts;
+ 
+diff --git a/scripts/selinux/genheaders/genheaders.c b/scripts/selinux/genheaders/genheaders.c
+index 48af6aa50c5c..ee80285a693b 100644
+--- a/scripts/selinux/genheaders/genheaders.c
++++ b/scripts/selinux/genheaders/genheaders.c
+@@ -15,7 +15,7 @@ struct security_class_mapping {
+ 
+ #define max(x, y) (((int)(x) > (int)(y)) ? x : y)
+ 
+-const char *progname;
++static const char *progname;
+ 
+ static void usage(void)
+ {
+diff --git a/scripts/unifdef.c b/scripts/unifdef.c
+index fba8ff17d8c6..51c5b6aa0564 100644
+--- a/scripts/unifdef.c
++++ b/scripts/unifdef.c
+@@ -56,7 +56,7 @@
+ #include <string.h>
+ #include <unistd.h>
+ 
+-const char copyright[] =
++static const char copyright[] =
+     "@(#) $Version: unifdef-2.5 $\n"
+     "@(#) $Author: Tony Finch (dot@dotat.at) $\n"
+     "@(#) $URL: http://dotat.at/prog/unifdef $\n"
+diff --git a/security/selinux/include/classmap.h b/security/selinux/include/classmap.h
+index ef83c4b85a33..9560ff9a91f2 100644
+--- a/security/selinux/include/classmap.h
++++ b/security/selinux/include/classmap.h
+@@ -16,6 +16,7 @@
+  * Note: The name for any socket class should be suffixed by "socket",
+  *	 and doesn't contain more than one substr of "socket".
+  */
++extern struct security_class_mapping secclass_map[]; /* in avc_ss.h */
+ struct security_class_mapping secclass_map[] = {
+ 	{ "security",
+ 	  { "compute_av", "compute_create", "compute_member",
+-- 

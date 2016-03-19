@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 16 Oct 2015 19:38:38 +0200
+Subject: [PATCH] {PRINTF} (BUG) drivers/media/platform/soc_camera/soc_camera:
+ fix potential format string vuln
+
+---
+ drivers/media/platform/soc_camera/soc_camera.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/media/platform/soc_camera/soc_camera.c b/drivers/media/platform/soc_camera/soc_camera.c
+index 46c7186f7867..08951beb1bfb 100644
+--- a/drivers/media/platform/soc_camera/soc_camera.c
++++ b/drivers/media/platform/soc_camera/soc_camera.c
+@@ -1791,7 +1791,7 @@ static int soc_camera_probe(struct soc_camera_host *ici,
+ 			goto eadd;
+ 
+ 		if (shd->module_name)
+-			ret = request_module(shd->module_name);
++			ret = request_module("%s", shd->module_name); /* printf format string bug in mainline kernels */
+ 
+ 		ret = shd->add_device(icd);
+ 		if (ret < 0)
+-- 

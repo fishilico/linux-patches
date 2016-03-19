@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 19 Mar 2015 15:45:17 +0800
+Subject: [PATCH] {NOT UPSTREAMABLE} arch/x86/kernel/nmi_selftest: expand
+ register_nmi_handler
+
+This prevents issues about using static __init_data in an ({ ... })
+expression.
+---
+ arch/x86/include/asm/nmi.h     |  4 ++--
+ arch/x86/kernel/nmi_selftest.c | 17 +++++++++++++----
+ 2 files changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/include/asm/nmi.h b/arch/x86/include/asm/nmi.h
+index 5f2fc4441b11..34df21251ede 100644
+--- a/arch/x86/include/asm/nmi.h
++++ b/arch/x86/include/asm/nmi.h
+@@ -45,9 +45,9 @@ struct nmiaction {
+ 	const char		*name;
+ };
+ 
+-#define register_nmi_handler(t, fn, fg, n, init...)	\
++#define register_nmi_handler(t, fn, fg, n)	\
+ ({							\
+-	static struct nmiaction init fn##_na = {	\
++	static struct nmiaction fn##_na = {	\
+ 		.handler = (fn),			\
+ 		.name = (n),				\
+ 		.flags = (fg),				\
+diff --git a/arch/x86/kernel/nmi_selftest.c b/arch/x86/kernel/nmi_selftest.c
+index 6d9582ec0324..67ad274d66d0 100644
+--- a/arch/x86/kernel/nmi_selftest.c
++++ b/arch/x86/kernel/nmi_selftest.c
+@@ -42,8 +42,13 @@ static int __init nmi_unk_cb(unsigned int val, struct pt_regs *regs)
+ static void __init init_nmi_testsuite(void)
+ {
+ 	/* trap all the unknown NMIs we may generate */
+-	register_nmi_handler(NMI_UNKNOWN, nmi_unk_cb, 0, "nmi_selftest_unk",
+-			__initdata);
++	static struct nmiaction __initdata nmi_unk_cb_na = {
++		.handler = nmi_unk_cb,
++		.name = "nmi_selftest_unk",
++		.flags = 0,
++	};
++
++	__register_nmi_handler(NMI_UNKNOWN, &nmi_unk_cb_na);
+ }
+ 
+ static void __init cleanup_nmi_testsuite(void)
+@@ -64,9 +69,13 @@ static int __init test_nmi_ipi_callback(unsigned int val, struct pt_regs *regs)
+ static void __init test_nmi_ipi(struct cpumask *mask)
+ {
+ 	unsigned long timeout;
++	static struct nmiaction __initdata test_nmi_ipi_callback_na = {
++		.handler = test_nmi_ipi_callback,
++		.name = "nmi_selftest",
++		.flags = NMI_FLAG_FIRST,
++	};
+ 
+-	if (register_nmi_handler(NMI_LOCAL, test_nmi_ipi_callback,
+-				 NMI_FLAG_FIRST, "nmi_selftest", __initdata)) {
++	if (__register_nmi_handler(NMI_LOCAL, &test_nmi_ipi_callback_na)) {
+ 		nmi_fail = FAILURE;
+ 		return;
+ 	}
+-- 

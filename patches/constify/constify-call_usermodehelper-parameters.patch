@@ -1,0 +1,522 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 2 Mar 2015 15:26:29 +0800
+Subject: [PATCH] {CONSTIFY} constify call_usermodehelper parameters
+
+[TODO] This does not consider all architectures at all. A more progressive
+approach may be better to have such a patch upstreamed one day.
+---
+ arch/x86/kernel/cpu/mcheck/mce.c                             |  2 +-
+ drivers/block/drbd/drbd_nl.c                                 |  8 ++++----
+ drivers/staging/lustre/include/linux/libcfs/libcfs_private.h |  2 +-
+ drivers/staging/lustre/lustre/libcfs/linux/linux-debug.c     | 10 +++++-----
+ drivers/staging/lustre/lustre/obdclass/obd_config.c          |  2 +-
+ drivers/staging/rtl8192e/rtl8192e/rtl_dm.c                   | 12 ++++++------
+ drivers/video/fbdev/uvesafb.c                                |  4 ++--
+ fs/coredump.c                                                |  2 +-
+ fs/nfs/cache_lib.c                                           |  4 ++--
+ fs/nfs/objlayout/objlayout.c                                 |  6 +++---
+ fs/nfsd/nfs4layouts.c                                        |  4 ++--
+ fs/nfsd/nfs4recover.c                                        |  9 +++++----
+ fs/ocfs2/stackglue.c                                         |  4 ++--
+ include/linux/kmod.h                                         | 11 ++++++-----
+ include/linux/kobject.h                                      |  4 ++--
+ init/do_mounts_initrd.c                                      |  2 +-
+ kernel/cgroup.c                                              |  2 +-
+ kernel/kmod.c                                                | 11 ++++++-----
+ kernel/reboot.c                                              |  4 ++--
+ net/bridge/br_stp_if.c                                       |  8 ++++----
+ security/keys/request_key.c                                  |  8 +++++---
+ 21 files changed, 62 insertions(+), 57 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 2ed556ca6da4..919edfcc57d3 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -1326,7 +1326,7 @@ static void mce_timer_delete_all(void)
+ 
+ static void mce_do_trigger(struct work_struct *work)
+ {
+-	call_usermodehelper(mce_helper, mce_helper_argv, NULL, UMH_NO_WAIT);
++	call_usermodehelper(mce_helper, (const char *const *)mce_helper_argv, NULL, UMH_NO_WAIT);
+ }
+ 
+ static DECLARE_WORK(mce_trigger_work, mce_do_trigger);
+diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
+index c055c5e12f24..7b78dfe4ab6d 100644
+--- a/drivers/block/drbd/drbd_nl.c
++++ b/drivers/block/drbd/drbd_nl.c
+@@ -344,7 +344,7 @@ int drbd_khelper(struct drbd_device *device, char *cmd)
+ 			 (char[60]) { }, /* address */
+ 			NULL };
+ 	char mb[12];
+-	char *argv[] = {usermode_helper, cmd, mb, NULL };
++	const char *const argv[] = {usermode_helper, cmd, mb, NULL };
+ 	struct drbd_connection *connection = first_peer_device(device)->connection;
+ 	struct sib_info sib;
+ 	int ret;
+@@ -364,7 +364,7 @@ int drbd_khelper(struct drbd_device *device, char *cmd)
+ 	sib.helper_name = cmd;
+ 	drbd_bcast_event(device, &sib);
+ 	notify_helper(NOTIFY_CALL, device, connection, cmd, 0);
+-	ret = call_usermodehelper(usermode_helper, argv, envp, UMH_WAIT_PROC);
++	ret = call_usermodehelper(usermode_helper, argv, (const char **)envp, UMH_WAIT_PROC);
+ 	if (ret)
+ 		drbd_warn(device, "helper command: %s %s %s exit code %u (0x%x)\n",
+ 				usermode_helper, cmd, mb,
+@@ -396,7 +396,7 @@ static int conn_khelper(struct drbd_connection *connection, char *cmd)
+ 			 (char[60]) { }, /* address */
+ 			NULL };
+ 	char *resource_name = connection->resource->name;
+-	char *argv[] = {usermode_helper, cmd, resource_name, NULL };
++	const char *const argv[] = {usermode_helper, cmd, resource_name, NULL };
+ 	int ret;
+ 
+ 	setup_khelper_env(connection, envp);
+@@ -406,7 +406,7 @@ static int conn_khelper(struct drbd_connection *connection, char *cmd)
+ 	/* TODO: conn_bcast_event() ?? */
+ 	notify_helper(NOTIFY_CALL, NULL, connection, cmd, 0);
+ 
+-	ret = call_usermodehelper(usermode_helper, argv, envp, UMH_WAIT_PROC);
++	ret = call_usermodehelper(usermode_helper, argv, (const char **)envp, UMH_WAIT_PROC);
+ 	if (ret)
+ 		drbd_warn(connection, "helper command: %s %s %s exit code %u (0x%x)\n",
+ 			  usermode_helper, cmd, resource_name,
+diff --git a/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h b/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
+index 6d0296591294..c1a9519a89e3 100644
+--- a/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
++++ b/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
+@@ -173,7 +173,7 @@ do {								    \
+ #define ntohs(x) ___ntohs(x)
+ #endif
+ 
+-void libcfs_run_upcall(char **argv);
++void libcfs_run_upcall(const char **argv);
+ void libcfs_run_lbug_upcall(struct libcfs_debug_msg_data *);
+ void libcfs_debug_dumplog(void);
+ int libcfs_debug_init(unsigned long bufsize);
+diff --git a/drivers/staging/lustre/lustre/libcfs/linux/linux-debug.c b/drivers/staging/lustre/lustre/libcfs/linux/linux-debug.c
+index 59c7bf3cbc1f..6313d884f615 100644
+--- a/drivers/staging/lustre/lustre/libcfs/linux/linux-debug.c
++++ b/drivers/staging/lustre/lustre/libcfs/linux/linux-debug.c
+@@ -71,9 +71,9 @@ char lnet_debug_log_upcall[1024] = "/usr/lib/lustre/lnet_debug_log_upcall";
+  */
+ void libcfs_run_debug_log_upcall(char *file)
+ {
+-	char *argv[3];
++	const char *argv[3];
+ 	int   rc;
+-	char *envp[] = {
++	const char *const envp[] = {
+ 		"HOME=/",
+ 		"PATH=/sbin:/bin:/usr/sbin:/usr/bin",
+ 		NULL};
+@@ -95,11 +95,11 @@ void libcfs_run_debug_log_upcall(char *file)
+ 	}
+ }
+ 
+-void libcfs_run_upcall(char **argv)
++void libcfs_run_upcall(const char **argv)
+ {
+ 	int   rc;
+ 	int   argc;
+-	char *envp[] = {
++	const char *const envp[] = {
+ 		"HOME=/",
+ 		"PATH=/sbin:/bin:/usr/sbin:/usr/bin",
+ 		NULL};
+@@ -131,7 +131,7 @@ void libcfs_run_upcall(char **argv)
+ 
+ void libcfs_run_lbug_upcall(struct libcfs_debug_msg_data *msgdata)
+ {
+-	char *argv[6];
++	const char *argv[6];
+ 	char buf[32];
+ 
+ 	snprintf(buf, sizeof(buf), "%d", msgdata->msg_line);
+diff --git a/drivers/staging/lustre/lustre/obdclass/obd_config.c b/drivers/staging/lustre/lustre/obdclass/obd_config.c
+index 49cdc647910c..283d33095066 100644
+--- a/drivers/staging/lustre/lustre/obdclass/obd_config.c
++++ b/drivers/staging/lustre/lustre/obdclass/obd_config.c
+@@ -737,7 +737,7 @@ static int process_param2_config(struct lustre_cfg *lcfg)
+ {
+ 	char *param = lustre_cfg_string(lcfg, 1);
+ 	char *upcall = lustre_cfg_string(lcfg, 2);
+-	char *argv[] = {
++	const char *const argv[] = {
+ 		[0] = "/usr/sbin/lctl",
+ 		[1] = "set_param",
+ 		[2] = param,
+diff --git a/drivers/staging/rtl8192e/rtl8192e/rtl_dm.c b/drivers/staging/rtl8192e/rtl8192e/rtl_dm.c
+index ef03242113be..736c29867b4c 100644
+--- a/drivers/staging/rtl8192e/rtl8192e/rtl_dm.c
++++ b/drivers/staging/rtl8192e/rtl8192e/rtl_dm.c
+@@ -268,9 +268,9 @@ void rtl92e_dm_watchdog(struct net_device *dev)
+ static void _rtl92e_dm_check_ac_dc_power(struct net_device *dev)
+ {
+ 	struct r8192_priv *priv = rtllib_priv(dev);
+-	static char *ac_dc_script = "/etc/acpi/wireless-rtl-ac-dc-power.sh";
+-	char *argv[] = {ac_dc_script, DRV_NAME, NULL};
+-	static char *envp[] = {"HOME=/",
++	static const char *ac_dc_script = "/etc/acpi/wireless-rtl-ac-dc-power.sh";
++	const char *const argv[] = {ac_dc_script, DRV_NAME, NULL};
++	static const char *const envp[] = {"HOME=/",
+ 			"TERM=linux",
+ 			"PATH=/usr/bin:/bin",
+ 			 NULL};
+@@ -1823,9 +1823,9 @@ static void _rtl92e_dm_check_rf_ctrl_gpio(void *data)
+ 	u8 tmp1byte;
+ 	enum rt_rf_power_state eRfPowerStateToSet;
+ 	bool bActuallySet = false;
+-	char *argv[3];
+-	static char *RadioPowerPath = "/etc/acpi/events/RadioPower.sh";
+-	static char *envp[] = {"HOME=/", "TERM=linux", "PATH=/usr/bin:/bin",
++	const char *argv[3];
++	static const char *const RadioPowerPath = "/etc/acpi/events/RadioPower.sh";
++	static const char *const envp[] = {"HOME=/", "TERM=linux", "PATH=/usr/bin:/bin",
+ 			       NULL};
+ 
+ 	bActuallySet = false;
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index 178ae93b7ebd..174750f67364 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -107,13 +107,13 @@ static void uvesafb_cn_callback(struct cn_msg *msg, struct netlink_skb_parms *ns
+ 
+ static int uvesafb_helper_start(void)
+ {
+-	char *envp[] = {
++	const char *const envp[] = {
+ 		"HOME=/",
+ 		"PATH=/sbin:/bin",
+ 		NULL,
+ 	};
+ 
+-	char *argv[] = {
++	const char *const argv[] = {
+ 		v86d_path,
+ 		NULL,
+ 	};
+diff --git a/fs/coredump.c b/fs/coredump.c
+index 9ea87e9fdccf..b5bf32496012 100644
+--- a/fs/coredump.c
++++ b/fs/coredump.c
+@@ -635,7 +635,7 @@ void do_coredump(const siginfo_t *siginfo)
+ 
+ 		retval = -ENOMEM;
+ 		sub_info = call_usermodehelper_setup(helper_argv[0],
+-						helper_argv, NULL, GFP_KERNEL,
++						(const char **)helper_argv, NULL, GFP_KERNEL,
+ 						umh_pipe_setup, NULL, &cprm);
+ 		if (sub_info)
+ 			retval = call_usermodehelper_exec(sub_info,
+diff --git a/fs/nfs/cache_lib.c b/fs/nfs/cache_lib.c
+index 5f7b053720ee..ab503d3a0605 100644
+--- a/fs/nfs/cache_lib.c
++++ b/fs/nfs/cache_lib.c
+@@ -33,12 +33,12 @@ MODULE_PARM_DESC(cache_getent_timeout, "Timeout (in seconds) after which "
+ 
+ int nfs_cache_upcall(struct cache_detail *cd, char *entry_name)
+ {
+-	static char *envp[] = { "HOME=/",
++	static const char *const envp[] = { "HOME=/",
+ 		"TERM=linux",
+ 		"PATH=/sbin:/usr/sbin:/bin:/usr/bin",
+ 		NULL
+ 	};
+-	char *argv[] = {
++	const char *const argv[] = {
+ 		nfs_cache_getent_prog,
+ 		cd->name,
+ 		entry_name,
+diff --git a/fs/nfs/objlayout/objlayout.c b/fs/nfs/objlayout/objlayout.c
+index 919efd4a1a23..8e07fe057b67 100644
+--- a/fs/nfs/objlayout/objlayout.c
++++ b/fs/nfs/objlayout/objlayout.c
+@@ -594,12 +594,12 @@ struct __auto_login {
+ 
+ static int __objlayout_upcall(struct __auto_login *login)
+ {
+-	static char *envp[] = { "HOME=/",
++	static const char *const envp[] = { "HOME=/",
+ 		"TERM=linux",
+ 		"PATH=/sbin:/usr/sbin:/bin:/usr/bin",
+ 		NULL
+ 	};
+-	char *argv[8];
++	const char *argv[8];
+ 	int ret;
+ 
+ 	if (unlikely(!osd_login_prog[0])) {
+@@ -611,7 +611,7 @@ static int __objlayout_upcall(struct __auto_login *login)
+ 	dprintk("%s osdname %s\n", __func__, login->osdname);
+ 	dprintk("%s systemid_hex %s\n", __func__, login->systemid_hex);
+ 
+-	argv[0] = (char *)osd_login_prog;
++	argv[0] = osd_login_prog;
+ 	argv[1] = "-u";
+ 	argv[2] = login->uri;
+ 	argv[3] = "-o";
+diff --git a/fs/nfsd/nfs4layouts.c b/fs/nfsd/nfs4layouts.c
+index ce2d010d3b17..2f04d3767da0 100644
+--- a/fs/nfsd/nfs4layouts.c
++++ b/fs/nfsd/nfs4layouts.c
+@@ -579,13 +579,13 @@ nfsd4_cb_layout_fail(struct nfs4_layout_stateid *ls)
+ {
+ 	struct nfs4_client *clp = ls->ls_stid.sc_client;
+ 	char addr_str[INET6_ADDRSTRLEN];
+-	static char *envp[] = {
++	static const char *const envp[] = {
+ 		"HOME=/",
+ 		"TERM=linux",
+ 		"PATH=/sbin:/usr/sbin:/bin:/usr/bin",
+ 		NULL
+ 	};
+-	char *argv[8];
++	const char *argv[8];
+ 	int error;
+ 
+ 	rpc_ntop((struct sockaddr *)&clp->cl_addr, addr_str, sizeof(addr_str));
+diff --git a/fs/nfsd/nfs4recover.c b/fs/nfsd/nfs4recover.c
+index dc8ebecf5618..eb67dc2779ae 100644
+--- a/fs/nfsd/nfs4recover.c
++++ b/fs/nfsd/nfs4recover.c
+@@ -1189,10 +1189,11 @@ nfsd4_cltrack_grace_start(time_t grace_start)
+ }
+ 
+ static int
+-nfsd4_umh_cltrack_upcall(char *cmd, char *arg, char *env0, char *env1)
++nfsd4_umh_cltrack_upcall(const char *cmd, const char *arg, const char *env0,
++			 const char *env1)
+ {
+-	char *envp[3];
+-	char *argv[4];
++	const char *envp[3];
++	const char *argv[4];
+ 	int ret;
+ 
+ 	if (unlikely(!cltrack_prog[0])) {
+@@ -1209,7 +1210,7 @@ nfsd4_umh_cltrack_upcall(char *cmd, char *arg, char *env0, char *env1)
+ 	envp[1] = env1;
+ 	envp[2] = NULL;
+ 
+-	argv[0] = (char *)cltrack_prog;
++	argv[0] = cltrack_prog;
+ 	argv[1] = cmd;
+ 	argv[2] = arg;
+ 	argv[3] = NULL;
+diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
+index 5d965e83bd43..6338cf756eb3 100644
+--- a/fs/ocfs2/stackglue.c
++++ b/fs/ocfs2/stackglue.c
+@@ -426,12 +426,12 @@ EXPORT_SYMBOL_GPL(ocfs2_cluster_disconnect);
+ static void ocfs2_leave_group(const char *group)
+ {
+ 	int ret;
+-	char *argv[5], *envp[3];
++	const char *argv[5], *envp[3];
+ 
+ 	argv[0] = ocfs2_hb_ctl_path;
+ 	argv[1] = "-K";
+ 	argv[2] = "-u";
+-	argv[3] = (char *)group;
++	argv[3] = group;
+ 	argv[4] = NULL;
+ 
+ 	/* minimal command environment taken from cpu_run_sbin_hotplug */
+diff --git a/include/linux/kmod.h b/include/linux/kmod.h
+index fcfd2bf14d3f..2b69f4135f1d 100644
+--- a/include/linux/kmod.h
++++ b/include/linux/kmod.h
+@@ -56,9 +56,9 @@ struct file;
+ struct subprocess_info {
+ 	struct work_struct work;
+ 	struct completion *complete;
+-	char *path;
+-	char **argv;
+-	char **envp;
++	const char *path;
++	const char *const *argv;
++	const char *const *envp;
+ 	int wait;
+ 	int retval;
+ 	int (*init)(struct subprocess_info *info, struct cred *new);
+@@ -67,10 +67,11 @@ struct subprocess_info {
+ };
+ 
+ extern int
+-call_usermodehelper(char *path, char **argv, char **envp, int wait);
++call_usermodehelper(const char *path, const char *const *argv, const char *const *envp, int wait);
+ 
+ extern struct subprocess_info *
+-call_usermodehelper_setup(char *path, char **argv, char **envp, gfp_t gfp_mask,
++call_usermodehelper_setup(const char *path, const char *const *argv,
++			  const char *const *envp, gfp_t gfp_mask,
+ 			  int (*init)(struct subprocess_info *info, struct cred *new),
+ 			  void (*cleanup)(struct subprocess_info *), void *data);
+ 
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index e6284591599e..46654530244c 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -122,8 +122,8 @@ struct kobj_type {
+ };
+ 
+ struct kobj_uevent_env {
+-	char *argv[3];
+-	char *envp[UEVENT_NUM_ENVP];
++	const char *argv[3];
++	const char *envp[UEVENT_NUM_ENVP];
+ 	int envp_idx;
+ 	char buf[UEVENT_BUFFER_SIZE];
+ 	int buflen;
+diff --git a/init/do_mounts_initrd.c b/init/do_mounts_initrd.c
+index a1000ca29fc9..1452d3c32037 100644
+--- a/init/do_mounts_initrd.c
++++ b/init/do_mounts_initrd.c
+@@ -51,7 +51,7 @@ static int init_linuxrc(struct subprocess_info *info, struct cred *new)
+ static void __init handle_initrd(void)
+ {
+ 	struct subprocess_info *info;
+-	static char *argv[] = { "linuxrc", NULL, };
++	static const char *const argv[] = { "linuxrc", NULL, };
+ 	extern char *envp_init[];
+ 	int error;
+ 
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index d27904c193da..3a93e7d37dc7 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -5697,7 +5697,7 @@ static void cgroup_release_agent(struct work_struct *work)
+ 	struct cgroup *cgrp =
+ 		container_of(work, struct cgroup, release_agent_work);
+ 	char *pathbuf = NULL, *agentbuf = NULL, *path;
+-	char *argv[3], *envp[3];
++	const char *argv[3], *envp[3];
+ 
+ 	mutex_lock(&cgroup_mutex);
+ 
+diff --git a/kernel/kmod.c b/kernel/kmod.c
+index 0277d1216f80..49e16c4d76a9 100644
+--- a/kernel/kmod.c
++++ b/kernel/kmod.c
+@@ -69,14 +69,14 @@ static void free_modprobe_argv(struct subprocess_info *info)
+ static int call_modprobe(char *module_name, int wait)
+ {
+ 	struct subprocess_info *info;
+-	static char *envp[] = {
++	static const char *const envp[] = {
+ 		"HOME=/",
+ 		"TERM=linux",
+ 		"PATH=/sbin:/usr/sbin:/bin:/usr/bin",
+ 		NULL
+ 	};
+ 
+-	char **argv = kmalloc(sizeof(char *[5]), GFP_KERNEL);
++	const char **argv = kmalloc(sizeof(char *[5]), GFP_KERNEL);
+ 	if (!argv)
+ 		goto out;
+ 
+@@ -516,8 +516,9 @@ static void helper_unlock(void)
+  * Function must be runnable in either a process context or the
+  * context in which call_usermodehelper_exec is called.
+  */
+-struct subprocess_info *call_usermodehelper_setup(char *path, char **argv,
+-		char **envp, gfp_t gfp_mask,
++struct subprocess_info *call_usermodehelper_setup(
++		const char *path, const char *const *argv,
++		const char *const *envp, gfp_t gfp_mask,
+ 		int (*init)(struct subprocess_info *info, struct cred *new),
+ 		void (*cleanup)(struct subprocess_info *info),
+ 		void *data)
+@@ -613,7 +614,7 @@ EXPORT_SYMBOL(call_usermodehelper_exec);
+  * This function is the equivalent to use call_usermodehelper_setup() and
+  * call_usermodehelper_exec().
+  */
+-int call_usermodehelper(char *path, char **argv, char **envp, int wait)
++int call_usermodehelper(const char *path, const char *const *argv, const char *const *envp, int wait)
+ {
+ 	struct subprocess_info *info;
+ 	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index bd30a973fe94..79301c8defe6 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -392,7 +392,7 @@ static const char reboot_cmd[] = "/sbin/reboot";
+ static int run_cmd(const char *cmd)
+ {
+ 	char **argv;
+-	static char *envp[] = {
++	static const char *const envp[] = {
+ 		"HOME=/",
+ 		"PATH=/sbin:/bin:/usr/sbin:/usr/bin",
+ 		NULL
+@@ -400,7 +400,7 @@ static int run_cmd(const char *cmd)
+ 	int ret;
+ 	argv = argv_split(GFP_KERNEL, cmd, NULL);
+ 	if (argv) {
+-		ret = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
++		ret = call_usermodehelper(argv[0], (const char *const *)argv, envp, UMH_WAIT_EXEC);
+ 		argv_free(argv);
+ 	} else {
+ 		ret = -ENOMEM;
+diff --git a/net/bridge/br_stp_if.c b/net/bridge/br_stp_if.c
+index a31ac6ad76a2..a800d5a685b8 100644
+--- a/net/bridge/br_stp_if.c
++++ b/net/bridge/br_stp_if.c
+@@ -139,8 +139,8 @@ void br_stp_disable_port(struct net_bridge_port *p)
+ static void br_stp_start(struct net_bridge *br)
+ {
+ 	int r;
+-	char *argv[] = { BR_STP_PROG, br->dev->name, "start", NULL };
+-	char *envp[] = { NULL };
++	const char *const argv[] = { BR_STP_PROG, br->dev->name, "start", NULL };
++	const char *const envp[] = { NULL };
+ 	struct net_bridge_port *p;
+ 
+ 	if (net_eq(dev_net(br->dev), &init_net))
+@@ -176,8 +176,8 @@ static void br_stp_start(struct net_bridge *br)
+ static void br_stp_stop(struct net_bridge *br)
+ {
+ 	int r;
+-	char *argv[] = { BR_STP_PROG, br->dev->name, "stop", NULL };
+-	char *envp[] = { NULL };
++	const char *const argv[] = { BR_STP_PROG, br->dev->name, "stop", NULL };
++	const char *const envp[] = { NULL };
+ 	struct net_bridge_port *p;
+ 
+ 	if (br->stp_enabled == BR_USER_STP) {
+diff --git a/security/keys/request_key.c b/security/keys/request_key.c
+index c7a117c9a8f3..51e7a8417c15 100644
+--- a/security/keys/request_key.c
++++ b/security/keys/request_key.c
+@@ -72,7 +72,8 @@ static void umh_keys_cleanup(struct subprocess_info *info)
+ /*
+  * Call a usermode helper with a specific session keyring.
+  */
+-static int call_usermodehelper_keys(char *path, char **argv, char **envp,
++static int call_usermodehelper_keys(const char *path, const char *const *argv,
++					const char *const *envp,
+ 					struct key *session_keyring, int wait)
+ {
+ 	struct subprocess_info *info;
+@@ -99,7 +100,8 @@ static int call_sbin_request_key(struct key_construction *cons,
+ 	key_serial_t prkey, sskey;
+ 	struct key *key = cons->key, *authkey = cons->authkey, *keyring,
+ 		*session;
+-	char *argv[9], *envp[3], uid_str[12], gid_str[12];
++	const char *argv[9], *envp[3];
++	char uid_str[12], gid_str[12];
+ 	char key_str[12], keyring_str[3][12];
+ 	char desc[20];
+ 	int ret, i;
+@@ -162,7 +164,7 @@ static int call_sbin_request_key(struct key_construction *cons,
+ 	/* set up the argument list */
+ 	i = 0;
+ 	argv[i++] = "/sbin/request-key";
+-	argv[i++] = (char *) op;
++	argv[i++] = op;
+ 	argv[i++] = key_str;
+ 	argv[i++] = uid_str;
+ 	argv[i++] = gid_str;
+-- 

@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 21 May 2015 12:39:38 +0800
+Subject: [PATCH] {MAYBE UPS} x86/paravirt: replace self-assignment with
+ uninitialized_var macro
+
+Use uninitialized_var() macro to define uninitialized variables to fix a
+clang warning about variables possible unused.
+
+In a yet-to-be-sent LLVMLinux patch, uninitialized_var is defined for
+clang as:
+    #define uninitialized_var(x) x = *(&(x))
+---
+ arch/x86/include/asm/paravirt_types.h | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
+index 36ffc3cdc83b..07ea27d3f406 100644
+--- a/arch/x86/include/asm/paravirt_types.h
++++ b/arch/x86/include/asm/paravirt_types.h
+@@ -467,7 +467,8 @@ int paravirt_disable_iospace(void);
+  */
+ #ifdef CONFIG_X86_32
+ #define PVOP_VCALL_ARGS				\
+-	unsigned long __eax = __eax, __edx = __edx, __ecx = __ecx
++	unsigned long uninitialized_var(__eax), uninitialized_var(__edx), \
++		uninitialized_var(__ecx)
+ #define PVOP_CALL_ARGS			PVOP_VCALL_ARGS
+ 
+ #define PVOP_CALL_ARG1(x)		"a" ((unsigned long)(x))
+@@ -486,8 +487,9 @@ int paravirt_disable_iospace(void);
+ #else  /* CONFIG_X86_64 */
+ /* [re]ax isn't an arg, but the return val */
+ #define PVOP_VCALL_ARGS					\
+-	unsigned long __edi = __edi, __esi = __esi,	\
+-		__edx = __edx, __ecx = __ecx, __eax = __eax
++	unsigned long uninitialized_var(__edi), uninitialized_var(__esi), \
++		uninitialized_var(__edx), uninitialized_var(__ecx), \
++		uninitialized_var(__eax)
+ #define PVOP_CALL_ARGS		PVOP_VCALL_ARGS
+ 
+ #define PVOP_CALL_ARG1(x)		"D" ((unsigned long)(x))
+-- 

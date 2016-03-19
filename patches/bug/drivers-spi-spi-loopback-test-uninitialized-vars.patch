@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 15 Jan 2016 13:47:04 +0100
+Subject: [PATCH] {BUG} drivers/spi/spi-loopback-test: uninitialized vars
+
+---
+ drivers/spi/spi-loopback-test.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/spi/spi-loopback-test.c b/drivers/spi/spi-loopback-test.c
+index cf4bb36bee25..447457168dd0 100644
+--- a/drivers/spi/spi-loopback-test.c
++++ b/drivers/spi/spi-loopback-test.c
+@@ -740,7 +740,7 @@ static int spi_test_run_iter(struct spi_device *spi,
+ 	)
+ {
+ 	struct spi_test test;
+-	int i, tx_count, rx_count;
++	int i, tx_count = 0, rx_count = 0; /* BUG, unintialized counters */
+ 
+ 	/* copy the test template to test */
+ 	memcpy(&test, testtemplate, sizeof(test));
+-- 

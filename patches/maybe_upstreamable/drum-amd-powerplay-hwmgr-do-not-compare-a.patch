@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 19 Jan 2016 21:57:40 +0100
+Subject: [PATCH] {MAYBE UPS} drum: amd/powerplay/hwmgr: do not compare a
+ pointer with 0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc reports:
+
+drivers/gpu/drm/amd/amdgpu/../powerplay/hwmgr/processpptables.c:
+In function ‘get_number_of_vce_state_table_entrie ’:
+drivers/gpu/drm/amd/amdgpu/../powerplay/hwmgr/processpptables.c:1502:16:
+error: ordered comparison of pointer with integer zero [-Werror=extra]
+  if (vce_table > 0)
+                ^
+---
+ drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
+index 2f1a14fe05b1..b64f42d2c3ae 100644
+--- a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
++++ b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
+@@ -1499,7 +1499,7 @@ int get_number_of_vce_state_table_entries(
+ 	const ATOM_PPLIB_VCE_State_Table *vce_table =
+ 				    get_vce_state_table(hwmgr, table);
+ 
+-	if (vce_table > 0)
++	if (vce_table)
+ 		return vce_table->numEntries;
+ 
+ 	return 0;
+-- 

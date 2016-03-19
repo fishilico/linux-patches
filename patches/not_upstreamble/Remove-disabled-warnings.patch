@@ -1,0 +1,85 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 28 Feb 2015 11:37:46 +0800
+Subject: [PATCH] {NOT UPSTREAMABLE} Remove disabled warnings
+
+Remove disabled warnings in Makefile so we have full control of the
+list of disabled warnings.
+---
+ Makefile                   | 15 ++++++++-------
+ scripts/Makefile.extrawarn | 14 +++++++-------
+ 2 files changed, 15 insertions(+), 14 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 7b3ecdcdc6c1..0e271b4f1422 100644
+--- a/Makefile
++++ b/Makefile
+@@ -614,7 +614,8 @@ include arch/$(SRCARCH)/Makefile
+ KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
+ 
+ ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+-KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
++#KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
++KBUILD_CFLAGS	+= -Os
+ else
+ KBUILD_CFLAGS	+= -O2
+ endif
+@@ -676,11 +677,11 @@ KBUILD_CFLAGS += $(stackp-flag)
+ ifeq ($(cc-name),clang)
+ KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
+ KBUILD_CPPFLAGS += $(call cc-option,-Wno-unknown-warning-option,)
+-KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
+-KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
+-KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
++#KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
++#KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
++#KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
+ # Quiet clang warning: comparison of unsigned expression < 0 is always false
+-KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
++#KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
+ # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
+ # source of a reference will be _MergedGlobals and not on of the whitelisted names.
+ # See modpost pattern 2
+@@ -690,7 +691,7 @@ else
+ 
+ # This warning generated too much noise in a regular build.
+ # Use make W=1 to enable this warning (see scripts/Makefile.build)
+-KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
++#KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
+ endif
+ 
+ ifdef CONFIG_FRAME_POINTER
+@@ -756,7 +757,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
+ KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
+ 
+ # disable pointer signed / unsigned warnings in gcc 4.0
+-KBUILD_CFLAGS += $(call cc-disable-warning, pointer-sign)
++#KBUILD_CFLAGS += $(call cc-disable-warning, pointer-sign)
+ 
+ # disable invalid "can't wrap" optimizations for signed / pointers
+ KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
+diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
+index f9e47a70509c..cd6b61116ff4 100644
+--- a/scripts/Makefile.extrawarn
++++ b/scripts/Makefile.extrawarn
+@@ -59,12 +59,12 @@ KBUILD_CFLAGS += $(warning)
+ else
+ 
+ ifeq ($(cc-name),clang)
+-KBUILD_CFLAGS += $(call cc-disable-warning, initializer-overrides)
+-KBUILD_CFLAGS += $(call cc-disable-warning, unused-value)
+-KBUILD_CFLAGS += $(call cc-disable-warning, format)
+-KBUILD_CFLAGS += $(call cc-disable-warning, unknown-warning-option)
+-KBUILD_CFLAGS += $(call cc-disable-warning, sign-compare)
+-KBUILD_CFLAGS += $(call cc-disable-warning, format-zero-length)
+-KBUILD_CFLAGS += $(call cc-disable-warning, uninitialized)
++#KBUILD_CFLAGS += $(call cc-disable-warning, initializer-overrides)
++#KBUILD_CFLAGS += $(call cc-disable-warning, unused-value)
++#KBUILD_CFLAGS += $(call cc-disable-warning, format)
++#KBUILD_CFLAGS += $(call cc-disable-warning, unknown-warning-option)
++#KBUILD_CFLAGS += $(call cc-disable-warning, sign-compare)
++#KBUILD_CFLAGS += $(call cc-disable-warning, format-zero-length)
++#KBUILD_CFLAGS += $(call cc-disable-warning, uninitialized)
+ endif
+ endif
+-- 

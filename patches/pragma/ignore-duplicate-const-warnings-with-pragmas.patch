@@ -1,0 +1,270 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 21 Mar 2015 15:49:16 +0800
+Subject: [PATCH] {PRAGMA} ignore duplicate const warnings with pragmas
+
+---
+ include/linux/compiler.h    |  9 +++++++++
+ include/linux/kernel.h      |  9 +++++++++
+ include/linux/module.h      |  9 +++++++++
+ include/linux/util_macros.h | 19 +++++++++++++++++++
+ lib/test-kstrtox.c          | 28 ++++++++++++++++++++++++++++
+ sound/soc/codecs/rt5659.c   |  7 +++++++
+ sound/soc/codecs/wm8804.c   |  7 +++++++
+ sound/soc/codecs/wm8998.c   | 14 ++++++++++++++
+ 8 files changed, 102 insertions(+)
+
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 48f5aab117ae..9c359fe38639 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -524,9 +524,18 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
+  *
+  * If possible use READ_ONCE()/WRITE_ONCE() instead.
+  */
++#ifdef __clang__
++#define __ACCESS_ONCE(x) ({ \
++_Pragma("GCC diagnostic push") \
++_Pragma("GCC diagnostic ignored \"-Wduplicate-decl-specifier\"") \
++	 __maybe_unused typeof(x) __var = (__force typeof(x)) 0; \
++	(volatile typeof(x) *)&(x); }) \
++_Pragma("GCC diagnostic pop")
++#else
+ #define __ACCESS_ONCE(x) ({ \
+ 	 __maybe_unused typeof(x) __var = (__force typeof(x)) 0; \
+ 	(volatile typeof(x) *)&(x); })
++#endif
+ #define ACCESS_ONCE(x) (*__ACCESS_ONCE(x))
+ 
+ /**
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 1adac8c4da1b..90b074bcfeaa 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -840,9 +840,18 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
+  * @member:	the name of the member within the struct.
+  *
+  */
++#ifdef __clang__
+ #define container_of(ptr, type, member) ({			\
++_Pragma("GCC diagnostic push") \
++_Pragma("GCC diagnostic ignored \"-Wduplicate-decl-specifier\"") \
+ 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
++_Pragma("GCC diagnostic pop") \
+ 	(type *)( (char *)__mptr - offsetof(type,member) );})
++#else
++#define container_of(ptr, type, member) ({			\
++	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
++	(type *)( (char *)__mptr - offsetof(type,member) );})
++#endif
+ 
+ /* Rebuild everything on CONFIG_FTRACE_MCOUNT_RECORD */
+ #ifdef CONFIG_FTRACE_MCOUNT_RECORD
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 2bb0c3085706..abe907602f0e 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -219,9 +219,18 @@ void trim_init_extable(struct module *m);
+ 
+ #ifdef MODULE
+ /* Creates an alias so file2alias.c can find device table. */
++#ifdef __clang__
++#define MODULE_DEVICE_TABLE(type, name)					\
++_Pragma("GCC diagnostic push") \
++_Pragma("GCC diagnostic ignored \"-Wduplicate-decl-specifier\"") \
++extern const typeof(name) __mod_##type##__##name##_device_table		\
++  __attribute__ ((unused, alias(__stringify(name)))) \
++_Pragma("GCC diagnostic pop")
++#else
+ #define MODULE_DEVICE_TABLE(type, name)					\
+ extern const typeof(name) __mod_##type##__##name##_device_table		\
+   __attribute__ ((unused, alias(__stringify(name))))
++#endif
+ #else  /* !MODULE */
+ #define MODULE_DEVICE_TABLE(type, name)
+ #endif
+diff --git a/include/linux/util_macros.h b/include/linux/util_macros.h
+index f9b2ce58039b..fb4fbf282095 100644
+--- a/include/linux/util_macros.h
++++ b/include/linux/util_macros.h
+@@ -1,11 +1,15 @@
+ #ifndef _LINUX_HELPER_MACROS_H_
+ #define _LINUX_HELPER_MACROS_H_
+ 
++#ifdef __clang__
+ #define __find_closest(x, a, as, op)					\
+ ({									\
+ 	typeof(as) __fc_i, __fc_as = (as) - 1;				\
+ 	typeof(x) __fc_x = (x);						\
++_Pragma("GCC diagnostic push") \
++_Pragma("GCC diagnostic ignored \"-Wduplicate-decl-specifier\"") \
+ 	typeof(*a) const *__fc_a = (a);					\
++_Pragma("GCC diagnostic pop") \
+ 	for (__fc_i = 0; __fc_i < __fc_as; __fc_i++) {			\
+ 		if (__fc_x op DIV_ROUND_CLOSEST(__fc_a[__fc_i] +	\
+ 						__fc_a[__fc_i + 1], 2))	\
+@@ -13,6 +17,21 @@
+ 	}								\
+ 	(__fc_i);							\
+ })
++#else
++#define __find_closest(x, a, as, op)					\
++({									\
++	typeof(as) __fc_i, __fc_as = (as) - 1;				\
++	typeof(x) __fc_x = (x);						\
++	typeof(*a) const *__fc_a = (a);					\
++	for (__fc_i = 0; __fc_i < __fc_as; __fc_i++) {			\
++		if (__fc_x op DIV_ROUND_CLOSEST(__fc_a[__fc_i] +	\
++						__fc_a[__fc_i + 1], 2))	\
++			break;						\
++	}								\
++	(__fc_i);							\
++})
++#endif
++
+ 
+ /**
+  * find_closest - locate the closest element in a sorted array
+diff --git a/lib/test-kstrtox.c b/lib/test-kstrtox.c
+index f355f67169b6..27e223bd9376 100644
+--- a/lib/test-kstrtox.c
++++ b/lib/test-kstrtox.c
+@@ -42,12 +42,16 @@ struct test_fail {
+ 	}								\
+ }
+ 
++#ifdef __clang__
+ #define TEST_OK(fn, type, fmt, test)					\
+ {									\
+ 	unsigned int i;							\
+ 									\
+ 	for_each_test(i, test) {					\
++_Pragma("GCC diagnostic push") \
++_Pragma("GCC diagnostic ignored \"-Wduplicate-decl-specifier\"") \
+ 		const typeof(test[0]) *t = &test[i];			\
++_Pragma("GCC diagnostic pop") \
+ 		type res;						\
+ 		int rv;							\
+ 									\
+@@ -64,6 +68,30 @@ struct test_fail {
+ 		}							\
+ 	}								\
+ }
++#else
++#define TEST_OK(fn, type, fmt, test)					\
++{									\
++	unsigned int i;							\
++									\
++	for_each_test(i, test) {					\
++		const typeof(test[0]) *t = &test[i];			\
++		type res;						\
++		int rv;							\
++									\
++		rv = fn(t->str, t->base, &res);				\
++		if (rv != 0) {						\
++			WARN(1, "str '%s', base %u, expected 0/" fmt ", got %d\n",	\
++				t->str, t->base, t->expected_res, rv);	\
++			continue;					\
++		}							\
++		if (res != t->expected_res) {				\
++			WARN(1, "str '%s', base %u, expected " fmt ", got " fmt "\n",	\
++				t->str, t->base, t->expected_res, res);	\
++			continue;					\
++		}							\
++	}								\
++}
++#endif
+ 
+ static void __init test_kstrtoull_ok(void)
+ {
+diff --git a/sound/soc/codecs/rt5659.c b/sound/soc/codecs/rt5659.c
+index fb8ea05c0de1..90f1315cdd56 100644
+--- a/sound/soc/codecs/rt5659.c
++++ b/sound/soc/codecs/rt5659.c
+@@ -1149,6 +1149,10 @@ static const char * const rt5659_data_select[] = {
+ 	"L/R", "R/L", "L/L", "R/R"
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-decl-specifier"
++#endif
+ static const SOC_ENUM_SINGLE_DECL(rt5659_if1_01_adc_enum,
+ 	RT5659_TDM_CTRL_2, RT5659_DS_ADC_SLOT01_SFT, rt5659_data_select);
+ 
+@@ -2252,6 +2256,9 @@ static const char * const rt5659_rx_adc_data_src[] = {
+ static const SOC_ENUM_SINGLE_DECL(
+ 	rt5659_rx_adc_data_enum, RT5659_TDM_CTRL_2,
+ 	RT5659_ADCDAT_SRC_SFT, rt5659_rx_adc_data_src);
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ static const struct snd_kcontrol_new rt5659_rx_adc_dac_mux =
+ 	SOC_DAPM_ENUM("TDM ADCDAT Source", rt5659_rx_adc_data_enum);
+diff --git a/sound/soc/codecs/wm8804.c b/sound/soc/codecs/wm8804.c
+index 8d914702cae4..0565891bb96c 100644
+--- a/sound/soc/codecs/wm8804.c
++++ b/sound/soc/codecs/wm8804.c
+@@ -98,7 +98,14 @@ WM8804_REGULATOR_EVENT(0)
+ WM8804_REGULATOR_EVENT(1)
+ 
+ static const char *txsrc_text[] = { "S/PDIF RX", "AIF" };
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-decl-specifier"
++#endif
+ static SOC_ENUM_SINGLE_DECL(txsrc, WM8804_SPDTX4, 6, txsrc_text);
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ static const struct snd_kcontrol_new wm8804_tx_source_mux[] = {
+ 	SOC_DAPM_ENUM_EXT("Input Source", txsrc,
+diff --git a/sound/soc/codecs/wm8998.c b/sound/soc/codecs/wm8998.c
+index 7719bc509e50..8563e8b793b6 100644
+--- a/sound/soc/codecs/wm8998.c
++++ b/sound/soc/codecs/wm8998.c
+@@ -199,6 +199,10 @@ static const char * const wm8998_inmux_texts[] = {
+ 	"B",
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-decl-specifier"
++#endif
+ static SOC_ENUM_SINGLE_DECL(wm8998_in1muxl_enum,
+ 			    ARIZONA_ADC_DIGITAL_VOLUME_1L,
+ 			    ARIZONA_IN1L_SRC_SHIFT,
+@@ -213,6 +217,9 @@ static SOC_ENUM_SINGLE_DECL(wm8998_in2mux_enum,
+ 			    ARIZONA_ADC_DIGITAL_VOLUME_2L,
+ 			    ARIZONA_IN2L_SRC_SHIFT,
+ 			    wm8998_inmux_texts);
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ static const struct snd_kcontrol_new wm8998_in1mux[2] = {
+ 	SOC_DAPM_ENUM_EXT("IN1L Mux", wm8998_in1muxl_enum,
+@@ -522,6 +529,10 @@ static const unsigned int wm8998_aec_loopback_values[] = {
+ 	0, 1, 2, 3, 4, 6, 7, 8, 9,
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-decl-specifier"
++#endif
+ static SOC_VALUE_ENUM_SINGLE_DECL(wm8998_aec1_loopback,
+ 				  ARIZONA_DAC_AEC_CONTROL_1,
+ 				  ARIZONA_AEC_LOOPBACK_SRC_SHIFT, 0xf,
+@@ -533,6 +544,9 @@ static SOC_VALUE_ENUM_SINGLE_DECL(wm8998_aec2_loopback,
+ 				  ARIZONA_AEC_LOOPBACK_SRC_SHIFT, 0xf,
+ 				  wm8998_aec_loopback_texts,
+ 				  wm8998_aec_loopback_values);
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ static const struct snd_kcontrol_new wm8998_aec_loopback_mux[] = {
+ 	SOC_DAPM_ENUM("AEC1 Loopback", wm8998_aec1_loopback),
+-- 

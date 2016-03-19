@@ -1,0 +1,259 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 9 Mar 2015 15:10:36 +0800
+Subject: [PATCH] {NOT UPSTREAMABLE} fs/reiserfs: fix misc printf formatting
+ issues
+
+Not upstreamable as-is because several format strings were not considered
+---
+ fs/reiserfs/bitmap.c   | 16 ++++++++--------
+ fs/reiserfs/ibalance.c |  4 ++--
+ fs/reiserfs/journal.c  | 32 ++++++++++++++++----------------
+ fs/reiserfs/lbalance.c |  2 +-
+ 4 files changed, 27 insertions(+), 27 deletions(-)
+
+diff --git a/fs/reiserfs/bitmap.c b/fs/reiserfs/bitmap.c
+index 1d02f184863d..5dae597bd07b 100644
+--- a/fs/reiserfs/bitmap.c
++++ b/fs/reiserfs/bitmap.c
+@@ -66,7 +66,7 @@ int is_reusable(struct super_block *s, b_blocknr_t block, int bit_value)
+ 
+ 	if (block == 0 || block >= SB_BLOCK_COUNT(s)) {
+ 		reiserfs_error(s, "vs-4010",
+-			       "block number is out of range %lu (%u)",
++			       "block number is out of range %u (%u)",
+ 			       block, SB_BLOCK_COUNT(s));
+ 		return 0;
+ 	}
+@@ -82,14 +82,14 @@ int is_reusable(struct super_block *s, b_blocknr_t block, int bit_value)
+ 		b_blocknr_t bmap1 = REISERFS_SB(s)->s_sbh->b_blocknr + 1;
+ 		if (block >= bmap1 &&
+ 		    block <= bmap1 + bmap_count) {
+-			reiserfs_error(s, "vs-4019", "bitmap block %lu(%u) "
++			reiserfs_error(s, "vs-4019", "bitmap block %u(%u) "
+ 				       "can't be freed or reused",
+ 				       block, bmap_count);
+ 			return 0;
+ 		}
+ 	} else {
+ 		if (offset == 0) {
+-			reiserfs_error(s, "vs-4020", "bitmap block %lu(%u) "
++			reiserfs_error(s, "vs-4020", "bitmap block %u(%u) "
+ 				       "can't be freed or reused",
+ 				       block, bmap_count);
+ 			return 0;
+@@ -98,7 +98,7 @@ int is_reusable(struct super_block *s, b_blocknr_t block, int bit_value)
+ 
+ 	if (bmap >= bmap_count) {
+ 		reiserfs_error(s, "vs-4030", "bitmap for requested block "
+-			       "is out of range: block=%lu, bitmap_nr=%u",
++			       "is out of range: block=%u, bitmap_nr=%u",
+ 			       block, bmap);
+ 		return 0;
+ 	}
+@@ -432,7 +432,7 @@ static void _reiserfs_free_block(struct reiserfs_transaction_handle *th,
+ 	get_bit_address(s, block, &nr, &offset);
+ 
+ 	if (nr >= reiserfs_bmap_count(s)) {
+-		reiserfs_error(s, "vs-4075", "block %lu is out of range",
++		reiserfs_error(s, "vs-4075", "block %u is out of range",
+ 			       block);
+ 		return;
+ 	}
+@@ -446,7 +446,7 @@ static void _reiserfs_free_block(struct reiserfs_transaction_handle *th,
+ 	/* clear bit for the given block in bit map */
+ 	if (!reiserfs_test_and_clear_le_bit(offset, bmbh->b_data)) {
+ 		reiserfs_error(s, "vs-4080",
+-			       "block %lu: bit already cleared", block);
++			       "block %u: bit already cleared", block);
+ 	}
+ 	apbi[nr].free_count++;
+ 	journal_mark_dirty(th, bmbh);
+@@ -478,7 +478,7 @@ void reiserfs_free_block(struct reiserfs_transaction_handle *th,
+ 	if (block > sb_block_count(REISERFS_SB(s)->s_rs)) {
+ 		reiserfs_error(th->t_super, "bitmap-4072",
+ 			       "Trying to free block outside file system "
+-			       "boundaries (%lu > %lu)",
++			       "boundaries (%u > %u)",
+ 			       block, sb_block_count(REISERFS_SB(s)->s_rs));
+ 		return;
+ 	}
+@@ -668,7 +668,7 @@ int reiserfs_parse_alloc_options(struct super_block *s, char *options)
+ 		return 1;
+ 	}
+ 
+-	reiserfs_info(s, "allocator options = [%08x]\n", SB_ALLOC_OPTS(s));
++	reiserfs_info(s, "allocator options = [%08lx]\n", SB_ALLOC_OPTS(s));
+ 	return 0;
+ }
+ 
+diff --git a/fs/reiserfs/ibalance.c b/fs/reiserfs/ibalance.c
+index b751eea32e20..d3448c788e5d 100644
+--- a/fs/reiserfs/ibalance.c
++++ b/fs/reiserfs/ibalance.c
+@@ -144,7 +144,7 @@ static void internal_insert_childs(struct buffer_info *cur_bi,
+ 
+ 	RFALSE(count > 2, "too many children (%d) are to be inserted", count);
+ 	RFALSE(B_FREE_SPACE(cur) < count * (KEY_SIZE + DC_SIZE),
+-	       "no enough free space (%d), needed %d bytes",
++	       "no enough free space (%d), needed %lu bytes",
+ 	       B_FREE_SPACE(cur), count * (KEY_SIZE + DC_SIZE));
+ 
+ 	/* prepare space for count disk_child */
+@@ -321,7 +321,7 @@ static void internal_copy_pointers_items(struct buffer_info *dest_bi,
+ 	       "no so many items (%d) in src (%d)", cpy_num, nr_src);
+ 	RFALSE(cpy_num < 0, "cpy_num less than 0 (%d)", cpy_num);
+ 	RFALSE(cpy_num - 1 + B_NR_ITEMS(dest) > (int)MAX_NR_KEY(dest),
+-	       "cpy_num (%d) + item number in dest (%d) can not be > MAX_NR_KEY(%d)",
++	       "cpy_num (%d) + item number in dest (%d) can not be > MAX_NR_KEY(%lu)",
+ 	       cpy_num, B_NR_ITEMS(dest), MAX_NR_KEY(dest));
+ 
+ 	if (cpy_num == 0)
+diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+index 2ac8b85596a9..488dcd1f9255 100644
+--- a/fs/reiserfs/journal.c
++++ b/fs/reiserfs/journal.c
+@@ -1131,7 +1131,7 @@ static int flush_commit_list(struct super_block *s,
+ 	bforget(jl->j_commit_bh);
+ 	if (journal->j_last_commit_id != 0 &&
+ 	    (jl->j_trans_id - journal->j_last_commit_id) != 1) {
+-		reiserfs_warning(s, "clm-2200", "last commit %lu, current %lu",
++		reiserfs_warning(s, "clm-2200", "last commit %u, current %u",
+ 				 journal->j_last_commit_id, jl->j_trans_id);
+ 	}
+ 	journal->j_last_commit_id = jl->j_trans_id;
+@@ -1373,7 +1373,7 @@ static int flush_journal_list(struct super_block *s,
+ 
+ 	count = 0;
+ 	if (j_len_saved > journal->j_trans_max) {
+-		reiserfs_panic(s, "journal-715", "length is %lu, trans id %lu",
++		reiserfs_panic(s, "journal-715", "length is %lu, trans id %u",
+ 			       j_len_saved, jl->j_trans_id);
+ 		return 0;
+ 	}
+@@ -1604,7 +1604,7 @@ flush_older_and_return:
+ 
+ 	if (journal->j_last_flush_id != 0 &&
+ 	    (jl->j_trans_id - journal->j_last_flush_id) != 1) {
+-		reiserfs_warning(s, "clm-2201", "last flush %lu, current %lu",
++		reiserfs_warning(s, "clm-2201", "last flush %u, current %u",
+ 				 journal->j_last_flush_id, jl->j_trans_id);
+ 	}
+ 	journal->j_last_flush_id = jl->j_trans_id;
+@@ -2028,7 +2028,7 @@ static int journal_transaction_is_valid(struct super_block *sb,
+ 			reiserfs_debug(sb, REISERFS_DEBUG_CODE,
+ 				       "journal-986: transaction "
+ 				       "is valid returning because trans_id %d is greater than "
+-				       "oldest_invalid %lu",
++				       "oldest_invalid %u",
+ 				       get_desc_trans_id(desc),
+ 				       *oldest_invalid_trans_id);
+ 			return 0;
+@@ -2088,8 +2088,8 @@ static int journal_transaction_is_valid(struct super_block *sb,
+ 		reiserfs_debug(sb, REISERFS_DEBUG_CODE,
+ 			       "journal-1006: found valid "
+ 			       "transaction start offset %llu, len %d id %d",
+-			       d_bh->b_blocknr -
+-			       SB_ONDISK_JOURNAL_1st_BLOCK(sb),
++			       (unsigned long long)(d_bh->b_blocknr -
++			       SB_ONDISK_JOURNAL_1st_BLOCK(sb)),
+ 			       get_desc_trans_len(desc),
+ 			       get_desc_trans_id(desc));
+ 		return 1;
+@@ -2137,7 +2137,7 @@ static int journal_read_transaction(struct super_block *sb,
+ 	trans_offset = d_bh->b_blocknr - SB_ONDISK_JOURNAL_1st_BLOCK(sb);
+ 	reiserfs_debug(sb, REISERFS_DEBUG_CODE, "journal-1037: "
+ 		       "journal_read_transaction, offset %llu, len %d mount_id %d",
+-		       d_bh->b_blocknr - SB_ONDISK_JOURNAL_1st_BLOCK(sb),
++		       (unsigned long long)(d_bh->b_blocknr - SB_ONDISK_JOURNAL_1st_BLOCK(sb)),
+ 		       get_desc_trans_len(desc), get_desc_mount_id(desc));
+ 	if (get_desc_trans_id(desc) < oldest_trans_id) {
+ 		reiserfs_debug(sb, REISERFS_DEBUG_CODE, "journal-1039: "
+@@ -2167,8 +2167,8 @@ static int journal_read_transaction(struct super_block *sb,
+ 		reiserfs_debug(sb, REISERFS_DEBUG_CODE,
+ 			       "journal_read_transaction, "
+ 			       "commit offset %llu had bad time %d or length %d",
+-			       c_bh->b_blocknr -
+-			       SB_ONDISK_JOURNAL_1st_BLOCK(sb),
++			       (unsigned long long)(c_bh->b_blocknr -
++			       SB_ONDISK_JOURNAL_1st_BLOCK(sb)),
+ 			       get_commit_trans_id(commit),
+ 			       get_commit_trans_len(commit));
+ 		brelse(c_bh);
+@@ -2414,7 +2414,7 @@ static int journal_read(struct super_block *sb)
+ 		reiserfs_debug(sb, REISERFS_DEBUG_CODE,
+ 			       "journal-1153: found in "
+ 			       "header: first_unflushed_offset %d, last_flushed_trans_id "
+-			       "%lu", le32_to_cpu(jh->j_first_unflushed_offset),
++			       "%u", le32_to_cpu(jh->j_first_unflushed_offset),
+ 			       le32_to_cpu(jh->j_last_flush_trans_id));
+ 		valid_journal_header = 1;
+ 
+@@ -2465,7 +2465,7 @@ static int journal_read(struct super_block *sb)
+ 				newest_mount_id = get_desc_mount_id(desc);
+ 				reiserfs_debug(sb, REISERFS_DEBUG_CODE,
+ 					       "journal-1179: Setting "
+-					       "oldest_start to offset %llu, trans_id %lu",
++					       "oldest_start to offset %lu, trans_id %u",
+ 					       oldest_start -
+ 					       SB_ONDISK_JOURNAL_1st_BLOCK
+ 					       (sb), oldest_trans_id);
+@@ -2475,7 +2475,7 @@ static int journal_read(struct super_block *sb)
+ 				oldest_start = d_bh->b_blocknr;
+ 				reiserfs_debug(sb, REISERFS_DEBUG_CODE,
+ 					       "journal-1180: Resetting "
+-					       "oldest_start to offset %lu, trans_id %lu",
++					       "oldest_start to offset %lu, trans_id %u",
+ 					       oldest_start -
+ 					       SB_ONDISK_JOURNAL_1st_BLOCK
+ 					       (sb), oldest_trans_id);
+@@ -2499,7 +2499,7 @@ start_log_replay:
+ 	if (oldest_trans_id) {
+ 		reiserfs_debug(sb, REISERFS_DEBUG_CODE,
+ 			       "journal-1206: Starting replay "
+-			       "from offset %llu, trans_id %lu",
++			       "from offset %lu, trans_id %u",
+ 			       cur_dblock - SB_ONDISK_JOURNAL_1st_BLOCK(sb),
+ 			       oldest_trans_id);
+ 
+@@ -2700,7 +2700,7 @@ static int check_advise_trans_params(struct super_block *sb,
+ 		 * and we need to advise proper values for them
+ 		 */
+ 		if (sb->s_blocksize != REISERFS_STANDARD_BLKSIZE) {
+-			reiserfs_warning(sb, "sh-464", "bad blocksize (%u)",
++			reiserfs_warning(sb, "sh-464", "bad blocksize (%lu)",
+ 					 sb->s_blocksize);
+ 			return 1;
+ 		}
+@@ -3280,7 +3280,7 @@ int journal_mark_dirty(struct reiserfs_transaction_handle *th,
+ 	PROC_INFO_INC(sb, journal.mark_dirty);
+ 	if (th->t_trans_id != journal->j_trans_id) {
+ 		reiserfs_panic(th->t_super, "journal-1577",
+-			       "handle trans id %ld != current trans id %ld",
++			       "handle trans id %d != current trans id %d",
+ 			       th->t_trans_id, journal->j_trans_id);
+ 	}
+ 
+@@ -3619,7 +3619,7 @@ static int check_journal_end(struct reiserfs_transaction_handle *th, int flags)
+ 
+ 	if (th->t_trans_id != journal->j_trans_id) {
+ 		reiserfs_panic(th->t_super, "journal-1577",
+-			       "handle trans id %ld != current trans id %ld",
++			       "handle trans id %d != current trans id %d",
+ 			       th->t_trans_id, journal->j_trans_id);
+ 	}
+ 
+diff --git a/fs/reiserfs/lbalance.c b/fs/reiserfs/lbalance.c
+index 249594a821e0..88442e92b89c 100644
+--- a/fs/reiserfs/lbalance.c
++++ b/fs/reiserfs/lbalance.c
+@@ -348,7 +348,7 @@ static void leaf_copy_items_entirely(struct buffer_info *dest_bi,
+ 	ih = item_head(dest, dest_before);
+ 
+ 	RFALSE(blkh_free_space(blkh) < cpy_num * IH_SIZE,
+-	       "vs-10140: not enough free space for headers %d (needed %d)",
++	       "vs-10140: not enough free space for headers %d (needed %lu)",
+ 	       B_FREE_SPACE(dest), cpy_num * IH_SIZE);
+ 
+ 	/* prepare space for headers */
+-- 

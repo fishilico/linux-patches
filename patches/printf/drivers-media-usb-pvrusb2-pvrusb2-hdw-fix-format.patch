@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 16 Oct 2015 19:40:48 +0200
+Subject: [PATCH] {PRINTF} drivers/media/usb/pvrusb2/pvrusb2-hdw: fix format
+ string bug in unused code (HARMLESS BUG)
+
+hdw_desc->client_modules seems to be never initialized
+---
+ drivers/media/usb/pvrusb2/pvrusb2-hdw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/media/usb/pvrusb2/pvrusb2-hdw.c b/drivers/media/usb/pvrusb2/pvrusb2-hdw.c
+index 0533ef20decf..2248d9786b78 100644
+--- a/drivers/media/usb/pvrusb2/pvrusb2-hdw.c
++++ b/drivers/media/usb/pvrusb2/pvrusb2-hdw.c
+@@ -2097,7 +2097,7 @@ static void pvr2_hdw_load_modules(struct pvr2_hdw *hdw)
+ 
+ 	cm = &hdw->hdw_desc->client_modules;
+ 	for (idx = 0; idx < cm->cnt; idx++) {
+-		request_module(cm->lst[idx]);
++		request_module("%s", cm->lst[idx]);
+ 	}
+ 
+ 	ct = &hdw->hdw_desc->client_table;
+-- 

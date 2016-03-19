@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 16 Oct 2015 19:47:36 +0200
+Subject: [PATCH] {PRINTF} (BUG) drivers/staging/rdma/hfi1/device: fix printf
+ format vuln
+
+---
+ drivers/staging/rdma/hfi1/device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/rdma/hfi1/device.c b/drivers/staging/rdma/hfi1/device.c
+index 58472e5ac4e5..827e2735b616 100644
+--- a/drivers/staging/rdma/hfi1/device.c
++++ b/drivers/staging/rdma/hfi1/device.c
+@@ -71,7 +71,7 @@ int hfi1_cdev_init(int minor, const char *name,
+ 
+ 	cdev_init(cdev, fops);
+ 	cdev->owner = THIS_MODULE;
+-	kobject_set_name(&cdev->kobj, name);
++	kobject_set_name(&cdev->kobj, "%s", name);  /* printf format string bug in mainline kernels */
+ 
+ 	ret = cdev_add(cdev, dev, 1);
+ 	if (ret < 0) {
+-- 

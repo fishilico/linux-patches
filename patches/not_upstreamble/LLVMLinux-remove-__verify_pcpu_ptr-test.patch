@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 24 Jun 2015 10:29:18 +0800
+Subject: [PATCH] {NOT UPSTREAMABLE} LLVMLinux: remove __verify_pcpu_ptr test
+ to fix compiler warning
+
+clang doesn't like the affectation in __verify_pcpu_ptr done in an union
+definition for READ_ONCE:
+
+    /mnt/data/src/linux/kernel/rcu/srcu.c:174:17: error: non-const
+    static data member must be initialized out of line
+                    t = READ_ONCE(per_cpu_ptr(sp->per_cpu_ref, cpu)->seq[idx]);
+                        ~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /mnt/data/src/linux/include/linux/percpu-defs.h:222:2: note:
+    expanded from macro 'per_cpu_ptr'
+            __verify_pcpu_ptr(ptr);                                         \
+            ^
+    /mnt/data/src/linux/include/linux/percpu-defs.h:206:23: note:
+    expanded from macro '__verify_pcpu_ptr'
+            const void __percpu *__vpp_verify = (typeof((ptr) + 0))NULL;    \
+                                 ^
+    /mnt/data/src/linux/include/linux/compiler.h:250:20: note: expanded
+    from macro 'READ_ONCE'
+            ({ union { typeof(x) __val; char __c[1]; } __u; __read_once_size(&(x), __u.__c, sizeof(x)); __u.__val; })
+                              ^
+---
+ include/linux/percpu-defs.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/include/linux/percpu-defs.h b/include/linux/percpu-defs.h
+index 8f16299ca068..7db5cc09101f 100644
+--- a/include/linux/percpu-defs.h
++++ b/include/linux/percpu-defs.h
+@@ -201,11 +201,18 @@
+  * + 0 is required in order to convert the pointer type from a
+  * potential array type to a pointer to a single item of the array.
+  */
++/* With clang, the affectation of __verify_pcpu_ptr doesn't behave nicely with
++ * READ_ONCE union construction. Remove the check then...
++ */
++#ifdef __clang__
++#define __verify_pcpu_ptr(ptr) do { } while (0)
++#else
+ #define __verify_pcpu_ptr(ptr)						\
+ do {									\
+ 	const void __percpu *__vpp_verify = (typeof((ptr) + 0))NULL;	\
+ 	(void)__vpp_verify;						\
+ } while (0)
++#endif
+ 
+ #ifdef CONFIG_SMP
+ 
+-- 

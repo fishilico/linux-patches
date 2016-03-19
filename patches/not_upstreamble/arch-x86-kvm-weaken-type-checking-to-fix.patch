@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 15 May 2015 11:40:38 +0800
+Subject: [PATCH] {NOT UPSTREAMABLE} arch/x86/kvm: weaken type checking to fix
+ enum conversion warning
+
+clang complained:
+
+    /mnt/data/src/linux/arch/x86/kvm/kvm_cache_regs.h:43:32: warning:
+    implicit conversion from enumeration type 'enum kvm_reg_ex' to
+    different enumeration type 'enum kvm_reg' [-Wenum-conversion]
+                     kvm_x86_ops->cache_reg(vcpu, VCPU_EXREG_PDPTR);
+                     ~~~~~~~~~~~                  ^~~~~~~~~~~~~~~~
+---
+ arch/x86/include/asm/kvm_host.h | 2 +-
+ arch/x86/kvm/svm.c              | 2 +-
+ arch/x86/kvm/vmx.c              | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 44adbb819041..9561c1aaf087 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -862,7 +862,7 @@ struct kvm_x86_ops {
+ 	void (*set_dr6)(struct kvm_vcpu *vcpu, unsigned long value);
+ 	void (*sync_dirty_debug_regs)(struct kvm_vcpu *vcpu);
+ 	void (*set_dr7)(struct kvm_vcpu *vcpu, unsigned long value);
+-	void (*cache_reg)(struct kvm_vcpu *vcpu, enum kvm_reg reg);
++	void (*cache_reg)(struct kvm_vcpu *vcpu, int reg);
+ 	unsigned long (*get_rflags)(struct kvm_vcpu *vcpu);
+ 	void (*set_rflags)(struct kvm_vcpu *vcpu, unsigned long rflags);
+ 	void (*fpu_activate)(struct kvm_vcpu *vcpu);
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index c13a64b7d789..6114d62154c3 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1280,7 +1280,7 @@ static void svm_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
+ 	to_svm(vcpu)->vmcb->save.rflags = rflags;
+ }
+ 
+-static void svm_cache_reg(struct kvm_vcpu *vcpu, enum kvm_reg reg)
++static void svm_cache_reg(struct kvm_vcpu *vcpu, int reg)
+ {
+ 	switch (reg) {
+ 	case VCPU_EXREG_PDPTR:
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 9bd8f44baded..f34bbc6df2be 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -3022,7 +3022,7 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+ 	return ret;
+ }
+ 
+-static void vmx_cache_reg(struct kvm_vcpu *vcpu, enum kvm_reg reg)
++static void vmx_cache_reg(struct kvm_vcpu *vcpu, int reg)
+ {
+ 	__set_bit(reg, (unsigned long *)&vcpu->arch.regs_avail);
+ 	switch (reg) {
+-- 

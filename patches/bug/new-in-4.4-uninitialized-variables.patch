@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 5 Nov 2015 22:02:39 +0100
+Subject: [PATCH] {BUG new in 4.4} uninitialized variables
+
+---
+ drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.c | 4 ++--
+ net/tipc/node.c                                  | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.c b/drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.c
+index 6aed923a709a..ad0b4b9947cb 100644
+--- a/drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.c
++++ b/drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.c
+@@ -3539,7 +3539,7 @@ static void rtl8xxxu_set_ampdu_min_space(struct rtl8xxxu_priv *priv, u8 density)
+ static int rtl8xxxu_active_to_emu(struct rtl8xxxu_priv *priv)
+ {
+ 	u8 val8;
+-	int count, ret;
++	int count, ret = 0; /* BUG */
+ 
+ 	/* Start of rtl8723AU_card_enable_flow */
+ 	/* Act to Cardemu sequence*/
+@@ -3588,7 +3588,7 @@ static int rtl8xxxu_active_to_lps(struct rtl8xxxu_priv *priv)
+ {
+ 	u8 val8;
+ 	u8 val32;
+-	int count, ret;
++	int count, ret = 0; /* BUG */
+ 
+ 	rtl8xxxu_write8(priv, REG_TXPAUSE, 0xff);
+ 
+diff --git a/net/tipc/node.c b/net/tipc/node.c
+index 9d7a16fc5ca4..0398fe4c2073 100644
+--- a/net/tipc/node.c
++++ b/net/tipc/node.c
+@@ -688,7 +688,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
+ {
+ 	struct tipc_link_entry *le = &n->links[bearer_id];
+ 	struct tipc_link *l = le->link;
+-	struct tipc_media_addr *maddr;
++	struct tipc_media_addr *maddr = NULL; /* BUG */
+ 	struct sk_buff_head xmitq;
+ 
+ 	if (!l)
+-- 

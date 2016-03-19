@@ -1,0 +1,182 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 3 Jun 2015 10:57:18 +0800
+Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
+
+---
+ fs/ext4/ialloc.c      | 4 ++++
+ kernel/bpf/verifier.c | 4 ++++
+ lib/rhashtable.c      | 4 ++++
+ mm/mmap.c             | 4 ++++
+ net/core/skbuff.c     | 4 ++++
+ net/ipv4/fib_trie.c   | 3 +++
+ net/ipv4/tcp_ipv4.c   | 1 +
+ net/sched/cls_u32.c   | 4 ++++
+ 8 files changed, 28 insertions(+)
+
+diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
+index acc0ad56bf2f..4257bf0b210d 100644
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -459,6 +459,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
+ 	int flex_size = ext4_flex_bg_size(sbi);
+ 	struct dx_hash_info hinfo;
+ 
++/* Variables "ret" and "found_flex_bg" are not initialized but not used when the goto found_flex_bg branch is taken */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wjump-misses-init"
+ 	ngroups = real_ngroups;
+ 	if (flex_size > 1) {
+ 		ngroups = (real_ngroups + flex_size - 1) >>
+@@ -586,6 +589,7 @@ fallback_retry:
+ 	}
+ 
+ 	return -1;
++#pragma GCC diagnostic pop
+ }
+ 
+ static int find_group_other(struct super_block *sb, struct inode *parent,
+diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
+index 2e7f7ab739e4..7dcc1433840d 100644
+--- a/kernel/bpf/verifier.c
++++ b/kernel/bpf/verifier.c
+@@ -1701,6 +1701,9 @@ static int do_check(struct verifier_env *env)
+ 	int insn_processed = 0;
+ 	bool do_print_state = false;
+ 
++/* Variable "opcode" is not initialized but not used when the goto process_bpf_exit branch is taken */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wjump-misses-init"
+ 	init_reg_state(regs);
+ 	insn_idx = 0;
+ 	for (;;) {
+@@ -1953,6 +1956,7 @@ process_bpf_exit:
+ 	}
+ 
+ 	return 0;
++#pragma GCC diagnostic pop
+ }
+ 
+ /* look for pseudo eBPF instructions that access map FDs and
+diff --git a/lib/rhashtable.c b/lib/rhashtable.c
+index cc808707d1cf..871ea1d71900 100644
+--- a/lib/rhashtable.c
++++ b/lib/rhashtable.c
+@@ -594,6 +594,9 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+ 	struct rhashtable *ht = iter->ht;
+ 	struct rhash_head *p = iter->p;
+ 
++/* Variable "skip" is not initialized but not used when the goto is taken */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wjump-misses-init"
+ 	if (p) {
+ 		p = rht_dereference_bucket_rcu(p->next, tbl, iter->slot);
+ 		goto next;
+@@ -609,6 +612,7 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+ 		}
+ 
+ next:
++#pragma GCC diagnostic pop
+ 		if (!rht_is_a_nulls(p)) {
+ 			iter->skip++;
+ 			iter->p = p;
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 76d1ec29149b..f806f0fd67e9 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -756,6 +756,9 @@ int vma_adjust(struct vm_area_struct *vma, unsigned long start,
+ 	long adjust_next = 0;
+ 	int remove_next = 0;
+ 
++/* Variable "exporter" is not initialized but not used when the goto again branch is taken */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wjump-misses-init"
+ 	if (next && !insert) {
+ 		struct vm_area_struct *exporter = NULL;
+ 
+@@ -935,6 +938,7 @@ again:			remove_next = 1 + (end > next->vm_end);
+ 	validate_mm(mm);
+ 
+ 	return 0;
++#pragma GCC diagnostic pop
+ }
+ 
+ /*
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 8616d1147c93..5722c4a244d5 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -1430,6 +1430,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+ 	    unlikely((err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC))))
+ 		return err;
+ 
++/* Variable "end" is not initialized but not used after the goto drop_pages branch is taken */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wjump-misses-init"
+ 	i = 0;
+ 	if (offset >= len)
+ 		goto drop_pages;
+@@ -1446,6 +1449,7 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+ 
+ drop_pages:
+ 		skb_shinfo(skb)->nr_frags = i;
++#pragma GCC diagnostic pop
+ 
+ 		for (; i < nfrags; i++)
+ 			skb_frag_unref(skb, i);
+diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
+index 6ed9f65fb945..1a094363afc1 100644
+--- a/net/ipv4/fib_trie.c
++++ b/net/ipv4/fib_trie.c
+@@ -1292,6 +1292,8 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+ 	this_cpu_inc(stats->gets);
+ #endif
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wjump-misses-init"
+ 	/* Step 1: Travel to the longest prefix match in the trie */
+ 	for (;;) {
+ 		index = get_cindex(key, n);
+@@ -1455,6 +1457,7 @@ found:
+ 	this_cpu_inc(stats->semantic_match_miss);
+ #endif
+ 	goto backtrace;
++#pragma GCC diagnostic pop
+ }
+ EXPORT_SYMBOL_GPL(fib_table_lookup);
+ 
+diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
+index 487ac67059e2..3a609b36d6c5 100644
+--- a/net/ipv4/tcp_ipv4.c
++++ b/net/ipv4/tcp_ipv4.c
+@@ -1872,6 +1872,7 @@ get_sk:
+ 		}
+ 		icsk = inet_csk(sk);
+ 	}
++#pragma GCC diagnostic pop
+ 	spin_unlock_bh(&ilb->lock);
+ 	st->offset = 0;
+ 	if (++st->bucket < INET_LHTABLE_SIZE) {
+diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
+index 4fbb67430ce4..155875021cf5 100644
+--- a/net/sched/cls_u32.c
++++ b/net/sched/cls_u32.c
+@@ -104,6 +104,9 @@ static inline unsigned int u32_hash_fold(__be32 key,
+ 
+ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp, struct tcf_result *res)
+ {
++/* Variable "key" is not initialized but not used when the goto check_terminal is taken */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wjump-misses-init"
+ 	struct {
+ 		struct tc_u_knode *knode;
+ 		unsigned int	  off;
+@@ -247,6 +250,7 @@ out:
+ deadloop:
+ 	net_warn_ratelimited("cls_u32: dead loop\n");
+ 	return -1;
++#pragma GCC diagnostic pop
+ }
+ 
+ static struct tc_u_hnode *
+-- 

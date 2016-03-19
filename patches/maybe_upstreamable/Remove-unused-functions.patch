@@ -1,0 +1,628 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 1 Aug 2015 11:51:29 +0800
+Subject: [PATCH] {MAYBE UPS} Remove unused functions
+
+---
+ arch/x86/kernel/devicetree.c                       |  10 -
+ arch/x86/platform/uv/tlb_uv.c                      |  20 --
+ drivers/gpu/drm/amd/amdgpu/amdgpu_amdkfd.c         |   8 -
+ drivers/gpu/drm/amd/amdgpu/cz_smc.c                |   7 -
+ drivers/gpu/drm/gma500/mmu.c                       |   9 -
+ drivers/gpu/drm/nouveau/nvkm/engine/disp/sorg94.c  |  15 --
+ drivers/gpu/drm/radeon/mkregtable.c                | 257 ---------------------
+ drivers/net/ethernet/broadcom/genet/bcmgenet.c     | 122 ----------
+ drivers/rapidio/rio-sysfs.c                        |  16 --
+ drivers/staging/lustre/lustre/lclient/lcommon_cl.c |  11 -
+ net/tipc/link.c                                    |   5 -
+ 11 files changed, 480 deletions(-)
+
+diff --git a/arch/x86/kernel/devicetree.c b/arch/x86/kernel/devicetree.c
+index 1f4acd68b98b..21806b5890b9 100644
+--- a/arch/x86/kernel/devicetree.c
++++ b/arch/x86/kernel/devicetree.c
+@@ -28,16 +28,6 @@ char __initdata cmd_line[COMMAND_LINE_SIZE];
+ 
+ int __initdata of_ioapic;
+ 
+-void __init early_init_dt_scan_chosen_arch(unsigned long node)
+-{
+-	BUG();
+-}
+-
+-void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+-{
+-	BUG();
+-}
+-
+ void * __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
+ {
+ 	return __alloc_bootmem(size, align, __pa(MAX_DMA_ADDRESS));
+diff --git a/arch/x86/platform/uv/tlb_uv.c b/arch/x86/platform/uv/tlb_uv.c
+index 3b6ec42718e4..7f009f1431ce 100644
+--- a/arch/x86/platform/uv/tlb_uv.c
++++ b/arch/x86/platform/uv/tlb_uv.c
+@@ -573,26 +573,6 @@ static unsigned long uv2_3_read_status(unsigned long offset, int rshft, int desc
+ }
+ 
+ /*
+- * Return whether the status of the descriptor that is normally used for this
+- * cpu (the one indexed by its hub-relative cpu number) is busy.
+- * The status of the original 32 descriptors is always reflected in the 64
+- * bits of UVH_LB_BAU_SB_ACTIVATION_STATUS_0.
+- * The bit provided by the activation_status_2 register is irrelevant to
+- * the status if it is only being tested for busy or not busy.
+- */
+-int normal_busy(struct bau_control *bcp)
+-{
+-	int cpu = bcp->uvhub_cpu;
+-	int mmr_offset;
+-	int right_shift;
+-
+-	mmr_offset = UVH_LB_BAU_SB_ACTIVATION_STATUS_0;
+-	right_shift = cpu * UV_ACT_STATUS_SIZE;
+-	return (((((read_lmmr(mmr_offset) >> right_shift) &
+-				UV_ACT_STATUS_MASK)) << 1) == UV2H_DESC_BUSY);
+-}
+-
+-/*
+  * Entered when a bau descriptor has gone into a permanent busy wait because
+  * of a hardware bug.
+  * Workaround the bug.
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_amdkfd.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_amdkfd.c
+index 84d68d658f8a..78215268eea6 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_amdkfd.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_amdkfd.c
+@@ -158,14 +158,6 @@ int amdgpu_amdkfd_resume(struct amdgpu_device *rdev)
+ 	return r;
+ }
+ 
+-u32 pool_to_domain(enum kgd_memory_pool p)
+-{
+-	switch (p) {
+-	case KGD_POOL_FRAMEBUFFER: return AMDGPU_GEM_DOMAIN_VRAM;
+-	default: return AMDGPU_GEM_DOMAIN_GTT;
+-	}
+-}
+-
+ int alloc_gtt_mem(struct kgd_dev *kgd, size_t size,
+ 			void **mem_obj, uint64_t *gpu_addr,
+ 			void **cpu_ptr)
+diff --git a/drivers/gpu/drm/amd/amdgpu/cz_smc.c b/drivers/gpu/drm/amd/amdgpu/cz_smc.c
+index ac7fee7b7eca..9cc41c39ac02 100644
+--- a/drivers/gpu/drm/amd/amdgpu/cz_smc.c
++++ b/drivers/gpu/drm/amd/amdgpu/cz_smc.c
+@@ -99,13 +99,6 @@ int cz_send_msg_to_smc(struct amdgpu_device *adev, u16 msg)
+ 	return 0;
+ }
+ 
+-int cz_send_msg_to_smc_with_parameter_async(struct amdgpu_device *adev,
+-						u16 msg, u32 parameter)
+-{
+-	WREG32(mmSMU_MP1_SRBM2P_ARG_0, parameter);
+-	return cz_send_msg_to_smc_async(adev, msg);
+-}
+-
+ int cz_send_msg_to_smc_with_parameter(struct amdgpu_device *adev,
+ 						u16 msg, u32 parameter)
+ {
+diff --git a/drivers/gpu/drm/gma500/mmu.c b/drivers/gpu/drm/gma500/mmu.c
+index 0eaf11c19939..557cae75e7e7 100644
+--- a/drivers/gpu/drm/gma500/mmu.c
++++ b/drivers/gpu/drm/gma500/mmu.c
+@@ -426,15 +426,6 @@ struct psb_mmu_pd *psb_mmu_get_default_pd(struct psb_mmu_driver *driver)
+ 	return pd;
+ }
+ 
+-/* Returns the physical address of the PD shared by sgx/msvdx */
+-uint32_t psb_get_default_pd_addr(struct psb_mmu_driver *driver)
+-{
+-	struct psb_mmu_pd *pd;
+-
+-	pd = psb_mmu_get_default_pd(driver);
+-	return page_to_pfn(pd->p) << PAGE_SHIFT;
+-}
+-
+ void psb_mmu_driver_takedown(struct psb_mmu_driver *driver)
+ {
+ 	struct drm_device *dev = driver->dev;
+diff --git a/drivers/gpu/drm/nouveau/nvkm/engine/disp/sorg94.c b/drivers/gpu/drm/nouveau/nvkm/engine/disp/sorg94.c
+index 1bb9d661e9b3..627b9ee1ddd2 100644
+--- a/drivers/gpu/drm/nouveau/nvkm/engine/disp/sorg94.c
++++ b/drivers/gpu/drm/nouveau/nvkm/engine/disp/sorg94.c
+@@ -39,21 +39,6 @@ g94_sor_loff(struct nvkm_output_dp *outp)
+ }
+ 
+ /*******************************************************************************
+- * TMDS/LVDS
+- ******************************************************************************/
+-static const struct nvkm_output_func
+-g94_sor_output_func = {
+-};
+-
+-int
+-g94_sor_output_new(struct nvkm_disp *disp, int index,
+-		   struct dcb_output *dcbE, struct nvkm_output **poutp)
+-{
+-	return nvkm_output_new_(&g94_sor_output_func, disp,
+-				index, dcbE, poutp);
+-}
+-
+-/*******************************************************************************
+  * DisplayPort
+  ******************************************************************************/
+ u32
+diff --git a/drivers/gpu/drm/radeon/mkregtable.c b/drivers/gpu/drm/radeon/mkregtable.c
+index edd78d99a02b..f27b268b41f6 100644
+--- a/drivers/gpu/drm/radeon/mkregtable.c
++++ b/drivers/gpu/drm/radeon/mkregtable.c
+@@ -74,19 +74,6 @@ extern void __list_add(struct list_head *new,
+ #endif
+ 
+ /**
+- * list_add - add a new entry
+- * @new: new entry to be added
+- * @head: list head to add it after
+- *
+- * Insert a new entry after the specified head.
+- * This is good for implementing stacks.
+- */
+-static inline void list_add(struct list_head *new, struct list_head *head)
+-{
+-	__list_add(new, head, head->next);
+-}
+-
+-/**
+  * list_add_tail - add a new entry
+  * @new: new entry to be added
+  * @head: list head to add it before
+@@ -99,250 +86,6 @@ static inline void list_add_tail(struct list_head *new, struct list_head *head)
+ 	__list_add(new, head->prev, head);
+ }
+ 
+-/*
+- * Delete a list entry by making the prev/next entries
+- * point to each other.
+- *
+- * This is only for internal list manipulation where we know
+- * the prev/next entries already!
+- */
+-static inline void __list_del(struct list_head *prev, struct list_head *next)
+-{
+-	next->prev = prev;
+-	prev->next = next;
+-}
+-
+-/**
+- * list_del - deletes entry from list.
+- * @entry: the element to delete from the list.
+- * Note: list_empty() on entry does not return true after this, the entry is
+- * in an undefined state.
+- */
+-#ifndef CONFIG_DEBUG_LIST
+-static inline void list_del(struct list_head *entry)
+-{
+-	__list_del(entry->prev, entry->next);
+-	entry->next = (void *)0xDEADBEEF;
+-	entry->prev = (void *)0xBEEFDEAD;
+-}
+-#else
+-extern void list_del(struct list_head *entry);
+-#endif
+-
+-/**
+- * list_replace - replace old entry by new one
+- * @old : the element to be replaced
+- * @new : the new element to insert
+- *
+- * If @old was empty, it will be overwritten.
+- */
+-static inline void list_replace(struct list_head *old, struct list_head *new)
+-{
+-	new->next = old->next;
+-	new->next->prev = new;
+-	new->prev = old->prev;
+-	new->prev->next = new;
+-}
+-
+-static inline void list_replace_init(struct list_head *old,
+-				     struct list_head *new)
+-{
+-	list_replace(old, new);
+-	INIT_LIST_HEAD(old);
+-}
+-
+-/**
+- * list_del_init - deletes entry from list and reinitialize it.
+- * @entry: the element to delete from the list.
+- */
+-static inline void list_del_init(struct list_head *entry)
+-{
+-	__list_del(entry->prev, entry->next);
+-	INIT_LIST_HEAD(entry);
+-}
+-
+-/**
+- * list_move - delete from one list and add as another's head
+- * @list: the entry to move
+- * @head: the head that will precede our entry
+- */
+-static inline void list_move(struct list_head *list, struct list_head *head)
+-{
+-	__list_del(list->prev, list->next);
+-	list_add(list, head);
+-}
+-
+-/**
+- * list_move_tail - delete from one list and add as another's tail
+- * @list: the entry to move
+- * @head: the head that will follow our entry
+- */
+-static inline void list_move_tail(struct list_head *list,
+-				  struct list_head *head)
+-{
+-	__list_del(list->prev, list->next);
+-	list_add_tail(list, head);
+-}
+-
+-/**
+- * list_is_last - tests whether @list is the last entry in list @head
+- * @list: the entry to test
+- * @head: the head of the list
+- */
+-static inline int list_is_last(const struct list_head *list,
+-			       const struct list_head *head)
+-{
+-	return list->next == head;
+-}
+-
+-/**
+- * list_empty - tests whether a list is empty
+- * @head: the list to test.
+- */
+-static inline int list_empty(const struct list_head *head)
+-{
+-	return head->next == head;
+-}
+-
+-/**
+- * list_empty_careful - tests whether a list is empty and not being modified
+- * @head: the list to test
+- *
+- * Description:
+- * tests whether a list is empty _and_ checks that no other CPU might be
+- * in the process of modifying either member (next or prev)
+- *
+- * NOTE: using list_empty_careful() without synchronization
+- * can only be safe if the only activity that can happen
+- * to the list entry is list_del_init(). Eg. it cannot be used
+- * if another CPU could re-list_add() it.
+- */
+-static inline int list_empty_careful(const struct list_head *head)
+-{
+-	struct list_head *next = head->next;
+-	return (next == head) && (next == head->prev);
+-}
+-
+-/**
+- * list_is_singular - tests whether a list has just one entry.
+- * @head: the list to test.
+- */
+-static inline int list_is_singular(const struct list_head *head)
+-{
+-	return !list_empty(head) && (head->next == head->prev);
+-}
+-
+-static inline void __list_cut_position(struct list_head *list,
+-				       struct list_head *head,
+-				       struct list_head *entry)
+-{
+-	struct list_head *new_first = entry->next;
+-	list->next = head->next;
+-	list->next->prev = list;
+-	list->prev = entry;
+-	entry->next = list;
+-	head->next = new_first;
+-	new_first->prev = head;
+-}
+-
+-/**
+- * list_cut_position - cut a list into two
+- * @list: a new list to add all removed entries
+- * @head: a list with entries
+- * @entry: an entry within head, could be the head itself
+- *	and if so we won't cut the list
+- *
+- * This helper moves the initial part of @head, up to and
+- * including @entry, from @head to @list. You should
+- * pass on @entry an element you know is on @head. @list
+- * should be an empty list or a list you do not care about
+- * losing its data.
+- *
+- */
+-static inline void list_cut_position(struct list_head *list,
+-				     struct list_head *head,
+-				     struct list_head *entry)
+-{
+-	if (list_empty(head))
+-		return;
+-	if (list_is_singular(head) && (head->next != entry && head != entry))
+-		return;
+-	if (entry == head)
+-		INIT_LIST_HEAD(list);
+-	else
+-		__list_cut_position(list, head, entry);
+-}
+-
+-static inline void __list_splice(const struct list_head *list,
+-				 struct list_head *prev, struct list_head *next)
+-{
+-	struct list_head *first = list->next;
+-	struct list_head *last = list->prev;
+-
+-	first->prev = prev;
+-	prev->next = first;
+-
+-	last->next = next;
+-	next->prev = last;
+-}
+-
+-/**
+- * list_splice - join two lists, this is designed for stacks
+- * @list: the new list to add.
+- * @head: the place to add it in the first list.
+- */
+-static inline void list_splice(const struct list_head *list,
+-			       struct list_head *head)
+-{
+-	if (!list_empty(list))
+-		__list_splice(list, head, head->next);
+-}
+-
+-/**
+- * list_splice_tail - join two lists, each list being a queue
+- * @list: the new list to add.
+- * @head: the place to add it in the first list.
+- */
+-static inline void list_splice_tail(struct list_head *list,
+-				    struct list_head *head)
+-{
+-	if (!list_empty(list))
+-		__list_splice(list, head->prev, head);
+-}
+-
+-/**
+- * list_splice_init - join two lists and reinitialise the emptied list.
+- * @list: the new list to add.
+- * @head: the place to add it in the first list.
+- *
+- * The list at @list is reinitialised
+- */
+-static inline void list_splice_init(struct list_head *list,
+-				    struct list_head *head)
+-{
+-	if (!list_empty(list)) {
+-		__list_splice(list, head, head->next);
+-		INIT_LIST_HEAD(list);
+-	}
+-}
+-
+-/**
+- * list_splice_tail_init - join two lists and reinitialise the emptied list
+- * @list: the new list to add.
+- * @head: the place to add it in the first list.
+- *
+- * Each of the lists is a queue.
+- * The list at @list is reinitialised
+- */
+-static inline void list_splice_tail_init(struct list_head *list,
+-					 struct list_head *head)
+-{
+-	if (!list_empty(list)) {
+-		__list_splice(list, head->prev, head);
+-		INIT_LIST_HEAD(list);
+-	}
+-}
+-
+ /**
+  * list_entry - get the struct for this entry
+  * @ptr:	the &struct list_head pointer.
+diff --git a/drivers/net/ethernet/broadcom/genet/bcmgenet.c b/drivers/net/ethernet/broadcom/genet/bcmgenet.c
+index d7e01a74e927..720e6281e2a7 100644
+--- a/drivers/net/ethernet/broadcom/genet/bcmgenet.c
++++ b/drivers/net/ethernet/broadcom/genet/bcmgenet.c
+@@ -2639,128 +2639,6 @@ static void bcmgenet_enable_dma(struct bcmgenet_priv *priv, u32 dma_ctrl)
+ 	bcmgenet_tdma_writel(priv, reg, DMA_CTRL);
+ }
+ 
+-static bool bcmgenet_hfb_is_filter_enabled(struct bcmgenet_priv *priv,
+-					   u32 f_index)
+-{
+-	u32 offset;
+-	u32 reg;
+-
+-	offset = HFB_FLT_ENABLE_V3PLUS + (f_index < 32) * sizeof(u32);
+-	reg = bcmgenet_hfb_reg_readl(priv, offset);
+-	return !!(reg & (1 << (f_index % 32)));
+-}
+-
+-static void bcmgenet_hfb_enable_filter(struct bcmgenet_priv *priv, u32 f_index)
+-{
+-	u32 offset;
+-	u32 reg;
+-
+-	offset = HFB_FLT_ENABLE_V3PLUS + (f_index < 32) * sizeof(u32);
+-	reg = bcmgenet_hfb_reg_readl(priv, offset);
+-	reg |= (1 << (f_index % 32));
+-	bcmgenet_hfb_reg_writel(priv, reg, offset);
+-}
+-
+-static void bcmgenet_hfb_set_filter_rx_queue_mapping(struct bcmgenet_priv *priv,
+-						     u32 f_index, u32 rx_queue)
+-{
+-	u32 offset;
+-	u32 reg;
+-
+-	offset = f_index / 8;
+-	reg = bcmgenet_rdma_readl(priv, DMA_INDEX2RING_0 + offset);
+-	reg &= ~(0xF << (4 * (f_index % 8)));
+-	reg |= ((rx_queue & 0xF) << (4 * (f_index % 8)));
+-	bcmgenet_rdma_writel(priv, reg, DMA_INDEX2RING_0 + offset);
+-}
+-
+-static void bcmgenet_hfb_set_filter_length(struct bcmgenet_priv *priv,
+-					   u32 f_index, u32 f_length)
+-{
+-	u32 offset;
+-	u32 reg;
+-
+-	offset = HFB_FLT_LEN_V3PLUS +
+-		 ((priv->hw_params->hfb_filter_cnt - 1 - f_index) / 4) *
+-		 sizeof(u32);
+-	reg = bcmgenet_hfb_reg_readl(priv, offset);
+-	reg &= ~(0xFF << (8 * (f_index % 4)));
+-	reg |= ((f_length & 0xFF) << (8 * (f_index % 4)));
+-	bcmgenet_hfb_reg_writel(priv, reg, offset);
+-}
+-
+-static int bcmgenet_hfb_find_unused_filter(struct bcmgenet_priv *priv)
+-{
+-	u32 f_index;
+-
+-	for (f_index = 0; f_index < priv->hw_params->hfb_filter_cnt; f_index++)
+-		if (!bcmgenet_hfb_is_filter_enabled(priv, f_index))
+-			return f_index;
+-
+-	return -ENOMEM;
+-}
+-
+-/* bcmgenet_hfb_add_filter
+- *
+- * Add new filter to Hardware Filter Block to match and direct Rx traffic to
+- * desired Rx queue.
+- *
+- * f_data is an array of unsigned 32-bit integers where each 32-bit integer
+- * provides filter data for 2 bytes (4 nibbles) of Rx frame:
+- *
+- * bits 31:20 - unused
+- * bit  19    - nibble 0 match enable
+- * bit  18    - nibble 1 match enable
+- * bit  17    - nibble 2 match enable
+- * bit  16    - nibble 3 match enable
+- * bits 15:12 - nibble 0 data
+- * bits 11:8  - nibble 1 data
+- * bits 7:4   - nibble 2 data
+- * bits 3:0   - nibble 3 data
+- *
+- * Example:
+- * In order to match:
+- * - Ethernet frame type = 0x0800 (IP)
+- * - IP version field = 4
+- * - IP protocol field = 0x11 (UDP)
+- *
+- * The following filter is needed:
+- * u32 hfb_filter_ipv4_udp[] = {
+- *   Rx frame offset 0x00: 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+- *   Rx frame offset 0x08: 0x00000000, 0x00000000, 0x000F0800, 0x00084000,
+- *   Rx frame offset 0x10: 0x00000000, 0x00000000, 0x00000000, 0x00030011,
+- * };
+- *
+- * To add the filter to HFB and direct the traffic to Rx queue 0, call:
+- * bcmgenet_hfb_add_filter(priv, hfb_filter_ipv4_udp,
+- *                         ARRAY_SIZE(hfb_filter_ipv4_udp), 0);
+- */
+-int bcmgenet_hfb_add_filter(struct bcmgenet_priv *priv, u32 *f_data,
+-			    u32 f_length, u32 rx_queue)
+-{
+-	int f_index;
+-	u32 i;
+-
+-	f_index = bcmgenet_hfb_find_unused_filter(priv);
+-	if (f_index < 0)
+-		return -ENOMEM;
+-
+-	if (f_length > priv->hw_params->hfb_filter_size)
+-		return -EINVAL;
+-
+-	for (i = 0; i < f_length; i++)
+-		bcmgenet_hfb_writel(priv, f_data[i],
+-			(f_index * priv->hw_params->hfb_filter_size + i) *
+-			sizeof(u32));
+-
+-	bcmgenet_hfb_set_filter_length(priv, f_index, 2 * f_length);
+-	bcmgenet_hfb_set_filter_rx_queue_mapping(priv, f_index, rx_queue);
+-	bcmgenet_hfb_enable_filter(priv, f_index);
+-	bcmgenet_hfb_reg_writel(priv, 0x1, HFB_CTRL);
+-
+-	return 0;
+-}
+-
+ /* bcmgenet_hfb_clear
+  *
+  * Clear Hardware Filter Block and disable all filtering.
+diff --git a/drivers/rapidio/rio-sysfs.c b/drivers/rapidio/rio-sysfs.c
+index eda41563d06d..83a789fd57e8 100644
+--- a/drivers/rapidio/rio-sysfs.c
++++ b/drivers/rapidio/rio-sysfs.c
+@@ -284,22 +284,6 @@ int rio_create_sysfs_dev_files(struct rio_dev *rdev)
+ 	return err;
+ }
+ 
+-/**
+- * rio_remove_sysfs_dev_files - cleanup RIO specific sysfs files
+- * @rdev: device whose entries we should free
+- *
+- * Cleanup when @rdev is removed from sysfs.
+- */
+-void rio_remove_sysfs_dev_files(struct rio_dev *rdev)
+-{
+-	device_remove_bin_file(&rdev->dev, &rio_config_attr);
+-	if (rdev->pef & RIO_PEF_SWITCH) {
+-		device_remove_file(&rdev->dev, &dev_attr_routes);
+-		device_remove_file(&rdev->dev, &dev_attr_lnext);
+-		device_remove_file(&rdev->dev, &dev_attr_hopcount);
+-	}
+-}
+-
+ static ssize_t bus_scan_store(struct bus_type *bus, const char *buf,
+ 				size_t count)
+ {
+diff --git a/drivers/staging/lustre/lustre/lclient/lcommon_cl.c b/drivers/staging/lustre/lustre/lclient/lcommon_cl.c
+index 34dde7dede74..4dfeb4e07d41 100644
+--- a/drivers/staging/lustre/lustre/lclient/lcommon_cl.c
++++ b/drivers/staging/lustre/lustre/lclient/lcommon_cl.c
+@@ -986,17 +986,6 @@ struct inode *ccc_object_inode(const struct cl_object *obj)
+ }
+ 
+ /**
+- * Returns a pointer to cl_page associated with \a vmpage, without acquiring
+- * additional reference to the resulting page. This is an unsafe version of
+- * cl_vmpage_page() that can only be used under vmpage lock.
+- */
+-struct cl_page *ccc_vmpage_page_transient(struct page *vmpage)
+-{
+-	KLASSERT(PageLocked(vmpage));
+-	return (struct cl_page *)vmpage->private;
+-}
+-
+-/**
+  * Initialize or update CLIO structures for regular files when new
+  * meta-data arrives from the server.
+  *
+diff --git a/net/tipc/link.c b/net/tipc/link.c
+index 347cdc99ed09..65fc24b62b05 100644
+--- a/net/tipc/link.c
++++ b/net/tipc/link.c
+@@ -300,11 +300,6 @@ static bool link_is_bc_rcvlink(struct tipc_link *l)
+ 	return ((l->bc_rcvlink == l) && !link_is_bc_sndlink(l));
+ }
+ 
+-int tipc_link_is_active(struct tipc_link *l)
+-{
+-	return l->active;
+-}
+-
+ void tipc_link_set_active(struct tipc_link *l, bool active)
+ {
+ 	l->active = active;
+-- 

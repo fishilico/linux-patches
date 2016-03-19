@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 16 Oct 2015 19:35:29 +0200
+Subject: [PATCH] {PRINTF} (BUG) drivers/gpu/drm/amd/scheduler/gpu_scheduler:
+ fix potential format string vuln in ring name
+
+---
+ drivers/gpu/drm/amd/scheduler/gpu_scheduler.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c b/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c
+index 8b2becd1aa07..242ee9be7617 100644
+--- a/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c
++++ b/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c
+@@ -504,7 +504,7 @@ int amd_sched_init(struct amd_gpu_scheduler *sched,
+ 	}
+ 
+ 	/* Each scheduler will run on a seperate kernel thread */
+-	sched->thread = kthread_run(amd_sched_main, sched, sched->name);
++	sched->thread = kthread_run(amd_sched_main, sched, "%s", sched->name); /* printf format string bug in mainline kernels */
+ 	if (IS_ERR(sched->thread)) {
+ 		DRM_ERROR("Failed to create scheduler for %s.\n", name);
+ 		return PTR_ERR(sched->thread);
+-- 

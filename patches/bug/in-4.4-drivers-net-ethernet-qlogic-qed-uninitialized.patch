@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 18 Dec 2015 14:40:50 +0100
+Subject: [PATCH] {BUG in 4.4} drivers/net/ethernet/qlogic/qed: uninitialized
+ variable
+
+---
+ drivers/net/ethernet/qlogic/qed/qed_int.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/qlogic/qed/qed_int.c b/drivers/net/ethernet/qlogic/qed/qed_int.c
+index 9cc9d62c1fec..8fb2328dfc24 100644
+--- a/drivers/net/ethernet/qlogic/qed/qed_int.c
++++ b/drivers/net/ethernet/qlogic/qed/qed_int.c
+@@ -786,7 +786,7 @@ void qed_int_igu_enable_int(struct qed_hwfn *p_hwfn,
+ int qed_int_igu_enable(struct qed_hwfn *p_hwfn, struct qed_ptt *p_ptt,
+ 		       enum qed_int_mode int_mode)
+ {
+-	int rc, i;
++	int rc = 0 /* BUG -Wsometimes-uninitialized in 4.4-rc5+ */, i;
+ 
+ 	/* Mask non-link attentions */
+ 	for (i = 0; i < 9; i++)
+-- 

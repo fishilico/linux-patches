@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 18 Mar 2015 23:28:28 +0800
+Subject: [PATCH] {MAYBE UPS} Add default: in switch over a constant to avoid
+ clang -Wswitch
+
+---
+ drivers/staging/lustre/include/linux/libcfs/libcfs_private.h | 2 +-
+ include/linux/genl_magic_struct.h                            | 3 +++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h b/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
+index a80d993b882e..6d0296591294 100644
+--- a/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
++++ b/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
+@@ -372,7 +372,7 @@ int cfs_percpt_atomic_summary(atomic_t **refs);
+  *       value  after  conversion...
+  *
+  */
+-#define CLASSERT(cond) do {switch (42) {case (cond): case 0: break; } } while (0)
++#define CLASSERT(cond) do {switch (42) {case (cond): case 0: default: break; } } while (0)
+ 
+ /* max value for numeric network address */
+ #define MAX_NUMERIC_VALUE 0xffffffff
+diff --git a/include/linux/genl_magic_struct.h b/include/linux/genl_magic_struct.h
+index eecd19b37001..089f528ccf66 100644
+--- a/include/linux/genl_magic_struct.h
++++ b/include/linux/genl_magic_struct.h
+@@ -185,6 +185,7 @@ static inline void ct_assert_unique_operations(void)
+ {
+ 	switch (0) {
+ #include GENL_MAGIC_INCLUDE_FILE
++	default:
+ 		;
+ 	}
+ }
+@@ -203,6 +204,7 @@ static inline void ct_assert_unique_top_level_attributes(void)
+ {
+ 	switch (0) {
+ #include GENL_MAGIC_INCLUDE_FILE
++	default:
+ 		;
+ 	}
+ }
+@@ -213,6 +215,7 @@ static inline void ct_assert_unique_ ## s_name ## _attributes(void)	\
+ {									\
+ 	switch (0) {							\
+ 		s_fields						\
++		default:						\
+ 			;						\
+ 	}								\
+ }
+-- 

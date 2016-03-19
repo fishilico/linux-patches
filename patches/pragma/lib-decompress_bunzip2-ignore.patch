@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 17 Jun 2015 16:35:38 +0800
+Subject: [PATCH] {PRAGMA} lib/decompress_bunzip2: ignore
+ -Warray-bounds-pointer-arithmetic
+
+---
+ lib/decompress_bunzip2.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
+index 0234361b24b8..0e145ec7d9d6 100644
+--- a/lib/decompress_bunzip2.c
++++ b/lib/decompress_bunzip2.c
+@@ -299,8 +299,15 @@ static int INIT get_next_block(struct bunzip_data *bd)
+ 		   adjust the base and limit array pointers so we're
+ 		   not always wasting the first entry.  We do this
+ 		   again when using them (during symbol decoding).*/
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Warray-bounds-pointer-arithmetic"
++#endif
+ 		base = hufGroup->base-1;
+ 		limit = hufGroup->limit-1;
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 		/* Calculate permute[].  Concurrently, initialize
+ 		 * temp[] and limit[]. */
+ 		pp = 0;
+@@ -361,8 +368,15 @@ static int INIT get_next_block(struct bunzip_data *bd)
+ 			if (selector >= nSelectors)
+ 				return RETVAL_DATA_ERROR;
+ 			hufGroup = bd->groups+selectors[selector++];
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Warray-bounds-pointer-arithmetic"
++#endif
+ 			base = hufGroup->base-1;
+ 			limit = hufGroup->limit-1;
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 		}
+ 		/* Read next Huffman-coded symbol. */
+ 		/* Note: It is far cheaper to read maxLen bits and
+-- 

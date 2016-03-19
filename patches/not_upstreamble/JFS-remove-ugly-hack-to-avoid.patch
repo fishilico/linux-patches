@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 21 Mar 2015 17:18:40 +0800
+Subject: [PATCH] {NOT UPSTREAMABLE} JFS: remove ugly hack to avoid
+ -Wmaybe-unitialized which introduced -Wundefined
+
+cf. c9e3ad6021e5 ("JFS: Get rid of "may be used uninitialized" warnings")
+---
+ fs/jfs/jfs_txnmgr.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/fs/jfs/jfs_txnmgr.c b/fs/jfs/jfs_txnmgr.c
+index d595856453b2..de6351c1c8db 100644
+--- a/fs/jfs/jfs_txnmgr.c
++++ b/fs/jfs/jfs_txnmgr.c
+@@ -1928,8 +1928,7 @@ static void xtLog(struct jfs_log * log, struct tblock * tblk, struct lrd * lrd,
+ 	 * header ?
+ 	 */
+ 	if (tlck->type & tlckTRUNCATE) {
+-		/* This odd declaration suppresses a bogus gcc warning */
+-		pxd_t pxd = pxd;	/* truncated extent of xad */
++		pxd_t pxd;	/* truncated extent of xad */
+ 		int twm;
+ 
+ 		/*
+-- 

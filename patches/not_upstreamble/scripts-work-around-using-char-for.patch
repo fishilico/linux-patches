@@ -1,0 +1,74 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 9 Sep 2015 20:21:51 +0200
+Subject: [PATCH] {NOT UPSTREAMABLE} scripts: work around using char* for
+ storing string literals
+
+---
+ scripts/asn1_compiler.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/scripts/asn1_compiler.c b/scripts/asn1_compiler.c
+index 20b40b6a6f41..70085522c200 100644
+--- a/scripts/asn1_compiler.c
++++ b/scripts/asn1_compiler.c
+@@ -479,7 +479,7 @@ static void tokenise(char *buffer, char *end)
+ 				if (memcmp(p, "::=", 3) == 0) {
+ 					p += 3;
+ 					tokens[tix].size = 3;
+-					tokens[tix].content = "::=";
++					tokens[tix].content = (char *)"::=";
+ 					tokens[tix++].token_type = TOKEN_ASSIGNMENT;
+ 					continue;
+ 				}
+@@ -489,14 +489,14 @@ static void tokenise(char *buffer, char *end)
+ 				if (memcmp(p, "({", 2) == 0) {
+ 					p += 2;
+ 					tokens[tix].size = 2;
+-					tokens[tix].content = "({";
++					tokens[tix].content = (char *)"({";
+ 					tokens[tix++].token_type = TOKEN_OPEN_ACTION;
+ 					continue;
+ 				}
+ 				if (memcmp(p, "})", 2) == 0) {
+ 					p += 2;
+ 					tokens[tix].size = 2;
+-					tokens[tix].content = "})";
++					tokens[tix].content = (char *)"})";
+ 					tokens[tix++].token_type = TOKEN_CLOSE_ACTION;
+ 					continue;
+ 				}
+@@ -507,27 +507,27 @@ static void tokenise(char *buffer, char *end)
+ 				switch (*p) {
+ 				case '{':
+ 					p += 1;
+-					tokens[tix].content = "{";
++					tokens[tix].content = (char *)"{";
+ 					tokens[tix++].token_type = TOKEN_OPEN_CURLY;
+ 					continue;
+ 				case '}':
+ 					p += 1;
+-					tokens[tix].content = "}";
++					tokens[tix].content = (char *)"}";
+ 					tokens[tix++].token_type = TOKEN_CLOSE_CURLY;
+ 					continue;
+ 				case '[':
+ 					p += 1;
+-					tokens[tix].content = "[";
++					tokens[tix].content = (char *)"[";
+ 					tokens[tix++].token_type = TOKEN_OPEN_SQUARE;
+ 					continue;
+ 				case ']':
+ 					p += 1;
+-					tokens[tix].content = "]";
++					tokens[tix].content = (char *)"]";
+ 					tokens[tix++].token_type = TOKEN_CLOSE_SQUARE;
+ 					continue;
+ 				case ',':
+ 					p += 1;
+-					tokens[tix].content = ",";
++					tokens[tix].content = (char *)",";
+ 					tokens[tix++].token_type = TOKEN_COMMA;
+ 					continue;
+ 				default:
+-- 

@@ -1,0 +1,1544 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 28 Jun 2015 15:24:06 +0800
+Subject: [PATCH] {MAYBE UPS} Add printf format attributes
+
+---
+ arch/x86/boot/tools/build.c                       |   3 +-
+ drivers/acpi/acpica/acutils.h                     |  17 +--
+ drivers/acpi/acpica/nsrepair2.c                   |   2 +-
+ drivers/acpi/acpica/utdebug.c                     |   2 +-
+ drivers/ata/libata-eh.c                           |   5 +-
+ drivers/base/core.c                               |   2 +-
+ drivers/base/cpu.c                                |   2 +-
+ drivers/clk/clkdev.c                              |   4 +-
+ drivers/gpu/drm/i915/i915_gpu_error.c             |   5 +-
+ drivers/iio/industrialio-trigger.c                |   3 +-
+ drivers/isdn/capi/capiutil.c                      |   4 +-
+ drivers/isdn/hardware/eicon/debug.c               | 131 +++++++++++-----------
+ drivers/isdn/hardware/eicon/maintidi.c            |   3 +-
+ drivers/isdn/hisax/fsm.h                          |   2 +-
+ drivers/isdn/hisax/hisax.h                        |   2 +-
+ drivers/isdn/hisax/hisax_isac.c                   |   2 +-
+ drivers/isdn/hisax/isdnl1.c                       |   2 +-
+ drivers/isdn/hisax/isdnl2.c                       |   2 +-
+ drivers/isdn/hisax/tei.c                          |   6 +-
+ drivers/isdn/hysdn/hysdn_boot.c                   |   4 +-
+ drivers/isdn/hysdn/hysdn_defs.h                   |   3 +-
+ drivers/isdn/hysdn/hysdn_procconf.c               |  12 +-
+ drivers/isdn/hysdn/hysdn_sched.c                  |   2 +-
+ drivers/md/bcache/bset.h                          |   5 +-
+ drivers/pnp/interface.c                           |   2 +-
+ drivers/scsi/BusLogic.c                           |   6 +-
+ drivers/scsi/esas2r/esas2r_init.c                 |   2 +-
+ drivers/scsi/esas2r/esas2r_ioctl.c                |   2 +-
+ drivers/scsi/esas2r/esas2r_log.c                  |   8 +-
+ drivers/scsi/esas2r/esas2r_log.h                  |  10 +-
+ drivers/scsi/esas2r/esas2r_main.c                 |   4 +-
+ drivers/staging/fbtft/fb_agm1264k-fl.c            |   2 +-
+ drivers/staging/fbtft/fb_ra8875.c                 |   2 +-
+ drivers/staging/fbtft/fbtft-io.c                  |  12 +-
+ drivers/staging/fbtft/fbtft.h                     |   2 +-
+ drivers/staging/fbtft/fbtft_device.c              |   2 +-
+ drivers/staging/lustre/lustre/include/lu_object.h |   4 +-
+ drivers/staging/speakup/main.c                    |   2 +-
+ drivers/staging/speakup/spk_priv.h                |   2 +-
+ drivers/xen/xenbus/xenbus_client.c                |  10 +-
+ include/acpi/acpiosxf.h                           |   3 +-
+ include/linux/iio/iio.h                           |   2 +-
+ include/linux/iio/trigger_consumer.h              |   2 +-
+ include/linux/trace_events.h                      |   1 +
+ kernel/audit.c                                    |   4 +-
+ kernel/trace/trace.c                              |   2 +-
+ kernel/trace/trace.h                              |   8 +-
+ kernel/trace/trace_output.c                       |   4 +-
+ lib/nmi_backtrace.c                               |   2 +-
+ mm/slub.c                                         |   4 +-
+ net/dccp/ccid.c                                   |   3 +-
+ net/dccp/probe.c                                  |   6 +-
+ net/rds/ib.h                                      |   1 +
+ net/rds/iw.h                                      |   1 +
+ net/tipc/netlink_compat.c                         |   2 +-
+ scripts/genksyms/genksyms.h                       |   2 +-
+ scripts/kconfig/confdata.c                        |  11 +-
+ scripts/kconfig/lkc.h                             |   4 +-
+ scripts/kconfig/menu.c                            |   3 +-
+ scripts/kconfig/zconf.tab.c_shipped               |   6 +-
+ scripts/mod/modpost.h                             |   6 +-
+ scripts/unifdef.c                                 |   2 +-
+ security/tomoyo/common.c                          |   3 +-
+ security/tomoyo/common.h                          |   4 +-
+ sound/soc/soc-dapm.c                              |   3 +-
+ 65 files changed, 208 insertions(+), 178 deletions(-)
+
+diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
+index 1a25ba2a3921..cfd955cff525 100644
+--- a/arch/x86/boot/tools/build.c
++++ b/arch/x86/boot/tools/build.c
+@@ -126,7 +126,8 @@ static u32 partial_crc32(const u8 *s, unsigned int len, u32 crc)
+ 	return crc;
+ }
+ 
+-static void die(const char * str, ...)
++static __attribute__ ((format(printf, 1, 2)))
++void die(const char * str, ...)
+ {
+ 	va_list args;
+ 	va_start(args, str);
+diff --git a/drivers/acpi/acpica/acutils.h b/drivers/acpi/acpica/acutils.h
+index e43ab6f2ad7e..83c497add7fb 100644
+--- a/drivers/acpi/acpica/acutils.h
++++ b/drivers/acpi/acpica/acutils.h
+@@ -654,18 +654,18 @@ void acpi_ut_delete_address_lists(void);
+ /*
+  * utxferror - various error/warning output functions
+  */
+-void ACPI_INTERNAL_VAR_XFACE
++__printf(5, 6) void ACPI_INTERNAL_VAR_XFACE
+ acpi_ut_predefined_warning(const char *module_name,
+ 			   u32 line_number,
+ 			   char *pathname,
+ 			   u8 node_flags, const char *format, ...);
+ 
+-void ACPI_INTERNAL_VAR_XFACE
++__printf(5, 6) void ACPI_INTERNAL_VAR_XFACE
+ acpi_ut_predefined_info(const char *module_name,
+ 			u32 line_number,
+ 			char *pathname, u8 node_flags, const char *format, ...);
+ 
+-void ACPI_INTERNAL_VAR_XFACE
++__printf(5, 6) void ACPI_INTERNAL_VAR_XFACE
+ acpi_ut_predefined_bios_error(const char *module_name,
+ 			      u32 line_number,
+ 			      char *pathname,
+@@ -699,16 +699,19 @@ const char *acpi_ut_scan_number(const char *string, u64 *number_ptr);
+ 
+ const char *acpi_ut_print_number(char *string, u64 number);
+ 
+-int
++__printf(3, 0) int
+ acpi_ut_vsnprintf(char *string,
+ 		  acpi_size size, const char *format, va_list args);
+ 
+-int acpi_ut_snprintf(char *string, acpi_size size, const char *format, ...);
++__printf(3, 4) int
++acpi_ut_snprintf(char *string, acpi_size size, const char *format, ...);
+ 
+ #ifdef ACPI_APPLICATION
+-int acpi_ut_file_vprintf(ACPI_FILE file, const char *format, va_list args);
++__printf(2, 0) int
++acpi_ut_file_vprintf(ACPI_FILE file, const char *format, va_list args);
+ 
+-int acpi_ut_file_printf(ACPI_FILE file, const char *format, ...);
++__printf(2, 3) int
++acpi_ut_file_printf(ACPI_FILE file, const char *format, ...);
+ #endif
+ 
+ /*
+diff --git a/drivers/acpi/acpica/nsrepair2.c b/drivers/acpi/acpica/nsrepair2.c
+index 63edbbbf9ae4..be9860a53b15 100644
+--- a/drivers/acpi/acpica/nsrepair2.c
++++ b/drivers/acpi/acpica/nsrepair2.c
+@@ -305,7 +305,7 @@ acpi_ns_repair_FDE(struct acpi_evaluate_info *info,
+ 			ACPI_WARN_PREDEFINED((AE_INFO,
+ 					      info->full_pathname,
+ 					      info->node_flags,
+-					      "Incorrect return buffer length %u, expected %u",
++					      "Incorrect return buffer length %u, expected %zu",
+ 					      return_object->buffer.length,
+ 					      ACPI_FDE_DWORD_BUFFER_SIZE));
+ 
+diff --git a/drivers/acpi/acpica/utdebug.c b/drivers/acpi/acpica/utdebug.c
+index 1cfc5f69b033..b738621a38f6 100644
+--- a/drivers/acpi/acpica/utdebug.c
++++ b/drivers/acpi/acpica/utdebug.c
+@@ -193,7 +193,7 @@ acpi_debug_print(u32 requested_debug_level,
+ 	 * Display the module name, current line number, thread ID (if requested),
+ 	 * current procedure nesting level, and the current procedure name
+ 	 */
+-	acpi_os_printf("%9s-%04ld ", module_name, line_number);
++	acpi_os_printf("%9s-%04u ", module_name, line_number);
+ 
+ #ifdef ACPI_APPLICATION
+ 	/*
+diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
+index 961acc788f44..f92d51458b0b 100644
+--- a/drivers/ata/libata-eh.c
++++ b/drivers/ata/libata-eh.c
+@@ -175,8 +175,9 @@ static void ata_eh_handle_port_resume(struct ata_port *ap)
+ { }
+ #endif /* CONFIG_PM */
+ 
+-static void __ata_ehi_pushv_desc(struct ata_eh_info *ehi, const char *fmt,
+-				 va_list args)
++static __printf(2, 0) void __ata_ehi_pushv_desc(struct ata_eh_info *ehi,
++						const char *fmt,
++						va_list args)
+ {
+ 	ehi->desc_len += vscnprintf(ehi->desc + ehi->desc_len,
+ 				     ATA_EH_DESC_LEN - ehi->desc_len,
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 0a8bdade53f2..25ede08a24cd 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1676,7 +1676,7 @@ static void device_create_release(struct device *dev)
+ 	kfree(dev);
+ }
+ 
+-static struct device *
++static __printf(6, 0) struct device *
+ device_create_groups_vargs(struct class *class, struct device *parent,
+ 			   dev_t devt, void *drvdata,
+ 			   const struct attribute_group **groups,
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 691eeea2f19a..17ca4223fff8 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -393,7 +393,7 @@ static void device_create_release(struct device *dev)
+ 	kfree(dev);
+ }
+ 
+-static struct device *
++static __printf(4, 0) struct device *
+ __cpu_device_create(struct device *parent, void *drvdata,
+ 		    const struct attribute_group **groups,
+ 		    const char *fmt, va_list args)
+diff --git a/drivers/clk/clkdev.c b/drivers/clk/clkdev.c
+index 779b6ff0c7ad..647d470df58f 100644
+--- a/drivers/clk/clkdev.c
++++ b/drivers/clk/clkdev.c
+@@ -250,7 +250,7 @@ struct clk_lookup_alloc {
+ 	char	con_id[MAX_CON_ID];
+ };
+ 
+-static struct clk_lookup * __init_refok
++static __printf(3, 0) struct clk_lookup * __init_refok
+ vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
+ 	va_list ap)
+ {
+@@ -274,7 +274,7 @@ vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
+ 	return &cla->cl;
+ }
+ 
+-static struct clk_lookup *
++static __printf(3, 0) struct clk_lookup *
+ vclkdev_create(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
+ 	va_list ap)
+ {
+diff --git a/drivers/gpu/drm/i915/i915_gpu_error.c b/drivers/gpu/drm/i915/i915_gpu_error.c
+index 06ca4082735b..4d3657ad52dc 100644
+--- a/drivers/gpu/drm/i915/i915_gpu_error.c
++++ b/drivers/gpu/drm/i915/i915_gpu_error.c
+@@ -129,8 +129,9 @@ static void __i915_error_advance(struct drm_i915_error_state_buf *e,
+ 	e->pos += len;
+ }
+ 
+-static void i915_error_vprintf(struct drm_i915_error_state_buf *e,
+-			       const char *f, va_list args)
++static __printf(2, 0)
++void i915_error_vprintf(struct drm_i915_error_state_buf *e,
++			const char *f, va_list args)
+ {
+ 	unsigned len;
+ 
+diff --git a/drivers/iio/industrialio-trigger.c b/drivers/iio/industrialio-trigger.c
+index ae2806aafb72..29f84bf604e5 100644
+--- a/drivers/iio/industrialio-trigger.c
++++ b/drivers/iio/industrialio-trigger.c
+@@ -442,7 +442,8 @@ static void iio_trig_subirqunmask(struct irq_data *d)
+ 	trig->subirqs[d->irq - trig->subirq_base].enabled = true;
+ }
+ 
+-static struct iio_trigger *viio_trigger_alloc(const char *fmt, va_list vargs)
++static __printf(1, 0)
++struct iio_trigger *viio_trigger_alloc(const char *fmt, va_list vargs)
+ {
+ 	struct iio_trigger *trig;
+ 	trig = kzalloc(sizeof *trig, GFP_KERNEL);
+diff --git a/drivers/isdn/capi/capiutil.c b/drivers/isdn/capi/capiutil.c
+index 9846d82eb097..1b9f41563d47 100644
+--- a/drivers/isdn/capi/capiutil.c
++++ b/drivers/isdn/capi/capiutil.c
+@@ -566,7 +566,7 @@ static char *pnames[] =
+ #include <stdarg.h>
+ 
+ /*-------------------------------------------------------*/
+-static _cdebbuf *bufprint(_cdebbuf *cdb, char *fmt, ...)
++static __printf(2, 3) _cdebbuf *bufprint(_cdebbuf *cdb, char *fmt, ...)
+ {
+ 	va_list f;
+ 	size_t n, r;
+@@ -672,7 +672,7 @@ static _cdebbuf *protocol_message_2_pars(_cdebbuf *cdb, _cmsg *cmsg, int level)
+ 			cmsg->l += 2;
+ 			break;
+ 		case _CDWORD:
+-			cdb = bufprint(cdb, "%-*s = 0x%lx\n", slen, NAME, *(u32 *) (cmsg->m + cmsg->l));
++			cdb = bufprint(cdb, "%-*s = 0x%x\n", slen, NAME, *(u32 *) (cmsg->m + cmsg->l));
+ 			cmsg->l += 4;
+ 			break;
+ 		case _CSTRUCT:
+diff --git a/drivers/isdn/hardware/eicon/debug.c b/drivers/isdn/hardware/eicon/debug.c
+index b5226af6ddec..dfe30bb4fa52 100644
+--- a/drivers/isdn/hardware/eicon/debug.c
++++ b/drivers/isdn/hardware/eicon/debug.c
+@@ -24,6 +24,7 @@ static word SuperTraceCreateReadReq(byte *P, const char *path);
+ static int diva_mnt_cmp_nmbr(const char *nmbr);
+ static void diva_free_dma_descriptor(IDI_CALL request, int nr);
+ static int diva_get_dma_descriptor(IDI_CALL request, dword *dma_magic);
++__printf(3, 4)
+ void diva_mnt_internal_dprintf(dword drv_id, dword type, char *p, ...);
+ 
+ static dword MaxDumpSize = 256;
+@@ -569,7 +570,7 @@ static void DI_format_locked(unsigned short id,
+ 	DI_format(1, id, type, format, argument_list);
+ }
+ 
+-static void DI_format(int do_lock,
++static __printf(4, 0) void DI_format(int do_lock,
+ 		      unsigned short id,
+ 		      int type,
+ 		      char *format,
+@@ -1518,29 +1519,29 @@ static void diva_maint_state_change_notify(void *user_context,
+ 			}
+ 
+ 
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Ch    = %lu",
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Ch    = %u",
+ 						  (int)modem->ChannelNumber);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Event = %lu", modem->Event);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Norm  = %lu", modem->Norm);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Event = %u", modem->Event);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Norm  = %u", modem->Norm);
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Opts. = 0x%08x", modem->Options);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Tx    = %lu Bps", modem->TxSpeed);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Rx    = %lu Bps", modem->RxSpeed);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM RT    = %lu mSec",
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Tx    = %u Bps", modem->TxSpeed);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Rx    = %u Bps", modem->RxSpeed);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM RT    = %u mSec",
+ 						  modem->RoundtripMsec);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Sr    = %lu", modem->SymbolRate);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Sr    = %u", modem->SymbolRate);
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Rxl   = %d dBm", modem->RxLeveldBm);
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM El    = %d dBm", modem->EchoLeveldBm);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM SNR   = %lu dB", modem->SNRdb);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM MAE   = %lu", modem->MAE);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM LRet  = %lu",
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM SNR   = %u dB", modem->SNRdb);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM MAE   = %u", modem->MAE);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM LRet  = %u",
+ 						  modem->LocalRetrains);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM RRet  = %lu",
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM RRet  = %u",
+ 						  modem->RemoteRetrains);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM LRes  = %lu", modem->LocalResyncs);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM RRes  = %lu",
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM LRes  = %u", modem->LocalResyncs);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM RRes  = %u",
+ 						  modem->RemoteResyncs);
+ 			if (modem->Event == 3) {
+-				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Disc  =  %lu", modem->DiscReason);
++				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "MDM Disc  =  %u", modem->DiscReason);
+ 			}
+ 		}
+ 		if ((modem->Event == 3) && (pC->hDbg->dbgMask & DIVA_MGT_DBG_MDM_STATISTICS)) {
+@@ -1564,20 +1565,20 @@ static void diva_maint_state_change_notify(void *user_context,
+ 				}
+ 			}
+ 
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Ch    = %lu", (int)fax->ChannelNumber);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Event = %lu",     fax->Event);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Pages = %lu",     fax->Page_Counter);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Ch    = %u", (int)fax->ChannelNumber);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Event = %u",     fax->Event);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Pages = %u",     fax->Page_Counter);
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Feat. = 0x%08x",  fax->Features);
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX ID    = <%s>",    &fax->Station_ID[0]);
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Saddr = <%s>",    &fax->Subaddress[0]);
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Pwd   = <%s>",    &fax->Password[0]);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Speed = %lu",     fax->Speed);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Speed = %u",     fax->Speed);
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Res.  = 0x%08x",  fax->Resolution);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Width = %lu",     fax->Paper_Width);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Length= %lu",     fax->Paper_Length);
+-			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX SLT   = %lu",     fax->Scanline_Time);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Width = %u",     fax->Paper_Width);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Length= %u",     fax->Paper_Length);
++			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX SLT   = %u",     fax->Scanline_Time);
+ 			if (fax->Event == 3) {
+-				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Disc  = %lu",     fax->Disc_Reason);
++				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_STAT, "FAX Disc  = %u",     fax->Disc_Reason);
+ 			}
+ 		}
+ 		if ((fax->Event == 3) && (pC->hDbg->dbgMask & DIVA_MGT_DBG_FAX_STATISTICS)) {
+@@ -1601,35 +1602,35 @@ static void diva_maint_state_change_notify(void *user_context,
+ 			*/
+ 			if (channel->pInterfaceStat->inc.Calls) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Inc Calls                     =%lu", channel->pInterfaceStat->inc.Calls);
++							  "Inc Calls                     =%u", channel->pInterfaceStat->inc.Calls);
+ 			}
+ 			if (channel->pInterfaceStat->inc.Connected) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Inc Connected                 =%lu", channel->pInterfaceStat->inc.Connected);
++							  "Inc Connected                 =%u", channel->pInterfaceStat->inc.Connected);
+ 			}
+ 			if (channel->pInterfaceStat->inc.User_Busy) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Inc Busy                      =%lu", channel->pInterfaceStat->inc.User_Busy);
++							  "Inc Busy                      =%u", channel->pInterfaceStat->inc.User_Busy);
+ 			}
+ 			if (channel->pInterfaceStat->inc.Call_Rejected) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Inc Rejected                  =%lu", channel->pInterfaceStat->inc.Call_Rejected);
++							  "Inc Rejected                  =%u", channel->pInterfaceStat->inc.Call_Rejected);
+ 			}
+ 			if (channel->pInterfaceStat->inc.Wrong_Number) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Inc Wrong Nr                  =%lu", channel->pInterfaceStat->inc.Wrong_Number);
++							  "Inc Wrong Nr                  =%u", channel->pInterfaceStat->inc.Wrong_Number);
+ 			}
+ 			if (channel->pInterfaceStat->inc.Incompatible_Dst) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Inc Incomp. Dest              =%lu", channel->pInterfaceStat->inc.Incompatible_Dst);
++							  "Inc Incomp. Dest              =%u", channel->pInterfaceStat->inc.Incompatible_Dst);
+ 			}
+ 			if (channel->pInterfaceStat->inc.Out_of_Order) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Inc Out of Order              =%lu", channel->pInterfaceStat->inc.Out_of_Order);
++							  "Inc Out of Order              =%u", channel->pInterfaceStat->inc.Out_of_Order);
+ 			}
+ 			if (channel->pInterfaceStat->inc.Ignored) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Inc Ignored                   =%lu", channel->pInterfaceStat->inc.Ignored);
++							  "Inc Ignored                   =%u", channel->pInterfaceStat->inc.Ignored);
+ 			}
+ 
+ 			/*
+@@ -1637,31 +1638,31 @@ static void diva_maint_state_change_notify(void *user_context,
+ 			*/
+ 			if (channel->pInterfaceStat->outg.Calls) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Outg Calls                    =%lu", channel->pInterfaceStat->outg.Calls);
++							  "Outg Calls                    =%u", channel->pInterfaceStat->outg.Calls);
+ 			}
+ 			if (channel->pInterfaceStat->outg.Connected) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Outg Connected                =%lu", channel->pInterfaceStat->outg.Connected);
++							  "Outg Connected                =%u", channel->pInterfaceStat->outg.Connected);
+ 			}
+ 			if (channel->pInterfaceStat->outg.User_Busy) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Outg Busy                     =%lu", channel->pInterfaceStat->outg.User_Busy);
++							  "Outg Busy                     =%u", channel->pInterfaceStat->outg.User_Busy);
+ 			}
+ 			if (channel->pInterfaceStat->outg.No_Answer) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Outg No Answer                =%lu", channel->pInterfaceStat->outg.No_Answer);
++							  "Outg No Answer                =%u", channel->pInterfaceStat->outg.No_Answer);
+ 			}
+ 			if (channel->pInterfaceStat->outg.Wrong_Number) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Outg Wrong Nr                 =%lu", channel->pInterfaceStat->outg.Wrong_Number);
++							  "Outg Wrong Nr                 =%u", channel->pInterfaceStat->outg.Wrong_Number);
+ 			}
+ 			if (channel->pInterfaceStat->outg.Call_Rejected) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Outg Rejected                 =%lu", channel->pInterfaceStat->outg.Call_Rejected);
++							  "Outg Rejected                 =%u", channel->pInterfaceStat->outg.Call_Rejected);
+ 			}
+ 			if (channel->pInterfaceStat->outg.Other_Failures) {
+ 				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-							  "Outg Other Failures           =%lu", channel->pInterfaceStat->outg.Other_Failures);
++							  "Outg Other Failures           =%u", channel->pInterfaceStat->outg.Other_Failures);
+ 			}
+ 		}
+ 		break;
+@@ -1669,114 +1670,114 @@ static void diva_maint_state_change_notify(void *user_context,
+ 	case DIVA_SUPER_TRACE_NOTIFY_MDM_STAT_CHANGE:
+ 		if (channel->pInterfaceStat->mdm.Disc_Normal) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "MDM Disc Normal        = %lu", channel->pInterfaceStat->mdm.Disc_Normal);
++						  "MDM Disc Normal        = %u", channel->pInterfaceStat->mdm.Disc_Normal);
+ 		}
+ 		if (channel->pInterfaceStat->mdm.Disc_Unspecified) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "MDM Disc Unsp.         = %lu", channel->pInterfaceStat->mdm.Disc_Unspecified);
++						  "MDM Disc Unsp.         = %u", channel->pInterfaceStat->mdm.Disc_Unspecified);
+ 		}
+ 		if (channel->pInterfaceStat->mdm.Disc_Busy_Tone) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "MDM Disc Busy Tone     = %lu", channel->pInterfaceStat->mdm.Disc_Busy_Tone);
++						  "MDM Disc Busy Tone     = %u", channel->pInterfaceStat->mdm.Disc_Busy_Tone);
+ 		}
+ 		if (channel->pInterfaceStat->mdm.Disc_Congestion) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "MDM Disc Congestion    = %lu", channel->pInterfaceStat->mdm.Disc_Congestion);
++						  "MDM Disc Congestion    = %u", channel->pInterfaceStat->mdm.Disc_Congestion);
+ 		}
+ 		if (channel->pInterfaceStat->mdm.Disc_Carr_Wait) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "MDM Disc Carrier Wait  = %lu", channel->pInterfaceStat->mdm.Disc_Carr_Wait);
++						  "MDM Disc Carrier Wait  = %u", channel->pInterfaceStat->mdm.Disc_Carr_Wait);
+ 		}
+ 		if (channel->pInterfaceStat->mdm.Disc_Trn_Timeout) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "MDM Disc Trn. T.o.     = %lu", channel->pInterfaceStat->mdm.Disc_Trn_Timeout);
++						  "MDM Disc Trn. T.o.     = %u", channel->pInterfaceStat->mdm.Disc_Trn_Timeout);
+ 		}
+ 		if (channel->pInterfaceStat->mdm.Disc_Incompat) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "MDM Disc Incompatible  = %lu", channel->pInterfaceStat->mdm.Disc_Incompat);
++						  "MDM Disc Incompatible  = %u", channel->pInterfaceStat->mdm.Disc_Incompat);
+ 		}
+ 		if (channel->pInterfaceStat->mdm.Disc_Frame_Rej) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "MDM Disc Frame Reject  = %lu", channel->pInterfaceStat->mdm.Disc_Frame_Rej);
++						  "MDM Disc Frame Reject  = %u", channel->pInterfaceStat->mdm.Disc_Frame_Rej);
+ 		}
+ 		if (channel->pInterfaceStat->mdm.Disc_V42bis) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "MDM Disc V.42bis       = %lu", channel->pInterfaceStat->mdm.Disc_V42bis);
++						  "MDM Disc V.42bis       = %u", channel->pInterfaceStat->mdm.Disc_V42bis);
+ 		}
+ 		break;
+ 
+ 	case DIVA_SUPER_TRACE_NOTIFY_FAX_STAT_CHANGE:
+ 		if (channel->pInterfaceStat->fax.Disc_Normal) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Normal        = %lu", channel->pInterfaceStat->fax.Disc_Normal);
++						  "FAX Disc Normal        = %u", channel->pInterfaceStat->fax.Disc_Normal);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Not_Ident) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Not Ident.    = %lu", channel->pInterfaceStat->fax.Disc_Not_Ident);
++						  "FAX Disc Not Ident.    = %u", channel->pInterfaceStat->fax.Disc_Not_Ident);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_No_Response) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc No Response   = %lu", channel->pInterfaceStat->fax.Disc_No_Response);
++						  "FAX Disc No Response   = %u", channel->pInterfaceStat->fax.Disc_No_Response);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Retries) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Max Retries   = %lu", channel->pInterfaceStat->fax.Disc_Retries);
++						  "FAX Disc Max Retries   = %u", channel->pInterfaceStat->fax.Disc_Retries);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Unexp_Msg) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Unexp. Msg.        = %lu", channel->pInterfaceStat->fax.Disc_Unexp_Msg);
++						  "FAX Unexp. Msg.        = %u", channel->pInterfaceStat->fax.Disc_Unexp_Msg);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_No_Polling) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc No Polling    = %lu", channel->pInterfaceStat->fax.Disc_No_Polling);
++						  "FAX Disc No Polling    = %u", channel->pInterfaceStat->fax.Disc_No_Polling);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Training) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Training      = %lu", channel->pInterfaceStat->fax.Disc_Training);
++						  "FAX Disc Training      = %u", channel->pInterfaceStat->fax.Disc_Training);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Unexpected) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Unexpected    = %lu", channel->pInterfaceStat->fax.Disc_Unexpected);
++						  "FAX Disc Unexpected    = %u", channel->pInterfaceStat->fax.Disc_Unexpected);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Application) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Application   = %lu", channel->pInterfaceStat->fax.Disc_Application);
++						  "FAX Disc Application   = %u", channel->pInterfaceStat->fax.Disc_Application);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Incompat) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Incompatible  = %lu", channel->pInterfaceStat->fax.Disc_Incompat);
++						  "FAX Disc Incompatible  = %u", channel->pInterfaceStat->fax.Disc_Incompat);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_No_Command) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc No Command    = %lu", channel->pInterfaceStat->fax.Disc_No_Command);
++						  "FAX Disc No Command    = %u", channel->pInterfaceStat->fax.Disc_No_Command);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Long_Msg) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Long Msg.     = %lu", channel->pInterfaceStat->fax.Disc_Long_Msg);
++						  "FAX Disc Long Msg.     = %u", channel->pInterfaceStat->fax.Disc_Long_Msg);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Supervisor) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Supervisor    = %lu", channel->pInterfaceStat->fax.Disc_Supervisor);
++						  "FAX Disc Supervisor    = %u", channel->pInterfaceStat->fax.Disc_Supervisor);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_SUB_SEP_PWD) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc SUP SEP PWD   = %lu", channel->pInterfaceStat->fax.Disc_SUB_SEP_PWD);
++						  "FAX Disc SUP SEP PWD   = %u", channel->pInterfaceStat->fax.Disc_SUB_SEP_PWD);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Invalid_Msg) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Invalid Msg.  = %lu", channel->pInterfaceStat->fax.Disc_Invalid_Msg);
++						  "FAX Disc Invalid Msg.  = %u", channel->pInterfaceStat->fax.Disc_Invalid_Msg);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Page_Coding) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Page Coding   = %lu", channel->pInterfaceStat->fax.Disc_Page_Coding);
++						  "FAX Disc Page Coding   = %u", channel->pInterfaceStat->fax.Disc_Page_Coding);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_App_Timeout) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Appl. T.o.    = %lu", channel->pInterfaceStat->fax.Disc_App_Timeout);
++						  "FAX Disc Appl. T.o.    = %u", channel->pInterfaceStat->fax.Disc_App_Timeout);
+ 		}
+ 		if (channel->pInterfaceStat->fax.Disc_Unspecified) {
+ 			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
+-						  "FAX Disc Unspec.       = %lu", channel->pInterfaceStat->fax.Disc_Unspecified);
++						  "FAX Disc Unspec.       = %u", channel->pInterfaceStat->fax.Disc_Unspecified);
+ 		}
+ 		break;
+ 	}
+diff --git a/drivers/isdn/hardware/eicon/maintidi.c b/drivers/isdn/hardware/eicon/maintidi.c
+index 2ee789f95867..b2ed2939b4fa 100644
+--- a/drivers/isdn/hardware/eicon/maintidi.c
++++ b/drivers/isdn/hardware/eicon/maintidi.c
+@@ -30,7 +30,8 @@
+ #include "man_defs.h"
+ 
+ 
+-extern void diva_mnt_internal_dprintf(dword drv_id, dword type, char *p, ...);
++extern __printf(3, 4)
++void diva_mnt_internal_dprintf(dword drv_id, dword type, char *p, ...);
+ 
+ #define MODEM_PARSE_ENTRIES  16 /* amount of variables of interest */
+ #define FAX_PARSE_ENTRIES    12 /* amount of variables of interest */
+diff --git a/drivers/isdn/hisax/fsm.h b/drivers/isdn/hisax/fsm.h
+index 8c7385619a46..04bb1b3512e3 100644
+--- a/drivers/isdn/hisax/fsm.h
++++ b/drivers/isdn/hisax/fsm.h
+@@ -32,7 +32,7 @@ struct FsmInst {
+ 	int debug;
+ 	void *userdata;
+ 	int userint;
+-	void (*printdebug) (struct FsmInst *, char *, ...);
++	void (__printf(2, 3) *printdebug) (struct FsmInst *, char *, ...);
+ };
+ 
+ struct FsmNode {
+diff --git a/drivers/isdn/hisax/hisax.h b/drivers/isdn/hisax/hisax.h
+index 6ead6314e6d2..7365b32a6a45 100644
+--- a/drivers/isdn/hisax/hisax.h
++++ b/drivers/isdn/hisax/hisax.h
+@@ -179,7 +179,7 @@ struct FsmInst {
+ 	int debug;
+ 	void *userdata;
+ 	int userint;
+-	void (*printdebug) (struct FsmInst *, char *, ...);
++	void (__printf(2, 3) *printdebug) (struct FsmInst *, char *, ...);
+ };
+ 
+ struct FsmNode {
+diff --git a/drivers/isdn/hisax/hisax_isac.c b/drivers/isdn/hisax/hisax_isac.c
+index 5154c252a25f..e928cca91a88 100644
+--- a/drivers/isdn/hisax/hisax_isac.c
++++ b/drivers/isdn/hisax/hisax_isac.c
+@@ -428,7 +428,7 @@ static struct FsmNode L1FnList[] __initdata =
+ 	{ST_L1_F8,            EV_PH_DC,             l1_go_f3pdown},
+ };
+ 
+-static void l1m_debug(struct FsmInst *fi, char *fmt, ...)
++static __printf(2, 3) void l1m_debug(struct FsmInst *fi, char *fmt, ...)
+ {
+ 	va_list args;
+ 	char buf[256];
+diff --git a/drivers/isdn/hisax/isdnl1.c b/drivers/isdn/hisax/isdnl1.c
+index a560842c0e48..b52da087bb94 100644
+--- a/drivers/isdn/hisax/isdnl1.c
++++ b/drivers/isdn/hisax/isdnl1.c
+@@ -138,7 +138,7 @@ debugl1(struct IsdnCardState *cs, char *fmt, ...)
+ 	va_end(args);
+ }
+ 
+-static void
++static __printf(2, 3) void
+ l1m_debug(struct FsmInst *fi, char *fmt, ...)
+ {
+ 	va_list args;
+diff --git a/drivers/isdn/hisax/isdnl2.c b/drivers/isdn/hisax/isdnl2.c
+index c53a53f6efb6..9760d490effd 100644
+--- a/drivers/isdn/hisax/isdnl2.c
++++ b/drivers/isdn/hisax/isdnl2.c
+@@ -1756,7 +1756,7 @@ releasestack_isdnl2(struct PStack *st)
+ 	ReleaseWin(&st->l2);
+ }
+ 
+-static void
++static __printf(2, 3) void
+ l2m_debug(struct FsmInst *fi, char *fmt, ...)
+ {
+ 	va_list args;
+diff --git a/drivers/isdn/hisax/tei.c b/drivers/isdn/hisax/tei.c
+index 9195f9fd628f..bf4928dc69fc 100644
+--- a/drivers/isdn/hisax/tei.c
++++ b/drivers/isdn/hisax/tei.c
+@@ -320,7 +320,7 @@ tei_l1l2(struct PStack *st, int pr, void *arg)
+ 	if (pr == (PH_DATA | INDICATION)) {
+ 		if (skb->len < 3) {
+ 			st->ma.tei_m.printdebug(&st->ma.tei_m,
+-						"short mgr frame %ld/3", skb->len);
++						"short mgr frame %u/3", skb->len);
+ 		} else if ((skb->data[0] != ((TEI_SAPI << 2) | 2)) ||
+ 			   (skb->data[1] != ((GROUP_TEI << 1) | 1))) {
+ 			st->ma.tei_m.printdebug(&st->ma.tei_m,
+@@ -333,7 +333,7 @@ tei_l1l2(struct PStack *st, int pr, void *arg)
+ 			skb_pull(skb, 3);
+ 			if (skb->len < 5) {
+ 				st->ma.tei_m.printdebug(&st->ma.tei_m,
+-							"short mgr frame %ld/5", skb->len);
++							"short mgr frame %u/5", skb->len);
+ 			} else if (skb->data[0] != TEI_ENTITY_ID) {
+ 				/* wrong management entity identifier, ignore */
+ 				st->ma.tei_m.printdebug(&st->ma.tei_m,
+@@ -390,7 +390,7 @@ tei_l2tei(struct PStack *st, int pr, void *arg)
+ 	}
+ }
+ 
+-static void
++static __printf(2, 3) void
+ tei_debug(struct FsmInst *fi, char *fmt, ...)
+ {
+ 	va_list args;
+diff --git a/drivers/isdn/hysdn/hysdn_boot.c b/drivers/isdn/hysdn/hysdn_boot.c
+index eda4741e3f2f..2e67143b12a4 100644
+--- a/drivers/isdn/hysdn/hysdn_boot.c
++++ b/drivers/isdn/hysdn/hysdn_boot.c
+@@ -153,7 +153,7 @@ pof_handle_data(hysdn_card *card, int datlen)
+ 
+ 	default:
+ 		if (card->debug_flags & LOG_POF_RECORD)
+-			hysdn_addlog(card, "POF got data(id=0x%lx) len=%d offs=0x%lx", boot->pof_recid,
++			hysdn_addlog(card, "POF got data(id=0x%x) len=%d offs=0x%lx", boot->pof_recid,
+ 				     datlen, boot->pof_recoffset);
+ 
+ 		break;	/* simply skip record */
+@@ -215,7 +215,7 @@ pof_write_buffer(hysdn_card *card, int datlen)
+ 		boot->pof_recoffset = 0;	/* no starting offset */
+ 
+ 		if (card->debug_flags & LOG_POF_RECORD)
+-			hysdn_addlog(card, "POF: got record id=0x%lx length=%ld ",
++			hysdn_addlog(card, "POF: got record id=0x%x length=%ld ",
+ 				     boot->pof_recid, boot->pof_reclen);
+ 
+ 		boot->pof_state = POF_READ_TAG_DATA;	/* now start with tag data */
+diff --git a/drivers/isdn/hysdn/hysdn_defs.h b/drivers/isdn/hysdn/hysdn_defs.h
+index cdac46a21692..456c495d54be 100644
+--- a/drivers/isdn/hysdn/hysdn_defs.h
++++ b/drivers/isdn/hysdn/hysdn_defs.h
+@@ -235,7 +235,8 @@ extern void hysdn_procconf_release(void);	/* deinit proc config filesys */
+ /* hysdn_proclog.c */
+ extern int hysdn_proclog_init(hysdn_card *);	/* init proc log entry */
+ extern void hysdn_proclog_release(hysdn_card *);	/* deinit proc log entry */
+-extern void hysdn_addlog(hysdn_card *, char *, ...);	/* output data to log */
++extern __printf(2, 3)
++void hysdn_addlog(hysdn_card *, char *, ...);	/* output data to log */
+ extern void hysdn_card_errlog(hysdn_card *, tErrLogEntry *, int);	/* output card log */
+ 
+ /* boardergo.c */
+diff --git a/drivers/isdn/hysdn/hysdn_procconf.c b/drivers/isdn/hysdn/hysdn_procconf.c
+index 73079213ec94..62306515bc1f 100644
+--- a/drivers/isdn/hysdn/hysdn_procconf.c
++++ b/drivers/isdn/hysdn/hysdn_procconf.c
+@@ -188,7 +188,7 @@ hysdn_conf_write(struct file *file, const char __user *buf, size_t count, loff_t
+ 				cnf->buf_size += count;		/* add chars to string */
+ 				if (cnf->buf_size >= CONF_LINE_LEN - 1) {
+ 					if (cnf->card->debug_flags & LOG_CNF_MISC)
+-						hysdn_addlog(cnf->card, "cnf line too long %d chars pos %d", cnf->buf_size, count);
++						hysdn_addlog(cnf->card, "cnf line too long %d chars pos %zu", cnf->buf_size, count);
+ 					return (-ERR_CONF_LONG);
+ 				}
+ 			}	/* not delimited */
+@@ -236,8 +236,9 @@ hysdn_conf_open(struct inode *ino, struct file *filep)
+ 	mutex_lock(&hysdn_conf_mutex);
+ 	card = PDE_DATA(ino);
+ 	if (card->debug_flags & (LOG_PROC_OPEN | LOG_PROC_ALL))
+-		hysdn_addlog(card, "config open for uid=%d gid=%d mode=0x%x",
+-			     filep->f_cred->fsuid, filep->f_cred->fsgid,
++		hysdn_addlog(card, "config open for uid=%u gid=%u mode=0x%x",
++			     from_kuid(&init_user_ns, filep->f_cred->fsuid),
++			     from_kgid(&init_user_ns, filep->f_cred->fsgid),
+ 			     filep->f_mode);
+ 
+ 	if ((filep->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_WRITE) {
+@@ -310,8 +311,9 @@ hysdn_conf_close(struct inode *ino, struct file *filep)
+ 	mutex_lock(&hysdn_conf_mutex);
+ 	card = PDE_DATA(ino);
+ 	if (card->debug_flags & (LOG_PROC_OPEN | LOG_PROC_ALL))
+-		hysdn_addlog(card, "config close for uid=%d gid=%d mode=0x%x",
+-			     filep->f_cred->fsuid, filep->f_cred->fsgid,
++		hysdn_addlog(card, "config close for uid=%u gid=%u mode=0x%x",
++			     from_kuid(&init_user_ns, filep->f_cred->fsuid),
++			     from_kgid(&init_user_ns, filep->f_cred->fsgid),
+ 			     filep->f_mode);
+ 
+ 	if ((filep->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_WRITE) {
+diff --git a/drivers/isdn/hysdn/hysdn_sched.c b/drivers/isdn/hysdn/hysdn_sched.c
+index 31d7c1415543..63da693c6822 100644
+--- a/drivers/isdn/hysdn/hysdn_sched.c
++++ b/drivers/isdn/hysdn/hysdn_sched.c
+@@ -153,7 +153,7 @@ hysdn_tx_cfgline(hysdn_card *card, unsigned char *line, unsigned short chan)
+ 	unsigned long flags;
+ 
+ 	if (card->debug_flags & LOG_SCHED_ASYN)
+-		hysdn_addlog(card, "async tx-cfg chan=%d len=%d", chan, strlen(line) + 1);
++		hysdn_addlog(card, "async tx-cfg chan=%d len=%zu", chan, strlen(line) + 1);
+ 
+ 	while (card->async_busy) {
+ 
+diff --git a/drivers/md/bcache/bset.h b/drivers/md/bcache/bset.h
+index ae964624efb2..453ee14942bf 100644
+--- a/drivers/md/bcache/bset.h
++++ b/drivers/md/bcache/bset.h
+@@ -530,14 +530,15 @@ int __bch_keylist_realloc(struct keylist *, unsigned);
+ #ifdef CONFIG_BCACHE_DEBUG
+ 
+ int __bch_count_data(struct btree_keys *);
+-void __bch_check_keys(struct btree_keys *, const char *, ...);
++__printf(2, 3) void __bch_check_keys(struct btree_keys *, const char *, ...);
+ void bch_dump_bset(struct btree_keys *, struct bset *, unsigned);
+ void bch_dump_bucket(struct btree_keys *);
+ 
+ #else
+ 
+ static inline int __bch_count_data(struct btree_keys *b) { return -1; }
+-static inline void __bch_check_keys(struct btree_keys *b, const char *fmt, ...) {}
++static __printf(2, 3)
++inline void __bch_check_keys(struct btree_keys *b, const char *fmt, ...) {}
+ static inline void bch_dump_bucket(struct btree_keys *b) {}
+ void bch_dump_bset(struct btree_keys *, struct bset *, unsigned);
+ 
+diff --git a/drivers/pnp/interface.c b/drivers/pnp/interface.c
+index 4b6808ff0e5d..1f3c155771b9 100644
+--- a/drivers/pnp/interface.c
++++ b/drivers/pnp/interface.c
+@@ -32,7 +32,7 @@ struct pnp_info_buffer {
+ 
+ typedef struct pnp_info_buffer pnp_info_buffer_t;
+ 
+-static int pnp_printf(pnp_info_buffer_t * buffer, char *fmt, ...)
++static __printf(2, 3) int pnp_printf(pnp_info_buffer_t * buffer, char *fmt, ...)
+ {
+ 	va_list args;
+ 	int res;
+diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
+index c7be7bb37209..219f4964d981 100644
+--- a/drivers/scsi/BusLogic.c
++++ b/drivers/scsi/BusLogic.c
+@@ -3573,8 +3573,8 @@ Target	Requested Completed  Requested Completed  Requested Completed\n\
+   blogic_msg prints Driver Messages.
+ */
+ 
+-static void blogic_msg(enum blogic_msglevel msglevel, char *fmt,
+-			struct blogic_adapter *adapter, ...)
++static __printf(2, 4) void blogic_msg(enum blogic_msglevel msglevel, char *fmt,
++				      struct blogic_adapter *adapter, ...)
+ {
+ 	static char buf[BLOGIC_LINEBUF_SIZE];
+ 	static bool begin = true;
+@@ -3685,7 +3685,7 @@ static int __init blogic_parseopts(char *options)
+ 					blogic_probe_options.probe134 = true;
+ 					break;
+ 				default:
+-					blogic_err("BusLogic: Invalid Driver Options " "(invalid I/O Address 0x%X)\n", NULL, io_addr);
++					blogic_err("BusLogic: Invalid Driver Options " "(invalid I/O Address 0x%lX)\n", NULL, io_addr);
+ 					return 0;
+ 				}
+ 			} else if (blogic_parse(&options, "NoProbeISA"))
+diff --git a/drivers/scsi/esas2r/esas2r_init.c b/drivers/scsi/esas2r/esas2r_init.c
+index 78ce4d61a69b..b3f6ff60b0b2 100644
+--- a/drivers/scsi/esas2r/esas2r_init.c
++++ b/drivers/scsi/esas2r/esas2r_init.c
+@@ -237,7 +237,7 @@ static void esas2r_claim_interrupts(struct esas2r_adapter *a)
+ 		flags |= IRQF_SHARED;
+ 
+ 	esas2r_log(ESAS2R_LOG_INFO,
+-		   "esas2r_claim_interrupts irq=%d (%p, %s, %x)",
++		   "esas2r_claim_interrupts irq=%d (%p, %s, %lx)",
+ 		   a->pcid->irq, a, a->name, flags);
+ 
+ 	if (request_irq(a->pcid->irq,
+diff --git a/drivers/scsi/esas2r/esas2r_ioctl.c b/drivers/scsi/esas2r/esas2r_ioctl.c
+index baf913047b48..9724f77107f5 100644
+--- a/drivers/scsi/esas2r/esas2r_ioctl.c
++++ b/drivers/scsi/esas2r/esas2r_ioctl.c
+@@ -1301,7 +1301,7 @@ int esas2r_ioctl_handler(void *hostdata, int cmd, void __user *arg)
+ 	ioctl = kzalloc(sizeof(struct atto_express_ioctl), GFP_KERNEL);
+ 	if (ioctl == NULL) {
+ 		esas2r_log(ESAS2R_LOG_WARN,
+-			   "ioctl_handler kzalloc failed for %d bytes",
++			   "ioctl_handler kzalloc failed for %zu bytes",
+ 			   sizeof(struct atto_express_ioctl));
+ 		return -ENOMEM;
+ 	}
+diff --git a/drivers/scsi/esas2r/esas2r_log.c b/drivers/scsi/esas2r/esas2r_log.c
+index a82030aa8577..20689a48ad17 100644
+--- a/drivers/scsi/esas2r/esas2r_log.c
++++ b/drivers/scsi/esas2r/esas2r_log.c
+@@ -113,10 +113,10 @@ static const char *translate_esas2r_event_level_to_kernel(const long level)
+  *
+  * @return 0 on success, or -1 if an error occurred.
+  */
+-static int esas2r_log_master(const long level,
+-			     const struct device *dev,
+-			     const char *format,
+-			     va_list args)
++static __printf(3, 0) int esas2r_log_master(const long level,
++					    const struct device *dev,
++					    const char *format,
++					    va_list args)
+ {
+ 	if (level <= event_log_level) {
+ 		unsigned long flags = 0;
+diff --git a/drivers/scsi/esas2r/esas2r_log.h b/drivers/scsi/esas2r/esas2r_log.h
+index 7b6397bb5b94..b5cbda03cd69 100644
+--- a/drivers/scsi/esas2r/esas2r_log.h
++++ b/drivers/scsi/esas2r/esas2r_log.h
+@@ -61,11 +61,11 @@ enum {
+ #endif
+ };
+ 
+-int esas2r_log(const long level, const char *format, ...);
+-int esas2r_log_dev(const long level,
+-		   const struct device *dev,
+-		   const char *format,
+-		   ...);
++__printf(2, 3) int esas2r_log(const long level, const char *format, ...);
++__printf(3, 4) int esas2r_log_dev(const long level,
++				  const struct device *dev,
++				  const char *format,
++				  ...);
+ int esas2r_log_hexdump(const long level,
+ 		       const void *buf,
+ 		       size_t len);
+diff --git a/drivers/scsi/esas2r/esas2r_main.c b/drivers/scsi/esas2r/esas2r_main.c
+index 33581ba4386e..49d13e99aa9f 100644
+--- a/drivers/scsi/esas2r/esas2r_main.c
++++ b/drivers/scsi/esas2r/esas2r_main.c
+@@ -198,7 +198,7 @@ static ssize_t write_hw(struct file *file, struct kobject *kobj,
+ 					      GFP_KERNEL);
+ 		if (a->local_atto_ioctl == NULL) {
+ 			esas2r_log(ESAS2R_LOG_WARN,
+-				   "write_hw kzalloc failed for %d bytes",
++				   "write_hw kzalloc failed for %zu bytes",
+ 				   sizeof(struct atto_ioctl));
+ 			return -ENOMEM;
+ 		}
+@@ -1186,7 +1186,7 @@ retry:
+ 		} else {
+ 			esas2r_log(ESAS2R_LOG_CRIT,
+ 				   "unable to allocate a request for a "
+-				   "device reset (%d:%d)!",
++				   "device reset (%d:%llu)!",
+ 				   cmd->device->id,
+ 				   cmd->device->lun);
+ 		}
+diff --git a/drivers/staging/fbtft/fb_agm1264k-fl.c b/drivers/staging/fbtft/fb_agm1264k-fl.c
+index 2a50cf957101..3f75ef562ca4 100644
+--- a/drivers/staging/fbtft/fb_agm1264k-fl.c
++++ b/drivers/staging/fbtft/fb_agm1264k-fl.c
+@@ -407,7 +407,7 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
+ static int write(struct fbtft_par *par, void *buf, size_t len)
+ {
+ 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
+-		"%s(len=%d): ", __func__, len);
++		"%s(len=%zu): ", __func__, len);
+ 
+ 	gpio_set_value(par->RW, 0); /* set write mode */
+ 
+diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
+index b167c5061631..ec2de0064004 100644
+--- a/drivers/staging/fbtft/fb_ra8875.c
++++ b/drivers/staging/fbtft/fb_ra8875.c
+@@ -33,7 +33,7 @@ static int write_spi(struct fbtft_par *par, void *buf, size_t len)
+ 	struct spi_message m;
+ 
+ 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
+-		"%s(len=%d): ", __func__, len);
++		"%s(len=%zu): ", __func__, len);
+ 
+ 	if (!par->spi) {
+ 		dev_err(par->info->device,
+diff --git a/drivers/staging/fbtft/fbtft-io.c b/drivers/staging/fbtft/fbtft-io.c
+index a6f091fb975c..7bd015eb3f03 100644
+--- a/drivers/staging/fbtft/fbtft-io.c
++++ b/drivers/staging/fbtft/fbtft-io.c
+@@ -13,7 +13,7 @@ int fbtft_write_spi(struct fbtft_par *par, void *buf, size_t len)
+ 	struct spi_message m;
+ 
+ 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
+-		"%s(len=%d): ", __func__, len);
++		"%s(len=%zu): ", __func__, len);
+ 
+ 	if (!par->spi) {
+ 		dev_err(par->info->device,
+@@ -50,7 +50,7 @@ int fbtft_write_spi_emulate_9(struct fbtft_par *par, void *buf, size_t len)
+ 	u64 val, dc, tmp;
+ 
+ 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
+-		"%s(len=%d): ", __func__, len);
++		"%s(len=%zu): ", __func__, len);
+ 
+ 	if (!par->extra) {
+ 		dev_err(par->info->device, "%s: error: par->extra is NULL\n",
+@@ -112,14 +112,14 @@ int fbtft_read_spi(struct fbtft_par *par, void *buf, size_t len)
+ 		txbuf[0] = par->startbyte | 0x3;
+ 		t.tx_buf = txbuf;
+ 		fbtft_par_dbg_hex(DEBUG_READ, par, par->info->device, u8,
+-			txbuf, len, "%s(len=%d) txbuf => ", __func__, len);
++			txbuf, len, "%s(len=%zu) txbuf => ", __func__, len);
+ 	}
+ 
+ 	spi_message_init(&m);
+ 	spi_message_add_tail(&t, &m);
+ 	ret = spi_sync(par->spi, &m);
+ 	fbtft_par_dbg_hex(DEBUG_READ, par, par->info->device, u8, buf, len,
+-		"%s(len=%d) buf <= ", __func__, len);
++		"%s(len=%zu) buf <= ", __func__, len);
+ 
+ 	return ret;
+ }
+@@ -138,7 +138,7 @@ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
+ #endif
+ 
+ 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
+-		"%s(len=%d): ", __func__, len);
++		"%s(len=%zu): ", __func__, len);
+ 
+ 	while (len--) {
+ 		data = *(u8 *) buf;
+@@ -188,7 +188,7 @@ int fbtft_write_gpio16_wr(struct fbtft_par *par, void *buf, size_t len)
+ #endif
+ 
+ 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
+-		"%s(len=%d): ", __func__, len);
++		"%s(len=%zu): ", __func__, len);
+ 
+ 	while (len) {
+ 		data = *(u16 *) buf;
+diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
+index 3ccdec94fee7..5f35b5ae1236 100644
+--- a/drivers/staging/fbtft/fbtft.h
++++ b/drivers/staging/fbtft/fbtft.h
+@@ -258,7 +258,7 @@ struct fbtft_par {
+ 
+ /* fbtft-core.c */
+ void fbtft_dbg_hex(const struct device *dev, int groupsize,
+-		   void *buf, size_t len, const char *fmt, ...);
++		   void *buf, size_t len, const char *fmt, ...) __printf(5, 6);
+ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
+ 					struct device *dev,
+ 					struct fbtft_platform_data *pdata);
+diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
+index 071f79bd19f3..78799f5c1be8 100644
+--- a/drivers/staging/fbtft/fbtft_device.c
++++ b/drivers/staging/fbtft/fbtft_device.c
+@@ -1226,7 +1226,7 @@ static int write_gpio16_wr_slow(struct fbtft_par *par, void *buf, size_t len)
+ #endif
+ 
+ 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
+-		"%s(len=%d): ", __func__, len);
++		"%s(len=%zu): ", __func__, len);
+ 
+ 	while (len) {
+ 		data = *(u16 *) buf;
+diff --git a/drivers/staging/lustre/lustre/include/lu_object.h b/drivers/staging/lustre/lustre/include/lu_object.h
+index 1d79341a495d..4097b9c0b555 100644
+--- a/drivers/staging/lustre/lustre/include/lu_object.h
++++ b/drivers/staging/lustre/lustre/include/lu_object.h
+@@ -772,8 +772,8 @@ struct lu_object *lu_object_locate(struct lu_object_header *h,
+ /**
+  * Printer function emitting messages through libcfs_debug_msg().
+  */
+-int lu_cdebug_printer(const struct lu_env *env,
+-		      void *cookie, const char *format, ...);
++__printf(3, 4) int lu_cdebug_printer(const struct lu_env *env,
++				     void *cookie, const char *format, ...);
+ 
+ /**
+  * Print object description followed by a user-supplied message.
+diff --git a/drivers/staging/speakup/main.c b/drivers/staging/speakup/main.c
+index 30cf973f326d..8e643ceee204 100644
+--- a/drivers/staging/speakup/main.c
++++ b/drivers/staging/speakup/main.c
+@@ -777,7 +777,7 @@ static void say_line(struct vc_data *vc)
+ 		cp = buf;
+ 		while (*cp == SPACE)
+ 			cp++;
+-		synth_printf("%d, ", (cp - buf) + 1);
++		synth_printf("%zu, ", (cp - buf) + 1);
+ 	}
+ 	spk_punc_mask = spk_punc_masks[spk_reading_punc];
+ 	spkup_write(buf, i);
+diff --git a/drivers/staging/speakup/spk_priv.h b/drivers/staging/speakup/spk_priv.h
+index 9bb281d36556..fab3e75f7810 100644
+--- a/drivers/staging/speakup/spk_priv.h
++++ b/drivers/staging/speakup/spk_priv.h
+@@ -67,7 +67,7 @@ void spk_do_catch_up(struct spk_synth *synth);
+ void spk_synth_flush(struct spk_synth *synth);
+ int spk_synth_is_alive_nop(struct spk_synth *synth);
+ int spk_synth_is_alive_restart(struct spk_synth *synth);
+-void synth_printf(const char *buf, ...);
++void __printf(1, 2) synth_printf(const char *buf, ...);
+ int synth_request_region(u_long, u_long);
+ int synth_release_region(u_long, u_long);
+ int synth_add(struct spk_synth *in_synth);
+diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
+index 056da6ee1a35..88791e73a8bb 100644
+--- a/drivers/xen/xenbus/xenbus_client.c
++++ b/drivers/xen/xenbus/xenbus_client.c
+@@ -269,8 +269,9 @@ static char *error_path(struct xenbus_device *dev)
+ }
+ 
+ 
+-static void xenbus_va_dev_error(struct xenbus_device *dev, int err,
+-				const char *fmt, va_list ap)
++static __printf(3, 0)
++void xenbus_va_dev_error(struct xenbus_device *dev, int err,
++			 const char *fmt, va_list ap)
+ {
+ 	unsigned int len;
+ 	char *printf_buffer = NULL;
+@@ -352,8 +353,9 @@ EXPORT_SYMBOL_GPL(xenbus_dev_fatal);
+  * Equivalent to xenbus_dev_fatal(dev, err, fmt, args), but helps
+  * avoiding recursion within xenbus_switch_state.
+  */
+-static void xenbus_switch_fatal(struct xenbus_device *dev, int depth, int err,
+-				const char *fmt, ...)
++static __printf(4, 5) void xenbus_switch_fatal(struct xenbus_device *dev,
++					       int depth, int err,
++					       const char *fmt, ...)
+ {
+ 	va_list ap;
+ 
+diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
+index d1e34d1eeea6..ffb5c844af10 100644
+--- a/include/acpi/acpiosxf.h
++++ b/include/acpi/acpiosxf.h
+@@ -337,11 +337,12 @@ acpi_status acpi_os_signal(u32 function, void *info);
+  * Debug print routines
+  */
+ #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_printf
++__printf(1, 2)
+ void ACPI_INTERNAL_VAR_XFACE acpi_os_printf(const char *format, ...);
+ #endif
+ 
+ #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_vprintf
+-void acpi_os_vprintf(const char *format, va_list args);
++__printf(1, 0) void acpi_os_vprintf(const char *format, va_list args);
+ #endif
+ 
+ #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
+diff --git a/include/linux/iio/iio.h b/include/linux/iio/iio.h
+index b5894118755f..e5399a553187 100644
+--- a/include/linux/iio/iio.h
++++ b/include/linux/iio/iio.h
+@@ -605,7 +605,7 @@ static inline struct iio_dev *iio_priv_to_dev(void *priv)
+ void iio_device_free(struct iio_dev *indio_dev);
+ struct iio_dev *devm_iio_device_alloc(struct device *dev, int sizeof_priv);
+ void devm_iio_device_free(struct device *dev, struct iio_dev *indio_dev);
+-struct iio_trigger *devm_iio_trigger_alloc(struct device *dev,
++__printf(2, 3) struct iio_trigger *devm_iio_trigger_alloc(struct device *dev,
+ 						const char *fmt, ...);
+ void devm_iio_trigger_free(struct device *dev, struct iio_trigger *iio_trig);
+ 
+diff --git a/include/linux/iio/trigger_consumer.h b/include/linux/iio/trigger_consumer.h
+index c4f8c7409666..6b0e38074444 100644
+--- a/include/linux/iio/trigger_consumer.h
++++ b/include/linux/iio/trigger_consumer.h
+@@ -41,7 +41,7 @@ struct iio_poll_func {
+ };
+ 
+ 
+-struct iio_poll_func
++__printf(5, 6) struct iio_poll_func
+ *iio_alloc_pollfunc(irqreturn_t (*h)(int irq, void *p),
+ 		    irqreturn_t (*thread)(int irq, void *p),
+ 		    int type,
+diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
+index 925730bc9fc1..b11477bb4bb0 100644
+--- a/include/linux/trace_events.h
++++ b/include/linux/trace_events.h
+@@ -182,6 +182,7 @@ void trace_current_buffer_discard_commit(struct ring_buffer *buffer,
+ 
+ void tracing_record_cmdline(struct task_struct *tsk);
+ 
++__printf(3, 4)
+ int trace_output_call(struct trace_iterator *iter, char *name, char *fmt, ...);
+ 
+ struct event_filter;
+diff --git a/kernel/audit.c b/kernel/audit.c
+index 3a3e5deeda8d..6ebe148acd1c 100644
+--- a/kernel/audit.c
++++ b/kernel/audit.c
+@@ -1443,8 +1443,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
+  * will be called a second time.  Currently, we assume that a printk
+  * can't format message larger than 1024 bytes, so we don't either.
+  */
+-static void audit_log_vformat(struct audit_buffer *ab, const char *fmt,
+-			      va_list args)
++static __printf(2, 0) void audit_log_vformat(struct audit_buffer *ab,
++					     const char *fmt, va_list args)
+ {
+ 	int len, avail;
+ 	struct sk_buff *skb;
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index d9293402ee68..67f498f1f547 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2180,7 +2180,7 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(trace_vbprintk);
+ 
+-static int
++static __printf(3, 0) int
+ __trace_array_vprintk(struct ring_buffer *buffer,
+ 		      unsigned long ip, const char *fmt, va_list args)
+ {
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 8414fa40bf27..880253150695 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -698,15 +698,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+ 
+ extern void *head_page(struct trace_array_cpu *data);
+ extern unsigned long long ns2usecs(cycle_t nsec);
+-extern int
++extern __printf(2, 0) int
+ trace_vbprintk(unsigned long ip, const char *fmt, va_list args);
+-extern int
++extern __printf(2, 0) int
+ trace_vprintk(unsigned long ip, const char *fmt, va_list args);
+-extern int
++extern __printf(3, 0) int
+ trace_array_vprintk(struct trace_array *tr,
+ 		    unsigned long ip, const char *fmt, va_list args);
++extern __printf(3, 4)
+ int trace_array_printk(struct trace_array *tr,
+ 		       unsigned long ip, const char *fmt, ...);
++extern __printf(3, 4)
+ int trace_array_printk_buf(struct ring_buffer *buffer,
+ 			   unsigned long ip, const char *fmt, ...);
+ void trace_printk_seq(struct trace_seq *s);
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index 282982195e09..6953f65512f6 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -245,8 +245,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
+ }
+ EXPORT_SYMBOL(trace_raw_output_prep);
+ 
+-static int trace_output_raw(struct trace_iterator *iter, char *name,
+-			    char *fmt, va_list ap)
++static __printf(3, 0) int trace_output_raw(struct trace_iterator *iter,
++					   char *name, char *fmt, va_list ap)
+ {
+ 	struct trace_seq *s = &iter->seq;
+ 
+diff --git a/lib/nmi_backtrace.c b/lib/nmi_backtrace.c
+index 6019c53c669e..ae56d846ff34 100644
+--- a/lib/nmi_backtrace.c
++++ b/lib/nmi_backtrace.c
+@@ -136,7 +136,7 @@ void nmi_trigger_all_cpu_backtrace(bool include_self,
+  * all done, we can safely dump the contents of the seq_buf to a printk()
+  * from a non NMI context.
+  */
+-static int nmi_vprintk(const char *fmt, va_list args)
++static __printf(1, 0) int nmi_vprintk(const char *fmt, va_list args)
+ {
+ 	struct nmi_seq_buf *s = this_cpu_ptr(&nmi_print_seq);
+ 	unsigned int len = seq_buf_used(&s->seq);
+diff --git a/mm/slub.c b/mm/slub.c
+index d8fbd4a6ed59..a0dfb01f2221 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -661,8 +661,8 @@ void object_err(struct kmem_cache *s, struct page *page,
+ 	print_trailer(s, page, object);
+ }
+ 
+-static void slab_err(struct kmem_cache *s, struct page *page,
+-			const char *fmt, ...)
++static __printf(3, 4) void slab_err(struct kmem_cache *s, struct page *page,
++				    const char *fmt, ...)
+ {
+ 	va_list args;
+ 	char buf[100];
+diff --git a/net/dccp/ccid.c b/net/dccp/ccid.c
+index 90f77d08cc37..f39d321c8af2 100644
+--- a/net/dccp/ccid.c
++++ b/net/dccp/ccid.c
+@@ -79,7 +79,8 @@ int ccid_getsockopt_builtin_ccids(struct sock *sk, int len,
+ 	return err;
+ }
+ 
+-static struct kmem_cache *ccid_kmem_cache_create(int obj_size, char *slab_name_fmt, const char *fmt,...)
++static __printf(3, 4)
++struct kmem_cache *ccid_kmem_cache_create(int obj_size, char *slab_name_fmt, const char *fmt,...)
+ {
+ 	struct kmem_cache *slab;
+ 	va_list args;
+diff --git a/net/dccp/probe.c b/net/dccp/probe.c
+index 3d3fda05b32d..3c4dcc19f38b 100644
+--- a/net/dccp/probe.c
++++ b/net/dccp/probe.c
+@@ -51,7 +51,7 @@ static struct {
+ 	struct timespec64 tstart;
+ } dccpw;
+ 
+-static void printl(const char *fmt, ...)
++static __printf(1, 2) void printl(const char *fmt, ...)
+ {
+ 	va_list args;
+ 	int len;
+@@ -84,14 +84,14 @@ static int jdccp_sendmsg(struct sock *sk, struct msghdr *msg, size_t size)
+ 	if (port == 0 || ntohs(inet->inet_dport) == port ||
+ 	    ntohs(inet->inet_sport) == port) {
+ 		if (hc)
+-			printl("%pI4:%u %pI4:%u %d %d %d %d %u %llu %llu %d\n",
++			printl("%pI4:%u %pI4:%u %zu %d %d %d %u %llu %llu %d\n",
+ 			       &inet->inet_saddr, ntohs(inet->inet_sport),
+ 			       &inet->inet_daddr, ntohs(inet->inet_dport), size,
+ 			       hc->tx_s, hc->tx_rtt, hc->tx_p,
+ 			       hc->tx_x_calc, hc->tx_x_recv >> 6,
+ 			       hc->tx_x >> 6, hc->tx_t_ipi);
+ 		else
+-			printl("%pI4:%u %pI4:%u %d\n",
++			printl("%pI4:%u %pI4:%u %zu\n",
+ 			       &inet->inet_saddr, ntohs(inet->inet_sport),
+ 			       &inet->inet_daddr, ntohs(inet->inet_dport),
+ 			       size);
+diff --git a/net/rds/ib.h b/net/rds/ib.h
+index b3fdebb57460..ede3b3a2ec68 100644
+--- a/net/rds/ib.h
++++ b/net/rds/ib.h
+@@ -332,6 +332,7 @@ void rds_ib_conn_shutdown(struct rds_connection *conn);
+ void rds_ib_state_change(struct sock *sk);
+ int rds_ib_listen_init(void);
+ void rds_ib_listen_stop(void);
++__printf(2, 3)
+ void __rds_ib_conn_error(struct rds_connection *conn, const char *, ...);
+ int rds_ib_cm_handle_connect(struct rdma_cm_id *cm_id,
+ 			     struct rdma_cm_event *event);
+diff --git a/net/rds/iw.h b/net/rds/iw.h
+index 5af01d1758b3..0037c60092e5 100644
+--- a/net/rds/iw.h
++++ b/net/rds/iw.h
+@@ -288,6 +288,7 @@ void rds_iw_conn_shutdown(struct rds_connection *conn);
+ void rds_iw_state_change(struct sock *sk);
+ int rds_iw_listen_init(void);
+ void rds_iw_listen_stop(void);
++__printf(2, 3)
+ void __rds_iw_conn_error(struct rds_connection *conn, const char *, ...);
+ int rds_iw_cm_handle_connect(struct rdma_cm_id *cm_id,
+ 			     struct rdma_cm_event *event);
+diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
+index 971ca4773ab2..f7431cb57c51 100644
+--- a/net/tipc/netlink_compat.c
++++ b/net/tipc/netlink_compat.c
+@@ -112,7 +112,7 @@ static void tipc_tlv_init(struct sk_buff *skb, u16 type)
+ 	skb_put(skb, sizeof(struct tlv_desc));
+ }
+ 
+-static int tipc_tlv_sprintf(struct sk_buff *skb, const char *fmt, ...)
++static __printf(2, 3) int tipc_tlv_sprintf(struct sk_buff *skb, const char *fmt, ...)
+ {
+ 	int n;
+ 	u16 len;
+diff --git a/scripts/genksyms/genksyms.h b/scripts/genksyms/genksyms.h
+index 3bffdcaaa274..b724a0290c75 100644
+--- a/scripts/genksyms/genksyms.h
++++ b/scripts/genksyms/genksyms.h
+@@ -75,7 +75,7 @@ struct string_list *copy_list_range(struct string_list *start,
+ int yylex(void);
+ int yyparse(void);
+ 
+-void error_with_pos(const char *, ...);
++void error_with_pos(const char *, ...) __attribute__ ((format(printf, 1, 2)));
+ 
+ /*----------------------------------------------------------------------*/
+ #define xmalloc(size) ({ void *__ptr = malloc(size);		\
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index 41ab235a91b1..b3b5c146dc0c 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -32,7 +32,8 @@ static int conf_lineno, conf_warnings, conf_unsaved;
+ 
+ const char conf_defname[] = "arch/$ARCH/defconfig";
+ 
+-static void conf_warning(const char *fmt, ...)
++static __attribute__ ((format(printf, 1, 2)))
++void conf_warning(const char *fmt, ...)
+ {
+ 	va_list ap;
+ 	va_start(ap, fmt);
+@@ -43,21 +44,23 @@ static void conf_warning(const char *fmt, ...)
+ 	conf_warnings++;
+ }
+ 
+-static void conf_default_message_callback(const char *fmt, va_list ap)
++static __attribute__ ((format(printf, 1, 0)))
++void conf_default_message_callback(const char *fmt, va_list ap)
+ {
+ 	printf("#\n# ");
+ 	vprintf(fmt, ap);
+ 	printf("\n#\n");
+ }
+ 
+-static void (*conf_message_callback) (const char *fmt, va_list ap) =
++static void (*__attribute__ ((format(printf, 1, 0))) conf_message_callback) (const char *fmt, va_list ap) =
+ 	conf_default_message_callback;
+ void conf_set_message_callback(void (*fn) (const char *fmt, va_list ap))
+ {
+ 	conf_message_callback = fn;
+ }
+ 
+-static void conf_message(const char *fmt, ...)
++static void __attribute__ ((format(printf, 1, 2)))
++conf_message(const char *fmt, ...)
+ {
+ 	va_list ap;
+ 
+diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
+index fa338a3240e6..7a6afd90edc6 100644
+--- a/scripts/kconfig/lkc.h
++++ b/scripts/kconfig/lkc.h
+@@ -96,7 +96,7 @@ static inline void xfwrite(const void *str, size_t len, size_t count, FILE *out)
+ 
+ /* menu.c */
+ void _menu_init(void);
+-void menu_warn(struct menu *menu, const char *fmt, ...);
++void menu_warn(struct menu *menu, const char *fmt, ...) __attribute__ ((format(printf, 2, 3)));
+ struct menu *menu_add_menu(void);
+ void menu_end_menu(void);
+ void menu_add_entry(struct symbol *sym);
+@@ -128,7 +128,7 @@ struct gstr {
+ struct gstr str_new(void);
+ void str_free(struct gstr *gs);
+ void str_append(struct gstr *gs, const char *s);
+-void str_printf(struct gstr *gs, const char *fmt, ...);
++void str_printf(struct gstr *gs, const char *fmt, ...) __attribute__ ((format(printf, 2, 3)));
+ const char *str_get(struct gstr *gs);
+ 
+ /* symbol.c */
+diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
+index facfc99caa52..e8b0cd2ae19e 100644
+--- a/scripts/kconfig/menu.c
++++ b/scripts/kconfig/menu.c
+@@ -28,7 +28,8 @@ void menu_warn(struct menu *menu, const char *fmt, ...)
+ 	va_end(ap);
+ }
+ 
+-static void prop_warn(struct property *prop, const char *fmt, ...)
++static __attribute__ ((format(printf, 2, 3)))
++void prop_warn(struct property *prop, const char *fmt, ...)
+ {
+ 	va_list ap;
+ 	va_start(ap, fmt);
+diff --git a/scripts/kconfig/zconf.tab.c_shipped b/scripts/kconfig/zconf.tab.c_shipped
+index 7a4d658c2066..842a3e6bb852 100644
+--- a/scripts/kconfig/zconf.tab.c_shipped
++++ b/scripts/kconfig/zconf.tab.c_shipped
+@@ -2397,7 +2397,8 @@ static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtok
+ 	return true;
+ }
+ 
+-static void zconfprint(const char *err, ...)
++static __attribute__ ((format(printf, 1, 2)))
++void zconfprint(const char *err, ...)
+ {
+ 	va_list ap;
+ 
+@@ -2408,7 +2409,8 @@ static void zconfprint(const char *err, ...)
+ 	fprintf(stderr, "\n");
+ }
+ 
+-static void zconf_error(const char *err, ...)
++static __attribute__ ((format(printf, 1, 2)))
++void zconf_error(const char *err, ...)
+ {
+ 	va_list ap;
+ 
+diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
+index 6a5e1515123b..ebe4c5288f67 100644
+--- a/scripts/mod/modpost.h
++++ b/scripts/mod/modpost.h
+@@ -188,6 +188,6 @@ void *grab_file(const char *filename, unsigned long *size);
+ char* get_next_line(unsigned long *pos, void *file, unsigned long size);
+ void release_file(void *file, unsigned long size);
+ 
+-void fatal(const char *fmt, ...);
+-void warn(const char *fmt, ...);
+-void merror(const char *fmt, ...);
++void fatal(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
++void warn(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
++void merror(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+diff --git a/scripts/unifdef.c b/scripts/unifdef.c
+index 7493c0ee51cc..fba8ff17d8c6 100644
+--- a/scripts/unifdef.c
++++ b/scripts/unifdef.c
+@@ -1200,7 +1200,7 @@ strlcmp(const char *s, const char *t, size_t n)
+ /*
+  * Diagnostics.
+  */
+-static void
++static __attribute__ ((format(printf, 1, 2))) void
+ debug(const char *msg, ...)
+ {
+ 	va_list ap;
+diff --git a/security/tomoyo/common.c b/security/tomoyo/common.c
+index 1fd57be3e94d..5dc14f3c9a63 100644
+--- a/security/tomoyo/common.c
++++ b/security/tomoyo/common.c
+@@ -192,7 +192,8 @@ const char *tomoyo_yesno(const unsigned int value)
+  *
+  * Returns nothing.
+  */
+-static void tomoyo_addprintf(char *buffer, int len, const char *fmt, ...)
++static __printf(3, 4)
++void tomoyo_addprintf(char *buffer, int len, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	const int pos = strlen(buffer);
+diff --git a/security/tomoyo/common.h b/security/tomoyo/common.h
+index f9c9fb1d56b4..9577945efdb5 100644
+--- a/security/tomoyo/common.h
++++ b/security/tomoyo/common.h
+@@ -943,7 +943,7 @@ bool tomoyo_str_starts(char **src, const char *find);
+ char *tomoyo_encode(const char *str);
+ char *tomoyo_encode2(const char *str, int str_len);
+ char *tomoyo_init_log(struct tomoyo_request_info *r, int len, const char *fmt,
+-		      va_list args);
++		      va_list args) __printf(3, 0);
+ char *tomoyo_read_token(struct tomoyo_acl_param *param);
+ char *tomoyo_realpath_from_path(const struct path *path);
+ char *tomoyo_realpath_nofollow(const char *pathname);
+@@ -1056,7 +1056,7 @@ void tomoyo_warn_oom(const char *function);
+ void tomoyo_write_log(struct tomoyo_request_info *r, const char *fmt, ...)
+ 	__printf(2, 3);
+ void tomoyo_write_log2(struct tomoyo_request_info *r, int len, const char *fmt,
+-		       va_list args);
++		       va_list args) __printf(3, 0);
+ 
+ /********** External variable definitions. **********/
+ 
+diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
+index 581175a51ecf..65cfed8f630d 100644
+--- a/sound/soc/soc-dapm.c
++++ b/sound/soc/soc-dapm.c
+@@ -137,7 +137,8 @@ static void pop_wait(u32 pop_time)
+ 		schedule_timeout_uninterruptible(msecs_to_jiffies(pop_time));
+ }
+ 
+-static void pop_dbg(struct device *dev, u32 pop_time, const char *fmt, ...)
++static __printf(3, 4) void pop_dbg(struct device *dev, u32 pop_time,
++				   const char *fmt, ...)
+ {
+ 	va_list args;
+ 	char *buf;
+-- 

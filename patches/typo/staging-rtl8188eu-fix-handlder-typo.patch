@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 22 May 2015 10:32:21 +0800
+Subject: [PATCH] {TYPO} staging: rtl8188eu: fix "handlder" typo
+
+---
+ drivers/staging/rtl8188eu/core/rtw_mlme.c     | 2 +-
+ drivers/staging/rtl8188eu/include/rtw_mlme.h  | 2 +-
+ drivers/staging/rtl8188eu/os_dep/mlme_linux.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/staging/rtl8188eu/core/rtw_mlme.c b/drivers/staging/rtl8188eu/core/rtw_mlme.c
+index abab854e6889..382dc0783b2c 100644
+--- a/drivers/staging/rtl8188eu/core/rtw_mlme.c
++++ b/drivers/staging/rtl8188eu/core/rtw_mlme.c
+@@ -1433,7 +1433,7 @@ static void rtw_auto_scan_handler(struct adapter *padapter)
+ 	}
+ }
+ 
+-void rtw_dynamic_check_timer_handlder(unsigned long data)
++void rtw_dynamic_check_timer_handler(unsigned long data)
+ {
+ 	struct adapter *adapter = (struct adapter *)data;
+ 	struct registry_priv *pregistrypriv = &adapter->registrypriv;
+diff --git a/drivers/staging/rtl8188eu/include/rtw_mlme.h b/drivers/staging/rtl8188eu/include/rtw_mlme.h
+index 4c992573e3ca..18ce00b0c0f5 100644
+--- a/drivers/staging/rtl8188eu/include/rtw_mlme.h
++++ b/drivers/staging/rtl8188eu/include/rtw_mlme.h
+@@ -555,7 +555,7 @@ void rtw_get_encrypt_decrypt_from_registrypriv(struct adapter *adapter);
+ void _rtw_join_timeout_handler(unsigned long data);
+ void rtw_scan_timeout_handler(unsigned long data);
+ 
+-void rtw_dynamic_check_timer_handlder(unsigned long data);
++void rtw_dynamic_check_timer_handler(unsigned long data);
+ #define rtw_is_scan_deny(adapter) false
+ #define rtw_clear_scan_deny(adapter) do {} while (0)
+ #define rtw_set_scan_deny_timer_hdl(adapter) do {} while (0)
+diff --git a/drivers/staging/rtl8188eu/os_dep/mlme_linux.c b/drivers/staging/rtl8188eu/os_dep/mlme_linux.c
+index 08bfa76f4975..6e914989e65a 100644
+--- a/drivers/staging/rtl8188eu/os_dep/mlme_linux.c
++++ b/drivers/staging/rtl8188eu/os_dep/mlme_linux.c
+@@ -34,7 +34,7 @@ void rtw_init_mlme_timer(struct adapter *padapter)
+ 	setup_timer(&pmlmepriv->scan_to_timer, rtw_scan_timeout_handler,
+ 		    (unsigned long)padapter);
+ 	setup_timer(&pmlmepriv->dynamic_chk_timer,
+-		    rtw_dynamic_check_timer_handlder, (unsigned long)padapter);
++		    rtw_dynamic_check_timer_handler, (unsigned long)padapter);
+ }
+ 
+ void rtw_os_indicate_connect(struct adapter *adapter)
+-- 

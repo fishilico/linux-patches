@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 4 Jul 2015 09:44:16 +0800
+Subject: [PATCH] {For LLVMLinux} Fix Kbuild asm statement generation to work
+ with clang
+
+https://lkml.org/lkml/2014/9/19/2
+U-Boot equivalent patch: http://patchwork.ozlabs.org/patch/375026/
+---
+ Kbuild                 | 3 ++-
+ include/linux/kbuild.h | 6 +++---
+ scripts/mod/Makefile   | 3 ++-
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/Kbuild b/Kbuild
+index f55cefd9bf29..431516744664 100644
+--- a/Kbuild
++++ b/Kbuild
+@@ -8,7 +8,8 @@
+ 
+ # Default sed regexp - multiline due to syntax constraints
+ define sed-y
+-	"/^->/{s:->#\(.*\):/* \1 */:; \
++	"s:[[:space:]]*\.ascii[[:space:]]*\"\(.*\)\":\1:; \
++	/^->/{s:->#\(.*\):/* \1 */:; \
+ 	s:^->\([^ ]*\) [\$$#]*\([-0-9]*\) \(.*\):#define \1 \2 /* \3 */:; \
+ 	s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; \
+ 	s:->::; p;}"
+diff --git a/include/linux/kbuild.h b/include/linux/kbuild.h
+index 22a72198c14b..136f53a1f875 100644
+--- a/include/linux/kbuild.h
++++ b/include/linux/kbuild.h
+@@ -2,14 +2,14 @@
+ #define __LINUX_KBUILD_H
+ 
+ #define DEFINE(sym, val) \
+-        asm volatile("\n->" #sym " %0 " #val : : "i" (val))
++        asm volatile("\n.ascii \"->" #sym " %0 " #val "\"" : : "i" (val))
+ 
+-#define BLANK() asm volatile("\n->" : : )
++#define BLANK() asm volatile("\n.ascii \"->\"" : : )
+ 
+ #define OFFSET(sym, str, mem) \
+ 	DEFINE(sym, offsetof(struct str, mem))
+ 
+ #define COMMENT(x) \
+-	asm volatile("\n->#" x)
++	asm volatile("\n.ascii \"->#" x "\"")
+ 
+ #endif
+diff --git a/scripts/mod/Makefile b/scripts/mod/Makefile
+index c11212ff3510..0698af31ad8d 100644
+--- a/scripts/mod/Makefile
++++ b/scripts/mod/Makefile
+@@ -6,7 +6,8 @@ modpost-objs	:= modpost.o file2alias.o sumversion.o
+ devicetable-offsets-file := devicetable-offsets.h
+ 
+ define sed-y
+-	"/^->/{s:->#\(.*\):/* \1 */:; \
++	"s:[[:space:]]*\.ascii[[:space:]]*\"\(.*\)\":\1:; \
++	/^->/{s:->#\(.*\):/* \1 */:; \
+ 	s:^->\([^ ]*\) [\$$#]*\([-0-9]*\) \(.*\):#define \1 \2 /* \3 */:; \
+ 	s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; \
+ 	s:->::; p;}"
+-- 

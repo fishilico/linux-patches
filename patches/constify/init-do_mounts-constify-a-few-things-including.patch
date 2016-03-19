@@ -1,0 +1,110 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 2 Mar 2015 15:19:06 +0800
+Subject: [PATCH] {CONSTIFY} init/do_mounts: constify a few things including
+ sys_mount-related syscalls
+
+---
+ fs/namespace.c           |  9 +++++----
+ include/linux/syscalls.h | 11 ++++++-----
+ init/do_mounts.c         |  4 ++--
+ init/do_mounts.h         |  4 ++--
+ 4 files changed, 15 insertions(+), 13 deletions(-)
+
+diff --git a/fs/namespace.c b/fs/namespace.c
+index 76a3a536285c..cf21a05c86ae 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1608,7 +1608,7 @@ static inline bool may_mandlock(void)
+  * unixes. Our API is identical to OSF/1 to avoid making a mess of AMD
+  */
+ 
+-SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
++SYSCALL_DEFINE2(umount, const char __user *, name, int, flags)
+ {
+ 	struct path path;
+ 	struct mount *mnt;
+@@ -1653,7 +1653,7 @@ out:
+ /*
+  *	The 2.0 compatible umount. No flags.
+  */
+-SYSCALL_DEFINE1(oldumount, char __user *, name)
++SYSCALL_DEFINE1(oldumount, const char __user *, name)
+ {
+ 	return sys_umount(name, 0);
+ }
+@@ -2911,8 +2911,9 @@ struct dentry *mount_subtree(struct vfsmount *mnt, const char *name)
+ }
+ EXPORT_SYMBOL(mount_subtree);
+ 
+-SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
+-		char __user *, type, unsigned long, flags, void __user *, data)
++SYSCALL_DEFINE5(mount, const char __user *, dev_name,
++		const char __user *, dir_name, const char __user *, type,
++		unsigned long, flags, const void __user *, data)
+ {
+ 	int ret;
+ 	char *kernel_type;
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 185815c96433..cc2424a220e8 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -384,11 +384,12 @@ asmlinkage long sys_sync(void);
+ asmlinkage long sys_fsync(unsigned int fd);
+ asmlinkage long sys_fdatasync(unsigned int fd);
+ asmlinkage long sys_bdflush(int func, long data);
+-asmlinkage long sys_mount(char __user *dev_name, char __user *dir_name,
+-				char __user *type, unsigned long flags,
+-				void __user *data);
+-asmlinkage long sys_umount(char __user *name, int flags);
+-asmlinkage long sys_oldumount(char __user *name);
++asmlinkage long sys_mount(const char __user *dev_name,
++				const char __user *dir_name,
++				const char __user *type, unsigned long flags,
++				const void __user *data);
++asmlinkage long sys_umount(const char __user *name, int flags);
++asmlinkage long sys_oldumount(const char __user *name);
+ asmlinkage long sys_truncate(const char __user *path, long length);
+ asmlinkage long sys_ftruncate(unsigned int fd, unsigned long length);
+ asmlinkage long sys_stat(const char __user *filename,
+diff --git a/init/do_mounts.c b/init/do_mounts.c
+index 85a23ff8fc0f..ca41bdbbdb45 100644
+--- a/init/do_mounts.c
++++ b/init/do_mounts.c
+@@ -360,7 +360,7 @@ static void __init get_fs_names(char *page)
+ 	*s = '\0';
+ }
+ 
+-static int __init do_mount_root(char *name, char *fs, int flags, void *data)
++static int __init do_mount_root(const char *name, const char *fs, int flags, const void *data)
+ {
+ 	struct super_block *s;
+ 	int err = sys_mount(name, "/root", fs, flags, data);
+@@ -378,7 +378,7 @@ static int __init do_mount_root(char *name, char *fs, int flags, void *data)
+ 	return 0;
+ }
+ 
+-void __init mount_block_root(char *name, int flags)
++void __init mount_block_root(const char *name, int flags)
+ {
+ 	struct page *page = alloc_page(GFP_KERNEL |
+ 					__GFP_NOTRACK_FALSE_POSITIVE);
+diff --git a/init/do_mounts.h b/init/do_mounts.h
+index b45459e8d4cf..3e30bf0a843d 100644
+--- a/init/do_mounts.h
++++ b/init/do_mounts.h
+@@ -10,11 +10,11 @@
+ 
+ __printf(1, 2)
+ void  change_floppy(const char *fmt, ...);
+-void  mount_block_root(char *name, int flags);
++void  mount_block_root(const char *name, int flags);
+ void  mount_root(void);
+ extern int root_mountflags;
+ 
+-static inline int create_dev(char *name, dev_t dev)
++static inline int create_dev(const char *name, dev_t dev)
+ {
+ 	sys_unlink(name);
+ 	return sys_mknod(name, S_IFBLK|0600, new_encode_dev(dev));
+-- 

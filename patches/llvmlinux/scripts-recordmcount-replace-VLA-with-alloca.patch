@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 28 Dec 2015 17:48:11 +0100
+Subject: [PATCH] {For LLVMLinux} scripts/recordmcount: replace VLA with alloca
+
+clang warns against variable-length array
+---
+ scripts/recordmcount.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/scripts/recordmcount.c b/scripts/recordmcount.c
+index e167592793a7..f8def7daf1e3 100644
+--- a/scripts/recordmcount.c
++++ b/scripts/recordmcount.c
+@@ -24,6 +24,7 @@
+ #include <sys/types.h>
+ #include <sys/mman.h>
+ #include <sys/stat.h>
++#include <alloca.h>
+ #include <getopt.h>
+ #include <elf.h>
+ #include <fcntl.h>
+@@ -263,9 +264,11 @@ static void *mmap_file(char const *fname)
+ 
+ static void write_file(const char *fname)
+ {
+-	char tmp_file[strlen(fname) + 4];
++	char *tmp_file;
+ 	size_t n;
+ 
++	tmp_file = alloca(strlen(fname) + 4);
++
+ 	if (!file_updated)
+ 		return;
+ 
+-- 
