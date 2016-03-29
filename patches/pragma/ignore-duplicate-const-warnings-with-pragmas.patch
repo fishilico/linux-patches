@@ -9,16 +9,17 @@ Subject: [PATCH] {PRAGMA} ignore duplicate const warnings with pragmas
  include/linux/module.h      |  9 +++++++++
  include/linux/util_macros.h | 19 +++++++++++++++++++
  lib/test-kstrtox.c          | 28 ++++++++++++++++++++++++++++
+ sound/soc/codecs/rt5514.c   | 14 ++++++++++++++
  sound/soc/codecs/rt5659.c   |  7 +++++++
  sound/soc/codecs/wm8804.c   |  7 +++++++
  sound/soc/codecs/wm8998.c   | 14 ++++++++++++++
- 8 files changed, 102 insertions(+)
+ 9 files changed, 116 insertions(+)
 
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 48f5aab117ae..9c359fe38639 100644
+index b5ff9881bef8..a6438f2ded42 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
-@@ -524,9 +524,18 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
+@@ -529,9 +529,18 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
   *
   * If possible use READ_ONCE()/WRITE_ONCE() instead.
   */
@@ -38,10 +39,10 @@ index 48f5aab117ae..9c359fe38639 100644
  
  /**
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 1adac8c4da1b..90b074bcfeaa 100644
+index bd0e6f727ae7..0edbd7c193c9 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
-@@ -840,9 +840,18 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
+@@ -823,9 +823,18 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
   * @member:	the name of the member within the struct.
   *
   */
@@ -177,8 +178,43 @@ index f355f67169b6..27e223bd9376 100644
  
  static void __init test_kstrtoull_ok(void)
  {
+diff --git a/sound/soc/codecs/rt5514.c b/sound/soc/codecs/rt5514.c
+index 879bf60f4965..3127cd02e873 100644
+--- a/sound/soc/codecs/rt5514.c
++++ b/sound/soc/codecs/rt5514.c
+@@ -293,16 +293,30 @@ static const char * const rt5514_dmic_src[] = {
+ 	"DMIC1", "DMIC2"
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-decl-specifier"
++#endif
+ static const SOC_ENUM_SINGLE_DECL(
+ 	rt5514_stereo1_dmic_enum, RT5514_DIG_SOURCE_CTRL,
+ 	RT5514_AD0_DMIC_INPUT_SEL_SFT, rt5514_dmic_src);
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ static const struct snd_kcontrol_new rt5514_sto1_dmic_mux =
+ 	SOC_DAPM_ENUM("Stereo1 DMIC Source", rt5514_stereo1_dmic_enum);
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-decl-specifier"
++#endif
+ static const SOC_ENUM_SINGLE_DECL(
+ 	rt5514_stereo2_dmic_enum, RT5514_DIG_SOURCE_CTRL,
+ 	RT5514_AD1_DMIC_INPUT_SEL_SFT, rt5514_dmic_src);
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ static const struct snd_kcontrol_new rt5514_sto2_dmic_mux =
+ 	SOC_DAPM_ENUM("Stereo2 DMIC Source", rt5514_stereo2_dmic_enum);
 diff --git a/sound/soc/codecs/rt5659.c b/sound/soc/codecs/rt5659.c
-index fb8ea05c0de1..90f1315cdd56 100644
+index 1b30914c2d91..1ee2ea9dd652 100644
 --- a/sound/soc/codecs/rt5659.c
 +++ b/sound/soc/codecs/rt5659.c
 @@ -1149,6 +1149,10 @@ static const char * const rt5659_data_select[] = {
@@ -222,7 +258,7 @@ index 8d914702cae4..0565891bb96c 100644
  static const struct snd_kcontrol_new wm8804_tx_source_mux[] = {
  	SOC_DAPM_ENUM_EXT("Input Source", txsrc,
 diff --git a/sound/soc/codecs/wm8998.c b/sound/soc/codecs/wm8998.c
-index 7719bc509e50..8563e8b793b6 100644
+index 012396074a8a..8a03d1969d56 100644
 --- a/sound/soc/codecs/wm8998.c
 +++ b/sound/soc/codecs/wm8998.c
 @@ -199,6 +199,10 @@ static const char * const wm8998_inmux_texts[] = {

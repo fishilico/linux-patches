@@ -10,7 +10,7 @@ Subject: [PATCH] {PRAGMA} ignore broken clang -Wshift-count-overflow check for
  2 files changed, 16 insertions(+)
 
 diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 6013021a3b39..17b3358dbe1f 100644
+index a307bf62974f..a4a436211c58 100644
 --- a/include/linux/clocksource.h
 +++ b/include/linux/clocksource.h
 @@ -116,7 +116,15 @@ struct clocksource {
@@ -27,15 +27,15 @@ index 6013021a3b39..17b3358dbe1f 100644
  #define CLOCKSOURCE_MASK(bits) (cycle_t)((bits) < 64 ? ((1ULL<<(bits))-1) : -1)
 +#endif
  
- /**
-  * clocksource_khz2mult - calculates mult from khz and shift
+ static inline u32 clocksource_freq2mult(u32 freq, u32 shift_constant, u64 from)
+ {
 diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 728ef074602a..37f7d7f34d69 100644
+index 9ea9aba28049..94222f326e61 100644
 --- a/include/linux/dma-mapping.h
 +++ b/include/linux/dma-mapping.h
-@@ -70,7 +70,15 @@ struct dma_map_ops {
- 	int is_phys;
- };
+@@ -72,7 +72,15 @@ struct dma_map_ops {
+ 
+ extern struct dma_map_ops dma_noop_ops;
  
 +#ifdef __clang__
 +#define DMA_BIT_MASK(n) \

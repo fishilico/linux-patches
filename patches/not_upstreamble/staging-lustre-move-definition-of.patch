@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 20 Mar 2016 13:01:22 +0100
+Subject: [PATCH] {NOT UPSTREAMABLE} staging/lustre: move definition of
+ trace_tctl after struct def
+
+clang:
+drivers/staging/lustre/lnet/libcfs/tracefile.c:55:30: error:
+      tentative definition of variable with internal linkage has incomplete
+      non-array type 'struct tracefiled_ctl'
+      [-Werror,-Wtentative-definition-incomplete-type]
+static struct tracefiled_ctl trace_tctl;
+                             ^
+drivers/staging/lustre/lnet/libcfs/tracefile.c:51:8: note:
+      forward declaration of 'struct tracefiled_ctl'
+struct tracefiled_ctl;
+       ^
+---
+ drivers/staging/lustre/lnet/libcfs/tracefile.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/lustre/lnet/libcfs/tracefile.c b/drivers/staging/lustre/lnet/libcfs/tracefile.c
+index ec3bc04bd89f..0880ccbc77f3 100644
+--- a/drivers/staging/lustre/lnet/libcfs/tracefile.c
++++ b/drivers/staging/lustre/lnet/libcfs/tracefile.c
+@@ -50,7 +50,6 @@ union cfs_trace_data_union (*cfs_trace_data[TCD_MAX_TYPES])[NR_CPUS] __cacheline
+ 
+ char cfs_tracefile[TRACEFILE_NAME_SIZE];
+ long long cfs_tracefile_size = CFS_TRACEFILE_SIZE;
+-static struct tracefiled_ctl trace_tctl;
+ static DEFINE_MUTEX(cfs_trace_thread_mutex);
+ static int thread_running;
+ 
+@@ -73,6 +72,7 @@ struct tracefiled_ctl {
+ 	pid_t			tctl_pid;
+ 	atomic_t		tctl_shutdown;
+ };
++static struct tracefiled_ctl trace_tctl;
+ 
+ /*
+  * small data-structure for each page owned by tracefiled.
+-- 

@@ -47,9 +47,10 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  .../net/wireless/intersil/hostap/hostap_ioctl.c    |  3 +++
  drivers/parport/share.c                            |  3 +++
  drivers/pnp/interface.c                            |  4 +++
+ drivers/staging/lustre/lustre/ptlrpc/pinger.c      |  4 +++
+ drivers/staging/most/mostcore/core.c               |  4 +++
  drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c  |  3 +++
  drivers/staging/speakup/kobjects.c                 |  6 +++++
- drivers/staging/unisys/visorhba/visorhba_main.c    |  4 +++
  drivers/tty/serial/pch_uart.c                      |  3 +++
  fs/btrfs/check-integrity.c                         |  6 +++++
  fs/quota/dquot.c                                   |  4 +++
@@ -68,10 +69,10 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  sound/pci/rme32.c                                  |  3 +++
  sound/pci/rme96.c                                  |  3 +++
  sound/usb/mixer_quirks.c                           |  3 +++
- 64 files changed, 362 insertions(+), 7 deletions(-)
+ 65 files changed, 366 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 4c574b02516a..2ed556ca6da4 100644
+index 801c06bab3d1..0f2094187777 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce.c
 @@ -343,7 +343,10 @@ static void mce_panic(const char *msg, struct mce *final, char *exp)
@@ -86,10 +87,10 @@ index 4c574b02516a..2ed556ca6da4 100644
  		pr_emerg(HW_ERR "Fake kernel panic: %s\n", msg);
  }
 diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd.c b/arch/x86/kernel/cpu/mcheck/mce_amd.c
-index e99b15077e94..681511c20843 100644
+index 9d656fd436ef..99ee2044d90c 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce_amd.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce_amd.c
-@@ -617,9 +617,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
+@@ -731,9 +731,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
  		per_cpu(threshold_banks, cpu)[bank]->blocks = b;
  	}
  
@@ -103,7 +104,7 @@ index e99b15077e94..681511c20843 100644
  	if (err)
  		goto out_free;
  recurse:
-@@ -657,13 +661,21 @@ static int __threshold_add_blocks(struct threshold_bank *b)
+@@ -766,13 +770,21 @@ static int __threshold_add_blocks(struct threshold_bank *b)
  	struct threshold_block *tmp = NULL;
  	int err = 0;
  
@@ -125,7 +126,7 @@ index e99b15077e94..681511c20843 100644
  		if (err) {
  			list_for_each_entry_safe_reverse(pos, tmp, head, miscj)
  				kobject_del(&pos->kobj);
-@@ -689,7 +701,11 @@ static int threshold_create_bank(unsigned int cpu, unsigned int bank)
+@@ -798,7 +810,11 @@ static int threshold_create_bank(unsigned int cpu, unsigned int bank)
  		if (nb && nb->bank4) {
  			/* yes, use it */
  			b = nb->bank4;
@@ -138,10 +139,10 @@ index e99b15077e94..681511c20843 100644
  				goto out;
  
 diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 569c1e4f96fe..2e7f569a1d8c 100644
+index 621b501f8935..f67969d05690 100644
 --- a/arch/x86/kernel/e820.c
 +++ b/arch/x86/kernel/e820.c
-@@ -803,8 +803,12 @@ unsigned long __init e820_end_of_low_ram_pfn(void)
+@@ -804,8 +804,12 @@ unsigned long __init e820_end_of_low_ram_pfn(void)
  
  static void early_panic(char *msg)
  {
@@ -155,7 +156,7 @@ index 569c1e4f96fe..2e7f569a1d8c 100644
  
  static int userdef __initdata;
 diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
-index 3f4ebf0261f2..929a94fa7ecf 100644
+index 3c6d17fd423a..28537059a73e 100644
 --- a/arch/x86/xen/smp.c
 +++ b/arch/x86/xen/smp.c
 @@ -337,13 +337,16 @@ static void __init xen_smp_prepare_cpus(unsigned int max_cpus)
@@ -192,7 +193,7 @@ index ee9cfb99fe25..32b30972d32a 100644
  		kobject_uevent(&pinst->kobj, KOBJ_ADD);
  
 diff --git a/drivers/acpi/acpi_apd.c b/drivers/acpi/acpi_apd.c
-index d507cf6deda0..2c8095ceba83 100644
+index f245bf35bedb..fe10bdf888af 100644
 --- a/drivers/acpi/acpi_apd.c
 +++ b/drivers/acpi/acpi_apd.c
 @@ -64,7 +64,10 @@ static int acpi_apd_setup(struct apd_private_data *pdata)
@@ -272,7 +273,7 @@ index 1b257ea9776a..19c25055e8f2 100644
  		return 1;
  
 diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-index 4f6f94c43412..0d67b9af232a 100644
+index 71025c2f6bbb..70c53053c182 100644
 --- a/drivers/char/mem.c
 +++ b/drivers/char/mem.c
 @@ -862,8 +862,11 @@ static int __init chr_dev_init(void)
@@ -497,7 +498,7 @@ index eedfe339d057..bc829c233126 100644
  ssize_t bch_hprint(char *buf, int64_t v);
  
 diff --git a/drivers/media/pci/cx23885/cx23885-dvb.c b/drivers/media/pci/cx23885/cx23885-dvb.c
-index 80319bb73d94..496deb372189 100644
+index f041b6931ba8..1f426fc79551 100644
 --- a/drivers/media/pci/cx23885/cx23885-dvb.c
 +++ b/drivers/media/pci/cx23885/cx23885-dvb.c
 @@ -1150,7 +1150,10 @@ static int dvb_register_ci_mac(struct cx23885_tsport *port)
@@ -508,7 +509,7 @@ index 80319bb73d94..496deb372189 100644
 +#pragma GCC diagnostic ignored "-Wformat-security"
  		request_module(info.type);
 +#pragma GCC diagnostic pop
- 		client_ci = i2c_new_device(&i2c_bus2->i2c_adap, &info);
+ 		client_ci = i2c_new_device(&i2c_bus->i2c_adap, &info);
  		if (client_ci == NULL || client_ci->dev.driver == NULL)
  			return -ENODEV;
 @@ -1916,7 +1919,10 @@ static int dvb_register(struct cx23885_tsport *port)
@@ -552,7 +553,7 @@ index 80319bb73d94..496deb372189 100644
 +#pragma GCC diagnostic ignored "-Wformat-security"
  		request_module(info.type);
 +#pragma GCC diagnostic pop
- 		client_demod = i2c_new_device(&i2c_bus->i2c_adap, &info);
+ 		client_demod = i2c_new_device(&i2c_bus2->i2c_adap, &info);
  		if (client_demod == NULL || client_demod->dev.driver == NULL)
  			goto frontend_detach;
 @@ -2018,7 +2033,10 @@ static int dvb_register(struct cx23885_tsport *port)
@@ -611,7 +612,7 @@ index 80319bb73d94..496deb372189 100644
  		if (client_tuner == NULL ||
  				client_tuner->dev.driver == NULL)
 diff --git a/drivers/media/pci/netup_unidvb/netup_unidvb_core.c b/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
-index 525ebfefeee8..dad86a15936f 100644
+index 2b667b315913..0977e8793d8b 100644
 --- a/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
 +++ b/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
 @@ -736,7 +736,11 @@ static int netup_unidvb_request_modules(struct device *dev)
@@ -747,7 +748,7 @@ index 5ef67774971d..7e570f4bb18a 100644
  	ret = platform_driver_register(&mxr_driver);
  	if (ret != 0) {
 diff --git a/drivers/media/usb/dvb-usb-v2/dvbsky.c b/drivers/media/usb/dvb-usb-v2/dvbsky.c
-index 1dd962535f97..a2bd8935d8d3 100644
+index 02dbc6c45423..e985ebdef216 100644
 --- a/drivers/media/usb/dvb-usb-v2/dvbsky.c
 +++ b/drivers/media/usb/dvb-usb-v2/dvbsky.c
 @@ -541,7 +541,10 @@ static int dvbsky_t680c_attach(struct dvb_usb_adapter *adap)
@@ -806,10 +807,10 @@ index 1dd962535f97..a2bd8935d8d3 100644
  	if (client_tuner == NULL ||
  			client_tuner->dev.driver == NULL)
 diff --git a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
-index eb5787a3191e..0d4f0ba1e474 100644
+index fa72642d41f3..8743d190a7e9 100644
 --- a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
 +++ b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
-@@ -945,7 +945,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
+@@ -953,7 +953,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
  			mn88472_config.ts_clock = VARIABLE_TS_CLOCK;
  			info.addr = 0x18;
  			info.platform_data = &mn88472_config;
@@ -820,7 +821,7 @@ index eb5787a3191e..0d4f0ba1e474 100644
  			client = i2c_new_device(&d->i2c_adap, &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				dev->slave_demod = SLAVE_DEMOD_NONE;
-@@ -967,7 +970,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
+@@ -975,7 +978,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
  			strlcpy(info.type, "mn88473", I2C_NAME_SIZE);
  			info.addr = 0x18;
  			info.platform_data = &mn88473_config;
@@ -831,7 +832,7 @@ index eb5787a3191e..0d4f0ba1e474 100644
  			client = i2c_new_device(&d->i2c_adap, &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				dev->slave_demod = SLAVE_DEMOD_NONE;
-@@ -993,7 +999,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
+@@ -1001,7 +1007,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
  			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  			info.addr = 0x64;
  			info.platform_data = &si2168_config;
@@ -842,7 +843,7 @@ index eb5787a3191e..0d4f0ba1e474 100644
  			client = i2c_new_device(&d->i2c_adap, &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				dev->slave_demod = SLAVE_DEMOD_NONE;
-@@ -1185,7 +1194,10 @@ static int rtl2832u_tuner_attach(struct dvb_usb_adapter *adap)
+@@ -1193,7 +1202,10 @@ static int rtl2832u_tuner_attach(struct dvb_usb_adapter *adap)
  			info.addr = 0x64;
  			info.platform_data = &e4000_config;
  
@@ -853,7 +854,7 @@ index eb5787a3191e..0d4f0ba1e474 100644
  			client = i2c_new_device(dev->demod_i2c_adapter, &info);
  			if (client == NULL || client->dev.driver == NULL)
  				break;
-@@ -1284,7 +1296,10 @@ static int rtl2832u_tuner_attach(struct dvb_usb_adapter *adap)
+@@ -1292,7 +1304,10 @@ static int rtl2832u_tuner_attach(struct dvb_usb_adapter *adap)
  			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
  			info.addr = 0x60;
  			info.platform_data = &si2157_config;
@@ -865,7 +866,7 @@ index eb5787a3191e..0d4f0ba1e474 100644
  			if (client == NULL || client->dev.driver == NULL)
  				break;
 diff --git a/drivers/media/usb/dvb-usb/cxusb.c b/drivers/media/usb/dvb-usb/cxusb.c
-index ab7151181728..646ea675e942 100644
+index 907ac01ae297..ff4448e60b39 100644
 --- a/drivers/media/usb/dvb-usb/cxusb.c
 +++ b/drivers/media/usb/dvb-usb/cxusb.c
 @@ -1335,7 +1335,10 @@ static int cxusb_mygica_t230_frontend_attach(struct dvb_usb_adapter *adap)
@@ -891,10 +892,10 @@ index ab7151181728..646ea675e942 100644
  	if (client_tuner == NULL || client_tuner->dev.driver == NULL) {
  		module_put(client_demod->dev.driver->owner);
 diff --git a/drivers/media/usb/em28xx/em28xx-dvb.c b/drivers/media/usb/em28xx/em28xx-dvb.c
-index bf5c24467c65..bc74d1f043a2 100644
+index 5d209c7c54d5..a3aa13e8cd17 100644
 --- a/drivers/media/usb/em28xx/em28xx-dvb.c
 +++ b/drivers/media/usb/em28xx/em28xx-dvb.c
-@@ -1637,7 +1637,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1652,7 +1652,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  			info.addr = 0x64;
  			info.platform_data = &si2168_config;
@@ -905,7 +906,7 @@ index bf5c24467c65..bc74d1f043a2 100644
  			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				result = -ENODEV;
-@@ -1660,7 +1663,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1678,7 +1681,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
  			info.addr = 0x60;
  			info.platform_data = &si2157_config;
@@ -916,7 +917,7 @@ index bf5c24467c65..bc74d1f043a2 100644
  			client = i2c_new_device(adapter, &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				module_put(dvb->i2c_client_demod->dev.driver->owner);
-@@ -1698,7 +1704,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1716,7 +1722,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  			info.addr = 0x64;
  			info.platform_data = &si2168_config;
@@ -992,10 +993,10 @@ index c66ca1a5814e..845819ce0b0e 100644
  		err = -ENOMEM;
  		goto destroy_intr;
 diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
-index b8517b00e706..b52f79532b17 100644
+index 6e2b76ede075..135e92617d50 100644
 --- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
 +++ b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
-@@ -641,7 +641,11 @@ static void hns_gmac_get_strings(u32 stringset, u8 *data)
+@@ -664,7 +664,11 @@ static void hns_gmac_get_strings(u32 stringset, u8 *data)
  		return;
  
  	for (i = 0; i < ARRAY_SIZE(g_gmac_stats_string); i++) {
@@ -1008,7 +1009,7 @@ index b8517b00e706..b52f79532b17 100644
  	}
  }
 diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
-index 802d55457f19..e0ea3afc7c04 100644
+index fd90f3737963..2abdff66a9f8 100644
 --- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
 +++ b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
 @@ -764,7 +764,11 @@ static void hns_xgmac_get_strings(u32 stringset, u8 *data)
@@ -1114,6 +1115,39 @@ index 1f3c155771b9..5858a37d45fc 100644
  
  		if (res->flags & IORESOURCE_DISABLED) {
  			pnp_printf(buffer, " disabled\n");
+diff --git a/drivers/staging/lustre/lustre/ptlrpc/pinger.c b/drivers/staging/lustre/lustre/ptlrpc/pinger.c
+index 8a869315c258..b14ac3caa9db 100644
+--- a/drivers/staging/lustre/lustre/ptlrpc/pinger.c
++++ b/drivers/staging/lustre/lustre/ptlrpc/pinger.c
+@@ -305,8 +305,12 @@ int ptlrpc_start_pinger(void)
+ 
+ 	strcpy(pinger_thread.t_name, "ll_ping");
+ 
++/* Even though there may be a race in pinger_thread.t_name usage, the format string is safe */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	task = kthread_run(ptlrpc_pinger_main, &pinger_thread,
+ 			   pinger_thread.t_name);
++#pragma GCC diagnostic pop
+ 	if (IS_ERR(task)) {
+ 		rc = PTR_ERR(task);
+ 		CERROR("cannot start pinger thread: rc = %d\n", rc);
+diff --git a/drivers/staging/most/mostcore/core.c b/drivers/staging/most/mostcore/core.c
+index 7c619feb12d3..07859476e77c 100644
+--- a/drivers/staging/most/mostcore/core.c
++++ b/drivers/staging/most/mostcore/core.c
+@@ -421,7 +421,11 @@ static ssize_t show_set_datatype(struct most_c_obj *c,
+ 
+ 	for (i = 0; i < ARRAY_SIZE(ch_data_type); i++) {
+ 		if (c->cfg.data_type & ch_data_type[i].most_ch_data_type)
++/* ch_data_type is a const global variable with string literals */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			return snprintf(buf, PAGE_SIZE, ch_data_type[i].name);
++#pragma GCC diagnostic pop
+ 	}
+ 	return snprintf(buf, PAGE_SIZE, "unconfigured\n");
+ }
 diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
 index 208be5fc527a..64ac71fdfb04 100644
 --- a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
@@ -1130,7 +1164,7 @@ index 208be5fc527a..64ac71fdfb04 100644
  	}
  	if (ops == NULL) {
 diff --git a/drivers/staging/speakup/kobjects.c b/drivers/staging/speakup/kobjects.c
-index fdfeb42b2b8f..be454b49aea1 100644
+index 528cbdce4227..3c3c782917d1 100644
 --- a/drivers/staging/speakup/kobjects.c
 +++ b/drivers/staging/speakup/kobjects.c
 @@ -98,7 +98,10 @@ static void report_char_chartab_status(int reset, int received, int used,
@@ -1155,22 +1189,6 @@ index fdfeb42b2b8f..be454b49aea1 100644
  	}
  }
  
-diff --git a/drivers/staging/unisys/visorhba/visorhba_main.c b/drivers/staging/unisys/visorhba/visorhba_main.c
-index d5178b44ba8c..5d44b802ae23 100644
---- a/drivers/staging/unisys/visorhba/visorhba_main.c
-+++ b/drivers/staging/unisys/visorhba/visorhba_main.c
-@@ -167,7 +167,11 @@ static int visor_thread_start(struct visor_thread_info *thrinfo,
- {
- 	/* used to stop the thread */
- 	init_completion(&thrinfo->has_stopped);
-+/* "name" is always a const string */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	thrinfo->task = kthread_run(threadfn, thrcontext, name);
-+#pragma GCC diagnostic pop
- 	if (IS_ERR(thrinfo->task)) {
- 		thrinfo->id = 0;
- 		return PTR_ERR(thrinfo->task);
 diff --git a/drivers/tty/serial/pch_uart.c b/drivers/tty/serial/pch_uart.c
 index ea4ffc2ebb2f..be17b89578c3 100644
 --- a/drivers/tty/serial/pch_uart.c
@@ -1187,10 +1205,10 @@ index ea4ffc2ebb2f..be17b89578c3 100644
  		tty_kref_put(tty);
  	}
 diff --git a/fs/btrfs/check-integrity.c b/fs/btrfs/check-integrity.c
-index 861d472564c1..ab5a2cdf672e 100644
+index e34a71b3e225..0be89ca8d03c 100644
 --- a/fs/btrfs/check-integrity.c
 +++ b/fs/btrfs/check-integrity.c
-@@ -2651,7 +2651,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
+@@ -2653,7 +2653,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
  		printk("[...]\n");
  		return;
  	}
@@ -1201,7 +1219,7 @@ index 861d472564c1..ab5a2cdf672e 100644
  	indent_level += indent_add;
  	if (list_empty(&block->ref_to_list)) {
  		printk("\n");
-@@ -2680,7 +2683,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
+@@ -2682,7 +2685,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
  			continue;
  		}
  
@@ -1213,7 +1231,7 @@ index 861d472564c1..ab5a2cdf672e 100644
  		btrfsic_dump_tree_sub(state, l->block_ref_to,
  				      indent_level + indent_add);
 diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
-index 3c3b81bb6dfe..c8e20b4a8edc 100644
+index ba827daea5a0..0a5a0caf7384 100644
 --- a/fs/quota/dquot.c
 +++ b/fs/quota/dquot.c
 @@ -198,8 +198,12 @@ static struct quota_format_type *find_quota_format(int id)
@@ -1252,10 +1270,10 @@ index 42d82f436cdd..5ee76629b048 100644
  	if (id && id[0])
  		printk(KERN_CRIT "REISERFS error (device %s): %s %s: %s\n",
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index f31638c6e873..1adac8c4da1b 100644
+index 2f7775e229b0..bd0e6f727ae7 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
-@@ -641,9 +641,12 @@ do {									\
+@@ -624,9 +624,12 @@ do {									\
  									\
  	__trace_printk_check_format(fmt, ##args);			\
  									\
@@ -1341,10 +1359,10 @@ index fc1ef736253c..44b3c95abe6e 100644
  	return kdb_read(buffer, bufsize);
  }
 diff --git a/lib/test_printf.c b/lib/test_printf.c
-index 44ab48368953..5d71bdca333e 100644
+index fe7087bdeb54..6d87504c6acc 100644
 --- a/lib/test_printf.c
 +++ b/lib/test_printf.c
-@@ -149,7 +149,10 @@ test_basic(void)
+@@ -152,7 +152,10 @@ test_basic(void)
  	/* Work around annoying "warning: zero-length gnu_printf format string". */
  	const char nul = '\0';
  
@@ -1356,7 +1374,7 @@ index 44ab48368953..5d71bdca333e 100644
  	test("xxx%yyy", "xxx%cyyy", '%');
  	__test("xxx\0yyy", 7, "xxx%cyyy", '\0');
 diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
-index f7431cb57c51..53f7a782070b 100644
+index 2d9d14d98da6..02db003328a9 100644
 --- a/net/tipc/netlink_compat.c
 +++ b/net/tipc/netlink_compat.c
 @@ -742,7 +742,10 @@ static int tipc_nl_compat_name_table_dump_header(struct tipc_nl_compat_msg *msg)
@@ -1465,10 +1483,10 @@ index e8b0cd2ae19e..1d68adbdc0cd 100644
  			menu = submenu[i];
  			if (jump && menu == location)
 diff --git a/sound/core/seq/seq_clientmgr.c b/sound/core/seq/seq_clientmgr.c
-index 58e79e02f217..51455cb4662d 100644
+index d6d9419d8bac..2114cf2b2622 100644
 --- a/sound/core/seq/seq_clientmgr.c
 +++ b/sound/core/seq/seq_clientmgr.c
-@@ -2467,7 +2467,10 @@ static void snd_seq_info_dump_subscribers(struct snd_info_buffer *buffer,
+@@ -2481,7 +2481,10 @@ static void snd_seq_info_dump_subscribers(struct snd_info_buffer *buffer,
  		up_read(&group->list_mutex);
  		return;
  	}
@@ -1574,7 +1592,7 @@ index 41c31db65039..42bbdd92ad2d 100644
  
  	snd_iprintf(buffer, "\nGeneral settings\n");
 diff --git a/sound/usb/mixer_quirks.c b/sound/usb/mixer_quirks.c
-index 279025650568..0969abcdd9ff 100644
+index f6c3bf79af9a..5c03c6cf57b1 100644
 --- a/sound/usb/mixer_quirks.c
 +++ b/sound/usb/mixer_quirks.c
 @@ -100,7 +100,10 @@ static int snd_create_std_mono_ctl_offset(struct usb_mixer_interface *mixer,

@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 24 Mar 2016 18:37:39 +0100
+Subject: [PATCH] {MAYBE UPS} i40e: initialize valid_len
+
+This is a harmless bug in i40e_vc_validate_vf_msg
+
+clang:
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2131:7: error: variable
+      'valid_len' is used uninitialized whenever 'if' condition is false [-Werror,-Wsometimes-uninitialized]
+                if (msglen)
+                    ^~~~~~
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2159:7: note:
+      uninitialized use occurs here
+        if ((valid_len != msglen) || (err_msg_format)) {
+             ^~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2131:3: note: remove the
+      'if' if its condition is always true
+                if (msglen)
+                ^~~~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2044:15: note:
+      initialize the variable 'valid_len' to silence this warning
+        int valid_len;
+                     ^
+                      = 0
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 816c6bbf7093..d0e70b70592d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2130,8 +2130,10 @@ static int i40e_vc_validate_vf_msg(struct i40e_vf *vf, u32 v_opcode,
+ 		 */
+ 		if (msglen)
+ 			valid_len = msglen;
+-		else
++		else {
++			valid_len = 0; /* clang -Wsometimes-uninitialized complains in the if later */
+ 			err_msg_format = true;
++		}
+ 		break;
+ 	case I40E_VIRTCHNL_OP_RELEASE_IWARP_IRQ_MAP:
+ 		valid_len = 0;
+-- 

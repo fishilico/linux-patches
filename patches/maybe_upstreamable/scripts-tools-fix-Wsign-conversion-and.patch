@@ -27,12 +27,12 @@ Subject: [PATCH] {MAYBE UPS} scripts,tools: fix -Wsign-conversion and
  scripts/mod/sumversion.c                | 37 +++++++++---------
  scripts/pnmtologo.c                     | 15 +++----
  scripts/selinux/genheaders/genheaders.c |  8 ++--
- scripts/sortextable.c                   | 10 ++---
+ scripts/sortextable.c                   | 14 +++----
  scripts/sortextable.h                   | 14 +++----
  tools/include/tools/be_byteshift.h      | 10 ++---
  tools/include/tools/le_byteshift.h      | 10 ++---
  usr/gen_init_cpio.c                     | 53 ++++++++++++-------------
- 27 files changed, 286 insertions(+), 270 deletions(-)
+ 27 files changed, 288 insertions(+), 272 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index 7a049e8324f1..1a25ba2a3921 100644
@@ -159,7 +159,7 @@ index 491020b2826d..0b81cfd03555 100644
  	if (argc != 4) {
  		printf("Usage: vdso2c RAW_INPUT STRIPPED_INPUT OUTPUT\n");
 diff --git a/arch/x86/entry/vdso/vdso2c.h b/arch/x86/entry/vdso/vdso2c.h
-index 0224987556ce..52df1972f25f 100644
+index 63a03bb91497..a02435d25132 100644
 --- a/arch/x86/entry/vdso/vdso2c.h
 +++ b/arch/x86/entry/vdso/vdso2c.h
 @@ -9,10 +9,10 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
@@ -718,7 +718,7 @@ index e000f44e37b8..20b40b6a6f41 100644
  	if (e->flags & ELEMENT_SKIPPABLE ||
  	    (tag && tag->flags & ELEMENT_SKIPPABLE))
 diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
-index 5b327c67a828..e894a831ba4d 100644
+index caef815d1743..6c8b881718bb 100644
 --- a/scripts/basic/fixdep.c
 +++ b/scripts/basic/fixdep.c
 @@ -154,14 +154,14 @@ static unsigned int strhash(const char *str, unsigned int sz)
@@ -792,7 +792,7 @@ index 5b327c67a828..e894a831ba4d 100644
  
  	if (sublen > slen)
  		return 1;
-@@ -279,16 +279,16 @@ static void do_config_file(const char *filename)
+@@ -283,16 +283,16 @@ static void do_config_file(const char *filename)
  		close(fd);
  		return;
  	}
@@ -812,7 +812,7 @@ index 5b327c67a828..e894a831ba4d 100644
  
  	close(fd);
  }
-@@ -324,7 +324,7 @@ static void parse_dep_file(void *map, size_t len)
+@@ -328,7 +328,7 @@ static void parse_dep_file(void *map, size_t len)
  			is_first_dep = 1;
  		} else {
  			/* Save this token/filename */
@@ -821,7 +821,7 @@ index 5b327c67a828..e894a831ba4d 100644
  			s[p - m] = 0;
  
  			/* Ignore certain dependencies */
-@@ -400,16 +400,16 @@ static void print_deps(void)
+@@ -404,16 +404,16 @@ static void print_deps(void)
  		close(fd);
  		return;
  	}
@@ -841,7 +841,7 @@ index 5b327c67a828..e894a831ba4d 100644
  
  	close(fd);
  }
-@@ -417,7 +417,7 @@ static void print_deps(void)
+@@ -421,7 +421,7 @@ static void print_deps(void)
  static void traps(void)
  {
  	static char test[] __attribute__((aligned(sizeof(int)))) = "CONF";
@@ -913,10 +913,10 @@ index f82740a69b85..cf0ee807db92 100644
  			     (c = getc( yyin )) != EOF && c != '\n'; ++n ) \
  			buf[n] = (char) c; \
 diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-index 8fa81e84e295..76715ab58323 100644
+index 638b143ee60f..c559723ba875 100644
 --- a/scripts/kallsyms.c
 +++ b/scripts/kallsyms.c
-@@ -89,7 +89,7 @@ static inline int is_arm_mapping_symbol(const char *str)
+@@ -93,7 +93,7 @@ static inline int is_arm_mapping_symbol(const char *str)
  }
  
  static int check_symbol_range(const char *sym, unsigned long long addr,
@@ -925,7 +925,7 @@ index 8fa81e84e295..76715ab58323 100644
  {
  	size_t i;
  	struct addr_range *ar;
-@@ -161,7 +161,7 @@ static int read_symbol(FILE *in, struct sym_entry *s)
+@@ -165,7 +165,7 @@ static int read_symbol(FILE *in, struct sym_entry *s)
  
  	/* include the type field in the symbol name, so that it gets
  	 * compressed together */
@@ -934,16 +934,16 @@ index 8fa81e84e295..76715ab58323 100644
  	s->sym = malloc(s->len + 1);
  	if (!s->sym) {
  		fprintf(stderr, "kallsyms failure: "
-@@ -169,7 +169,7 @@ static int read_symbol(FILE *in, struct sym_entry *s)
+@@ -173,7 +173,7 @@ static int read_symbol(FILE *in, struct sym_entry *s)
  		exit(EXIT_FAILURE);
  	}
  	strcpy((char *)s->sym + 1, str);
 -	s->sym[0] = stype;
 +	s->sym[0] = (unsigned char)stype;
  
- 	/* Record if we've found __per_cpu_start/end. */
- 	check_symbol_range(sym, s->addr, &percpu_range, 1);
-@@ -178,7 +178,7 @@ static int read_symbol(FILE *in, struct sym_entry *s)
+ 	s->percpu_absolute = 0;
+ 
+@@ -184,7 +184,7 @@ static int read_symbol(FILE *in, struct sym_entry *s)
  }
  
  static int symbol_in_range(struct sym_entry *s, struct addr_range *ranges,
@@ -952,7 +952,7 @@ index 8fa81e84e295..76715ab58323 100644
  {
  	size_t i;
  	struct addr_range *ar;
-@@ -256,7 +256,7 @@ static int symbol_valid(struct sym_entry *s)
+@@ -264,7 +264,7 @@ static int symbol_valid(struct sym_entry *s)
  			return 0;
  
  	for (i = 0; special_suffixes[i]; i++) {
@@ -961,7 +961,7 @@ index 8fa81e84e295..76715ab58323 100644
  
  		if (l >= 0 && strcmp(sym_name + l, special_suffixes[i]) == 0)
  			return 0;
-@@ -300,14 +300,15 @@ static void output_label(char *label)
+@@ -308,14 +308,15 @@ static void output_label(char *label)
   * might still be compressed itself, so the function needs to be recursive */
  static int expand_symbol(unsigned char *data, int len, char *result)
  {
@@ -979,7 +979,7 @@ index 8fa81e84e295..76715ab58323 100644
  			total++;
  		} else {
  			/* if not, recurse and expand */
-@@ -423,20 +424,20 @@ static void write_src(void)
+@@ -469,20 +470,20 @@ static void write_src(void)
  /* table lookup compression functions */
  
  /* count all the possible tokens in a symbol */
@@ -1006,7 +1006,7 @@ index 8fa81e84e295..76715ab58323 100644
  		token_profit[ symbol[i] + (symbol[i + 1] << 8) ]--;
  }
  
-@@ -457,11 +458,11 @@ static void build_initial_tok_table(void)
+@@ -503,11 +504,11 @@ static void build_initial_tok_table(void)
  	table_cnt = pos;
  }
  
@@ -1021,7 +1021,7 @@ index 8fa81e84e295..76715ab58323 100644
  		if (str[i] == token[0] && str[i+1] == token[1])
  			return &str[i];
  	}
-@@ -490,7 +491,7 @@ static void compress_symbols(unsigned char *str, int idx)
+@@ -536,7 +537,7 @@ static void compress_symbols(unsigned char *str, int idx)
  		size = len;
  
  		do {
@@ -1030,7 +1030,7 @@ index 8fa81e84e295..76715ab58323 100644
  			p2++;
  			size -= (p2 - p1);
  			memmove(p2, p2 + 1, size);
-@@ -560,7 +561,8 @@ static void optimize_result(void)
+@@ -606,7 +607,8 @@ static void optimize_result(void)
  /* start by placing the symbols that are actually used on the table */
  static void insert_real_symbols_in_table(void)
  {
@@ -1040,7 +1040,7 @@ index 8fa81e84e295..76715ab58323 100644
  
  	memset(best_table, 0, sizeof(best_table));
  	memset(best_table_len, 0, sizeof(best_table_len));
-@@ -593,7 +595,7 @@ static void optimize_token_table(void)
+@@ -639,7 +641,7 @@ static void optimize_token_table(void)
  static int may_be_linker_script_provide_symbol(const struct sym_entry *se)
  {
  	const char *symbol = (char *)se->sym + 1;
@@ -1049,7 +1049,7 @@ index 8fa81e84e295..76715ab58323 100644
  
  	if (len < 8)
  		return 0;
-@@ -631,7 +633,7 @@ static int prefix_underscores_count(const char *str)
+@@ -677,7 +679,7 @@ static int prefix_underscores_count(const char *str)
  	while (*tail == '_')
  		tail++;
  
@@ -1058,7 +1058,7 @@ index 8fa81e84e295..76715ab58323 100644
  }
  
  static int compare_symbols(const void *a, const void *b)
-@@ -668,7 +670,7 @@ static int compare_symbols(const void *a, const void *b)
+@@ -714,7 +716,7 @@ static int compare_symbols(const void *a, const void *b)
  		return wa - wb;
  
  	/* sort by initial order, so that other symbols are left undisturbed */
@@ -1090,7 +1090,7 @@ index 866369f10ff8..224c7e065bee 100644
  					seed = tmp;
  				}
 diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 0b7dc2fd7bac..41ab235a91b1 100644
+index dd243d2abd87..d24d8a514c42 100644
 --- a/scripts/kconfig/confdata.c
 +++ b/scripts/kconfig/confdata.c
 @@ -209,7 +209,7 @@ static int add_byte(int c, char **lineptr, size_t slen, size_t *n)
@@ -1111,7 +1111,7 @@ index 0b7dc2fd7bac..41ab235a91b1 100644
  		default:
  			if (add_byte(c, &line, slen, n) < 0)
  				goto e_out;
-@@ -755,7 +755,7 @@ int conf_write(const char *name)
+@@ -756,7 +756,7 @@ int conf_write(const char *name)
  			strcat(dirname, "/");
  			basename = conf_get_configname();
  		} else if ((slash = strrchr(name, '/'))) {
@@ -1120,7 +1120,7 @@ index 0b7dc2fd7bac..41ab235a91b1 100644
  			memcpy(dirname, name, size);
  			dirname[size] = 0;
  			if (slash[1])
-@@ -906,7 +906,7 @@ static int conf_split_config(void)
+@@ -908,7 +908,7 @@ static int conf_split_config(void)
  		s = sym->name;
  		d = path;
  		while ((c = *s++)) {
@@ -1129,7 +1129,7 @@ index 0b7dc2fd7bac..41ab235a91b1 100644
  			*d++ = (c == '_') ? '/' : c;
  		}
  		strcpy(d, ".h");
-@@ -1133,7 +1133,7 @@ bool conf_set_all_new_symbols(enum conf_def_mode mode)
+@@ -1135,7 +1135,7 @@ bool conf_set_all_new_symbols(enum conf_def_mode mode)
  		n = 0;
  		while( env && *env ) {
  			char *endp;
@@ -1678,7 +1678,7 @@ index 539855ff31f9..48af6aa50c5c 100644
  			fprintf(fout, "0x%08xUL\n", (1<<j));
  		}
 diff --git a/scripts/sortextable.c b/scripts/sortextable.c
-index c2423d913b46..0798d21bf8bd 100644
+index f453b7ce99d6..c7c01902107a 100644
 --- a/scripts/sortextable.c
 +++ b/scripts/sortextable.c
 @@ -69,7 +69,7 @@ static void
@@ -1712,11 +1712,23 @@ index c2423d913b46..0798d21bf8bd 100644
  	return 0;
  }
  
+-static void x86_sort_relative_table(char *extab_image, int image_size)
++static void x86_sort_relative_table(char *extab_image, size_t image_size)
+ {
+-	int i;
++	size_t i;
+ 
+ 	i = 0;
+ 	while (i < image_size) {
+@@ -238,9 +238,9 @@ static void x86_sort_relative_table(char *extab_image, int image_size)
+ 	}
+ }
+ 
 -static void sort_relative_table(char *extab_image, int image_size)
 +static void sort_relative_table(char *extab_image, size_t image_size)
  {
 -	int i;
-+	unsigned int i;
++	size_t i;
  
  	/*
  	 * Do the same thing the runtime sort does, first normalize to

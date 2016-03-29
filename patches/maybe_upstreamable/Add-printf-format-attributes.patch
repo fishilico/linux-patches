@@ -11,7 +11,7 @@ Subject: [PATCH] {MAYBE UPS} Add printf format attributes
  drivers/ata/libata-eh.c                           |   5 +-
  drivers/base/core.c                               |   2 +-
  drivers/base/cpu.c                                |   2 +-
- drivers/clk/clkdev.c                              |   4 +-
+ drivers/clk/clkdev.c                              |   7 +-
  drivers/gpu/drm/i915/i915_gpu_error.c             |   5 +-
  drivers/iio/industrialio-trigger.c                |   3 +-
  drivers/isdn/capi/capiutil.c                      |   4 +-
@@ -57,7 +57,6 @@ Subject: [PATCH] {MAYBE UPS} Add printf format attributes
  net/dccp/ccid.c                                   |   3 +-
  net/dccp/probe.c                                  |   6 +-
  net/rds/ib.h                                      |   1 +
- net/rds/iw.h                                      |   1 +
  net/tipc/netlink_compat.c                         |   2 +-
  scripts/genksyms/genksyms.h                       |   2 +-
  scripts/kconfig/confdata.c                        |  11 +-
@@ -69,7 +68,7 @@ Subject: [PATCH] {MAYBE UPS} Add printf format attributes
  security/tomoyo/common.c                          |   3 +-
  security/tomoyo/common.h                          |   4 +-
  sound/soc/soc-dapm.c                              |   3 +-
- 65 files changed, 208 insertions(+), 178 deletions(-)
+ 64 files changed, 209 insertions(+), 179 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index 1a25ba2a3921..cfd955cff525 100644
@@ -204,7 +203,7 @@ index 691eeea2f19a..17ca4223fff8 100644
  		    const struct attribute_group **groups,
  		    const char *fmt, va_list args)
 diff --git a/drivers/clk/clkdev.c b/drivers/clk/clkdev.c
-index 779b6ff0c7ad..647d470df58f 100644
+index eb20b941154b..f8a0afc90744 100644
 --- a/drivers/clk/clkdev.c
 +++ b/drivers/clk/clkdev.c
 @@ -250,7 +250,7 @@ struct clk_lookup_alloc {
@@ -225,8 +224,18 @@ index 779b6ff0c7ad..647d470df58f 100644
  vclkdev_create(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	va_list ap)
  {
+@@ -353,7 +353,8 @@ void clkdev_drop(struct clk_lookup *cl)
+ }
+ EXPORT_SYMBOL(clkdev_drop);
+ 
+-static struct clk_lookup *__clk_register_clkdev(struct clk_hw *hw,
++static __printf(3, 4) struct clk_lookup *
++__clk_register_clkdev(struct clk_hw *hw,
+ 						const char *con_id,
+ 						const char *dev_id, ...)
+ {
 diff --git a/drivers/gpu/drm/i915/i915_gpu_error.c b/drivers/gpu/drm/i915/i915_gpu_error.c
-index 06ca4082735b..4d3657ad52dc 100644
+index 831895b8cb75..d544f75113b7 100644
 --- a/drivers/gpu/drm/i915/i915_gpu_error.c
 +++ b/drivers/gpu/drm/i915/i915_gpu_error.c
 @@ -129,8 +129,9 @@ static void __i915_error_advance(struct drm_i915_error_state_buf *e,
@@ -278,7 +287,7 @@ index 9846d82eb097..1b9f41563d47 100644
  			break;
  		case _CSTRUCT:
 diff --git a/drivers/isdn/hardware/eicon/debug.c b/drivers/isdn/hardware/eicon/debug.c
-index b5226af6ddec..dfe30bb4fa52 100644
+index 576b7b4a3278..a08ef16928bf 100644
 --- a/drivers/isdn/hardware/eicon/debug.c
 +++ b/drivers/isdn/hardware/eicon/debug.c
 @@ -24,6 +24,7 @@ static word SuperTraceCreateReadReq(byte *P, const char *path);
@@ -289,7 +298,7 @@ index b5226af6ddec..dfe30bb4fa52 100644
  void diva_mnt_internal_dprintf(dword drv_id, dword type, char *p, ...);
  
  static dword MaxDumpSize = 256;
-@@ -569,7 +570,7 @@ static void DI_format_locked(unsigned short id,
+@@ -565,7 +566,7 @@ static void DI_format_locked(unsigned short id,
  	DI_format(1, id, type, format, argument_list);
  }
  
@@ -298,7 +307,7 @@ index b5226af6ddec..dfe30bb4fa52 100644
  		      unsigned short id,
  		      int type,
  		      char *format,
-@@ -1518,29 +1519,29 @@ static void diva_maint_state_change_notify(void *user_context,
+@@ -1514,29 +1515,29 @@ static void diva_maint_state_change_notify(void *user_context,
  			}
  
  
@@ -342,7 +351,7 @@ index b5226af6ddec..dfe30bb4fa52 100644
  			}
  		}
  		if ((modem->Event == 3) && (pC->hDbg->dbgMask & DIVA_MGT_DBG_MDM_STATISTICS)) {
-@@ -1564,20 +1565,20 @@ static void diva_maint_state_change_notify(void *user_context,
+@@ -1560,20 +1561,20 @@ static void diva_maint_state_change_notify(void *user_context,
  				}
  			}
  
@@ -371,7 +380,7 @@ index b5226af6ddec..dfe30bb4fa52 100644
  			}
  		}
  		if ((fax->Event == 3) && (pC->hDbg->dbgMask & DIVA_MGT_DBG_FAX_STATISTICS)) {
-@@ -1601,35 +1602,35 @@ static void diva_maint_state_change_notify(void *user_context,
+@@ -1597,35 +1598,35 @@ static void diva_maint_state_change_notify(void *user_context,
  			*/
  			if (channel->pInterfaceStat->inc.Calls) {
  				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
@@ -415,7 +424,7 @@ index b5226af6ddec..dfe30bb4fa52 100644
  			}
  
  			/*
-@@ -1637,31 +1638,31 @@ static void diva_maint_state_change_notify(void *user_context,
+@@ -1633,31 +1634,31 @@ static void diva_maint_state_change_notify(void *user_context,
  			*/
  			if (channel->pInterfaceStat->outg.Calls) {
  				diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
@@ -454,7 +463,7 @@ index b5226af6ddec..dfe30bb4fa52 100644
  			}
  		}
  		break;
-@@ -1669,114 +1670,114 @@ static void diva_maint_state_change_notify(void *user_context,
+@@ -1665,114 +1666,114 @@ static void diva_maint_state_change_notify(void *user_context,
  	case DIVA_SUPER_TRACE_NOTIFY_MDM_STAT_CHANGE:
  		if (channel->pInterfaceStat->mdm.Disc_Normal) {
  			diva_mnt_internal_dprintf(pC->hDbg->id, DLI_LOG,
@@ -865,7 +874,7 @@ index 78ce4d61a69b..b3f6ff60b0b2 100644
  
  	if (request_irq(a->pcid->irq,
 diff --git a/drivers/scsi/esas2r/esas2r_ioctl.c b/drivers/scsi/esas2r/esas2r_ioctl.c
-index baf913047b48..9724f77107f5 100644
+index 3e8483410f61..b35ed3829421 100644
 --- a/drivers/scsi/esas2r/esas2r_ioctl.c
 +++ b/drivers/scsi/esas2r/esas2r_ioctl.c
 @@ -1301,7 +1301,7 @@ int esas2r_ioctl_handler(void *hostdata, int cmd, void __user *arg)
@@ -940,7 +949,7 @@ index 33581ba4386e..49d13e99aa9f 100644
  				   cmd->device->lun);
  		}
 diff --git a/drivers/staging/fbtft/fb_agm1264k-fl.c b/drivers/staging/fbtft/fb_agm1264k-fl.c
-index 2a50cf957101..3f75ef562ca4 100644
+index ba9fc444b848..73895bc7dfe2 100644
 --- a/drivers/staging/fbtft/fb_agm1264k-fl.c
 +++ b/drivers/staging/fbtft/fb_agm1264k-fl.c
 @@ -407,7 +407,7 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
@@ -953,7 +962,7 @@ index 2a50cf957101..3f75ef562ca4 100644
  	gpio_set_value(par->RW, 0); /* set write mode */
  
 diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
-index b167c5061631..ec2de0064004 100644
+index 308a244972aa..b0b7dff245f6 100644
 --- a/drivers/staging/fbtft/fb_ra8875.c
 +++ b/drivers/staging/fbtft/fb_ra8875.c
 @@ -33,7 +33,7 @@ static int write_spi(struct fbtft_par *par, void *buf, size_t len)
@@ -1023,10 +1032,10 @@ index a6f091fb975c..7bd015eb3f03 100644
  	while (len) {
  		data = *(u16 *) buf;
 diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index 3ccdec94fee7..5f35b5ae1236 100644
+index d3bc3943a983..27bf48cd47de 100644
 --- a/drivers/staging/fbtft/fbtft.h
 +++ b/drivers/staging/fbtft/fbtft.h
-@@ -258,7 +258,7 @@ struct fbtft_par {
+@@ -250,7 +250,7 @@ struct fbtft_par {
  
  /* fbtft-core.c */
  void fbtft_dbg_hex(const struct device *dev, int groupsize,
@@ -1036,10 +1045,10 @@ index 3ccdec94fee7..5f35b5ae1236 100644
  					struct device *dev,
  					struct fbtft_platform_data *pdata);
 diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
-index 071f79bd19f3..78799f5c1be8 100644
+index 241d7c6bebde..cece8fee80ac 100644
 --- a/drivers/staging/fbtft/fbtft_device.c
 +++ b/drivers/staging/fbtft/fbtft_device.c
-@@ -1226,7 +1226,7 @@ static int write_gpio16_wr_slow(struct fbtft_par *par, void *buf, size_t len)
+@@ -1251,7 +1251,7 @@ static int write_gpio16_wr_slow(struct fbtft_par *par, void *buf, size_t len)
  #endif
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
@@ -1049,10 +1058,10 @@ index 071f79bd19f3..78799f5c1be8 100644
  	while (len) {
  		data = *(u16 *) buf;
 diff --git a/drivers/staging/lustre/lustre/include/lu_object.h b/drivers/staging/lustre/lustre/include/lu_object.h
-index 1d79341a495d..4097b9c0b555 100644
+index b5088b13a305..9ddee136c68e 100644
 --- a/drivers/staging/lustre/lustre/include/lu_object.h
 +++ b/drivers/staging/lustre/lustre/include/lu_object.h
-@@ -772,8 +772,8 @@ struct lu_object *lu_object_locate(struct lu_object_header *h,
+@@ -773,8 +773,8 @@ struct lu_object *lu_object_locate(struct lu_object_header *h,
  /**
   * Printer function emitting messages through libcfs_debug_msg().
   */
@@ -1064,10 +1073,10 @@ index 1d79341a495d..4097b9c0b555 100644
  /**
   * Print object description followed by a user-supplied message.
 diff --git a/drivers/staging/speakup/main.c b/drivers/staging/speakup/main.c
-index 30cf973f326d..8e643ceee204 100644
+index a22fb07512a1..73d70b44a4f2 100644
 --- a/drivers/staging/speakup/main.c
 +++ b/drivers/staging/speakup/main.c
-@@ -777,7 +777,7 @@ static void say_line(struct vc_data *vc)
+@@ -773,7 +773,7 @@ static void say_line(struct vc_data *vc)
  		cp = buf;
  		while (*cp == SPACE)
  			cp++;
@@ -1077,10 +1086,10 @@ index 30cf973f326d..8e643ceee204 100644
  	spk_punc_mask = spk_punc_masks[spk_reading_punc];
  	spkup_write(buf, i);
 diff --git a/drivers/staging/speakup/spk_priv.h b/drivers/staging/speakup/spk_priv.h
-index 9bb281d36556..fab3e75f7810 100644
+index 98c4b6f0344a..cb0431f2fcef 100644
 --- a/drivers/staging/speakup/spk_priv.h
 +++ b/drivers/staging/speakup/spk_priv.h
-@@ -67,7 +67,7 @@ void spk_do_catch_up(struct spk_synth *synth);
+@@ -63,7 +63,7 @@ void spk_do_catch_up(struct spk_synth *synth);
  void spk_synth_flush(struct spk_synth *synth);
  int spk_synth_is_alive_nop(struct spk_synth *synth);
  int spk_synth_is_alive_restart(struct spk_synth *synth);
@@ -1136,7 +1145,7 @@ index d1e34d1eeea6..ffb5c844af10 100644
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
 diff --git a/include/linux/iio/iio.h b/include/linux/iio/iio.h
-index b5894118755f..e5399a553187 100644
+index b2b16772c651..0cccd152bf4a 100644
 --- a/include/linux/iio/iio.h
 +++ b/include/linux/iio/iio.h
 @@ -605,7 +605,7 @@ static inline struct iio_dev *iio_priv_to_dev(void *priv)
@@ -1162,10 +1171,10 @@ index c4f8c7409666..6b0e38074444 100644
  		    irqreturn_t (*thread)(int irq, void *p),
  		    int type,
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index 925730bc9fc1..b11477bb4bb0 100644
+index 0810f81b6db2..b40646aae788 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
-@@ -182,6 +182,7 @@ void trace_current_buffer_discard_commit(struct ring_buffer *buffer,
+@@ -172,6 +172,7 @@ void trace_current_buffer_discard_commit(struct ring_buffer *buffer,
  
  void tracing_record_cmdline(struct task_struct *tsk);
  
@@ -1174,10 +1183,10 @@ index 925730bc9fc1..b11477bb4bb0 100644
  
  struct event_filter;
 diff --git a/kernel/audit.c b/kernel/audit.c
-index 3a3e5deeda8d..6ebe148acd1c 100644
+index 678c3f000191..8f81a24995d9 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
-@@ -1443,8 +1443,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
+@@ -1460,8 +1460,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
   * will be called a second time.  Currently, we assume that a printk
   * can't format message larger than 1024 bytes, so we don't either.
   */
@@ -1189,10 +1198,10 @@ index 3a3e5deeda8d..6ebe148acd1c 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index d9293402ee68..67f498f1f547 100644
+index a2f0b9f33e9b..31428485b500 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -2180,7 +2180,7 @@ out:
+@@ -2186,7 +2186,7 @@ out:
  }
  EXPORT_SYMBOL_GPL(trace_vbprintk);
  
@@ -1202,10 +1211,10 @@ index d9293402ee68..67f498f1f547 100644
  		      unsigned long ip, const char *fmt, va_list args)
  {
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 8414fa40bf27..880253150695 100644
+index 3fff4adfd431..7c5372e5f5b0 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -698,15 +698,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -700,15 +700,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(cycle_t nsec);
@@ -1227,7 +1236,7 @@ index 8414fa40bf27..880253150695 100644
  			   unsigned long ip, const char *fmt, ...);
  void trace_printk_seq(struct trace_seq *s);
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 282982195e09..6953f65512f6 100644
+index 0bb9cf2d53e6..34de4ba750d6 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
 @@ -245,8 +245,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
@@ -1255,10 +1264,10 @@ index 6019c53c669e..ae56d846ff34 100644
  	struct nmi_seq_buf *s = this_cpu_ptr(&nmi_print_seq);
  	unsigned int len = seq_buf_used(&s->seq);
 diff --git a/mm/slub.c b/mm/slub.c
-index d8fbd4a6ed59..a0dfb01f2221 100644
+index 4dbb109eb8cd..f2844906def9 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -661,8 +661,8 @@ void object_err(struct kmem_cache *s, struct page *page,
+@@ -674,8 +674,8 @@ void object_err(struct kmem_cache *s, struct page *page,
  	print_trailer(s, page, object);
  }
  
@@ -1314,10 +1323,10 @@ index 3d3fda05b32d..3c4dcc19f38b 100644
  			       &inet->inet_daddr, ntohs(inet->inet_dport),
  			       size);
 diff --git a/net/rds/ib.h b/net/rds/ib.h
-index b3fdebb57460..ede3b3a2ec68 100644
+index 627fb79aee65..7a4fa4a6a019 100644
 --- a/net/rds/ib.h
 +++ b/net/rds/ib.h
-@@ -332,6 +332,7 @@ void rds_ib_conn_shutdown(struct rds_connection *conn);
+@@ -333,6 +333,7 @@ void rds_ib_conn_shutdown(struct rds_connection *conn);
  void rds_ib_state_change(struct sock *sk);
  int rds_ib_listen_init(void);
  void rds_ib_listen_stop(void);
@@ -1325,20 +1334,8 @@ index b3fdebb57460..ede3b3a2ec68 100644
  void __rds_ib_conn_error(struct rds_connection *conn, const char *, ...);
  int rds_ib_cm_handle_connect(struct rdma_cm_id *cm_id,
  			     struct rdma_cm_event *event);
-diff --git a/net/rds/iw.h b/net/rds/iw.h
-index 5af01d1758b3..0037c60092e5 100644
---- a/net/rds/iw.h
-+++ b/net/rds/iw.h
-@@ -288,6 +288,7 @@ void rds_iw_conn_shutdown(struct rds_connection *conn);
- void rds_iw_state_change(struct sock *sk);
- int rds_iw_listen_init(void);
- void rds_iw_listen_stop(void);
-+__printf(2, 3)
- void __rds_iw_conn_error(struct rds_connection *conn, const char *, ...);
- int rds_iw_cm_handle_connect(struct rdma_cm_id *cm_id,
- 			     struct rdma_cm_event *event);
 diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
-index 971ca4773ab2..f7431cb57c51 100644
+index e588e285a20e..2d9d14d98da6 100644
 --- a/net/tipc/netlink_compat.c
 +++ b/net/tipc/netlink_compat.c
 @@ -112,7 +112,7 @@ static void tipc_tlv_init(struct sk_buff *skb, u16 type)
@@ -1364,7 +1361,7 @@ index 3bffdcaaa274..b724a0290c75 100644
  /*----------------------------------------------------------------------*/
  #define xmalloc(size) ({ void *__ptr = malloc(size);		\
 diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 41ab235a91b1..b3b5c146dc0c 100644
+index d24d8a514c42..4d66cbfce399 100644
 --- a/scripts/kconfig/confdata.c
 +++ b/scripts/kconfig/confdata.c
 @@ -32,7 +32,8 @@ static int conf_lineno, conf_warnings, conf_unsaved;
@@ -1528,7 +1525,7 @@ index f9c9fb1d56b4..9577945efdb5 100644
  /********** External variable definitions. **********/
  
 diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
-index 581175a51ecf..65cfed8f630d 100644
+index 801ae1a81dfd..1f0dad8f286d 100644
 --- a/sound/soc/soc-dapm.c
 +++ b/sound/soc/soc-dapm.c
 @@ -137,7 +137,8 @@ static void pop_wait(u32 pop_time)

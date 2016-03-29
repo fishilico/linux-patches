@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 20 Mar 2016 00:24:49 +0100
+Subject: [PATCH] {CONSTIFY} scripts/insert-sys-cert: constify symbol names
+ which are literal strings
+
+---
+ scripts/insert-sys-cert.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/scripts/insert-sys-cert.c b/scripts/insert-sys-cert.c
+index 8902836c2342..01c723069355 100644
+--- a/scripts/insert-sys-cert.c
++++ b/scripts/insert-sys-cert.c
+@@ -58,7 +58,7 @@ static unsigned char endianness(void)
+ }
+ 
+ struct sym {
+-	char *name;
++	const char *name;
+ 	unsigned long address;
+ 	unsigned long offset;
+ 	void *content;
+@@ -90,7 +90,7 @@ static unsigned long get_offset_from_address(Elf_Ehdr *hdr, unsigned long addr)
+ 
+ #define LINE_SIZE 100
+ 
+-static void get_symbol_from_map(Elf_Ehdr *hdr, FILE *f, char *name,
++static void get_symbol_from_map(Elf_Ehdr *hdr, FILE *f, const char *name,
+ 				struct sym *s)
+ {
+ 	char l[LINE_SIZE];
+@@ -130,7 +130,7 @@ static void get_symbol_from_map(Elf_Ehdr *hdr, FILE *f, char *name,
+ 	s->content = (void *)hdr + s->offset;
+ }
+ 
+-static Elf_Sym *find_elf_symbol(Elf_Ehdr *hdr, Elf_Shdr *symtab, char *name)
++static Elf_Sym *find_elf_symbol(Elf_Ehdr *hdr, Elf_Shdr *symtab, const char *name)
+ {
+ 	Elf_Sym *sym, *symtab_start;
+ 	char *strtab, *symname;
+@@ -155,7 +155,7 @@ static Elf_Sym *find_elf_symbol(Elf_Ehdr *hdr, Elf_Shdr *symtab, char *name)
+ }
+ 
+ static void get_symbol_from_table(Elf_Ehdr *hdr, Elf_Shdr *symtab,
+-				  char *name, struct sym *s)
++				  const char *name, struct sym *s)
+ {
+ 	Elf_Shdr *sec;
+ 	int secndx;
+-- 

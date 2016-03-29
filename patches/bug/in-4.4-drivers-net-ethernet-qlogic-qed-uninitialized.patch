@@ -9,16 +9,16 @@ Subject: [PATCH] {BUG in 4.4} drivers/net/ethernet/qlogic/qed: uninitialized
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/qlogic/qed/qed_int.c b/drivers/net/ethernet/qlogic/qed/qed_int.c
-index 9cc9d62c1fec..8fb2328dfc24 100644
+index ffd0accc2ec9..123de4126fd4 100644
 --- a/drivers/net/ethernet/qlogic/qed/qed_int.c
 +++ b/drivers/net/ethernet/qlogic/qed/qed_int.c
-@@ -786,7 +786,7 @@ void qed_int_igu_enable_int(struct qed_hwfn *p_hwfn,
+@@ -2750,7 +2750,7 @@ void qed_int_igu_enable_int(struct qed_hwfn *p_hwfn,
  int qed_int_igu_enable(struct qed_hwfn *p_hwfn, struct qed_ptt *p_ptt,
  		       enum qed_int_mode int_mode)
  {
--	int rc, i;
-+	int rc = 0 /* BUG -Wsometimes-uninitialized in 4.4-rc5+ */, i;
+-	int rc;
++	int rc = 0 /* BUG -Wsometimes-uninitialized in 4.4-rc5+ */;
  
- 	/* Mask non-link attentions */
- 	for (i = 0; i < 9; i++)
+ 	/* Configure AEU signal change to produce attentions */
+ 	qed_wr(p_hwfn, p_ptt, IGU_REG_ATTENTION_ENABLE, 0);
 -- 
