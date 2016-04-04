@@ -39,7 +39,6 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  drivers/media/v4l2-core/v4l2-common.c              |  3 +++
  drivers/misc/mic/scif/scif_main.c                  |  3 +++
  drivers/misc/mic/scif/scif_nodeqp.c                |  3 +++
- drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c |  4 +++
  .../net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c    |  4 +++
  drivers/net/fddi/defxx.c                           |  3 +++
  drivers/net/hippi/rrunner.c                        |  3 +++
@@ -69,7 +68,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  sound/pci/rme32.c                                  |  3 +++
  sound/pci/rme96.c                                  |  3 +++
  sound/usb/mixer_quirks.c                           |  3 +++
- 65 files changed, 366 insertions(+), 7 deletions(-)
+ 64 files changed, 362 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
 index 801c06bab3d1..0f2094187777 100644
@@ -992,22 +991,6 @@ index c66ca1a5814e..845819ce0b0e 100644
  	if (!scif_info.loopb_wq) {
  		err = -ENOMEM;
  		goto destroy_intr;
-diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
-index 6e2b76ede075..135e92617d50 100644
---- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
-+++ b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
-@@ -664,7 +664,11 @@ static void hns_gmac_get_strings(u32 stringset, u8 *data)
- 		return;
- 
- 	for (i = 0; i < ARRAY_SIZE(g_gmac_stats_string); i++) {
-+/* g_gmac_stats_string is a constant array */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		snprintf(buff, ETH_GSTRING_LEN, g_gmac_stats_string[i].desc);
-+#pragma GCC diagnostic pop
- 		buff = buff + ETH_GSTRING_LEN;
- 	}
- }
 diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
 index fd90f3737963..2abdff66a9f8 100644
 --- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
