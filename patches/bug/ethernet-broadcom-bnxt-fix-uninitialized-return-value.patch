@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_git@polytechnique.org>
+Date: Wed, 25 May 2016 20:58:39 +0200
+Subject: [PATCH] {BUG} ethernet/broadcom/bnxt: fix uninitialized return value
+
+---
+ drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c b/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
+index a38cb047b540..3082e704c5c1 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
+@@ -1591,7 +1591,7 @@ static int bnxt_get_module_eeprom(struct net_device *dev,
+ {
+ 	struct bnxt *bp = netdev_priv(dev);
+ 	u16  start = eeprom->offset, length = eeprom->len;
+-	int rc;
++	int rc = 0; /* BUG */
+ 
+ 	memset(data, 0, eeprom->len);
+ 
+-- 

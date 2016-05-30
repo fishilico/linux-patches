@@ -6,7 +6,7 @@ Subject: [PATCH] {MAYBE UPS} Static-ify locally-used variables
 ---
  arch/x86/entry/vdso/vdso2c.c            | 6 +++---
  arch/x86/kernel/cpu/mkcapflags.sh       | 1 +
- scripts/basic/fixdep.c                  | 6 +++---
+ scripts/basic/fixdep.c                  | 8 ++++----
  scripts/conmakehash.c                   | 4 ++--
  scripts/kallsyms.c                      | 6 +++---
  scripts/kconfig/conf.c                  | 2 +-
@@ -16,7 +16,7 @@ Subject: [PATCH] {MAYBE UPS} Static-ify locally-used variables
  scripts/selinux/genheaders/genheaders.c | 2 +-
  scripts/unifdef.c                       | 2 +-
  security/selinux/include/classmap.h     | 1 +
- 12 files changed, 21 insertions(+), 18 deletions(-)
+ 12 files changed, 22 insertions(+), 19 deletions(-)
 
 diff --git a/arch/x86/entry/vdso/vdso2c.c b/arch/x86/entry/vdso/vdso2c.c
 index 0b81cfd03555..50c14f29fe97 100644
@@ -62,16 +62,18 @@ index 6988c74409a8..fb63453b0e1b 100644
  
  	# Iterate through any input lines starting with #define $PFX
 diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
-index 6c8b881718bb..f2967949d615 100644
+index 0051498577cb..5a74dee400bc 100644
 --- a/scripts/basic/fixdep.c
 +++ b/scripts/basic/fixdep.c
-@@ -120,9 +120,9 @@
+@@ -120,10 +120,10 @@
  #define INT_NFIG ntohl(0x4e464947)
  #define INT_FIG_ ntohl(0x4649475f)
  
+-int insert_extra_deps;
 -char *target;
 -char *depfile;
 -char *cmdline;
++static int insert_extra_deps;
 +static char *target;
 +static char *depfile;
 +static char *cmdline;
@@ -95,11 +97,11 @@ index 61bbda54cf13..9f6e87806f96 100644
  static void addpair(int fp, int un)
  {
 diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-index c559723ba875..d2e20f117829 100644
+index 970c27d85d3e..50198b51a604 100644
 --- a/scripts/kallsyms.c
 +++ b/scripts/kallsyms.c
-@@ -66,11 +66,11 @@ static char symbol_prefix_char = '\0';
- static unsigned long long kernel_start_addr = 0;
+@@ -65,11 +65,11 @@ static int absolute_percpu = 0;
+ static char symbol_prefix_char = '\0';
  static int base_relative = 0;
  
 -int token_profit[0x10000];
@@ -127,7 +129,7 @@ index 224c7e065bee..c3a43ab40e93 100644
  	silentoldconfig,
  	oldconfig,
 diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 4d66cbfce399..981883ca64d8 100644
+index 5c7d8ed579b1..ad32daa39abb 100644
 --- a/scripts/kconfig/confdata.c
 +++ b/scripts/kconfig/confdata.c
 @@ -30,7 +30,7 @@ static void conf_message(const char *fmt, ...)
@@ -140,7 +142,7 @@ index 4d66cbfce399..981883ca64d8 100644
  static __attribute__ ((format(printf, 1, 2)))
  void conf_warning(const char *fmt, ...)
 diff --git a/scripts/kconfig/symbol.c b/scripts/kconfig/symbol.c
-index 8621553d6777..cfdb8fd8104a 100644
+index d24f9f8ca726..c27b9de2acd2 100644
 --- a/scripts/kconfig/symbol.c
 +++ b/scripts/kconfig/symbol.c
 @@ -23,7 +23,8 @@ struct symbol symbol_yes = {
@@ -202,10 +204,10 @@ index fba8ff17d8c6..51c5b6aa0564 100644
      "@(#) $Author: Tony Finch (dot@dotat.at) $\n"
      "@(#) $URL: http://dotat.at/prog/unifdef $\n"
 diff --git a/security/selinux/include/classmap.h b/security/selinux/include/classmap.h
-index ef83c4b85a33..9560ff9a91f2 100644
+index 1f1f4b2f6018..6a2098adfc97 100644
 --- a/security/selinux/include/classmap.h
 +++ b/security/selinux/include/classmap.h
-@@ -16,6 +16,7 @@
+@@ -28,6 +28,7 @@
   * Note: The name for any socket class should be suffixed by "socket",
   *	 and doesn't contain more than one substr of "socket".
   */

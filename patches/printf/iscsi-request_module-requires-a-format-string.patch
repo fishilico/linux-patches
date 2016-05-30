@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_git@polytechnique.org>
+Date: Mon, 30 May 2016 20:12:06 +0200
+Subject: [PATCH] {PRINTF} iscsi: request_module requires a format string
+
+In 4.7-rc1 mod_name was as const string from the kernel, so this is NOT
+a vulnerability.
+---
+ drivers/target/iscsi/iscsi_target_configfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 923c032f0b95..b0ea5fecb11a 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -90,7 +90,7 @@ static ssize_t lio_target_np_driver_store(struct config_item *item,
+ 
+ 	if (op) {
+ 		if (strlen(mod_name)) {
+-			rc = request_module(mod_name);
++			rc = request_module("%s", mod_name);
+ 			if (rc != 0) {
+ 				pr_warn("Unable to request_module for %s\n",
+ 					mod_name);
+-- 

@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_git@polytechnique.org>
+Date: Wed, 25 May 2016 22:31:38 +0200
+Subject: [PATCH] {NOT UPSTREAMABLE} kasan: implement __asan_alloca_poison and
+ __asan_allocas_unpoison for clang
+
+clang 3.8.0 needs these functions
+---
+ mm/kasan/kasan.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/mm/kasan/kasan.c b/mm/kasan/kasan.c
+index 18b6a2b8d183..9c4c6cda9eb6 100644
+--- a/mm/kasan/kasan.c
++++ b/mm/kasan/kasan.c
+@@ -754,6 +754,18 @@ EXPORT_SYMBOL(__asan_storeN_noabort);
+ void __asan_handle_no_return(void) {}
+ EXPORT_SYMBOL(__asan_handle_no_return);
+ 
++void __asan_alloca_poison(unsigned long addr, unsigned long size) {
++	/* TODO */
++}
++EXPORT_SYMBOL(__asan_alloca_poison);
++
++void __asan_allocas_unpoison(unsigned long top, unsigned long bottom) {
++	/* TODO */
++	if ((!top) || (top > bottom)) return;
++	kasan_unpoison_shadow((void *)top, bottom - top);
++}
++EXPORT_SYMBOL(__asan_allocas_unpoison);
++
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ static int kasan_mem_notifier(struct notifier_block *nb,
+ 			unsigned long action, void *data)
+-- 

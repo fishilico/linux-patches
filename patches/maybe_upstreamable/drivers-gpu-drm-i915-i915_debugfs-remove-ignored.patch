@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_git@polytechnique.org>
+Date: Wed, 25 May 2016 19:02:50 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/gpu/drm/i915/i915_debugfs: remove ignored
+ const specifier
+
+gcc complains:
+
+    drivers/gpu/drm/i915/i915_debugfs.c:92:19: error: type qualifiers
+    ignored on function return type [-Werror=ignored-qualifiers]
+     static const char get_active_flag(struct drm_i915_gem_object *obj)
+                       ^~~~~~~~~~~~~~~
+---
+ drivers/gpu/drm/i915/i915_debugfs.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/i915_debugfs.c b/drivers/gpu/drm/i915/i915_debugfs.c
+index b1f5370442bc..e16acd82d53b 100644
+--- a/drivers/gpu/drm/i915/i915_debugfs.c
++++ b/drivers/gpu/drm/i915/i915_debugfs.c
+@@ -89,17 +89,17 @@ static int i915_capabilities(struct seq_file *m, void *data)
+ 	return 0;
+ }
+ 
+-static const char get_active_flag(struct drm_i915_gem_object *obj)
++static char get_active_flag(struct drm_i915_gem_object *obj)
+ {
+ 	return obj->active ? '*' : ' ';
+ }
+ 
+-static const char get_pin_flag(struct drm_i915_gem_object *obj)
++static char get_pin_flag(struct drm_i915_gem_object *obj)
+ {
+ 	return obj->pin_display ? 'p' : ' ';
+ }
+ 
+-static const char get_tiling_flag(struct drm_i915_gem_object *obj)
++static char get_tiling_flag(struct drm_i915_gem_object *obj)
+ {
+ 	switch (obj->tiling_mode) {
+ 	default:
+@@ -109,12 +109,12 @@ static const char get_tiling_flag(struct drm_i915_gem_object *obj)
+ 	}
+ }
+ 
+-static inline const char get_global_flag(struct drm_i915_gem_object *obj)
++static inline char get_global_flag(struct drm_i915_gem_object *obj)
+ {
+ 	return i915_gem_obj_to_ggtt(obj) ? 'g' : ' ';
+ }
+ 
+-static inline const char get_pin_mapped_flag(struct drm_i915_gem_object *obj)
++static inline char get_pin_mapped_flag(struct drm_i915_gem_object *obj)
+ {
+ 	return obj->mapping ? 'M' : ' ';
+ }
+-- 

@@ -4,28 +4,14 @@ Date: Thu, 5 Nov 2015 22:02:39 +0100
 Subject: [PATCH] {BUG new in 4.4} uninitialized variables
 
 ---
- drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.c | 2 +-
- net/tipc/node.c                                  | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ net/tipc/node.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.c b/drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.c
-index ebd8eb93e863..9b20abb56910 100644
---- a/drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.c
-+++ b/drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.c
-@@ -5338,7 +5338,7 @@ static int rtl8xxxu_active_to_lps(struct rtl8xxxu_priv *priv)
- {
- 	u8 val8;
- 	u8 val32;
--	int count, ret;
-+	int count, ret = 0; /* BUG */
- 
- 	rtl8xxxu_write8(priv, REG_TXPAUSE, 0xff);
- 
 diff --git a/net/tipc/node.c b/net/tipc/node.c
-index 9aaa1bc566ae..85e2a9642e15 100644
+index e01e2c71b5a1..6965a7aa89cf 100644
 --- a/net/tipc/node.c
 +++ b/net/tipc/node.c
-@@ -665,7 +665,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
+@@ -690,7 +690,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
  {
  	struct tipc_link_entry *le = &n->links[bearer_id];
  	struct tipc_link *l = le->link;

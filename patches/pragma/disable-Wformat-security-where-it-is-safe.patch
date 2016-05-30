@@ -34,7 +34,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  drivers/media/usb/dvb-usb-v2/dvbsky.c              | 15 +++++++++++
  drivers/media/usb/dvb-usb-v2/rtl28xxu.c            | 15 +++++++++++
  drivers/media/usb/dvb-usb/cxusb.c                  |  6 +++++
- drivers/media/usb/em28xx/em28xx-dvb.c              |  9 +++++++
+ drivers/media/usb/em28xx/em28xx-dvb.c              | 18 +++++++++++++
  drivers/media/usb/pvrusb2/pvrusb2-std.c            |  4 +++
  drivers/media/v4l2-core/v4l2-common.c              |  3 +++
  drivers/misc/mic/scif/scif_main.c                  |  3 +++
@@ -42,6 +42,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  .../net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c    |  4 +++
  drivers/net/fddi/defxx.c                           |  3 +++
  drivers/net/hippi/rrunner.c                        |  3 +++
+ drivers/net/macvtap.c                              |  4 +++
  drivers/net/wireless/intel/ipw2x00/libipw_wx.c     |  3 +++
  .../net/wireless/intersil/hostap/hostap_ioctl.c    |  3 +++
  drivers/parport/share.c                            |  3 +++
@@ -68,13 +69,13 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  sound/pci/rme32.c                                  |  3 +++
  sound/pci/rme96.c                                  |  3 +++
  sound/usb/mixer_quirks.c                           |  3 +++
- 64 files changed, 362 insertions(+), 7 deletions(-)
+ 65 files changed, 375 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 801c06bab3d1..0f2094187777 100644
+index 92e5e37d97bf..b9dcae5d1258 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -343,7 +343,10 @@ static void mce_panic(const char *msg, struct mce *final, char *exp)
+@@ -387,7 +387,10 @@ static void mce_panic(const char *msg, struct mce *final, char *exp)
  	if (!fake_panic) {
  		if (panic_timeout == 0)
  			panic_timeout = mca_cfg.panic_timeout;
@@ -86,10 +87,10 @@ index 801c06bab3d1..0f2094187777 100644
  		pr_emerg(HW_ERR "Fake kernel panic: %s\n", msg);
  }
 diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd.c b/arch/x86/kernel/cpu/mcheck/mce_amd.c
-index 9d656fd436ef..99ee2044d90c 100644
+index 10b0661651e0..6126ec5582a5 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce_amd.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce_amd.c
-@@ -731,9 +731,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
+@@ -765,9 +765,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
  		per_cpu(threshold_banks, cpu)[bank]->blocks = b;
  	}
  
@@ -103,7 +104,7 @@ index 9d656fd436ef..99ee2044d90c 100644
  	if (err)
  		goto out_free;
  recurse:
-@@ -766,13 +770,21 @@ static int __threshold_add_blocks(struct threshold_bank *b)
+@@ -800,13 +804,21 @@ static int __threshold_add_blocks(struct threshold_bank *b)
  	struct threshold_block *tmp = NULL;
  	int err = 0;
  
@@ -125,7 +126,7 @@ index 9d656fd436ef..99ee2044d90c 100644
  		if (err) {
  			list_for_each_entry_safe_reverse(pos, tmp, head, miscj)
  				kobject_del(&pos->kobj);
-@@ -798,7 +810,11 @@ static int threshold_create_bank(unsigned int cpu, unsigned int bank)
+@@ -832,7 +844,11 @@ static int threshold_create_bank(unsigned int cpu, unsigned int bank)
  		if (nb && nb->bank4) {
  			/* yes, use it */
  			b = nb->bank4;
@@ -192,13 +193,13 @@ index ee9cfb99fe25..32b30972d32a 100644
  		kobject_uevent(&pinst->kobj, KOBJ_ADD);
  
 diff --git a/drivers/acpi/acpi_apd.c b/drivers/acpi/acpi_apd.c
-index f245bf35bedb..fe10bdf888af 100644
+index 1daf9c46df8e..2f83b0618735 100644
 --- a/drivers/acpi/acpi_apd.c
 +++ b/drivers/acpi/acpi_apd.c
-@@ -64,7 +64,10 @@ static int acpi_apd_setup(struct apd_private_data *pdata)
+@@ -63,7 +63,10 @@ static int acpi_apd_setup(struct apd_private_data *pdata)
+ 		clk = clk_register_fixed_rate(&pdata->adev->dev,
  					dev_name(&pdata->adev->dev),
- 					NULL, CLK_IS_ROOT,
- 					dev_desc->fixed_clk_rate);
+ 					NULL, 0, dev_desc->fixed_clk_rate);
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
  		clk_register_clkdev(clk, NULL, dev_name(&pdata->adev->dev));
@@ -331,10 +332,10 @@ index a1803fbcc898..ce15c4be5eca 100644
  		kobject_put(&zone->kobj);
  		return ret;
 diff --git a/drivers/infiniband/hw/qib/qib_file_ops.c b/drivers/infiniband/hw/qib/qib_file_ops.c
-index 24f4a782e0f4..178bf0340189 100644
+index ff946d5f59e4..7bfee1d25316 100644
 --- a/drivers/infiniband/hw/qib/qib_file_ops.c
 +++ b/drivers/infiniband/hw/qib/qib_file_ops.c
-@@ -2293,7 +2293,11 @@ int qib_cdev_init(int minor, const char *name,
+@@ -2290,7 +2290,11 @@ int qib_cdev_init(int minor, const char *name,
  
  	cdev->owner = THIS_MODULE;
  	cdev->ops = fops;
@@ -347,10 +348,10 @@ index 24f4a782e0f4..178bf0340189 100644
  	ret = cdev_add(cdev, dev, 1);
  	if (ret < 0) {
 diff --git a/drivers/input/tablet/aiptek.c b/drivers/input/tablet/aiptek.c
-index 78ca44840d60..f9142e1ea89e 100644
+index 4613f0aefd08..58dda58f78cb 100644
 --- a/drivers/input/tablet/aiptek.c
 +++ b/drivers/input/tablet/aiptek.c
-@@ -1372,7 +1372,10 @@ static ssize_t show_tabletDiagnosticMessage(struct device *dev, struct device_at
+@@ -1375,7 +1375,10 @@ static ssize_t show_tabletDiagnosticMessage(struct device *dev, struct device_at
  	default:
  		return 0;
  	}
@@ -362,7 +363,7 @@ index 78ca44840d60..f9142e1ea89e 100644
  
  static DEVICE_ATTR(diagnostic, S_IRUGO, show_tabletDiagnosticMessage, NULL);
 diff --git a/drivers/iommu/irq_remapping.c b/drivers/iommu/irq_remapping.c
-index 8adaaeae3268..cf0cc9a643fa 100644
+index 49721b4e1975..f6f9b0c9bb91 100644
 --- a/drivers/iommu/irq_remapping.c
 +++ b/drivers/iommu/irq_remapping.c
 @@ -153,7 +153,10 @@ int __init irq_remap_enable_fault_handling(void)
@@ -686,7 +687,7 @@ index e9a783b71b45..15e56cb8704e 100644
  						      &info);
  			if (!client_tuner || !client_tuner->dev.driver) {
 diff --git a/drivers/media/pci/smipcie/smipcie-main.c b/drivers/media/pci/smipcie/smipcie-main.c
-index b039a229b7d2..df7352826c80 100644
+index 83981d611a79..fd8e26ab588c 100644
 --- a/drivers/media/pci/smipcie/smipcie-main.c
 +++ b/drivers/media/pci/smipcie/smipcie-main.c
 @@ -492,7 +492,10 @@ static struct i2c_client *smi_add_i2c_client(struct i2c_adapter *adapter,
@@ -729,7 +730,7 @@ index 9d2697f5b455..9827b8de16ef 100644
  				dprintk(1,
  					KERN_ERR
 diff --git a/drivers/media/platform/s5p-tv/mixer_drv.c b/drivers/media/platform/s5p-tv/mixer_drv.c
-index 5ef67774971d..7e570f4bb18a 100644
+index 8a5d19469ddc..979c1e25bf71 100644
 --- a/drivers/media/platform/s5p-tv/mixer_drv.c
 +++ b/drivers/media/platform/s5p-tv/mixer_drv.c
 @@ -507,8 +507,12 @@ static int __init mxr_init(void)
@@ -806,7 +807,7 @@ index 02dbc6c45423..e985ebdef216 100644
  	if (client_tuner == NULL ||
  			client_tuner->dev.driver == NULL)
 diff --git a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
-index fa72642d41f3..8743d190a7e9 100644
+index eb7af8cb8aca..58491ba9160d 100644
 --- a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
 +++ b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
 @@ -953,7 +953,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
@@ -891,10 +892,10 @@ index 907ac01ae297..ff4448e60b39 100644
  	if (client_tuner == NULL || client_tuner->dev.driver == NULL) {
  		module_put(client_demod->dev.driver->owner);
 diff --git a/drivers/media/usb/em28xx/em28xx-dvb.c b/drivers/media/usb/em28xx/em28xx-dvb.c
-index 5d209c7c54d5..a3aa13e8cd17 100644
+index 1a5c01202f73..23e936982f58 100644
 --- a/drivers/media/usb/em28xx/em28xx-dvb.c
 +++ b/drivers/media/usb/em28xx/em28xx-dvb.c
-@@ -1652,7 +1652,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1716,7 +1716,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  			info.addr = 0x64;
  			info.platform_data = &si2168_config;
@@ -905,7 +906,7 @@ index 5d209c7c54d5..a3aa13e8cd17 100644
  			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				result = -ENODEV;
-@@ -1678,7 +1681,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1742,7 +1745,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
  			info.addr = 0x60;
  			info.platform_data = &si2157_config;
@@ -916,7 +917,7 @@ index 5d209c7c54d5..a3aa13e8cd17 100644
  			client = i2c_new_device(adapter, &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				module_put(dvb->i2c_client_demod->dev.driver->owner);
-@@ -1716,7 +1722,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1780,7 +1786,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  			info.addr = 0x64;
  			info.platform_data = &si2168_config;
@@ -927,6 +928,39 @@ index 5d209c7c54d5..a3aa13e8cd17 100644
  			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				result = -ENODEV;
+@@ -1862,7 +1871,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+ 			strlcpy(info.type, "qm1d1c0042", I2C_NAME_SIZE);
+ 			info.addr = 0x61;
+ 			info.platform_data = &qm1d1c0042_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(tc90522_config.tuner_i2c,
+ 						&info);
+ 			if (client == NULL || client->dev.driver == NULL) {
+@@ -1900,7 +1912,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+ 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
+ 			info.addr = 0x64;
+ 			info.platform_data = &si2168_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
+ 			if (client == NULL || client->dev.driver == NULL) {
+ 				result = -ENODEV;
+@@ -1926,7 +1941,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+ 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
+ 			info.addr = 0x60;
+ 			info.platform_data = &si2157_config;
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			request_module(info.type);
++#pragma GCC diagnostic pop
+ 			client = i2c_new_device(adapter, &info);
+ 			if (client == NULL || client->dev.driver == NULL) {
+ 				module_put(dvb->i2c_client_demod->dev.driver->owner);
 diff --git a/drivers/media/usb/pvrusb2/pvrusb2-std.c b/drivers/media/usb/pvrusb2/pvrusb2-std.c
 index 9a596a3a4c27..a875b5298a6c 100644
 --- a/drivers/media/usb/pvrusb2/pvrusb2-std.c
@@ -1037,6 +1071,23 @@ index 95c0b45a68fb..24ff9dd346a1 100644
  	}
  
  	pci_read_config_byte(pdev, PCI_LATENCY_TIMER, &pci_latency);
+diff --git a/drivers/net/macvtap.c b/drivers/net/macvtap.c
+index 8060ee74f69f..b42c6167db9a 100644
+--- a/drivers/net/macvtap.c
++++ b/drivers/net/macvtap.c
+@@ -1308,8 +1308,12 @@ static int macvtap_device_event(struct notifier_block *unused,
+ 			return notifier_from_errno(err);
+ 
+ 		devt = MKDEV(MAJOR(macvtap_major), vlan->minor);
++/* tap_name is under full control ("tap%d") */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 		classdev = device_create(&macvtap_class, &dev->dev, devt,
+ 					 dev, tap_name);
++#pragma GCC diagnostic pop
+ 		if (IS_ERR(classdev)) {
+ 			macvtap_free_minor(vlan);
+ 			return notifier_from_errno(PTR_ERR(classdev));
 diff --git a/drivers/net/wireless/intel/ipw2x00/libipw_wx.c b/drivers/net/wireless/intel/ipw2x00/libipw_wx.c
 index dd29f46d086b..295d0238acf4 100644
 --- a/drivers/net/wireless/intel/ipw2x00/libipw_wx.c
@@ -1188,7 +1239,7 @@ index ea4ffc2ebb2f..be17b89578c3 100644
  		tty_kref_put(tty);
  	}
 diff --git a/fs/btrfs/check-integrity.c b/fs/btrfs/check-integrity.c
-index 516e19d1d202..bf6de2bc0b7b 100644
+index b677a6ea6001..3897369f34de 100644
 --- a/fs/btrfs/check-integrity.c
 +++ b/fs/btrfs/check-integrity.c
 @@ -2653,7 +2653,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
@@ -1253,10 +1304,10 @@ index 42d82f436cdd..5ee76629b048 100644
  	if (id && id[0])
  		printk(KERN_CRIT "REISERFS error (device %s): %s %s: %s\n",
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 2f7775e229b0..bd0e6f727ae7 100644
+index 94aa10ffe156..2379901c3f97 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
-@@ -624,9 +624,12 @@ do {									\
+@@ -631,9 +631,12 @@ do {									\
  									\
  	__trace_printk_check_format(fmt, ##args);			\
  									\
@@ -1357,7 +1408,7 @@ index fe7087bdeb54..6d87504c6acc 100644
  	test("xxx%yyy", "xxx%cyyy", '%');
  	__test("xxx\0yyy", 7, "xxx%cyyy", '\0');
 diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
-index 2d9d14d98da6..02db003328a9 100644
+index 1c28e4f145ae..e87781386101 100644
 --- a/net/tipc/netlink_compat.c
 +++ b/net/tipc/netlink_compat.c
 @@ -742,7 +742,10 @@ static int tipc_nl_compat_name_table_dump_header(struct tipc_nl_compat_msg *msg)

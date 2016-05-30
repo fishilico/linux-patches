@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_git@polytechnique.org>
+Date: Wed, 25 May 2016 21:02:21 +0200
+Subject: [PATCH] {NOT UPSTREAMABLE} iwlwifi: fix false-positive
+ -Wsometimes-uninitialized
+
+The last else if condition would be always true.
+---
+ drivers/net/wireless/intel/iwlwifi/mvm/sta.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/sta.c b/drivers/net/wireless/intel/iwlwifi/mvm/sta.c
+index fea4d3437e2f..9bade00fd6bb 100644
+--- a/drivers/net/wireless/intel/iwlwifi/mvm/sta.c
++++ b/drivers/net/wireless/intel/iwlwifi/mvm/sta.c
+@@ -1071,8 +1071,10 @@ int iwl_mvm_send_add_bcast_sta(struct iwl_mvm *mvm, struct ieee80211_vif *vif)
+ 			 (mvmvif->bcast_sta.tfd_queue_msk &
+ 			  BIT(IWL_MVM_DQA_P2P_DEVICE_QUEUE)))
+ 			queue = IWL_MVM_DQA_P2P_DEVICE_QUEUE;
+-		else if (WARN(1, "Missed required TXQ for adding bcast STA\n"))
++		else {
++			WARN(1, "Missed required TXQ for adding bcast STA\n");
+ 			return -EINVAL;
++		}
+ 
+ 		iwl_mvm_enable_txq(mvm, queue, vif->hw_queue[0], 0, &cfg,
+ 				   wdg_timeout);
+-- 

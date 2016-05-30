@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_git@polytechnique.org>
+Date: Wed, 25 May 2016 20:50:50 +0200
+Subject: [PATCH] {BUG} acpi/sysfs: fix uninitialized return value
+
+---
+ drivers/acpi/sysfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
+index 4b3a9e27f1b6..cf3b375534f7 100644
+--- a/drivers/acpi/sysfs.c
++++ b/drivers/acpi/sysfs.c
+@@ -555,7 +555,7 @@ static void acpi_global_event_handler(u32 event_type, acpi_handle device,
+ static int get_status(u32 index, acpi_event_status *status,
+ 		      acpi_handle *handle)
+ {
+-	int result;
++	int result = -EINVAL; /* BUG */
+ 
+ 	if (index >= num_gpes + ACPI_NUM_FIXED_EVENTS)
+ 		return -EINVAL;
+-- 

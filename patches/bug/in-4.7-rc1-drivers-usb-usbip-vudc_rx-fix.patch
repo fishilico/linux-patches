@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_git@polytechnique.org>
+Date: Wed, 25 May 2016 21:28:04 +0200
+Subject: [PATCH] {BUG in 4.7-rc1} drivers/usb/usbip/vudc_rx: fix
+ -Wshift-overflow reported by clang
+
+---
+ drivers/usb/usbip/vudc_rx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/usbip/vudc_rx.c b/drivers/usb/usbip/vudc_rx.c
+index 344bd9473475..5f092be7cf59 100644
+--- a/drivers/usb/usbip/vudc_rx.c
++++ b/drivers/usb/usbip/vudc_rx.c
+@@ -142,7 +142,7 @@ static int v_recv_cmd_submit(struct vudc *udc,
+ 	urb_p->urb->status = -EINPROGRESS;
+ 
+ 	/* FIXME: more pipe setup to please usbip_common */
+-	urb_p->urb->pipe &= ~(11 << 30);
++	urb_p->urb->pipe &= ~(11UL << 30);
+ 	switch (urb_p->ep->type) {
+ 	case USB_ENDPOINT_XFER_BULK:
+ 		urb_p->urb->pipe |= (PIPE_BULK << 30);
+-- 

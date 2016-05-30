@@ -5,17 +5,17 @@ Subject: [PATCH] {PRINTF} (BUG) drivers/staging/rdma/hfi1/device: fix printf
  format vuln
 
 ---
- drivers/staging/rdma/hfi1/device.c | 2 +-
+ drivers/infiniband/hw/hfi1/device.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/rdma/hfi1/device.c b/drivers/staging/rdma/hfi1/device.c
-index c05c39da83b1..b3e39a8c71dc 100644
---- a/drivers/staging/rdma/hfi1/device.c
-+++ b/drivers/staging/rdma/hfi1/device.c
-@@ -68,7 +68,7 @@ int hfi1_cdev_init(int minor, const char *name,
- 
+diff --git a/drivers/infiniband/hw/hfi1/device.c b/drivers/infiniband/hw/hfi1/device.c
+index bf64b5a7bfd7..d270b22ee171 100644
+--- a/drivers/infiniband/hw/hfi1/device.c
++++ b/drivers/infiniband/hw/hfi1/device.c
+@@ -70,7 +70,7 @@ int hfi1_cdev_init(int minor, const char *name,
  	cdev_init(cdev, fops);
  	cdev->owner = THIS_MODULE;
+ 	cdev->kobj.parent = parent;
 -	kobject_set_name(&cdev->kobj, name);
 +	kobject_set_name(&cdev->kobj, "%s", name);  /* printf format string bug in mainline kernels */
  

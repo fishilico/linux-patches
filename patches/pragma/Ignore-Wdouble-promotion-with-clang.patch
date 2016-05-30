@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_git@polytechnique.org>
+Date: Tue, 24 May 2016 23:47:55 +0200
+Subject: [PATCH] {PRAGMA} Ignore -Wdouble-promotion with clang
+
+---
+ drivers/media/pci/cx88/cx88-dsp.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/media/pci/cx88/cx88-dsp.c b/drivers/media/pci/cx88/cx88-dsp.c
+index a9907265ff66..366971aedd06 100644
+--- a/drivers/media/pci/cx88/cx88-dsp.c
++++ b/drivers/media/pci/cx88/cx88-dsp.c
+@@ -161,9 +161,17 @@ static s32 detect_a2_a2m_eiaj(struct cx88_core *core, s16 x[], u32 N)
+ 	switch (core->tvaudio) {
+ 	case WW_BG:
+ 	case WW_DK:
++/* clang warns about an implicit conversion of float to double */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wdouble-promotion"
++#endif
+ 		carrier_freq = FREQ_A2_CARRIER;
+ 		stereo_freq = FREQ_A2_STEREO;
+ 		dual_freq = FREQ_A2_DUAL;
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 		break;
+ 	case WW_M:
+ 		carrier_freq = FREQ_A2M_CARRIER;
+-- 

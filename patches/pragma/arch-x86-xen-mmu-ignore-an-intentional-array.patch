@@ -5,29 +5,30 @@ Subject: [PATCH] {PRAGMA} arch/x86/xen/mmu: ignore an intentional (?) array
  overflow
 
 ---
- arch/x86/xen/mmu.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/x86/xen/mmu.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
 diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 478a2de543a5..0d52600c3aed 100644
+index 478a2de543a5..074e569bfa52 100644
 --- a/arch/x86/xen/mmu.c
 +++ b/arch/x86/xen/mmu.c
-@@ -1113,8 +1113,18 @@ static void __init xen_cleanhighmap(unsigned long vaddr,
+@@ -1113,8 +1113,19 @@ static void __init xen_cleanhighmap(unsigned long vaddr,
  
  	/* NOTE: The loop is more greedy than the cleanup_highmap variant.
  	 * We include the PMD passed in on _both_ boundaries. */
 +/* clang says: the pointer incremented by 4096 refers past the end of the
 + *array (that contains 512 elements) [-Werror,-Warray-bounds-pointer-arithmetic]
 + */
-+#ifdef __clang__
 +#pragma GCC diagnostic push
++#ifdef __clang__
 +#pragma GCC diagnostic ignored "-Warray-bounds-pointer-arithmetic"
++#else
++/* gcc 6.1.1 also detects this bound overflow */
++#pragma GCC diagnostic ignored "-Warray-bounds"
 +#endif
  	for (; vaddr <= vaddr_end && (pmd < (level2_kernel_pgt + PAGE_SIZE));
  			pmd++, vaddr += PMD_SIZE) {
-+#ifdef __clang__
 +#pragma GCC diagnostic pop
-+#endif
  		if (pmd_none(*pmd))
  			continue;
  		if (vaddr < (unsigned long) _text || vaddr > kernel_end)

@@ -5,7 +5,6 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  reported by clang
 
 ---
- arch/x86/kernel/cpu/mcheck/mce.c                          | 2 +-
  arch/x86/kernel/crash.c                                   | 2 +-
  arch/x86/kernel/hw_breakpoint.c                           | 1 +
  drivers/gpu/drm/i915/i915_gem.c                           | 2 +-
@@ -15,7 +14,6 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  drivers/md/bcache/alloc.c                                 | 2 +-
  drivers/media/dvb-frontends/m88rs2000.c                   | 1 +
  drivers/media/dvb-frontends/mb86a20s.c                    | 1 +
- drivers/media/pci/cx23885/cx23885-av.c                    | 2 +-
  drivers/media/platform/am437x/am437x-vpfe.c               | 5 ++++-
  drivers/media/radio/radio-si476x.c                        | 6 ++++--
  drivers/media/rc/ite-cir.c                                | 2 +-
@@ -28,7 +26,6 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c | 5 ++++-
  drivers/net/wireless/intel/iwlwifi/mvm/rx.c               | 2 +-
  drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c      | 4 +++-
- drivers/nvdimm/namespace_devs.c                           | 2 +-
  drivers/pwm/pwm-img.c                                     | 2 +-
  drivers/scsi/qla2xxx/qla_mr.c                             | 1 +
  drivers/scsi/qla4xxx/ql4_os.c                             | 2 +-
@@ -47,21 +44,8 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  net/nfc/nci/hci.c                                         | 1 +
  net/tipc/socket.c                                         | 3 ++-
  scripts/sortextable.h                                     | 1 +
- 42 files changed, 67 insertions(+), 31 deletions(-)
+ 39 files changed, 64 insertions(+), 28 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index f0c921b03e42..801c06bab3d1 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -998,7 +998,7 @@ void do_machine_check(struct pt_regs *regs, long error_code)
- 	 * Establish sequential order between the CPUs entering the machine
- 	 * check handler.
- 	 */
--	int order;
-+	int order = 0; /* gcc -Wmaybe-uninitialized false positive */
- 	/*
- 	 * If no_way_out gets set, there is no safe way to recover from this
- 	 * MCE.  If mca_cfg.tolerant is cranked up, we'll try anyway.
 diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
 index 9ef978d69c22..5983b5bc8718 100644
 --- a/arch/x86/kernel/crash.c
@@ -88,10 +72,10 @@ index 2bcfb5f2bc44..131bedd5bb4b 100644
  
  	/*
 diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index dabc08987b5e..afaad928b6aa 100644
+index aad26851cee3..93b7fbc4199f 100644
 --- a/drivers/gpu/drm/i915/i915_gem.c
 +++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -1170,7 +1170,7 @@ static unsigned long local_clock_us(unsigned *cpu)
+@@ -1158,7 +1158,7 @@ static unsigned long local_clock_us(unsigned *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned cpu)
  {
@@ -140,10 +124,10 @@ index a3ae165f8d9f..196350b5f9fb 100644
  	return iio_push_to_buffers_with_timestamp(indio_dev, spd->buffer,
  						  calculated_time);
 diff --git a/drivers/md/bcache/alloc.c b/drivers/md/bcache/alloc.c
-index 8eeab72b93e2..388d982fc9b7 100644
+index ca4abe1ccd8d..83193b176826 100644
 --- a/drivers/md/bcache/alloc.c
 +++ b/drivers/md/bcache/alloc.c
-@@ -323,7 +323,7 @@ static int bch_allocator_thread(void *arg)
+@@ -321,7 +321,7 @@ static int bch_allocator_thread(void *arg)
  		 * the free list:
  		 */
  		while (!fifo_empty(&ca->free_inc)) {
@@ -176,21 +160,8 @@ index fb88dddaf3a3..9f7ea694afd2 100644
  		goto error;
  	}
  
-diff --git a/drivers/media/pci/cx23885/cx23885-av.c b/drivers/media/pci/cx23885/cx23885-av.c
-index 877dad89107e..911e393498ec 100644
---- a/drivers/media/pci/cx23885/cx23885-av.c
-+++ b/drivers/media/pci/cx23885/cx23885-av.c
-@@ -24,7 +24,7 @@ void cx23885_av_work_handler(struct work_struct *work)
- {
- 	struct cx23885_dev *dev =
- 			   container_of(work, struct cx23885_dev, cx25840_work);
--	bool handled;
-+	bool handled = false; /* BUG? */
- 
- 	v4l2_subdev_call(dev->sd_cx25840, core, interrupt_service_routine,
- 			 PCI_MSK_AV_CORE, &handled);
 diff --git a/drivers/media/platform/am437x/am437x-vpfe.c b/drivers/media/platform/am437x/am437x-vpfe.c
-index de32e3a3d4d1..5dbb9c61d1fa 100644
+index e749eb7c3be9..e7dcc31b9cfb 100644
 --- a/drivers/media/platform/am437x/am437x-vpfe.c
 +++ b/drivers/media/platform/am437x/am437x-vpfe.c
 @@ -1074,6 +1074,7 @@ static int vpfe_config_ccdc_image_format(struct vpfe_device *vpfe)
@@ -264,10 +235,10 @@ index 998e82bba9c0..d8290cc9037d 100644
  		tuner_i2c_xfer_send_recv(&priv->i2c_props,
  					 &addr_pll_stat, 1, &pll_stat, 1);
 diff --git a/drivers/misc/qcom-coincell.c b/drivers/misc/qcom-coincell.c
-index 7b4a2da487a5..be20d59828da 100644
+index 829a61dbd65f..cb958e350926 100644
 --- a/drivers/misc/qcom-coincell.c
 +++ b/drivers/misc/qcom-coincell.c
-@@ -126,6 +126,10 @@ static int qcom_coincell_probe(struct platform_device *pdev)
+@@ -127,6 +127,10 @@ static int qcom_coincell_probe(struct platform_device *pdev)
  			    "can't find 'qcom,vset-millivolts' in DT block");
  			return rc;
  		}
@@ -292,7 +263,7 @@ index 6956f7e7d439..fef483217b23 100644
  	enum xp_retval (*get_partition_rsvd_page_pa)
  		(void *, u64 *, unsigned long *, size_t *) =
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-index 5ebe12d56ebf..c873f8d79da9 100644
+index a7c7b1d9b7c8..5e8295d22d58 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
 @@ -99,7 +99,8 @@ i40e_status i40e_add_sd_table_entry(struct i40e_hw *hw,
@@ -306,7 +277,7 @@ index 5ebe12d56ebf..c873f8d79da9 100644
  	if (I40E_SD_TYPE_DIRECT == sd_entry->entry_type)
  		I40E_INC_BP_REFCNT(&sd_entry->u.bp);
 diff --git a/drivers/net/ethernet/sun/niu.c b/drivers/net/ethernet/sun/niu.c
-index 9cc45649f477..7e3f0ae6a974 100644
+index a2371aa14a49..319d647d356a 100644
 --- a/drivers/net/ethernet/sun/niu.c
 +++ b/drivers/net/ethernet/sun/niu.c
 @@ -7486,6 +7486,7 @@ static int niu_add_ethtool_tcam_entry(struct niu *np,
@@ -318,7 +289,7 @@ index 9cc45649f477..7e3f0ae6a974 100644
  				}
  				ret = tcam_user_ip_class_set(np, class, 0,
 diff --git a/drivers/net/wireless/broadcom/b43/phy_lp.c b/drivers/net/wireless/broadcom/b43/phy_lp.c
-index 058a9f232050..0e136ef1c86d 100644
+index 6922cbb99a04..7f71ede46738 100644
 --- a/drivers/net/wireless/broadcom/b43/phy_lp.c
 +++ b/drivers/net/wireless/broadcom/b43/phy_lp.c
 @@ -1834,7 +1834,7 @@ static void lpphy_papd_cal(struct b43_wldev *dev, struct lpphy_tx_gains gains,
@@ -331,7 +302,7 @@ index 058a9f232050..0e136ef1c86d 100644
  
  	lpphy_read_tx_pctl_mode_from_hardware(dev);
 diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-index da0cdd313880..20c1f1da8394 100644
+index c7550dab6a23..f7db71e5189a 100644
 --- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
 +++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
 @@ -289,6 +289,7 @@ static int brcmf_sdiod_request_data(struct brcmf_sdio_dev *sdiodev, u8 fn,
@@ -355,10 +326,10 @@ index da0cdd313880..20c1f1da8394 100644
  					  false);
  	brcmf_dbg(SDIO, "data:0x%08x\n", data);
 diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/rx.c b/drivers/net/wireless/intel/iwlwifi/mvm/rx.c
-index 485cfc1a4daa..a3b1fecc5fe4 100644
+index ab7f7eda9c13..709227aea5a7 100644
 --- a/drivers/net/wireless/intel/iwlwifi/mvm/rx.c
 +++ b/drivers/net/wireless/intel/iwlwifi/mvm/rx.c
-@@ -267,7 +267,7 @@ void iwl_mvm_rx_rx_mpdu(struct iwl_mvm *mvm, struct napi_struct *napi,
+@@ -268,7 +268,7 @@ void iwl_mvm_rx_rx_mpdu(struct iwl_mvm *mvm, struct napi_struct *napi,
  	struct ieee80211_sta *sta = NULL;
  	struct sk_buff *skb;
  	u32 len;
@@ -368,7 +339,7 @@ index 485cfc1a4daa..a3b1fecc5fe4 100644
  	u32 rx_pkt_status;
  	u8 crypt_len = 0;
 diff --git a/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c b/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c
-index b7b73cbe346d..25e1dadf7253 100644
+index 445f681d08c0..7839f31ed71e 100644
 --- a/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c
 +++ b/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c
 @@ -1031,9 +1031,11 @@ static u8 _rtl8723be_get_txpower_index(struct ieee80211_hw *hw, u8 path,
@@ -384,19 +355,6 @@ index b7b73cbe346d..25e1dadf7253 100644
  
  	if (DESC92C_RATE6M <= rate && rate <= DESC92C_RATE54M &&
  	    !RX_HAL_IS_CCK_RATE(rate))
-diff --git a/drivers/nvdimm/namespace_devs.c b/drivers/nvdimm/namespace_devs.c
-index f5cb88601359..fefb781dbf89 100644
---- a/drivers/nvdimm/namespace_devs.c
-+++ b/drivers/nvdimm/namespace_devs.c
-@@ -1379,7 +1379,7 @@ struct nd_namespace_common *nvdimm_namespace_common_probe(struct device *dev)
- {
- 	struct nd_btt *nd_btt = is_nd_btt(dev) ? to_nd_btt(dev) : NULL;
- 	struct nd_pfn *nd_pfn = is_nd_pfn(dev) ? to_nd_pfn(dev) : NULL;
--	struct nd_namespace_common *ndns;
-+	struct nd_namespace_common *ndns = NULL; /* harmless bug */
- 	resource_size_t size;
- 
- 	if (nd_btt || nd_pfn) {
 diff --git a/drivers/pwm/pwm-img.c b/drivers/pwm/pwm-img.c
 index 2fb30deee345..c2fbc56794fc 100644
 --- a/drivers/pwm/pwm-img.c
@@ -411,10 +369,10 @@ index 2fb30deee345..c2fbc56794fc 100644
  			"failed to configure timebase steps/divider value\n");
  		return -EINVAL;
 diff --git a/drivers/scsi/qla2xxx/qla_mr.c b/drivers/scsi/qla2xxx/qla_mr.c
-index b5029e543b91..e90bb8ca1336 100644
+index 15dff7099955..5c2cf5586489 100644
 --- a/drivers/scsi/qla2xxx/qla_mr.c
 +++ b/drivers/scsi/qla2xxx/qla_mr.c
-@@ -2225,6 +2225,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
+@@ -2224,6 +2224,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
  		if (iocb_job->u.fxiocb.flags & SRB_FXDISC_RSP_DWRD_VALID)
  			iocb_job->u.fxiocb.req_data =
  			    pkt->dataword_r;
@@ -543,10 +501,10 @@ index 1cafba860b08..83eaad19b325 100644
  			cpu_timer_sample_group(timer->it_clock, p, &now);
  			unlock_task_sighand(p, &flags);
 diff --git a/mm/filemap.c b/mm/filemap.c
-index f2479af09da9..0730aeaaf8a9 100644
+index 00ae878b2a38..d010cb96cbbc 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -631,7 +631,7 @@ static int __add_to_page_cache_locked(struct page *page,
+@@ -626,7 +626,7 @@ static int __add_to_page_cache_locked(struct page *page,
  				      void **shadowp)
  {
  	int huge = PageHuge(page);
@@ -556,10 +514,10 @@ index f2479af09da9..0730aeaaf8a9 100644
  
  	VM_BUG_ON_PAGE(!PageLocked(page), page);
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 281b8d6e5109..1f81fb917b53 100644
+index 8d426f637f58..bca0a08fd618 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1318,7 +1318,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
+@@ -1319,7 +1319,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
  {
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;
@@ -569,7 +527,7 @@ index 281b8d6e5109..1f81fb917b53 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tdls.c b/net/mac80211/tdls.c
-index a29ea813b7d5..2c895f0f8767 100644
+index 1c7d45a6d93e..58c2cfc01858 100644
 --- a/net/mac80211/tdls.c
 +++ b/net/mac80211/tdls.c
 @@ -1754,6 +1754,8 @@ call_drv:
@@ -582,17 +540,17 @@ index a29ea813b7d5..2c895f0f8767 100644
  	mutex_unlock(&local->sta_mtx);
  	dev_kfree_skb_any(params.tmpl_skb);
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index 21f6602395f7..90e993eb398a 100644
+index 203044379ce0..6dbf90db8cbf 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2097,7 +2097,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
+@@ -2136,7 +2136,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
  	bool tdls_peer;
  	bool multicast;
  	u16 info_id = 0;
 -	struct ieee80211_chanctx_conf *chanctx_conf;
 +	struct ieee80211_chanctx_conf *chanctx_conf = NULL; /* gcc -Wmaybe-uninitialized false positive */
  	struct ieee80211_sub_if_data *ap_sdata;
- 	enum ieee80211_band band;
+ 	enum nl80211_band band;
  	int ret;
 diff --git a/net/netfilter/core.c b/net/netfilter/core.c
 index f39276d1c2d7..420673824372 100644
@@ -620,10 +578,10 @@ index a0ab26d535dc..6ad74ff10308 100644
  		return r;
  
 diff --git a/net/tipc/socket.c b/net/tipc/socket.c
-index 3eeb50a27b89..b5f04734398a 100644
+index 88bfcd707064..95b6198a12e8 100644
 --- a/net/tipc/socket.c
 +++ b/net/tipc/socket.c
-@@ -917,7 +917,8 @@ static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dsz)
+@@ -945,7 +945,8 @@ static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dsz)
  		msg_set_destnode(mhdr, dnode);
  		msg_set_destport(mhdr, dest->addr.id.ref);
  		msg_set_hdr_sz(mhdr, BASIC_H_SIZE);

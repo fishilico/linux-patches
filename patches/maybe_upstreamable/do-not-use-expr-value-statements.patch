@@ -1,0 +1,145 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_git@polytechnique.org>
+Date: Tue, 24 May 2016 23:48:16 +0200
+Subject: [PATCH] {MAYBE UPS} do not use "!expr == value" statements
+
+clang complains:
+    drivers/staging/rtl8188eu/core/rtw_mlme.c:1479:7: error: logical not
+    is only applied to the left hand side of this comparison
+    [-Werror,-Wlogical-not-parentheses]
+                        !memcmp(competitor->network.Ssid.Ssid, pmlmepriv->assoc_ssid.Ssid, pmlmepriv->assoc_ssid.SsidLength) == false)
+                        ^                                                                                                    ~~
+    drivers/staging/rtl8188eu/core/rtw_mlme.c:1479:7: note: add
+    parentheses after the '!' to evaluate the comparison first
+                        !memcmp(competitor->network.Ssid.Ssid, pmlmepriv->assoc_ssid.Ssid, pmlmepriv->assoc_ssid.SsidLength) == false)
+                        ^
+                         (                                                                                                           )
+    drivers/staging/rtl8188eu/core/rtw_mlme.c:1479:7: note: add
+    parentheses around left hand side expression to silence this
+    warning
+                        !memcmp(competitor->network.Ssid.Ssid, pmlmepriv->assoc_ssid.Ssid, pmlmepriv->assoc_ssid.SsidLength) == false)
+                        ^
+                        (                                                                                                   )
+---
+ drivers/scsi/qla2xxx/qla_nx.c                  | 4 ++--
+ drivers/staging/rtl8188eu/core/rtw_ieee80211.c | 2 +-
+ drivers/staging/rtl8188eu/core/rtw_mlme.c      | 2 +-
+ drivers/staging/rtl8188eu/core/rtw_recv.c      | 4 ++--
+ drivers/staging/rtl8188eu/core/rtw_wlan_util.c | 2 +-
+ fs/ceph/file.c                                 | 2 +-
+ net/ipv4/netfilter/nf_nat_h323.c               | 4 ++--
+ sound/soc/fsl/fsl_asrc.h                       | 2 +-
+ 8 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/scsi/qla2xxx/qla_nx.c b/drivers/scsi/qla2xxx/qla_nx.c
+index 54380b434b30..b2f9cfa42bb8 100644
+--- a/drivers/scsi/qla2xxx/qla_nx.c
++++ b/drivers/scsi/qla2xxx/qla_nx.c
+@@ -3695,8 +3695,8 @@ qla82xx_chip_reset_cleanup(scsi_qla_host_t *vha)
+ 		spin_unlock_irqrestore(&ha->hardware_lock, flags);
+ 
+ 		/* Wait for pending cmds (physical and virtual) to complete */
+-		if (!qla2x00_eh_wait_for_pending_commands(vha, 0, 0,
+-		    WAIT_HOST) == QLA_SUCCESS) {
++		if (qla2x00_eh_wait_for_pending_commands(vha, 0, 0,
++		    WAIT_HOST) != QLA_SUCCESS) {
+ 			ql_dbg(ql_dbg_init, vha, 0x00b3,
+ 			    "Done wait for "
+ 			    "pending commands.\n");
+diff --git a/drivers/staging/rtl8188eu/core/rtw_ieee80211.c b/drivers/staging/rtl8188eu/core/rtw_ieee80211.c
+index 0b0d78fe83ed..5e157536356f 100644
+--- a/drivers/staging/rtl8188eu/core/rtw_ieee80211.c
++++ b/drivers/staging/rtl8188eu/core/rtw_ieee80211.c
+@@ -447,7 +447,7 @@ unsigned char *rtw_get_wpa_ie(unsigned char *pie, int *wpa_ie_len, int limit)
+ 
+ 		if (pbuf) {
+ 			/* check if oui matches... */
+-			if (!memcmp((pbuf + 2), wpa_oui_type, sizeof(wpa_oui_type)) == false)
++			if (!!memcmp((pbuf + 2), wpa_oui_type, sizeof(wpa_oui_type)))
+ 				goto check_next_ie;
+ 
+ 			/* check version... */
+diff --git a/drivers/staging/rtl8188eu/core/rtw_mlme.c b/drivers/staging/rtl8188eu/core/rtw_mlme.c
+index 1456499b84bf..6258825e059e 100644
+--- a/drivers/staging/rtl8188eu/core/rtw_mlme.c
++++ b/drivers/staging/rtl8188eu/core/rtw_mlme.c
+@@ -1471,7 +1471,7 @@ static int rtw_check_join_candidate(struct mlme_priv *pmlmepriv
+ 	/* check ssid, if needed */
+ 	if (pmlmepriv->assoc_ssid.SsidLength) {
+ 		if (competitor->network.Ssid.SsidLength != pmlmepriv->assoc_ssid.SsidLength ||
+-		    !memcmp(competitor->network.Ssid.Ssid, pmlmepriv->assoc_ssid.Ssid, pmlmepriv->assoc_ssid.SsidLength) == false)
++		    !!memcmp(competitor->network.Ssid.Ssid, pmlmepriv->assoc_ssid.Ssid, pmlmepriv->assoc_ssid.SsidLength))
+ 			goto exit;
+ 	}
+ 
+diff --git a/drivers/staging/rtl8188eu/core/rtw_recv.c b/drivers/staging/rtl8188eu/core/rtw_recv.c
+index 977bb2532c3e..f0c6c007523a 100644
+--- a/drivers/staging/rtl8188eu/core/rtw_recv.c
++++ b/drivers/staging/rtl8188eu/core/rtw_recv.c
+@@ -1349,8 +1349,8 @@ static int wlanhdr_to_ethhdr(struct recv_frame *precvframe)
+ 	psnap_type = ptr+pattrib->hdrlen + pattrib->iv_len+SNAP_SIZE;
+ 	/* convert hdr + possible LLC headers into Ethernet header */
+ 	if ((!memcmp(psnap, rtw_rfc1042_header, SNAP_SIZE) &&
+-	     (!memcmp(psnap_type, SNAP_ETH_TYPE_IPX, 2) == false) &&
+-	     (!memcmp(psnap_type, SNAP_ETH_TYPE_APPLETALK_AARP, 2) == false)) ||
++	     (!!memcmp(psnap_type, SNAP_ETH_TYPE_IPX, 2)) &&
++	     (!!memcmp(psnap_type, SNAP_ETH_TYPE_APPLETALK_AARP, 2))) ||
+ 	     !memcmp(psnap, rtw_bridge_tunnel_header, SNAP_SIZE)) {
+ 		/* remove RFC1042 or Bridge-Tunnel encapsulation and replace EtherType */
+ 		bsnaphdr = true;
+diff --git a/drivers/staging/rtl8188eu/core/rtw_wlan_util.c b/drivers/staging/rtl8188eu/core/rtw_wlan_util.c
+index 4410fe8d7c68..30c52af79f28 100644
+--- a/drivers/staging/rtl8188eu/core/rtw_wlan_util.c
++++ b/drivers/staging/rtl8188eu/core/rtw_wlan_util.c
+@@ -888,7 +888,7 @@ int rtw_check_bcn_info(struct adapter  *Adapter, u8 *pframe, u32 packet_len)
+ 		return _FAIL;
+ 	}
+ 
+-	if (!memcmp(cur_network->network.MacAddress, pbssid, 6) == false) {
++	if (memcmp(cur_network->network.MacAddress, pbssid, 6)) {
+ 		DBG_88E("Oops: rtw_check_network_encrypt linked but recv other bssid bcn\n%pM %pM\n",
+ 			(pbssid), (cur_network->network.MacAddress));
+ 		return true;
+diff --git a/fs/ceph/file.c b/fs/ceph/file.c
+index a888df6f2d71..7089f18f4db7 100644
+--- a/fs/ceph/file.c
++++ b/fs/ceph/file.c
+@@ -204,7 +204,7 @@ int ceph_renew_caps(struct inode *inode)
+ 	spin_lock(&ci->i_ceph_lock);
+ 	wanted = __ceph_caps_file_wanted(ci);
+ 	if (__ceph_is_any_real_caps(ci) &&
+-	    (!(wanted & CEPH_CAP_ANY_WR) == 0 || ci->i_auth_cap)) {
++	    ((wanted & CEPH_CAP_ANY_WR) != 0 || ci->i_auth_cap)) {
+ 		int issued = __ceph_caps_issued(ci, NULL);
+ 		spin_unlock(&ci->i_ceph_lock);
+ 		dout("renew caps %p want %s issued %s updating mds_wanted\n",
+diff --git a/net/ipv4/netfilter/nf_nat_h323.c b/net/ipv4/netfilter/nf_nat_h323.c
+index 574f7ebba0b6..f60b5e281422 100644
+--- a/net/ipv4/netfilter/nf_nat_h323.c
++++ b/net/ipv4/netfilter/nf_nat_h323.c
+@@ -550,9 +550,9 @@ static int nat_callforwarding(struct sk_buff *skb, struct nf_conn *ct,
+ 	}
+ 
+ 	/* Modify signal */
+-	if (!set_h225_addr(skb, protoff, data, dataoff, taddr,
++	if (set_h225_addr(skb, protoff, data, dataoff, taddr,
+ 			   &ct->tuplehash[!dir].tuple.dst.u3,
+-			   htons(nated_port)) == 0) {
++			   htons(nated_port)) != 0) {
+ 		nf_ct_unexpect_related(exp);
+ 		return -1;
+ 	}
+diff --git a/sound/soc/fsl/fsl_asrc.h b/sound/soc/fsl/fsl_asrc.h
+index 0f163abe4ba3..ec33dab4b909 100644
+--- a/sound/soc/fsl/fsl_asrc.h
++++ b/sound/soc/fsl/fsl_asrc.h
+@@ -57,7 +57,7 @@
+ #define REG_ASRDOC			0x74
+ #define REG_ASRDI(i)			(REG_ASRDIA + (i << 3))
+ #define REG_ASRDO(i)			(REG_ASRDOA + (i << 3))
+-#define REG_ASRDx(x, i)			(x == IN ? REG_ASRDI(i) : REG_ASRDO(i))
++#define REG_ASRDx(x, i)			((x) == IN ? REG_ASRDI(i) : REG_ASRDO(i))
+ 
+ #define REG_ASRIDRHA			0x80
+ #define REG_ASRIDRLA			0x84
+-- 

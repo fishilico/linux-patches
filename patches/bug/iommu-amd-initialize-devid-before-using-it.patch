@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_git@polytechnique.org>
+Date: Wed, 25 May 2016 20:55:45 +0200
+Subject: [PATCH] {BUG} iommu/amd: initialize devid before using it
+
+---
+ drivers/iommu/amd_iommu_init.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/iommu/amd_iommu_init.c b/drivers/iommu/amd_iommu_init.c
+index 9e0034196e10..8177abef1c89 100644
+--- a/drivers/iommu/amd_iommu_init.c
++++ b/drivers/iommu/amd_iommu_init.c
+@@ -1107,13 +1107,13 @@ static int __init init_iommu_from_acpi(struct amd_iommu *iommu,
+ 				break;
+ 			}
+ 
++			devid  = e->devid;
+ 			DUMP_printk("  DEV_ACPI_HID(%s[%s])\t\tdevid: %02x:%02x.%x\n",
+ 				    hid, uid,
+ 				    PCI_BUS_NUM(devid),
+ 				    PCI_SLOT(devid),
+ 				    PCI_FUNC(devid));
+ 
+-			devid  = e->devid;
+ 			flags = e->flags;
+ 
+ 			ret = add_acpi_hid_device(hid, uid, &devid, false);
+-- 

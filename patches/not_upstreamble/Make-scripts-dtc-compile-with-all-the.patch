@@ -22,7 +22,7 @@ Subject: [PATCH] {NOT UPSTREAMABLE} Make scripts/dtc compile with all the
  14 files changed, 167 insertions(+), 172 deletions(-)
 
 diff --git a/scripts/dtc/checks.c b/scripts/dtc/checks.c
-index 0c03ac9159c1..f59892eccb1e 100644
+index 386f9563313f..f41cd0035a31 100644
 --- a/scripts/dtc/checks.c
 +++ b/scripts/dtc/checks.c
 @@ -50,7 +50,7 @@ struct check {
@@ -61,7 +61,7 @@ index 0c03ac9159c1..f59892eccb1e 100644
  
  	if (n < strlen(node->name))
  		FAIL(c, "Bad character '%c' in node %s",
-@@ -297,7 +297,7 @@ NODE_ERROR(node_name_format, NULL, &node_name_chars);
+@@ -321,7 +321,7 @@ NODE_WARNING(unit_address_vs_reg, NULL);
  static void check_property_name_chars(struct check *c, struct node *dt,
  				      struct node *node, struct property *prop)
  {
@@ -70,7 +70,7 @@ index 0c03ac9159c1..f59892eccb1e 100644
  
  	if (n < strlen(prop->name))
  		FAIL(c, "Bad character '%c' in property name \"%s\", node %s",
-@@ -373,7 +373,7 @@ static void check_explicit_phandles(struct check *c, struct node *root,
+@@ -397,7 +397,7 @@ static void check_explicit_phandles(struct check *c, struct node *root,
  		return;
  
  	if (prop->val.len != sizeof(cell_t)) {
@@ -79,7 +79,7 @@ index 0c03ac9159c1..f59892eccb1e 100644
  		     node->fullpath, prop->val.len, prop->name);
  		return;
  	}
-@@ -399,7 +399,7 @@ static void check_explicit_phandles(struct check *c, struct node *root,
+@@ -423,7 +423,7 @@ static void check_explicit_phandles(struct check *c, struct node *root,
  
  	phandle = propval_cell(prop);
  
@@ -88,7 +88,7 @@ index 0c03ac9159c1..f59892eccb1e 100644
  		FAIL(c, "%s has bad value (0x%x) in %s property",
  		     node->fullpath, phandle, prop->name);
  		return;
-@@ -442,7 +442,7 @@ static void check_name_properties(struct check *c, struct node *root,
+@@ -466,7 +466,7 @@ static void check_name_properties(struct check *c, struct node *root,
  		/* The name property is correct, and therefore redundant.
  		 * Delete it */
  		*pp = prop->next;
@@ -97,7 +97,7 @@ index 0c03ac9159c1..f59892eccb1e 100644
  		data_free(prop->val);
  		free(prop);
  	}
-@@ -561,7 +561,7 @@ static void check_reg_format(struct check *c, struct node *dt,
+@@ -585,7 +585,7 @@ static void check_reg_format(struct check *c, struct node *dt,
  	entrylen = (addr_cells + size_cells) * sizeof(cell_t);
  
  	if (!entrylen || (prop->val.len % entrylen) != 0)
@@ -106,7 +106,7 @@ index 0c03ac9159c1..f59892eccb1e 100644
  		     "(#address-cells == %d, #size-cells == %d)",
  		     node->fullpath, prop->val.len, addr_cells, size_cells);
  }
-@@ -600,7 +600,7 @@ static void check_ranges_format(struct check *c, struct node *dt,
+@@ -624,7 +624,7 @@ static void check_ranges_format(struct check *c, struct node *dt,
  			     node->fullpath, c_size_cells, node->parent->fullpath,
  			     p_size_cells);
  	} else if ((prop->val.len % entrylen) != 0) {
@@ -115,7 +115,7 @@ index 0c03ac9159c1..f59892eccb1e 100644
  		     "(parent #address-cells == %d, child #address-cells == %d, "
  		     "#size-cells == %d)", node->fullpath, prop->val.len,
  		     p_addr_cells, c_addr_cells, c_size_cells);
-@@ -688,7 +688,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
+@@ -714,7 +714,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
  
  static void disable_warning_error(struct check *c, bool warn, bool error)
  {
@@ -124,7 +124,7 @@ index 0c03ac9159c1..f59892eccb1e 100644
  
  	/* Lowering level, also lower it for things this is the prereq
  	 * for */
-@@ -709,7 +709,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
+@@ -735,7 +735,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
  
  void parse_checks_option(bool warn, bool error, const char *arg)
  {
@@ -133,7 +133,7 @@ index 0c03ac9159c1..f59892eccb1e 100644
  	const char *name = arg;
  	bool enable = true;
  
-@@ -737,7 +737,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
+@@ -763,7 +763,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
  void process_checks(bool force, struct boot_info *bi)
  {
  	struct node *dt = bi->dt;
@@ -460,7 +460,7 @@ index 56212c8df660..a4b77a1fe908 100644
  struct boot_info *dt_from_blob(const char *fname);
  
 diff --git a/scripts/dtc/flattree.c b/scripts/dtc/flattree.c
-index bd99fa2d33b8..5da953837b39 100644
+index ec14954f5810..f7fc8bb9fff3 100644
 --- a/scripts/dtc/flattree.c
 +++ b/scripts/dtc/flattree.c
 @@ -30,10 +30,10 @@

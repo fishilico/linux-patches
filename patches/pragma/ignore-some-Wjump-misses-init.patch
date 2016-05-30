@@ -15,7 +15,7 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
  8 files changed, 28 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 237b877d316d..e6850c488fbb 100644
+index 3da4cf8d18b6..e049a62f628f 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
 @@ -459,6 +459,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
@@ -37,10 +37,10 @@ index 237b877d316d..e6850c488fbb 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index c5c17a62f509..4827448501b8 100644
+index 668e07903c8f..636780496a95 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -1743,6 +1743,9 @@ static int do_check(struct verifier_env *env)
+@@ -2230,6 +2230,9 @@ static int do_check(struct verifier_env *env)
  	int insn_processed = 0;
  	bool do_print_state = false;
  
@@ -50,19 +50,19 @@ index c5c17a62f509..4827448501b8 100644
  	init_reg_state(regs);
  	insn_idx = 0;
  	for (;;) {
-@@ -1995,6 +1998,7 @@ process_bpf_exit:
- 	}
+@@ -2483,6 +2486,7 @@ process_bpf_exit:
  
+ 	verbose("processed %d insns\n", insn_processed);
  	return 0;
 +#pragma GCC diagnostic pop
  }
  
  /* look for pseudo eBPF instructions that access map FDs and
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index cc808707d1cf..871ea1d71900 100644
+index 5d845ffd7982..5753621fd05c 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -594,6 +594,9 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+@@ -596,6 +596,9 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
  	struct rhashtable *ht = iter->ht;
  	struct rhash_head *p = iter->p;
  
@@ -72,7 +72,7 @@ index cc808707d1cf..871ea1d71900 100644
  	if (p) {
  		p = rht_dereference_bucket_rcu(p->next, tbl, iter->slot);
  		goto next;
-@@ -609,6 +612,7 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+@@ -611,6 +614,7 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
  		}
  
  next:
@@ -81,10 +81,10 @@ index cc808707d1cf..871ea1d71900 100644
  			iter->skip++;
  			iter->p = p;
 diff --git a/mm/mmap.c b/mm/mmap.c
-index bd2e1a533bc1..1a9f83f3c67a 100644
+index de2c1769cc68..3c246ae5042d 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -632,6 +632,9 @@ int vma_adjust(struct vm_area_struct *vma, unsigned long start,
+@@ -629,6 +629,9 @@ int vma_adjust(struct vm_area_struct *vma, unsigned long start,
  	long adjust_next = 0;
  	int remove_next = 0;
  
@@ -94,7 +94,7 @@ index bd2e1a533bc1..1a9f83f3c67a 100644
  	if (next && !insert) {
  		struct vm_area_struct *exporter = NULL;
  
-@@ -811,6 +814,7 @@ again:			remove_next = 1 + (end > next->vm_end);
+@@ -808,6 +811,7 @@ again:			remove_next = 1 + (end > next->vm_end);
  	validate_mm(mm);
  
  	return 0;
@@ -103,7 +103,7 @@ index bd2e1a533bc1..1a9f83f3c67a 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index e561f9f07d6d..e6727e31ec62 100644
+index f2b77e549c03..c24d6a7f390a 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
 @@ -1505,6 +1505,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
@@ -146,19 +146,19 @@ index 6ed9f65fb945..1a094363afc1 100644
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index ad450509029b..2a881f3a0605 100644
+index 3708de2a6683..f56d608aaf12 100644
 --- a/net/ipv4/tcp_ipv4.c
 +++ b/net/ipv4/tcp_ipv4.c
-@@ -1874,6 +1874,7 @@ get_sk:
- 		}
+@@ -1885,6 +1885,7 @@ get_sk:
+ 			return sk;
  		icsk = inet_csk(sk);
  	}
 +#pragma GCC diagnostic pop
  	spin_unlock_bh(&ilb->lock);
  	st->offset = 0;
- 	if (++st->bucket < INET_LHTABLE_SIZE) {
+ 	if (++st->bucket < INET_LHTABLE_SIZE)
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
-index 563cdad76448..7288638c3230 100644
+index 079b43b3c5d2..159080351d97 100644
 --- a/net/sched/cls_u32.c
 +++ b/net/sched/cls_u32.c
 @@ -106,6 +106,9 @@ static inline unsigned int u32_hash_fold(__be32 key,
@@ -171,7 +171,7 @@ index 563cdad76448..7288638c3230 100644
  	struct {
  		struct tc_u_knode *knode;
  		unsigned int	  off;
-@@ -249,6 +252,7 @@ out:
+@@ -254,6 +257,7 @@ out:
  deadloop:
  	net_warn_ratelimited("cls_u32: dead loop\n");
  	return -1;

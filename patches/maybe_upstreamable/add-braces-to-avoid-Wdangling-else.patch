@@ -11,26 +11,26 @@ Subject: [PATCH] {MAYBE UPS} add braces to avoid -Wdangling-else
  4 files changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/gpu/drm/i915/i915_debugfs.c b/drivers/gpu/drm/i915/i915_debugfs.c
-index e3f4c725a1c6..6be61d559133 100644
+index 32690332d441..b1f5370442bc 100644
 --- a/drivers/gpu/drm/i915/i915_debugfs.c
 +++ b/drivers/gpu/drm/i915/i915_debugfs.c
-@@ -2057,9 +2057,10 @@ static int i915_dump_lrc(struct seq_file *m, void *unused)
+@@ -2100,9 +2100,10 @@ static int i915_dump_lrc(struct seq_file *m, void *unused)
  		return ret;
  
  	list_for_each_entry(ctx, &dev_priv->context_list, link)
 -		if (ctx != dev_priv->kernel_context)
 +		if (ctx != dev_priv->kernel_context) {
- 			for_each_ring(ring, dev_priv, i)
- 				i915_dump_lrc_obj(m, ctx, ring);
+ 			for_each_engine(engine, dev_priv)
+ 				i915_dump_lrc_obj(m, ctx, engine);
 +		}
  
  	mutex_unlock(&dev->struct_mutex);
  
 diff --git a/drivers/iommu/dmar.c b/drivers/iommu/dmar.c
-index 8ffd7568fc91..e7d3b6153a53 100644
+index 6a86b5d1defa..7330a66e2b7e 100644
 --- a/drivers/iommu/dmar.c
 +++ b/drivers/iommu/dmar.c
-@@ -1864,10 +1864,11 @@ static int dmar_hp_remove_drhd(struct acpi_dmar_header *header, void *arg)
+@@ -1871,10 +1871,11 @@ static int dmar_hp_remove_drhd(struct acpi_dmar_header *header, void *arg)
  	/*
  	 * All PCI devices managed by this unit should have been destroyed.
  	 */
@@ -44,10 +44,10 @@ index 8ffd7568fc91..e7d3b6153a53 100644
  	ret = dmar_ir_hotplug(dmaru, false);
  	if (ret == 0)
 diff --git a/drivers/iommu/intel-iommu.c b/drivers/iommu/intel-iommu.c
-index e1852e845d21..edfaa9d49d9e 100644
+index a644d0cec2d8..4b7d57410f0e 100644
 --- a/drivers/iommu/intel-iommu.c
 +++ b/drivers/iommu/intel-iommu.c
-@@ -4175,10 +4175,11 @@ int dmar_check_one_atsr(struct acpi_dmar_header *hdr, void *arg)
+@@ -4265,10 +4265,11 @@ int dmar_check_one_atsr(struct acpi_dmar_header *hdr, void *arg)
  	if (!atsru)
  		return 0;
  
@@ -61,7 +61,7 @@ index e1852e845d21..edfaa9d49d9e 100644
  	return 0;
  }
 diff --git a/drivers/net/wireless/intel/iwlegacy/3945.c b/drivers/net/wireless/intel/iwlegacy/3945.c
-index 93bdf684babe..ae047ab7a4df 100644
+index 7bcedbb53d94..209dc9988455 100644
 --- a/drivers/net/wireless/intel/iwlegacy/3945.c
 +++ b/drivers/net/wireless/intel/iwlegacy/3945.c
 @@ -1019,12 +1019,13 @@ il3945_hw_txq_ctx_free(struct il_priv *il)
