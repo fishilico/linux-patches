@@ -63,6 +63,7 @@ KCFLAGS="$KCFLAGS -Wno-shadow" # The kernel redefines built-in functions like ff
 KCFLAGS="$KCFLAGS -Wno-trigraphs" # Ignore trigraphs like "??)"
 KCFLAGS="$KCFLAGS -Wno-type-limits" # Unsigned integers >= 0
 KCFLAGS="$KCFLAGS -Wno-unused-but-set-variable" # Many variables are never used
+KCFLAGS="$KCFLAGS -Wno-unused-const-variable"
 KCFLAGS="$KCFLAGS -Wno-unused-function" # Make the build succeed when some static functions are not used
 KCFLAGS="$KCFLAGS -Wno-unused-parameter" # There is no __unused macro, and __maybe_unused is not the common headers
 KCFLAGS="$KCFLAGS -Wno-error=jump-misses-init" # The compiler is not smart enough in many cases
@@ -124,7 +125,6 @@ then
     KCFLAGS="$KCFLAGS -Wno-sign-compare"
     KCFLAGS="$KCFLAGS -Wno-sign-conversion"
     KCFLAGS="$KCFLAGS -Wno-unneeded-internal-declaration"
-    KCFLAGS="$KCFLAGS -Wno-unused-const-variable"
     KCFLAGS="$KCFLAGS -Wno-unused-macros" # TODO, macros defined in C files but not used
     KCFLAGS="$KCFLAGS -Wno-shift-sign-overflow" # (1 << 31) is used a lot, but may be replaced by (1U << 31) globally to make this warning more useful
 
@@ -136,6 +136,7 @@ then
 elif "$CC" -v 2>&1 | grep -q 'gcc version'
 then
     KCFLAGS="$KCFLAGS -Wno-maybe-uninitialized" # There are too many false positives with gcc 5.2
+    KCFLAGS="$KCFLAGS -Wno-frame-address" # __builtin_return_address is called with a nonzero argument
 fi
 
 # Initial from Makefile
