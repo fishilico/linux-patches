@@ -8,6 +8,7 @@ approach may be better to have such a patch upstreamed one day.
 ---
  arch/x86/kernel/cpu/mcheck/mce.c                             |  2 +-
  drivers/block/drbd/drbd_nl.c                                 |  8 ++++----
+ drivers/net/hamradio/baycom_epp.c                            |  4 ++--
  drivers/staging/lustre/include/linux/libcfs/libcfs_private.h |  2 +-
  drivers/staging/lustre/lnet/libcfs/linux/linux-debug.c       | 10 +++++-----
  drivers/staging/lustre/lustre/obdclass/obd_config.c          |  2 +-
@@ -27,7 +28,7 @@ approach may be better to have such a patch upstreamed one day.
  kernel/reboot.c                                              |  4 ++--
  net/bridge/br_stp_if.c                                       |  8 ++++----
  security/keys/request_key.c                                  |  8 +++++---
- 21 files changed, 62 insertions(+), 57 deletions(-)
+ 22 files changed, 64 insertions(+), 59 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
 index b9dcae5d1258..089d968e4e29 100644
@@ -82,6 +83,27 @@ index 0bac9c8246bc..6c3e7793a870 100644
  	if (ret)
  		drbd_warn(connection, "helper command: %s %s %s exit code %u (0x%x)\n",
  			  usermode_helper, cmd, resource_name,
+diff --git a/drivers/net/hamradio/baycom_epp.c b/drivers/net/hamradio/baycom_epp.c
+index 78dbc44540f6..7e90aca6045f 100644
+--- a/drivers/net/hamradio/baycom_epp.c
++++ b/drivers/net/hamradio/baycom_epp.c
+@@ -301,14 +301,14 @@ static inline void baycom_int_freq(struct baycom_state *bc)
+ 
+ static char eppconfig_path[256] = "/usr/sbin/eppfpga";
+ 
+-static char *envp[] = { "HOME=/", "TERM=linux", "PATH=/usr/bin:/bin", NULL };
++static const char *envp[] = { "HOME=/", "TERM=linux", "PATH=/usr/bin:/bin", NULL };
+ 
+ /* eppconfig: called during ifconfig up to configure the modem */
+ static int eppconfig(struct baycom_state *bc)
+ {
+ 	char modearg[256];
+ 	char portarg[16];
+-        char *argv[] = { eppconfig_path, "-s", "-p", portarg, "-m", modearg,
++        const char *argv[] = { eppconfig_path, "-s", "-p", portarg, "-m", modearg,
+ 			 NULL };
+ 
+ 	/* set up arguments */
 diff --git a/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h b/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
 index 97c75b5241b0..2a6431f3849b 100644
 --- a/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h

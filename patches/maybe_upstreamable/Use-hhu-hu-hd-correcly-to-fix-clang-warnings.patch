@@ -38,6 +38,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  drivers/net/wireless/mediatek/mt7601u/mcu.c     |  2 +-
  drivers/platform/x86/thinkpad_acpi.c            |  2 +-
  drivers/scsi/libfc/fc_lport.c                   |  2 +-
+ drivers/scsi/nsp32.c                            |  6 +-
  drivers/scsi/scsi_sysfs.c                       |  4 +-
  drivers/staging/lustre/lustre/llite/dir.c       |  6 +-
  drivers/target/iscsi/iscsi_target.c             |  2 +-
@@ -71,7 +72,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  net/rxrpc/rxkad.c                               |  2 +-
  security/selinux/hooks.c                        |  2 +-
  security/tomoyo/common.c                        |  2 +-
- 67 files changed, 171 insertions(+), 171 deletions(-)
+ 68 files changed, 174 insertions(+), 174 deletions(-)
 
 diff --git a/drivers/acpi/acpica/dbhistry.c b/drivers/acpi/acpica/dbhistry.c
 index 46bd65d38df9..ec9da4830f6a 100644
@@ -522,7 +523,7 @@ index 7f85c2c1d681..e1fc3d3fd48c 100644
  }
  
 diff --git a/drivers/gpu/drm/i915/intel_dp.c b/drivers/gpu/drm/i915/intel_dp.c
-index f192f58708c2..cb7eb6e2c1e3 100644
+index ffe5f8430957..b8f52058806d 100644
 --- a/drivers/gpu/drm/i915/intel_dp.c
 +++ b/drivers/gpu/drm/i915/intel_dp.c
 @@ -3826,11 +3826,11 @@ intel_dp_probe_oui(struct intel_dp *intel_dp)
@@ -912,10 +913,10 @@ index 91c4b3427965..42d2d639b39b 100644
  			seq, MT76_GET(MT_RXD_CMD_INFO_CMD_SEQ, rxfce));
  	}
 diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index c3bfa1fe95bf..ecb79d3aea89 100644
+index b65ce7519411..d6c8c15e0757 100644
 --- a/drivers/platform/x86/thinkpad_acpi.c
 +++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -7221,7 +7221,7 @@ static void volume_exit_software_mute(void)
+@@ -7260,7 +7260,7 @@ static void volume_exit_software_mute(void)
  static int volume_alsa_set_volume(const u8 vol)
  {
  	dbg_printk(TPACPI_DBG_MIXER,
@@ -937,6 +938,37 @@ index e01a29863c38..729d89887c4f 100644
  		fc_lport_error(lport, fp);
  		goto err;
  	}
+diff --git a/drivers/scsi/nsp32.c b/drivers/scsi/nsp32.c
+index 53c84771f0e8..1ce5591335a7 100644
+--- a/drivers/scsi/nsp32.c
++++ b/drivers/scsi/nsp32.c
+@@ -888,7 +888,7 @@ static int nsp32_setup_sg_table(struct scsi_cmnd *SCpnt)
+ 
+ 			if (le32_to_cpu(sgt[i].len) > 0x10000) {
+ 				nsp32_msg(KERN_ERR,
+-					"can't transfer over 64KB at a time, size=0x%lx", le32_to_cpu(sgt[i].len));
++					"can't transfer over 64KB at a time, size=0x%x", le32_to_cpu(sgt[i].len));
+ 				return FALSE;
+ 			}
+ 			nsp32_dbg(NSP32_DEBUG_SGLIST,
+@@ -2742,7 +2742,7 @@ static int nsp32_detect(struct pci_dev *pdev)
+ 	res = request_region(host->io_port, host->n_io_port, "nsp32");
+ 	if (res == NULL) {
+ 		nsp32_msg(KERN_ERR, 
+-			  "I/O region 0x%lx+0x%lx is already used",
++			  "I/O region 0x%x+0x%x is already used",
+ 			  data->BaseAddress, data->NumAddress);
+ 		goto free_irq;
+         }
+@@ -3307,7 +3307,7 @@ static int nsp32_suspend(struct pci_dev *pdev, pm_message_t state)
+ {
+ 	struct Scsi_Host *host = pci_get_drvdata(pdev);
+ 
+-	nsp32_msg(KERN_INFO, "pci-suspend: pdev=0x%p, state=%ld, slot=%s, host=0x%p", pdev, state, pci_name(pdev), host);
++	nsp32_msg(KERN_INFO, "pci-suspend: pdev=0x%p, state=%d, slot=%s, host=0x%p", pdev, state.event, pci_name(pdev), host);
+ 
+ 	pci_save_state     (pdev);
+ 	pci_disable_device (pdev);
 diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
 index 07349270535d..88c237f8f692 100644
 --- a/drivers/scsi/scsi_sysfs.c

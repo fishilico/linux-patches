@@ -6,14 +6,16 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fs/reiserfs: fix misc printf formatting
 
 Not upstreamable as-is because several format strings were not considered
 ---
- fs/reiserfs/bitmap.c   | 16 ++++++++--------
+ fs/reiserfs/bitmap.c   | 20 ++++++++++----------
  fs/reiserfs/ibalance.c |  4 ++--
- fs/reiserfs/journal.c  | 32 ++++++++++++++++----------------
+ fs/reiserfs/inode.c    |  2 +-
+ fs/reiserfs/journal.c  | 48 ++++++++++++++++++++++++------------------------
  fs/reiserfs/lbalance.c |  2 +-
- 4 files changed, 27 insertions(+), 27 deletions(-)
+ fs/reiserfs/stree.c    |  4 ++--
+ 6 files changed, 40 insertions(+), 40 deletions(-)
 
 diff --git a/fs/reiserfs/bitmap.c b/fs/reiserfs/bitmap.c
-index 1d02f184863d..5dae597bd07b 100644
+index 1d02f184863d..0c854fab016c 100644
 --- a/fs/reiserfs/bitmap.c
 +++ b/fs/reiserfs/bitmap.c
 @@ -66,7 +66,7 @@ int is_reusable(struct super_block *s, b_blocknr_t block, int bit_value)
@@ -87,8 +89,19 @@ index 1d02f184863d..5dae597bd07b 100644
  	return 0;
  }
  
+@@ -1390,8 +1390,8 @@ void reiserfs_cache_bitmap_metadata(struct super_block *sb,
+ 
+ 	/* The first bit must ALWAYS be 1 */
+ 	if (!reiserfs_test_le_bit(0, (unsigned long *)bh->b_data))
+-		reiserfs_error(sb, "reiserfs-2025", "bitmap block %lu is "
+-			       "corrupted: first bit must be 1", bh->b_blocknr);
++		reiserfs_error(sb, "reiserfs-2025", "bitmap block %llu is "
++			       "corrupted: first bit must be 1", (u64)bh->b_blocknr);
+ 
+ 	info->free_count = 0;
+ 
 diff --git a/fs/reiserfs/ibalance.c b/fs/reiserfs/ibalance.c
-index b751eea32e20..d3448c788e5d 100644
+index b751eea32e20..b738951a9dfd 100644
 --- a/fs/reiserfs/ibalance.c
 +++ b/fs/reiserfs/ibalance.c
 @@ -144,7 +144,7 @@ static void internal_insert_childs(struct buffer_info *cur_bi,
@@ -96,7 +109,7 @@ index b751eea32e20..d3448c788e5d 100644
  	RFALSE(count > 2, "too many children (%d) are to be inserted", count);
  	RFALSE(B_FREE_SPACE(cur) < count * (KEY_SIZE + DC_SIZE),
 -	       "no enough free space (%d), needed %d bytes",
-+	       "no enough free space (%d), needed %lu bytes",
++	       "no enough free space (%d), needed %zu bytes",
  	       B_FREE_SPACE(cur), count * (KEY_SIZE + DC_SIZE));
  
  	/* prepare space for count disk_child */
@@ -105,14 +118,38 @@ index b751eea32e20..d3448c788e5d 100644
  	RFALSE(cpy_num < 0, "cpy_num less than 0 (%d)", cpy_num);
  	RFALSE(cpy_num - 1 + B_NR_ITEMS(dest) > (int)MAX_NR_KEY(dest),
 -	       "cpy_num (%d) + item number in dest (%d) can not be > MAX_NR_KEY(%d)",
-+	       "cpy_num (%d) + item number in dest (%d) can not be > MAX_NR_KEY(%lu)",
++	       "cpy_num (%d) + item number in dest (%d) can not be > MAX_NR_KEY(%zu)",
  	       cpy_num, B_NR_ITEMS(dest), MAX_NR_KEY(dest));
  
  	if (cpy_num == 0)
+diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
+index 825455d3e4ba..b3a944f8097e 100644
+--- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -2239,7 +2239,7 @@ static int grab_tail_page(struct inode *inode,
+ 		 * code to call prepare_write
+ 		 */
+ 		reiserfs_error(inode->i_sb, "clm-6000",
+-			       "error reading block %lu", bh->b_blocknr);
++			       "error reading block %llu", (u64)bh->b_blocknr);
+ 		error = -EIO;
+ 		goto unlock;
+ 	}
 diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-index 80babdc37d16..ab4283bc5bc5 100644
+index 80babdc37d16..6640c1173e7c 100644
 --- a/fs/reiserfs/journal.c
 +++ b/fs/reiserfs/journal.c
+@@ -620,8 +620,8 @@ static void reiserfs_end_buffer_io_sync(struct buffer_head *bh, int uptodate)
+ {
+ 	if (buffer_journaled(bh)) {
+ 		reiserfs_warning(NULL, "clm-2084",
+-				 "pinned buffer %lu:%pg sent to disk",
+-				 bh->b_blocknr, bh->b_bdev);
++				 "pinned buffer %llu:%pg sent to disk",
++				 (u64)bh->b_blocknr, bh->b_bdev);
+ 	}
+ 	if (uptodate)
+ 		set_buffer_uptodate(bh);
 @@ -1131,7 +1131,7 @@ static int flush_commit_list(struct super_block *s,
  	bforget(jl->j_commit_bh);
  	if (journal->j_last_commit_id != 0 &&
@@ -149,6 +186,20 @@ index 80babdc37d16..ab4283bc5bc5 100644
  				       get_desc_trans_id(desc),
  				       *oldest_invalid_trans_id);
  			return 0;
+@@ -2066,10 +2066,10 @@ static int journal_transaction_is_valid(struct super_block *sb,
+ 		commit = (struct reiserfs_journal_commit *)c_bh->b_data;
+ 		if (journal_compare_desc_commit(sb, desc, commit)) {
+ 			reiserfs_debug(sb, REISERFS_DEBUG_CODE,
+-				       "journal_transaction_is_valid, commit offset %ld had bad "
++				       "journal_transaction_is_valid, commit offset %llu had bad "
+ 				       "time %d or length %d",
+-				       c_bh->b_blocknr -
+-				       SB_ONDISK_JOURNAL_1st_BLOCK(sb),
++				       (u64)(c_bh->b_blocknr -
++				       SB_ONDISK_JOURNAL_1st_BLOCK(sb)),
+ 				       get_commit_trans_id(commit),
+ 				       get_commit_trans_len(commit));
+ 			brelse(c_bh);
 @@ -2088,8 +2088,8 @@ static int journal_transaction_is_valid(struct super_block *sb,
  		reiserfs_debug(sb, REISERFS_DEBUG_CODE,
  			       "journal-1006: found valid "
@@ -225,6 +276,15 @@ index 80babdc37d16..ab4283bc5bc5 100644
  					 sb->s_blocksize);
  			return 1;
  		}
+@@ -2860,7 +2860,7 @@ int journal_init(struct super_block *sb, const char *j_dev_name,
+ 
+ 	if (journal->j_cnode_free == 0) {
+ 		reiserfs_warning(sb, "journal-2004", "Journal cnode memory "
+-		                 "allocation failed (%ld bytes). Journal is "
++		                 "allocation failed (%zu bytes). Journal is "
+ 		                 "too large for available memory. Usually "
+ 		                 "this is due to a journal that is too large.",
+ 		                 sizeof (struct reiserfs_journal_cnode) * num_cnodes);
 @@ -3280,7 +3280,7 @@ int journal_mark_dirty(struct reiserfs_transaction_handle *th,
  	PROC_INFO_INC(sb, journal.mark_dirty);
  	if (th->t_trans_id != journal->j_trans_id) {
@@ -243,8 +303,20 @@ index 80babdc37d16..ab4283bc5bc5 100644
  			       th->t_trans_id, journal->j_trans_id);
  	}
  
+@@ -4141,9 +4141,9 @@ static int do_journal_end(struct reiserfs_transaction_handle *th, int flags)
+ 			if (is_block_in_log_or_reserved_area
+ 			    (sb, cn->bh->b_blocknr)) {
+ 				reiserfs_panic(sb, "journal-2332",
+-					       "Trying to log block %lu, "
++					       "Trying to log block %llu, "
+ 					       "which is a log block",
+-					       cn->bh->b_blocknr);
++					       (u64)cn->bh->b_blocknr);
+ 			}
+ 			jl_cn->blocknr = cn->bh->b_blocknr;
+ 			jl_cn->state = 0;
 diff --git a/fs/reiserfs/lbalance.c b/fs/reiserfs/lbalance.c
-index 249594a821e0..88442e92b89c 100644
+index 249594a821e0..fae49d299d68 100644
 --- a/fs/reiserfs/lbalance.c
 +++ b/fs/reiserfs/lbalance.c
 @@ -348,7 +348,7 @@ static void leaf_copy_items_entirely(struct buffer_info *dest_bi,
@@ -252,8 +324,23 @@ index 249594a821e0..88442e92b89c 100644
  
  	RFALSE(blkh_free_space(blkh) < cpy_num * IH_SIZE,
 -	       "vs-10140: not enough free space for headers %d (needed %d)",
-+	       "vs-10140: not enough free space for headers %d (needed %lu)",
++	       "vs-10140: not enough free space for headers %d (needed %zu)",
  	       B_FREE_SPACE(dest), cpy_num * IH_SIZE);
  
  	/* prepare space for headers */
+diff --git a/fs/reiserfs/stree.c b/fs/reiserfs/stree.c
+index 5feacd689241..794984fbd689 100644
+--- a/fs/reiserfs/stree.c
++++ b/fs/reiserfs/stree.c
+@@ -728,8 +728,8 @@ io_error:
+ 		 */
+ 		if (!is_tree_node(bh, expected_level)) {
+ 			reiserfs_error(sb, "vs-5150",
+-				       "invalid format found in block %ld. "
+-				       "Fsck?", bh->b_blocknr);
++				       "invalid format found in block %llu. "
++				       "Fsck?", (u64)bh->b_blocknr);
+ 			pathrelse(search_path);
+ 			return IO_ERROR;
+ 		}
 -- 
