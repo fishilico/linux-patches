@@ -233,6 +233,9 @@ then
     # Compress the kernel with XZ
     echo '# CONFIG_KERNEL_GZIP is not set' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_KERNEL_XZ=y' >> "$KBUILD_OUTPUT/.config"
+    # Use -fstack-protector-strong
+    echo '# CONFIG_CC_STACKPROTECTOR_NONE is not set' >> "$KBUILD_OUTPUT/.config"
+    echo 'CONFIG_CC_STACKPROTECTOR_STRONG=y' >> "$KBUILD_OUTPUT/.config"
     # Enable preemption
     echo '# CONFIG_PREEMPT_NONE is not set' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_PREEMPT=y' >> "$KBUILD_OUTPUT/.config"
