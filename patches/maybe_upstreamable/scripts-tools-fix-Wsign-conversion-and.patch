@@ -35,7 +35,7 @@ Subject: [PATCH] {MAYBE UPS} scripts,tools: fix -Wsign-conversion and
  27 files changed, 286 insertions(+), 270 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
-index 7a049e8324f1..1a25ba2a3921 100644
+index e738b3136b36..cfd955cff525 100644
 --- a/arch/x86/boot/tools/build.c
 +++ b/arch/x86/boot/tools/build.c
 @@ -52,10 +52,10 @@ static u8 buf[SETUP_SECT_MAX*512];
@@ -62,7 +62,7 @@ index 7a049e8324f1..1a25ba2a3921 100644
  {
  	while (len--)
  		crc = partial_crc32_one(*s++, crc);
-@@ -257,7 +257,7 @@ static void efi_stub_defaults(void)
+@@ -258,7 +258,7 @@ static void efi_stub_defaults(void)
  
  static void efi_stub_entry_update(void)
  {
@@ -71,7 +71,7 @@ index 7a049e8324f1..1a25ba2a3921 100644
  
  #ifdef CONFIG_X86_64
  	/* Yes, this is really how we defined it :( */
-@@ -294,15 +294,20 @@ static inline int reserve_pecoff_reloc_section(int c)
+@@ -295,15 +295,20 @@ static inline int reserve_pecoff_reloc_section(int c)
   * not as if parsing it is hard...
   */
  #define PARSE_ZOFS(p, sym) do { \
@@ -95,7 +95,7 @@ index 7a049e8324f1..1a25ba2a3921 100644
  
  	file = fopen(fname, "r");
  	if (!file)
-@@ -352,7 +357,7 @@ int main(int argc, char ** argv)
+@@ -353,7 +358,7 @@ int main(int argc, char ** argv)
  	file = fopen(argv[1], "r");
  	if (!file)
  		die("Unable to open `%s': %m", argv[1]);
@@ -104,7 +104,7 @@ index 7a049e8324f1..1a25ba2a3921 100644
  	if (ferror(file))
  		die("read-error on `setup'");
  	if (c < 1024)
-@@ -364,11 +369,11 @@ int main(int argc, char ** argv)
+@@ -365,11 +370,11 @@ int main(int argc, char ** argv)
  	c += reserve_pecoff_reloc_section(c);
  
  	/* Pad unused space with zeros */
@@ -118,7 +118,7 @@ index 7a049e8324f1..1a25ba2a3921 100644
  
  	update_pecoff_setup_and_reloc(i);
  
-@@ -383,7 +388,7 @@ int main(int argc, char ** argv)
+@@ -384,7 +389,7 @@ int main(int argc, char ** argv)
  		die("Unable to open `%s': %m", argv[2]);
  	if (fstat(fd, &sb))
  		die("Unable to stat `%s': %m", argv[2]);
@@ -127,7 +127,7 @@ index 7a049e8324f1..1a25ba2a3921 100644
  	printf("System is %d kB\n", (sz+1023)/1024);
  	kernel = mmap(NULL, sz, PROT_READ, MAP_SHARED, fd, 0);
  	if (kernel == MAP_FAILED)
-@@ -392,7 +397,7 @@ int main(int argc, char ** argv)
+@@ -393,7 +398,7 @@ int main(int argc, char ** argv)
  	sys_size = (sz + 15 + 4) / 16;
  
  	/* Patch the setup code with the appropriate size parameters */
@@ -1085,10 +1085,10 @@ index 866369f10ff8..224c7e065bee 100644
  					seed = tmp;
  				}
 diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 297b079ae4d9..fc2c1e709b3e 100644
+index 716c59977992..de975ed9c224 100644
 --- a/scripts/kconfig/confdata.c
 +++ b/scripts/kconfig/confdata.c
-@@ -209,7 +209,7 @@ static int add_byte(int c, char **lineptr, size_t slen, size_t *n)
+@@ -212,7 +212,7 @@ static int add_byte(int c, char **lineptr, size_t slen, size_t *n)
  		*n = new_size;
  	}
  
@@ -1097,7 +1097,7 @@ index 297b079ae4d9..fc2c1e709b3e 100644
  
  	return 0;
  }
-@@ -234,7 +234,7 @@ static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream)
+@@ -237,7 +237,7 @@ static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream)
  			*lineptr = line;
  			if (slen == 0)
  				return -1;
@@ -1106,7 +1106,7 @@ index 297b079ae4d9..fc2c1e709b3e 100644
  		default:
  			if (add_byte(c, &line, slen, n) < 0)
  				goto e_out;
-@@ -758,7 +758,7 @@ int conf_write(const char *name)
+@@ -761,7 +761,7 @@ int conf_write(const char *name)
  			strcat(dirname, "/");
  			basename = conf_get_configname();
  		} else if ((slash = strrchr(name, '/'))) {
@@ -1115,7 +1115,7 @@ index 297b079ae4d9..fc2c1e709b3e 100644
  			memcpy(dirname, name, size);
  			dirname[size] = 0;
  			if (slash[1])
-@@ -910,7 +910,7 @@ static int conf_split_config(void)
+@@ -913,7 +913,7 @@ static int conf_split_config(void)
  		s = sym->name;
  		d = path;
  		while ((c = *s++)) {
@@ -1124,7 +1124,7 @@ index 297b079ae4d9..fc2c1e709b3e 100644
  			*d++ = (c == '_') ? '/' : c;
  		}
  		strcpy(d, ".h");
-@@ -1137,7 +1137,7 @@ bool conf_set_all_new_symbols(enum conf_def_mode mode)
+@@ -1140,7 +1140,7 @@ bool conf_set_all_new_symbols(enum conf_def_mode mode)
  		n = 0;
  		while( env && *env ) {
  			char *endp;
@@ -1147,10 +1147,10 @@ index cbf4996dd9c1..db5813106674 100644
  	}
  
 diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
-index 59f0d152667a..facfc99caa52 100644
+index 36c54df2ccbd..e8b0cd2ae19e 100644
 --- a/scripts/kconfig/menu.c
 +++ b/scripts/kconfig/menu.c
-@@ -113,7 +113,7 @@ void menu_set_type(int type)
+@@ -114,7 +114,7 @@ void menu_set_type(int type)
  {
  	struct symbol *sym = current_entry->sym;
  

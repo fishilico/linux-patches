@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 28 Feb 2015 12:21:14 +0800
+Subject: [PATCH] {MAYBE UPS} remove useless const specifiers
+
+This fixes -Wignored-qualifiers warnings
+---
+ drivers/block/rsxx/core.c     | 2 +-
+ drivers/gpu/drm/imx/imx-tve.c | 2 +-
+ drivers/iio/dac/ad5064.c      | 2 +-
+ drivers/mfd/omap-usb-host.c   | 2 +-
+ drivers/perf/arm_pmu.c        | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/block/rsxx/core.c b/drivers/block/rsxx/core.c
+index 34997df132e2..1caee0be8684 100644
+--- a/drivers/block/rsxx/core.c
++++ b/drivers/block/rsxx/core.c
+@@ -405,7 +405,7 @@ static irqreturn_t rsxx_isr(int irq, void *pdata)
+ }
+ 
+ /*----------------- Card Event Handler -------------------*/
+-static const char * const rsxx_card_state_to_str(unsigned int state)
++static const char * rsxx_card_state_to_str(unsigned int state)
+ {
+ 	static const char * const state_strings[] = {
+ 		"Unknown", "Shutdown", "Starting", "Formatting",
+diff --git a/drivers/gpu/drm/imx/imx-tve.c b/drivers/gpu/drm/imx/imx-tve.c
+index baf788121287..0059c8eef35a 100644
+--- a/drivers/gpu/drm/imx/imx-tve.c
++++ b/drivers/gpu/drm/imx/imx-tve.c
+@@ -537,7 +537,7 @@ static const char * const imx_tve_modes[] = {
+ 	[TVE_MODE_VGA] = "vga",
+ };
+ 
+-static const int of_get_tve_mode(struct device_node *np)
++static int of_get_tve_mode(struct device_node *np)
+ {
+ 	const char *bm;
+ 	int ret, i;
+diff --git a/drivers/iio/dac/ad5064.c b/drivers/iio/dac/ad5064.c
+index 6803e4a137cd..877afa10d786 100644
+--- a/drivers/iio/dac/ad5064.c
++++ b/drivers/iio/dac/ad5064.c
+@@ -738,7 +738,7 @@ static const char * const ad5064_vref_names[] = {
+ 	"vrefD",
+ };
+ 
+-static const char * const ad5064_vref_name(struct ad5064_state *st,
++static const char * ad5064_vref_name(struct ad5064_state *st,
+ 	unsigned int vref)
+ {
+ 	return st->chip_info->shared_vref ? "vref" : ad5064_vref_names[vref];
+diff --git a/drivers/mfd/omap-usb-host.c b/drivers/mfd/omap-usb-host.c
+index 1d924d1533c0..7aab376ecb84 100644
+--- a/drivers/mfd/omap-usb-host.c
++++ b/drivers/mfd/omap-usb-host.c
+@@ -162,7 +162,7 @@ static const char * const port_modes[] = {
+  * provided port mode string as per the port_modes table.
+  * If no match is found it returns -ENODEV
+  */
+-static const int omap_usbhs_get_dt_port_mode(const char *mode)
++static int omap_usbhs_get_dt_port_mode(const char *mode)
+ {
+ 	int i;
+ 
+diff --git a/drivers/perf/arm_pmu.c b/drivers/perf/arm_pmu.c
+index 140436a046c0..a68a4fcd0c19 100644
+--- a/drivers/perf/arm_pmu.c
++++ b/drivers/perf/arm_pmu.c
+@@ -979,7 +979,7 @@ int arm_pmu_device_probe(struct platform_device *pdev,
+ 			 const struct pmu_probe_info *probe_table)
+ {
+ 	const struct of_device_id *of_id;
+-	const int (*init_fn)(struct arm_pmu *);
++	int (*init_fn)(struct arm_pmu *);
+ 	struct device_node *node = pdev->dev.of_node;
+ 	struct arm_pmu *pmu;
+ 	int ret = -ENODEV;
+-- 

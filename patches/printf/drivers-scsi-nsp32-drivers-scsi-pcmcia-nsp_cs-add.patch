@@ -1,0 +1,72 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 25 Jun 2016 18:28:55 +0200
+Subject: [PATCH] {PRINTF} drivers/scsi/nsp32, drivers/scsi/pcmcia/nsp_cs: add
+ __printf attribute to messaging functions
+
+---
+ drivers/scsi/nsp32.c         | 10 ++++++----
+ drivers/scsi/pcmcia/nsp_cs.c |  6 ++++--
+ 2 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/scsi/nsp32.c b/drivers/scsi/nsp32.c
+index 1ce5591335a7..fc191597eaa2 100644
+--- a/drivers/scsi/nsp32.c
++++ b/drivers/scsi/nsp32.c
+@@ -257,9 +257,9 @@ static        void nsp32_prom_set      (nsp32_hw_data *, int, int);
+ static        int  nsp32_prom_get      (nsp32_hw_data *, int);
+ 
+ /* debug/warning/info message */
+-static void nsp32_message (const char *, int, char *, char *, ...);
++static void nsp32_message (const char *, int, char *, const char *, ...);
+ #ifdef NSP32_DEBUG
+-static void nsp32_dmessage(const char *, int, int,    char *, ...);
++static void nsp32_dmessage(const char *, int, int,    const char *, ...);
+ #endif
+ 
+ /*
+@@ -321,7 +321,8 @@ static struct scsi_host_template nsp32_template = {
+ 
+ #define NSP32_DEBUG_BUF_LEN		100
+ 
+-static void nsp32_message(const char *func, int line, char *type, char *fmt, ...)
++static __printf(4, 5)
++void nsp32_message(const char *func, int line, char *type, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	char buf[NSP32_DEBUG_BUF_LEN];
+@@ -338,7 +339,8 @@ static void nsp32_message(const char *func, int line, char *type, char *fmt, ...
+ }
+ 
+ #ifdef NSP32_DEBUG
+-static void nsp32_dmessage(const char *func, int line, int mask, char *fmt, ...)
++static __printf(4, 5)
++void nsp32_dmessage(const char *func, int line, int mask, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	char buf[NSP32_DEBUG_BUF_LEN];
+diff --git a/drivers/scsi/pcmcia/nsp_cs.c b/drivers/scsi/pcmcia/nsp_cs.c
+index 5fb6eefc6541..33b982be9763 100644
+--- a/drivers/scsi/pcmcia/nsp_cs.c
++++ b/drivers/scsi/pcmcia/nsp_cs.c
+@@ -136,7 +136,8 @@ static inline void nsp_inc_resid(struct scsi_cmnd *SCpnt, int residInc)
+ 	scsi_set_resid(SCpnt, scsi_get_resid(SCpnt) + residInc);
+ }
+ 
+-static void nsp_cs_message(const char *func, int line, char *type, char *fmt, ...)
++static __printf(4, 5)
++void nsp_cs_message(const char *func, int line, char *type, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	char buf[NSP_DEBUG_BUF_LEN];
+@@ -153,7 +154,8 @@ static void nsp_cs_message(const char *func, int line, char *type, char *fmt, ..
+ }
+ 
+ #ifdef NSP_DEBUG
+-static void nsp_cs_dmessage(const char *func, int line, int mask, char *fmt, ...)
++static __printf(4, 5)
++void nsp_cs_dmessage(const char *func, int line, int mask, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	char buf[NSP_DEBUG_BUF_LEN];
+-- 
