@@ -26,28 +26,43 @@ cd "$(dirname -- "$0")" || exit $?
 JOBS="${JOBS:-4}"
 KBUILD_OUTPUT="/tmp/makepkg-$(id -nu)/gitlinux-patched"
 
+# Helper functions for xterm terminal
+msg_green() {
+    printf '\033[1;32m%s\033[m\n' "$*"
+}
+msg_red() {
+    printf '\033[1;31m%s\033[m\n' "$*"
+}
+set_title() {
+    printf '\033]0;%s\007' "$*"
+}
+
 # First compile with gcc
 rm -r "$KBUILD_OUTPUT"
+set_title 'Linux:gcc'
 if ! HOSTCC=gcc CC=gcc ./make_allmodconfig.sh "-j$JOBS" -k
 then
-    printf '\033[1;31mCompiling with gcc failed.\033[m\n'
+    msg_red 'Compiling with gcc failed.'
     HOSTCC=gcc CC=gcc ./make_allmodconfig.sh -k || exit $?
     # fall-through if the second compilation succeeded
 fi
 
 # Then recompile with clang
 rm -r "$KBUILD_OUTPUT"
-if ! ./make_allmodconfig.sh "-j$JOBS" -k
+set_title 'Linux:clang'
+if ! HOSTCC=clang CC=clang ./make_allmodconfig.sh "-j$JOBS" -k
 then
-    printf '\033[1;31mCompiling with clang failed.\033[m\n'
-    ./make_allmodconfig.sh -k || exit $?
+    msg_red 'Compiling with clang failed.'
+    HOSTCC=clang CC=clang ./make_allmodconfig.sh -k || exit $?
     # fall-through if the second compilation succeeded
 fi
 
-printf '\033[1;32mCompiling with gcc and clang succeded :)\033[m\n'
+msg_green 'Compiling with gcc and clang succeded :)'
 
 LOGFILE="make.log_clang_$(date '+%Y-%m-%d')"
 echo "Compiling with clang and logging to $LOGFILE"
 rm -r "$KBUILD_OUTPUT"
+set_title 'Linux:clang with log'
 ./make_allmodconfig.sh -j1 -k > "$LOGFILE" 2>&1 || exit $?
-printf '\033[1;32mAll done :)\033[m\n'
+msg_green 'All done :)'
+set_title 'Linux:done :)'
