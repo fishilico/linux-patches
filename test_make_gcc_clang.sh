@@ -37,25 +37,33 @@ set_title() {
     printf '\033]0;%s\007' "$*"
 }
 
+# Run the build test named after $1
+do_build_test() {
+    rm -r "$KBUILD_OUTPUT"
+    set_title "Linux:$1"
+    if ! ./make_allmodconfig.sh "-j$JOBS" -k
+    then
+        msg_red "Compiling with $1 failed."
+        ./make_allmodconfig.sh -k || exit $?
+        # fall-through if the second compilation succeeded
+    fi
+}
+
 # First compile with gcc
-rm -r "$KBUILD_OUTPUT"
-set_title 'Linux:gcc'
-if ! HOSTCC=gcc HOSTCXX=g++ CC=gcc ./make_allmodconfig.sh "-j$JOBS" -k
-then
-    msg_red 'Compiling with gcc failed.'
-    HOSTCC=gcc CC=gcc ./make_allmodconfig.sh -k || exit $?
-    # fall-through if the second compilation succeeded
-fi
+(
+    export CC=gcc
+    export HOSTCC=gcc
+    export HOSTCXX=g++
+    do_build_test gcc
+) || exit $?
 
 # Then recompile with clang
-rm -r "$KBUILD_OUTPUT"
-set_title 'Linux:clang'
-if ! HOSTCC=clang HOSTCXX=clang++ CC=clang ./make_allmodconfig.sh "-j$JOBS" -k
-then
-    msg_red 'Compiling with clang failed.'
-    HOSTCC=clang CC=clang ./make_allmodconfig.sh -k || exit $?
-    # fall-through if the second compilation succeeded
-fi
+(
+    export CC=clang
+    export HOSTCC=clang
+    export HOSTCXX=clang++
+    do_build_test clang
+) || exit $?
 
 msg_green 'Compiling with gcc and clang succeded :)'
 
