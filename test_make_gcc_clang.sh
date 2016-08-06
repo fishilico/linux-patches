@@ -40,7 +40,7 @@ set_title() {
 # First compile with gcc
 rm -r "$KBUILD_OUTPUT"
 set_title 'Linux:gcc'
-if ! HOSTCC=gcc CC=gcc ./make_allmodconfig.sh "-j$JOBS" -k
+if ! HOSTCC=gcc HOSTCXX=g++ CC=gcc ./make_allmodconfig.sh "-j$JOBS" -k
 then
     msg_red 'Compiling with gcc failed.'
     HOSTCC=gcc CC=gcc ./make_allmodconfig.sh -k || exit $?
@@ -50,7 +50,7 @@ fi
 # Then recompile with clang
 rm -r "$KBUILD_OUTPUT"
 set_title 'Linux:clang'
-if ! HOSTCC=clang CC=clang ./make_allmodconfig.sh "-j$JOBS" -k
+if ! HOSTCC=clang HOSTCXX=clang++ CC=clang ./make_allmodconfig.sh "-j$JOBS" -k
 then
     msg_red 'Compiling with clang failed.'
     HOSTCC=clang CC=clang ./make_allmodconfig.sh -k || exit $?

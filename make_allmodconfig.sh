@@ -30,6 +30,10 @@ export KBUILD_OUTPUT="/tmp/makepkg-$(id -nu)/gitlinux-patched"
 export CC="${CC:-clang}"
 export HOSTCC="${HOSTCC:-clang}"
 
+# Guess HOSTCXX from HOSTCC: gcc->g++ and clang->clang++
+HOSTCXX_FROM_HOSTCC="$(echo "$HOSTCC" | sed 's/gcc/g/')++"
+export HOSTCXX="${HOSTCXX:-$HOSTCXX_FROM_HOSTCC}"
+
 # See also scripts/Makefile.extrawarn for extra warnings enabled with "make W=1, 2 or 3"
 
 export KCFLAGS='-Wall -Wextra -Werror'
@@ -244,6 +248,13 @@ then
     echo 'CONFIG_RCU_BOOST_DELAY=1' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_DEBUG_PREEMPT=y' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_PREEMPT_TRACER=y' >> "$KBUILD_OUTPUT/.config"
+
+    if "$CC" -v 2>&1 | grep -q clang
+    then
+        # Disable GCC plugins when using clang
+        echo '# CONFIG_GCC_PLUGINS is not set' >> "$KBUILD_OUTPUT/.config"
+        echo '# CONFIG_KCOV is not set' >> "$KBUILD_OUTPUT/.config"
+    fi
 
     # Merge options
     make HOSTCC="$HOSTCC" HOSTCFLAGS="$HOSTCFLAGS" CC="$CC" oldconfig
