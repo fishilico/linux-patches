@@ -65,6 +65,20 @@ do_build_test() {
     do_build_test clang
 ) || exit $?
 
+# Now compile for ARM architecture if the compiler is found
+if [ "$(uname -m)" = "x86_64" ] && which arm-none-eabi-gcc > /dev/null 2>&1
+then
+    (
+        export ARCH=arm
+        export CROSS_COMPILE=arm-none-eabi-
+        # Define __linux__ in the compiler
+        export CC='arm-none-eabi-gcc -D__linux__'
+        export HOSTCC=gcc
+        export HOSTCXX=g++
+        do_build_test arm-gcc
+    ) || exit $?
+fi
+
 msg_green 'Compiling with gcc and clang succeded :)'
 
 LOGFILE="make.log_clang_$(date '+%Y-%m-%d')"

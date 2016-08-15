@@ -37,7 +37,6 @@ export HOSTCXX="${HOSTCXX:-$HOSTCXX_FROM_HOSTCC}"
 # See also scripts/Makefile.extrawarn for extra warnings enabled with "make W=1, 2 or 3"
 
 export KCFLAGS='-Wall -Wextra -Werror'
-KCFLAGS="$KCFLAGS -Wcast-align"
 KCFLAGS="$KCFLAGS -Wfloat-equal"
 KCFLAGS="$KCFLAGS -Wformat=2"
 KCFLAGS="$KCFLAGS -Wjump-misses-init"
@@ -49,6 +48,7 @@ KCFLAGS="$KCFLAGS -Wstrict-prototypes"
 KCFLAGS="$KCFLAGS -Wtrampolines"
 KCFLAGS="$KCFLAGS -Wunknown-pragmas"
 KCFLAGS="$KCFLAGS -Wno-aggregate-return" # Linux ktime_get returns a structure
+KCFLAGS="$KCFLAGS -Wno-cast-align" # Many struct casts change the alignment
 KCFLAGS="$KCFLAGS -Wno-deprecated-declarations"
 KCFLAGS="$KCFLAGS -Wno-empty-body" # if (conf) print_debug(...); with empty print_debug
 KCFLAGS="$KCFLAGS -Wno-format-nonliteral"
@@ -64,6 +64,7 @@ KCFLAGS="$KCFLAGS -Wno-pointer-arith" # Linux does arithmetic on void pointers
 KCFLAGS="$KCFLAGS -Wno-pointer-sign" # Many functions implicitly cast pointers of different signedness
 KCFLAGS="$KCFLAGS -Wno-redundant-decls" # Some headers redefine things
 KCFLAGS="$KCFLAGS -Wno-shadow" # The kernel redefines built-in functions like ffs
+KCFLAGS="$KCFLAGS -Wno-sign-compare" # There are many comparaisons between signed and unsigned integers
 KCFLAGS="$KCFLAGS -Wno-trigraphs" # Ignore trigraphs like "??)"
 KCFLAGS="$KCFLAGS -Wno-type-limits" # Unsigned integers >= 0
 KCFLAGS="$KCFLAGS -Wno-unused-but-set-variable" # Many variables are never used
@@ -81,7 +82,6 @@ then
     KCFLAGS="$KCFLAGS -Wno-c11-extensions" # Use C11 features
     KCFLAGS="$KCFLAGS -Wno-c99-extensions" # Use C99 features
     KCFLAGS="$KCFLAGS -Wno-c++-compat" # Empty structs exist
-    KCFLAGS="$KCFLAGS -Wno-cast-align"
     KCFLAGS="$KCFLAGS -Wno-class-varargs" # net/9p passes kuid_t/kgid_t in varargs
     KCFLAGS="$KCFLAGS -Wno-constant-logical-operand" # Allow using CONFIG_... in logical expressions
     KCFLAGS="$KCFLAGS -Wno-covered-switch-default" # Covered switch may use "default:BUG();"
@@ -126,7 +126,6 @@ then
     KCFLAGS="$KCFLAGS -Wno-conditional-uninitialized"
     KCFLAGS="$KCFLAGS -Wno-parentheses-equality"
     KCFLAGS="$KCFLAGS -Wno-shorten-64-to-32"
-    KCFLAGS="$KCFLAGS -Wno-sign-compare"
     KCFLAGS="$KCFLAGS -Wno-sign-conversion"
     KCFLAGS="$KCFLAGS -Wno-unneeded-internal-declaration"
     KCFLAGS="$KCFLAGS -Wno-unused-macros" # TODO, macros defined in C files but not used
