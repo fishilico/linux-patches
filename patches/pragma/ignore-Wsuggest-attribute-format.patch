@@ -4,7 +4,7 @@ Date: Sat, 4 Jul 2015 11:50:02 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
 
 ---
- drivers/infiniband/hw/hfi1/trace.h                                  | 3 +++
+ drivers/infiniband/hw/hfi1/trace_dbg.h                              | 3 +++
  drivers/net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h       | 6 ++++++
  .../wireless/broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h | 6 ++++++
  drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h               | 6 ++++++
@@ -12,11 +12,11 @@ Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
  lib/vsprintf.c                                                      | 3 +++
  6 files changed, 28 insertions(+)
 
-diff --git a/drivers/infiniband/hw/hfi1/trace.h b/drivers/infiniband/hw/hfi1/trace.h
-index 28c1d0832886..efa124d3e1ed 100644
---- a/drivers/infiniband/hw/hfi1/trace.h
-+++ b/drivers/infiniband/hw/hfi1/trace.h
-@@ -1280,6 +1280,8 @@ TRACE_EVENT(hfi1_interrupt,
+diff --git a/drivers/infiniband/hw/hfi1/trace_dbg.h b/drivers/infiniband/hw/hfi1/trace_dbg.h
+index 0e7d929530c5..1472e5a8a34d 100644
+--- a/drivers/infiniband/hw/hfi1/trace_dbg.h
++++ b/drivers/infiniband/hw/hfi1/trace_dbg.h
+@@ -63,6 +63,8 @@
  
  #define MAX_MSG_LEN 512
  
@@ -25,7 +25,7 @@ index 28c1d0832886..efa124d3e1ed 100644
  DECLARE_EVENT_CLASS(hfi1_trace_template,
  		    TP_PROTO(const char *function, struct va_format *vaf),
  		    TP_ARGS(function, vaf),
-@@ -1297,6 +1299,7 @@ DECLARE_EVENT_CLASS(hfi1_trace_template,
+@@ -80,6 +82,7 @@ DECLARE_EVENT_CLASS(hfi1_trace_template,
  			      __get_str(function),
  			      __get_str(msg))
  );
@@ -142,10 +142,10 @@ index 5dfc9295a7e0..ebf1fd43e63f 100644
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 8aa74497cc5a..0e4ad02955f5 100644
+index ca8cea1ef673..a3a24ad51376 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -479,6 +479,9 @@ struct warn_args {
+@@ -480,6 +480,9 @@ struct warn_args {
  	va_list args;
  };
  
@@ -155,7 +155,7 @@ index 8aa74497cc5a..0e4ad02955f5 100644
  void __warn(const char *file, int line, void *caller, unsigned taint,
  	    struct pt_regs *regs, struct warn_args *args)
  {
-@@ -520,6 +523,7 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -521,6 +524,7 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  	/* Just a warning, don't kill lockdep. */
  	add_taint(taint, LOCKDEP_STILL_OK);
  }
@@ -164,7 +164,7 @@ index 8aa74497cc5a..0e4ad02955f5 100644
  #ifdef WANT_WARN_ON_SLOWPATH
  void warn_slowpath_fmt(const char *file, int line, const char *fmt, ...)
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 0967771d8f7f..a985c1685a91 100644
+index e8fc2abca696..2a042c804df0 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
 @@ -1652,8 +1652,11 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,

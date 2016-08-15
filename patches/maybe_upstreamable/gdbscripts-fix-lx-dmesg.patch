@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 6 Aug 2016 11:16:41 +0200
+Subject: [PATCH] {MAYBE UPS} gdbscripts: fix lx-dmesg
+
+log_buf variable is ambiguous as it is used in several modules
+---
+ scripts/gdb/linux/dmesg.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/gdb/linux/dmesg.py b/scripts/gdb/linux/dmesg.py
+index f9b92ece7834..dc04b0581c4a 100644
+--- a/scripts/gdb/linux/dmesg.py
++++ b/scripts/gdb/linux/dmesg.py
+@@ -23,7 +23,7 @@ class LxDmesg(gdb.Command):
+         super(LxDmesg, self).__init__("lx-dmesg", gdb.COMMAND_DATA)
+ 
+     def invoke(self, arg, from_tty):
+-        log_buf_addr = int(str(gdb.parse_and_eval("log_buf")).split()[0], 16)
++        log_buf_addr = int(str(gdb.parse_and_eval("(char*)__log_buf")).split()[0], 16)
+         log_first_idx = int(gdb.parse_and_eval("log_first_idx"))
+         log_next_idx = int(gdb.parse_and_eval("log_next_idx"))
+         log_buf_len = int(gdb.parse_and_eval("log_buf_len"))
+-- 

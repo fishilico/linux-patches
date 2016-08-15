@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 6 Aug 2016 11:25:31 +0200
+Subject: [PATCH] {NOT UPSTREAMABLE} xgene: silent gcc about false-positive
+ -Wsometimes-uninitialized
+
+    drivers/net/ethernet/apm/xgene/xgene_enet_hw.c:
+    In function 'xgene_enet_phy_connect':
+    drivers/net/ethernet/apm/xgene/xgene_enet_hw.c:802:23:
+    error: 'phy_dev' may be used uninitialized in this function
+    [-Werror=maybe-uninitialized]
+      phy_dev->advertising = phy_dev->supported;
+      ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~
+---
+ drivers/net/ethernet/apm/xgene/xgene_enet_hw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/apm/xgene/xgene_enet_hw.c b/drivers/net/ethernet/apm/xgene/xgene_enet_hw.c
+index 37a0f463b8de..fe0a906de3d2 100644
+--- a/drivers/net/ethernet/apm/xgene/xgene_enet_hw.c
++++ b/drivers/net/ethernet/apm/xgene/xgene_enet_hw.c
+@@ -754,7 +754,7 @@ int xgene_enet_phy_connect(struct net_device *ndev)
+ {
+ 	struct xgene_enet_pdata *pdata = netdev_priv(ndev);
+ 	struct device_node *np;
+-	struct phy_device *phy_dev;
++	struct phy_device *phy_dev = NULL /* gcc false positive */;
+ 	struct device *dev = &pdata->pdev->dev;
+ 	int i;
+ 
+-- 

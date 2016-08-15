@@ -18,11 +18,12 @@ Subject: [PATCH] {MAYBE UPS} Eradicate -Wself-assign
  drivers/scsi/bfa/bfa_fcbuild.c                      | 18 +++++-------------
  drivers/scsi/qla2xxx/qla_mbx.c                      |  3 +--
  drivers/staging/rtl8723au/hal/rtl8723a_rf6052.c     |  4 ++--
+ drivers/usb/gadget/udc/core.c                       |  4 ++--
  drivers/usb/serial/iuu_phoenix.c                    |  1 -
  drivers/video/fbdev/vga16fb.c                       |  1 -
  fs/ubifs/recovery.c                                 |  1 -
  fs/ubifs/scan.c                                     |  1 -
- 18 files changed, 15 insertions(+), 41 deletions(-)
+ 19 files changed, 17 insertions(+), 43 deletions(-)
 
 diff --git a/drivers/media/dvb-frontends/dib7000p.c b/drivers/media/dvb-frontends/dib7000p.c
 index 51d37a02dd46..af79b036fa82 100644
@@ -190,7 +191,7 @@ index 6a9d474b08b2..c393fdd2db33 100644
  			offset += 0x100;
  		else
 diff --git a/drivers/net/wireless/realtek/rtlwifi/rtl8192cu/rf.c b/drivers/net/wireless/realtek/rtlwifi/rtl8192cu/rf.c
-index 5624ade92cc0..c2a156a8acec 100644
+index ec2ea56f7933..fdbd35954d15 100644
 --- a/drivers/net/wireless/realtek/rtlwifi/rtl8192cu/rf.c
 +++ b/drivers/net/wireless/realtek/rtlwifi/rtl8192cu/rf.c
 @@ -304,9 +304,6 @@ static void _rtl92c_get_txpower_writeval_by_regulatory(struct ieee80211_hw *hw,
@@ -281,10 +282,10 @@ index b8dadc9cc993..133e82e5befd 100644
  		return FC_PARSE_FAILURE;
  
 diff --git a/drivers/scsi/qla2xxx/qla_mbx.c b/drivers/scsi/qla2xxx/qla_mbx.c
-index 968b84613096..45fda1cdbf46 100644
+index 23698c998699..edfe5bd3ad31 100644
 --- a/drivers/scsi/qla2xxx/qla_mbx.c
 +++ b/drivers/scsi/qla2xxx/qla_mbx.c
-@@ -1209,7 +1209,7 @@ qla2x00_abort_command(srb_t *sp)
+@@ -1237,7 +1237,7 @@ qla2x00_abort_command(srb_t *sp)
  }
  
  int
@@ -293,7 +294,7 @@ index 968b84613096..45fda1cdbf46 100644
  {
  	int rval, rval2;
  	mbx_cmd_t  mc;
-@@ -1218,7 +1218,6 @@ qla2x00_abort_target(struct fc_port *fcport, uint64_t l, int tag)
+@@ -1246,7 +1246,6 @@ qla2x00_abort_target(struct fc_port *fcport, uint64_t l, int tag)
  	struct req_que *req;
  	struct rsp_que *rsp;
  
@@ -316,6 +317,28 @@ index 24c0ff3d82bc..554cc0762580 100644
  		*(pOutWriteVal + rf) = writeVal;
  	}
  }
+diff --git a/drivers/usb/gadget/udc/core.c b/drivers/usb/gadget/udc/core.c
+index ff8685ea7219..9cb0c2d6a762 100644
+--- a/drivers/usb/gadget/udc/core.c
++++ b/drivers/usb/gadget/udc/core.c
+@@ -108,7 +108,7 @@ int usb_ep_enable(struct usb_ep *ep)
+ 
+ 	ret = ep->ops->enable(ep, ep->desc);
+ 	if (ret) {
+-		ret = ret;
++		/* ret = ret; */
+ 		goto out;
+ 	}
+ 
+@@ -142,7 +142,7 @@ int usb_ep_disable(struct usb_ep *ep)
+ 
+ 	ret = ep->ops->disable(ep);
+ 	if (ret) {
+-		ret = ret;
++		/* ret = ret; */
+ 		goto out;
+ 	}
+ 
 diff --git a/drivers/usb/serial/iuu_phoenix.c b/drivers/usb/serial/iuu_phoenix.c
 index 344b4eea4bd5..afc6e2674454 100644
 --- a/drivers/usb/serial/iuu_phoenix.c

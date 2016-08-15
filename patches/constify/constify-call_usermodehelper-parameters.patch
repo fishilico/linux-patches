@@ -31,7 +31,7 @@ approach may be better to have such a patch upstreamed one day.
  22 files changed, 64 insertions(+), 59 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index b9dcae5d1258..089d968e4e29 100644
+index 5a1216cfd9f1..b996f22b8c4d 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce.c
 @@ -1379,7 +1379,7 @@ static void mce_timer_delete_all(void)
@@ -44,13 +44,13 @@ index b9dcae5d1258..089d968e4e29 100644
  
  static DECLARE_WORK(mce_trigger_work, mce_do_trigger);
 diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
-index 0bac9c8246bc..6c3e7793a870 100644
+index f35db29cac76..0ec000f5185f 100644
 --- a/drivers/block/drbd/drbd_nl.c
 +++ b/drivers/block/drbd/drbd_nl.c
 @@ -344,7 +344,7 @@ int drbd_khelper(struct drbd_device *device, char *cmd)
  			 (char[60]) { }, /* address */
  			NULL };
- 	char mb[12];
+ 	char mb[14];
 -	char *argv[] = {usermode_helper, cmd, mb, NULL };
 +	const char *const argv[] = {usermode_helper, cmd, mb, NULL };
  	struct drbd_connection *connection = first_peer_device(device)->connection;
@@ -65,7 +65,7 @@ index 0bac9c8246bc..6c3e7793a870 100644
  	if (ret)
  		drbd_warn(device, "helper command: %s %s %s exit code %u (0x%x)\n",
  				usermode_helper, cmd, mb,
-@@ -396,7 +396,7 @@ static int conn_khelper(struct drbd_connection *connection, char *cmd)
+@@ -396,7 +396,7 @@ enum drbd_peer_state conn_khelper(struct drbd_connection *connection, char *cmd)
  			 (char[60]) { }, /* address */
  			NULL };
  	char *resource_name = connection->resource->name;
@@ -74,7 +74,7 @@ index 0bac9c8246bc..6c3e7793a870 100644
  	int ret;
  
  	setup_khelper_env(connection, envp);
-@@ -406,7 +406,7 @@ static int conn_khelper(struct drbd_connection *connection, char *cmd)
+@@ -406,7 +406,7 @@ enum drbd_peer_state conn_khelper(struct drbd_connection *connection, char *cmd)
  	/* TODO: conn_bcast_event() ?? */
  	notify_helper(NOTIFY_CALL, NULL, connection, cmd, 0);
  
@@ -105,10 +105,10 @@ index 78dbc44540f6..7e90aca6045f 100644
  
  	/* set up arguments */
 diff --git a/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h b/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
-index 97c75b5241b0..2a6431f3849b 100644
+index 453095cdf2bb..25d3b6499e81 100644
 --- a/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
 +++ b/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
-@@ -173,7 +173,7 @@ do {								    \
+@@ -169,7 +169,7 @@ do {								    \
  #define ntohs(x) ___ntohs(x)
  #endif
  
@@ -118,10 +118,10 @@ index 97c75b5241b0..2a6431f3849b 100644
  void libcfs_debug_dumplog(void);
  int libcfs_debug_init(unsigned long bufsize);
 diff --git a/drivers/staging/lustre/lnet/libcfs/linux/linux-debug.c b/drivers/staging/lustre/lnet/libcfs/linux/linux-debug.c
-index 638e4b33d3a9..4607684fa282 100644
+index 435b784c52f8..f41b7ae77e20 100644
 --- a/drivers/staging/lustre/lnet/libcfs/linux/linux-debug.c
 +++ b/drivers/staging/lustre/lnet/libcfs/linux/linux-debug.c
-@@ -71,9 +71,9 @@ char lnet_debug_log_upcall[1024] = "/usr/lib/lustre/lnet_debug_log_upcall";
+@@ -67,9 +67,9 @@ char lnet_debug_log_upcall[1024] = "/usr/lib/lustre/lnet_debug_log_upcall";
   */
  void libcfs_run_debug_log_upcall(char *file)
  {
@@ -133,7 +133,7 @@ index 638e4b33d3a9..4607684fa282 100644
  		"HOME=/",
  		"PATH=/sbin:/bin:/usr/sbin:/usr/bin",
  		NULL};
-@@ -95,11 +95,11 @@ void libcfs_run_debug_log_upcall(char *file)
+@@ -91,11 +91,11 @@ void libcfs_run_debug_log_upcall(char *file)
  	}
  }
  
@@ -147,7 +147,7 @@ index 638e4b33d3a9..4607684fa282 100644
  		"HOME=/",
  		"PATH=/sbin:/bin:/usr/sbin:/usr/bin",
  		NULL};
-@@ -131,7 +131,7 @@ void libcfs_run_upcall(char **argv)
+@@ -127,7 +127,7 @@ void libcfs_run_upcall(char **argv)
  
  void libcfs_run_lbug_upcall(struct libcfs_debug_msg_data *msgdata)
  {
@@ -157,10 +157,10 @@ index 638e4b33d3a9..4607684fa282 100644
  
  	snprintf(buf, sizeof(buf), "%d", msgdata->msg_line);
 diff --git a/drivers/staging/lustre/lustre/obdclass/obd_config.c b/drivers/staging/lustre/lustre/obdclass/obd_config.c
-index cb1d65c3d95d..1fb9a41c8d80 100644
+index 0eab1236501b..ef2142e09bb7 100644
 --- a/drivers/staging/lustre/lustre/obdclass/obd_config.c
 +++ b/drivers/staging/lustre/lustre/obdclass/obd_config.c
-@@ -743,7 +743,7 @@ static int process_param2_config(struct lustre_cfg *lcfg)
+@@ -739,7 +739,7 @@ static int process_param2_config(struct lustre_cfg *lcfg)
  {
  	char *param = lustre_cfg_string(lcfg, 1);
  	char *upcall = lustre_cfg_string(lcfg, 2);
@@ -280,10 +280,10 @@ index 919efd4a1a23..8e07fe057b67 100644
  	argv[2] = login->uri;
  	argv[3] = "-o";
 diff --git a/fs/nfsd/nfs4layouts.c b/fs/nfsd/nfs4layouts.c
-index 953c0755cb37..b57926ef77d2 100644
+index 2be9602b0221..76c3562e918f 100644
 --- a/fs/nfsd/nfs4layouts.c
 +++ b/fs/nfsd/nfs4layouts.c
-@@ -599,13 +599,13 @@ nfsd4_cb_layout_fail(struct nfs4_layout_stateid *ls)
+@@ -609,13 +609,13 @@ nfsd4_cb_layout_fail(struct nfs4_layout_stateid *ls)
  {
  	struct nfs4_client *clp = ls->ls_stid.sc_client;
  	char addr_str[INET6_ADDRSTRLEN];
@@ -328,7 +328,7 @@ index 66eaeb1e8c2c..53bc93828088 100644
  	argv[2] = arg;
  	argv[3] = NULL;
 diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
-index 13219ed73e1d..338339b486c3 100644
+index 52c07346bea3..8a18dbc3d70d 100644
 --- a/fs/ocfs2/stackglue.c
 +++ b/fs/ocfs2/stackglue.c
 @@ -426,12 +426,12 @@ EXPORT_SYMBOL_GPL(ocfs2_cluster_disconnect);
@@ -406,10 +406,10 @@ index a1000ca29fc9..1452d3c32037 100644
  	int error;
  
 diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 75c0ff00aca6..f1329d0ab7d4 100644
+index d1c51b7f5221..541b4c18f8c1 100644
 --- a/kernel/cgroup.c
 +++ b/kernel/cgroup.c
-@@ -6039,7 +6039,7 @@ static void cgroup_release_agent(struct work_struct *work)
+@@ -6036,7 +6036,7 @@ static void cgroup_release_agent(struct work_struct *work)
  	struct cgroup *cgrp =
  		container_of(work, struct cgroup, release_agent_work);
  	char *pathbuf = NULL, *agentbuf = NULL, *path;
@@ -483,7 +483,7 @@ index bd30a973fe94..79301c8defe6 100644
  	} else {
  		ret = -ENOMEM;
 diff --git a/net/bridge/br_stp_if.c b/net/bridge/br_stp_if.c
-index 984d46263007..ba0a0a238270 100644
+index 341caa0ca63a..5718b80e15b5 100644
 --- a/net/bridge/br_stp_if.c
 +++ b/net/bridge/br_stp_if.c
 @@ -137,8 +137,8 @@ void br_stp_disable_port(struct net_bridge_port *p)
@@ -509,7 +509,7 @@ index 984d46263007..ba0a0a238270 100644
  
  	if (br->stp_enabled == BR_USER_STP) {
 diff --git a/security/keys/request_key.c b/security/keys/request_key.c
-index a29e3554751e..f2c797dd471d 100644
+index 43affcf10b22..0d5fec1731d4 100644
 --- a/security/keys/request_key.c
 +++ b/security/keys/request_key.c
 @@ -72,7 +72,8 @@ static void umh_keys_cleanup(struct subprocess_info *info)

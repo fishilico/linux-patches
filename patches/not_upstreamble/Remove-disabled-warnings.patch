@@ -6,30 +6,26 @@ Subject: [PATCH] {NOT UPSTREAMABLE} Remove disabled warnings
 Remove disabled warnings in Makefile so we have full control of the
 list of disabled warnings.
 ---
- Makefile                   | 20 +++++++++++---------
+ Makefile                   | 16 ++++++++--------
+ drivers/misc/cxl/Makefile  |  2 +-
+ kernel/trace/Makefile      |  4 ++--
  scripts/Makefile.extrawarn | 14 +++++++-------
- 2 files changed, 18 insertions(+), 16 deletions(-)
+ 4 files changed, 18 insertions(+), 18 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 66da9a38b13b..908a3c5cf0a5 100644
+index 70de1448c571..a95039ef43b3 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -621,10 +621,12 @@ include arch/$(SRCARCH)/Makefile
+@@ -620,7 +620,7 @@ ARCH_CFLAGS :=
+ include arch/$(SRCARCH)/Makefile
+ 
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
+-KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
++#KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
--KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
-+#KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
-+KBUILD_CFLAGS	+= -Os
- else
- ifdef CONFIG_PROFILE_ALL_BRANCHES
--KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,)
-+#KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,)
-+KBUILD_CFLAGS	+= -O2
- else
- KBUILD_CFLAGS   += -O2
- endif
-@@ -695,11 +697,11 @@ endif
+ KBUILD_CFLAGS	+= -Os
+@@ -683,11 +683,11 @@ KBUILD_CFLAGS += $(stackp-flag)
  ifeq ($(cc-name),clang)
  KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
  KBUILD_CPPFLAGS += $(call cc-option,-Wno-unknown-warning-option,)
@@ -45,7 +41,7 @@ index 66da9a38b13b..908a3c5cf0a5 100644
  # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
  # source of a reference will be _MergedGlobals and not on of the whitelisted names.
  # See modpost pattern 2
-@@ -709,8 +711,8 @@ else
+@@ -697,8 +697,8 @@ else
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.build)
@@ -56,7 +52,7 @@ index 66da9a38b13b..908a3c5cf0a5 100644
  endif
  
  ifdef CONFIG_FRAME_POINTER
-@@ -776,7 +778,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
+@@ -764,7 +764,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
  KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -65,6 +61,30 @@ index 66da9a38b13b..908a3c5cf0a5 100644
  
  # disable invalid "can't wrap" optimizations for signed / pointers
  KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
+diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
+index 56e9a4732ef0..46351ca0cf17 100644
+--- a/drivers/misc/cxl/Makefile
++++ b/drivers/misc/cxl/Makefile
+@@ -1,4 +1,4 @@
+-ccflags-y			:= $(call cc-disable-warning, unused-const-variable)
++#ccflags-y			:= $(call cc-disable-warning, unused-const-variable)
+ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
+ 
+ cxl-y				+= main.o file.o irq.o fault.o native.o
+diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+index d0a1617b52b4..250b1a0671a5 100644
+--- a/kernel/trace/Makefile
++++ b/kernel/trace/Makefile
+@@ -1,7 +1,7 @@
+ 
+ # We are fully aware of the dangers of __builtin_return_address()
+-FRAME_CFLAGS := $(call cc-disable-warning,frame-address)
+-KBUILD_CFLAGS += $(FRAME_CFLAGS)
++#FRAME_CFLAGS := $(call cc-disable-warning,frame-address)
++#KBUILD_CFLAGS += $(FRAME_CFLAGS)
+ 
+ # Do not instrument the tracer itself:
+ 
 diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
 index 53449a6ff6aa..0472b3987eb6 100644
 --- a/scripts/Makefile.extrawarn

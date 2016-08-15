@@ -1,23 +1,23 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
 Date: Fri, 16 Oct 2015 19:35:29 +0200
-Subject: [PATCH] {PRINTF} (BUG) drivers/gpu/drm/amd/scheduler/gpu_scheduler:
- fix potential format string vuln in ring name
+Subject: [PATCH] {PRINTF} drivers/gpu/drm/amd/scheduler/gpu_scheduler: silent
+ -Wformat-security
 
 ---
  drivers/gpu/drm/amd/scheduler/gpu_scheduler.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c b/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c
-index c16248cee779..c0348aaa0e55 100644
+index ef312bb75fda..9fa231f5db93 100644
 --- a/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c
 +++ b/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c
-@@ -555,7 +555,7 @@ int amd_sched_init(struct amd_gpu_scheduler *sched,
+@@ -627,7 +627,7 @@ int amd_sched_init(struct amd_gpu_scheduler *sched,
  	}
  
  	/* Each scheduler will run on a seperate kernel thread */
 -	sched->thread = kthread_run(amd_sched_main, sched, sched->name);
-+	sched->thread = kthread_run(amd_sched_main, sched, "%s", sched->name); /* printf format string bug in mainline kernels */
++	sched->thread = kthread_run(amd_sched_main, sched, "%s", sched->name); /* not a vulnerability because ring->name is initialized by callers of amdgpu_ring_init with strings without %s */
  	if (IS_ERR(sched->thread)) {
  		DRM_ERROR("Failed to create scheduler for %s.\n", name);
  		return PTR_ERR(sched->thread);

@@ -17,10 +17,10 @@ LLVM miss .altmacro support
  delete mode 100644 arch/x86/crypto/aes_ctrby8_avx-x86_64.S
 
 diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
-index b9b912a44d61..3e512bf99f48 100644
+index 34b3fa2889d1..c598042247f0 100644
 --- a/arch/x86/crypto/Makefile
 +++ b/arch/x86/crypto/Makefile
-@@ -85,7 +85,7 @@ ifeq ($(avx2_supported),yes)
+@@ -87,7 +87,7 @@ ifeq ($(avx2_supported),yes)
  endif
  
  aesni-intel-y := aesni-intel_asm.o aesni-intel_glue.o fpu.o
@@ -616,10 +616,10 @@ index a916c4a61165..000000000000
 -
 -ENDPROC(aes_ctr_enc_256_avx_by8)
 diff --git a/arch/x86/crypto/aesni-intel_glue.c b/arch/x86/crypto/aesni-intel_glue.c
-index 5b7fa1471007..772fe6a8c887 100644
+index 0ab5ee1c26af..a8a6eb56011f 100644
 --- a/arch/x86/crypto/aesni-intel_glue.c
 +++ b/arch/x86/crypto/aesni-intel_glue.c
-@@ -102,9 +102,6 @@ void crypto_fpu_exit(void);
+@@ -91,9 +91,6 @@ void crypto_fpu_exit(void);
  #define AVX_GEN4_OPTSIZE 4096
  
  #ifdef CONFIG_X86_64
@@ -629,7 +629,7 @@ index 5b7fa1471007..772fe6a8c887 100644
  asmlinkage void aesni_ctr_enc(struct crypto_aes_ctx *ctx, u8 *out,
  			      const u8 *in, unsigned int len, u8 *iv);
  
-@@ -155,12 +152,6 @@ asmlinkage void aesni_gcm_dec(void *ctx, u8 *out,
+@@ -144,12 +141,6 @@ asmlinkage void aesni_gcm_dec(void *ctx, u8 *out,
  
  
  #ifdef CONFIG_AS_AVX
@@ -642,7 +642,7 @@ index 5b7fa1471007..772fe6a8c887 100644
  /*
   * asmlinkage void aesni_gcm_precomp_avx_gen2()
   * gcm_data *my_ctx_data, context data
-@@ -483,25 +474,6 @@ static void ctr_crypt_final(struct crypto_aes_ctx *ctx,
+@@ -472,25 +463,6 @@ static void ctr_crypt_final(struct crypto_aes_ctx *ctx,
  	crypto_inc(ctrblk, AES_BLOCK_SIZE);
  }
  
@@ -668,7 +668,7 @@ index 5b7fa1471007..772fe6a8c887 100644
  static int ctr_crypt(struct blkcipher_desc *desc,
  		     struct scatterlist *dst, struct scatterlist *src,
  		     unsigned int nbytes)
-@@ -516,8 +488,8 @@ static int ctr_crypt(struct blkcipher_desc *desc,
+@@ -505,8 +477,8 @@ static int ctr_crypt(struct blkcipher_desc *desc,
  
  	kernel_fpu_begin();
  	while ((nbytes = walk.nbytes) >= AES_BLOCK_SIZE) {
@@ -679,7 +679,7 @@ index 5b7fa1471007..772fe6a8c887 100644
  		nbytes &= AES_BLOCK_SIZE - 1;
  		err = blkcipher_walk_done(desc, &walk, nbytes);
  	}
-@@ -1475,14 +1447,6 @@ static int __init aesni_init(void)
+@@ -1427,14 +1399,6 @@ static int __init aesni_init(void)
  		aesni_gcm_enc_tfm = aesni_gcm_enc;
  		aesni_gcm_dec_tfm = aesni_gcm_dec;
  	}

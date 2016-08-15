@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 6 Aug 2016 11:17:50 +0200
+Subject: [PATCH] {PRINTF} iio:trigger: do not use trigger name as a format
+ string
+
+kthread_run() expects a printf format string to build the thread name.
+---
+ drivers/iio/trigger/iio-trig-loop.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/iio/trigger/iio-trig-loop.c b/drivers/iio/trigger/iio-trig-loop.c
+index dc6be28f96fe..fdb5d056e37e 100644
+--- a/drivers/iio/trigger/iio-trig-loop.c
++++ b/drivers/iio/trigger/iio-trig-loop.c
+@@ -59,7 +59,7 @@ static int iio_loop_trigger_set_state(struct iio_trigger *trig, bool state)
+ 
+ 	if (state) {
+ 		loop_trig->task = kthread_run(iio_loop_thread,
+-					      trig, trig->name);
++					      trig, "%s", trig->name);
+ 		if (unlikely(IS_ERR(loop_trig->task))) {
+ 			dev_err(&trig->dev,
+ 				"failed to create trigger loop thread\n");
+-- 

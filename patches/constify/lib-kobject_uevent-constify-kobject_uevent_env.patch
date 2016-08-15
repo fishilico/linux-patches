@@ -39,10 +39,10 @@ approach may be better to have such a patch upstreamed one day.
  29 files changed, 38 insertions(+), 38 deletions(-)
 
 diff --git a/block/genhd.c b/block/genhd.c
-index 9f42526b4d62..d7bd77a16b3c 100644
+index fcd6d4fae657..2c9349bde437 100644
 --- a/block/genhd.c
 +++ b/block/genhd.c
-@@ -1362,7 +1362,7 @@ EXPORT_SYMBOL(put_disk);
+@@ -1363,7 +1363,7 @@ EXPORT_SYMBOL(put_disk);
  static void set_disk_ro_uevent(struct gendisk *gd, int ro)
  {
  	char event[] = "DISK_RO=1";
@@ -51,7 +51,7 @@ index 9f42526b4d62..d7bd77a16b3c 100644
  
  	if (!ro)
  		event[8] = '0';
-@@ -1653,7 +1653,7 @@ static void disk_check_events(struct disk_events *ev,
+@@ -1649,7 +1649,7 @@ static void disk_check_events(struct disk_events *ev,
  			      unsigned int *clearing_ptr)
  {
  	struct gendisk *disk = ev->disk;
@@ -61,10 +61,10 @@ index 9f42526b4d62..d7bd77a16b3c 100644
  	unsigned int events;
  	unsigned long intv;
 diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index e8e128dede29..b6bd7242aa14 100644
+index 0c00208b423e..71d21999b711 100644
 --- a/drivers/acpi/dock.c
 +++ b/drivers/acpi/dock.c
-@@ -300,7 +300,7 @@ static void dock_event(struct dock_station *ds, u32 event, int num)
+@@ -295,7 +295,7 @@ static void dock_event(struct dock_station *ds, u32 event, int num)
  {
  	struct device *dev = &ds->dock_device->dev;
  	char event_string[13];
@@ -87,10 +87,10 @@ index 97a14fe47de1..46220e61429e 100644
  	if (dev) {
  		if (dev->sdev)
 diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
-index 42758b52768c..f51ffd279f31 100644
+index 1523e05c46fc..5fd9b6714544 100644
 --- a/drivers/block/virtio_blk.c
 +++ b/drivers/block/virtio_blk.c
-@@ -341,7 +341,7 @@ static void virtblk_config_changed_work(struct work_struct *work)
+@@ -338,7 +338,7 @@ static void virtblk_config_changed_work(struct work_struct *work)
  	struct virtio_device *vdev = vblk->vdev;
  	struct request_queue *q = vblk->disk->queue;
  	char cap_str_2[10], cap_str_10[10];
@@ -100,10 +100,10 @@ index 42758b52768c..f51ffd279f31 100644
  
  	/* Host must always specify the capacity. */
 diff --git a/drivers/extcon/extcon.c b/drivers/extcon/extcon.c
-index 21a123cadf78..e7955f356a0a 100644
+index 8682efc0f57b..386284cffefa 100644
 --- a/drivers/extcon/extcon.c
 +++ b/drivers/extcon/extcon.c
-@@ -260,7 +260,7 @@ int extcon_update_state(struct extcon_dev *edev, u32 mask, u32 state)
+@@ -248,7 +248,7 @@ int extcon_update_state(struct extcon_dev *edev, u32 mask, u32 state)
  	char name_buf[120];
  	char state_buf[120];
  	char *prop_buf;
@@ -113,10 +113,10 @@ index 21a123cadf78..e7955f356a0a 100644
  	int length;
  	int index;
 diff --git a/drivers/gpu/drm/drm_sysfs.c b/drivers/gpu/drm/drm_sysfs.c
-index fa7fadce8063..047c1704c47c 100644
+index 32dd821b7202..1ee34c0221d1 100644
 --- a/drivers/gpu/drm/drm_sysfs.c
 +++ b/drivers/gpu/drm/drm_sysfs.c
-@@ -396,8 +396,8 @@ void drm_sysfs_connector_remove(struct drm_connector *connector)
+@@ -325,8 +325,8 @@ void drm_sysfs_connector_remove(struct drm_connector *connector)
   */
  void drm_sysfs_hotplug_event(struct drm_device *dev)
  {
@@ -128,22 +128,22 @@ index fa7fadce8063..047c1704c47c 100644
  	DRM_DEBUG("generating hotplug event\n");
  
 diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
-index aab47f7bb61b..26ea70be4e47 100644
+index 1c2aec392412..5536916c5953 100644
 --- a/drivers/gpu/drm/i915/i915_irq.c
 +++ b/drivers/gpu/drm/i915/i915_irq.c
-@@ -1242,7 +1242,7 @@ static void ivybridge_parity_work(struct work_struct *work)
+@@ -1212,7 +1212,7 @@ static void ivybridge_parity_work(struct work_struct *work)
  		parity_event[5] = NULL;
  
- 		kobject_uevent_env(&dev_priv->dev->primary->kdev->kobj,
+ 		kobject_uevent_env(&dev_priv->drm.primary->kdev->kobj,
 -				   KOBJ_CHANGE, parity_event);
 +				   KOBJ_CHANGE, (const char **)parity_event);
  
  		DRM_DEBUG("Parity error: Slice = %d, Row = %d, Bank = %d, Sub bank = %d.\n",
  			  slice, row, bank, subbank);
-@@ -2558,9 +2558,9 @@ static void i915_error_wake_up(struct drm_i915_private *dev_priv,
- static void i915_reset_and_wakeup(struct drm_device *dev)
+@@ -2501,9 +2501,9 @@ static void i915_error_wake_up(struct drm_i915_private *dev_priv)
+ static void i915_reset_and_wakeup(struct drm_i915_private *dev_priv)
  {
- 	struct drm_i915_private *dev_priv = to_i915(dev);
+ 	struct kobject *kobj = &dev_priv->drm.primary->kdev->kobj;
 -	char *error_event[] = { I915_ERROR_UEVENT "=1", NULL };
 -	char *reset_event[] = { I915_RESET_UEVENT "=1", NULL };
 -	char *reset_done_event[] = { I915_ERROR_UEVENT "=0", NULL };
@@ -152,12 +152,12 @@ index aab47f7bb61b..26ea70be4e47 100644
 +	const char *reset_done_event[] = { I915_ERROR_UEVENT "=0", NULL };
  	int ret;
  
- 	kobject_uevent_env(&dev->primary->kdev->kobj, KOBJ_CHANGE, error_event);
+ 	kobject_uevent_env(kobj, KOBJ_CHANGE, error_event);
 diff --git a/drivers/leds/led-triggers.c b/drivers/leds/led-triggers.c
-index 55fa65e1ae03..13f9d653c781 100644
+index c92702a684ce..633c44e4f499 100644
 --- a/drivers/leds/led-triggers.c
 +++ b/drivers/leds/led-triggers.c
-@@ -103,7 +103,7 @@ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trig)
+@@ -105,7 +105,7 @@ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trig)
  {
  	unsigned long flags;
  	char *event = NULL;
@@ -167,10 +167,10 @@ index 55fa65e1ae03..13f9d653c781 100644
  
  	name = trig ? trig->name : "none";
 diff --git a/drivers/md/bcache/super.c b/drivers/md/bcache/super.c
-index f5dbb4e884d8..649bc12a0647 100644
+index 95a4ca6ce6ff..4d5c1c116421 100644
 --- a/drivers/md/bcache/super.c
 +++ b/drivers/md/bcache/super.c
-@@ -869,7 +869,7 @@ void bch_cached_dev_run(struct cached_dev *dc)
+@@ -870,7 +870,7 @@ void bch_cached_dev_run(struct cached_dev *dc)
  	bd_link_disk_holder(dc->bdev, dc->disk.disk);
  	/* won't show up in the uevent file, use udevadm monitor -e instead
  	 * only class / kset properties are persistent */
@@ -193,10 +193,10 @@ index 0aba34a7b3b3..f030aa599852 100644
  out:
  	if (v->mode == DM_VERITY_MODE_LOGGING)
 diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-index 1b2f96205361..424ce0704c47 100644
+index fa9b1cb4438a..9a71614d55b8 100644
 --- a/drivers/md/dm.c
 +++ b/drivers/md/dm.c
-@@ -3437,7 +3437,7 @@ int dm_kobject_uevent(struct mapped_device *md, enum kobject_action action,
+@@ -2391,7 +2391,7 @@ int dm_kobject_uevent(struct mapped_device *md, enum kobject_action action,
  		       unsigned cookie)
  {
  	char udev_cookie[DM_COOKIE_LENGTH];
@@ -245,10 +245,10 @@ index 011e7412dcc0..80fd325a1acd 100644
  		[1] = "EVENT=FW_ERROR",
  		[2] = NULL,
 diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
-index 7c0b60ca158f..42b58804b0f7 100644
+index 2674f4c16bc3..9e13fa0f0713 100644
 --- a/drivers/scsi/qla2xxx/qla_os.c
 +++ b/drivers/scsi/qla2xxx/qla_os.c
-@@ -4063,7 +4063,7 @@ static void
+@@ -4135,7 +4135,7 @@ static void
  qla2x00_uevent_emit(struct scsi_qla_host *vha, u32 code)
  {
  	char event_string[40];
@@ -284,7 +284,7 @@ index c71344aebdbb..f03beaef2ba4 100644
  	switch (evt->evt_type) {
  	case SDEV_EVT_MEDIA_CHANGE:
 diff --git a/drivers/staging/unisys/visorbus/visorchipset.c b/drivers/staging/unisys/visorbus/visorchipset.c
-index 5ba5936e2203..92d4405b2305 100644
+index d248c946a13b..66b920757c44 100644
 --- a/drivers/staging/unisys/visorbus/visorchipset.c
 +++ b/drivers/staging/unisys/visorbus/visorchipset.c
 @@ -1385,7 +1385,7 @@ static int
@@ -332,10 +332,10 @@ index 288318ad21dd..0fa265063df8 100644
  	switch (reason) {
  	case BACKLIGHT_UPDATE_SYSFS:
 diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 45463600fb81..ae38cab7a328 100644
+index ef1e1822977f..d3b6883390bf 100644
 --- a/fs/gfs2/ops_fstype.c
 +++ b/fs/gfs2/ops_fstype.c
-@@ -526,8 +526,8 @@ out:
+@@ -528,8 +528,8 @@ out:
  
  static void gfs2_others_may_mount(struct gfs2_sbd *sdp)
  {
@@ -346,7 +346,7 @@ index 45463600fb81..ae38cab7a328 100644
  
  	fs_info(sdp, "first mount done, others may mount\n");
  
-@@ -1032,7 +1032,7 @@ void gfs2_online_uevent(struct gfs2_sbd *sdp)
+@@ -1034,7 +1034,7 @@ void gfs2_online_uevent(struct gfs2_sbd *sdp)
  	struct super_block *sb = sdp->sd_vfs;
  	char ro[20];
  	char spectator[20];
@@ -356,7 +356,7 @@ index 45463600fb81..ae38cab7a328 100644
  	sprintf(spectator, "SPECTATOR=%d", sdp->sd_args.ar_spectator ? 1 : 0);
  	kobject_uevent_env(&sdp->sd_kobj, KOBJ_ONLINE, envp);
 diff --git a/fs/gfs2/recovery.c b/fs/gfs2/recovery.c
-index 1b645773c98e..247897d060bf 100644
+index 113b6095a58d..395734189d17 100644
 --- a/fs/gfs2/recovery.c
 +++ b/fs/gfs2/recovery.c
 @@ -434,7 +434,7 @@ static void gfs2_recovery_done(struct gfs2_sbd *sdp, unsigned int jid,
@@ -430,10 +430,10 @@ index f6c2c1e7779c..f19de1d45d5e 100644
  	struct kobj_uevent_env *env;
  	const char *action_string = kobject_actions[action];
 diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index c7cd0cd72ade..a7642c839b83 100644
+index ad215f20a5a1..47a20806f136 100644
 --- a/net/batman-adv/sysfs.c
 +++ b/net/batman-adv/sysfs.c
-@@ -1080,7 +1080,7 @@ int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
+@@ -1081,7 +1081,7 @@ int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
  			goto out;
  	}
  

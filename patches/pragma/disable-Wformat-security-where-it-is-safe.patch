@@ -72,7 +72,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  65 files changed, 375 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 92e5e37d97bf..b9dcae5d1258 100644
+index 79d8ec849468..5a1216cfd9f1 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce.c
 @@ -387,7 +387,10 @@ static void mce_panic(const char *msg, struct mce *final, char *exp)
@@ -87,7 +87,7 @@ index 92e5e37d97bf..b9dcae5d1258 100644
  		pr_emerg(HW_ERR "Fake kernel panic: %s\n", msg);
  }
 diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd.c b/arch/x86/kernel/cpu/mcheck/mce_amd.c
-index 10b0661651e0..6126ec5582a5 100644
+index 7b7f3be783d4..66c6a90a41cb 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce_amd.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce_amd.c
 @@ -765,9 +765,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
@@ -156,10 +156,10 @@ index 621b501f8935..f67969d05690 100644
  
  static int userdef __initdata;
 diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
-index 719cf291dcdf..5b9558c66cde 100644
+index 0b4d04c8ab4d..4a9f0d179c4d 100644
 --- a/arch/x86/xen/smp.c
 +++ b/arch/x86/xen/smp.c
-@@ -337,13 +337,16 @@ static void __init xen_smp_prepare_cpus(unsigned int max_cpus)
+@@ -344,13 +344,16 @@ static void __init xen_smp_prepare_cpus(unsigned int max_cpus)
  	unsigned int i;
  
  	if (skip_ioapic_setup) {
@@ -208,10 +208,10 @@ index 1daf9c46df8e..2f83b0618735 100644
  	}
  
 diff --git a/drivers/acpi/acpi_lpss.c b/drivers/acpi/acpi_lpss.c
-index 0872d5fecb82..3f57b01da854 100644
+index 357a0b8f860b..824efe811928 100644
 --- a/drivers/acpi/acpi_lpss.c
 +++ b/drivers/acpi/acpi_lpss.c
-@@ -367,7 +367,10 @@ out:
+@@ -368,7 +368,10 @@ out:
  		return PTR_ERR(clk);
  
  	pdata->clk = clk;
@@ -258,10 +258,10 @@ index ab41be625a53..ece88bcd2e00 100644
  	return 0;
  }
 diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
-index 1b257ea9776a..19c25055e8f2 100644
+index 5d475b3a0b2e..aa049803e726 100644
 --- a/drivers/cdrom/cdrom.c
 +++ b/drivers/cdrom/cdrom.c
-@@ -3431,7 +3431,10 @@ static int cdrom_print_info(const char *header, int val, char *info,
+@@ -3441,7 +3441,10 @@ static int cdrom_print_info(const char *header, int val, char *info,
  	struct cdrom_device_info *cdi;
  	int ret;
  
@@ -273,10 +273,10 @@ index 1b257ea9776a..19c25055e8f2 100644
  		return 1;
  
 diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-index 71025c2f6bbb..70c53053c182 100644
+index a33163dbb913..3591be86a4a2 100644
 --- a/drivers/char/mem.c
 +++ b/drivers/char/mem.c
-@@ -862,8 +862,11 @@ static int __init chr_dev_init(void)
+@@ -882,8 +882,11 @@ static int __init chr_dev_init(void)
  		if ((minor == DEVPORT_MINOR) && !arch_has_dev_port())
  			continue;
  
@@ -498,10 +498,10 @@ index eedfe339d057..bc829c233126 100644
  ssize_t bch_hprint(char *buf, int64_t v);
  
 diff --git a/drivers/media/pci/cx23885/cx23885-dvb.c b/drivers/media/pci/cx23885/cx23885-dvb.c
-index f041b6931ba8..1f426fc79551 100644
+index e5748a93c479..2d4dd898d23f 100644
 --- a/drivers/media/pci/cx23885/cx23885-dvb.c
 +++ b/drivers/media/pci/cx23885/cx23885-dvb.c
-@@ -1150,7 +1150,10 @@ static int dvb_register_ci_mac(struct cx23885_tsport *port)
+@@ -1149,7 +1149,10 @@ static int dvb_register_ci_mac(struct cx23885_tsport *port)
  		strlcpy(info.type, "sp2", I2C_NAME_SIZE);
  		info.addr = 0x40;
  		info.platform_data = &sp2_config;
@@ -512,7 +512,7 @@ index f041b6931ba8..1f426fc79551 100644
  		client_ci = i2c_new_device(&i2c_bus->i2c_adap, &info);
  		if (client_ci == NULL || client_ci->dev.driver == NULL)
  			return -ENODEV;
-@@ -1916,7 +1919,10 @@ static int dvb_register(struct cx23885_tsport *port)
+@@ -1915,7 +1918,10 @@ static int dvb_register(struct cx23885_tsport *port)
  			strlcpy(info.type, "ts2020", I2C_NAME_SIZE);
  			info.addr = 0x60;
  			info.platform_data = &ts2020_config;
@@ -523,7 +523,7 @@ index f041b6931ba8..1f426fc79551 100644
  			client_tuner = i2c_new_device(adapter, &info);
  			if (client_tuner == NULL ||
  					client_tuner->dev.driver == NULL)
-@@ -1953,7 +1959,10 @@ static int dvb_register(struct cx23885_tsport *port)
+@@ -1952,7 +1958,10 @@ static int dvb_register(struct cx23885_tsport *port)
  			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  			info.addr = 0x64;
  			info.platform_data = &si2168_config;
@@ -534,7 +534,7 @@ index f041b6931ba8..1f426fc79551 100644
  			client_demod = i2c_new_device(&i2c_bus->i2c_adap, &info);
  			if (client_demod == NULL ||
  					client_demod->dev.driver == NULL)
-@@ -1972,7 +1981,10 @@ static int dvb_register(struct cx23885_tsport *port)
+@@ -1971,7 +1980,10 @@ static int dvb_register(struct cx23885_tsport *port)
  			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
  			info.addr = 0x60;
  			info.platform_data = &si2157_config;
@@ -545,7 +545,7 @@ index f041b6931ba8..1f426fc79551 100644
  			client_tuner = i2c_new_device(adapter, &info);
  			if (client_tuner == NULL ||
  					client_tuner->dev.driver == NULL)
-@@ -2000,7 +2012,10 @@ static int dvb_register(struct cx23885_tsport *port)
+@@ -1999,7 +2011,10 @@ static int dvb_register(struct cx23885_tsport *port)
  		strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  		info.addr = 0x64;
  		info.platform_data = &si2168_config;
@@ -556,7 +556,7 @@ index f041b6931ba8..1f426fc79551 100644
  		client_demod = i2c_new_device(&i2c_bus2->i2c_adap, &info);
  		if (client_demod == NULL || client_demod->dev.driver == NULL)
  			goto frontend_detach;
-@@ -2018,7 +2033,10 @@ static int dvb_register(struct cx23885_tsport *port)
+@@ -2017,7 +2032,10 @@ static int dvb_register(struct cx23885_tsport *port)
  		strlcpy(info.type, "si2157", I2C_NAME_SIZE);
  		info.addr = 0x60;
  		info.platform_data = &si2157_config;
@@ -567,7 +567,7 @@ index f041b6931ba8..1f426fc79551 100644
  		client_tuner = i2c_new_device(adapter, &info);
  		if (client_tuner == NULL ||
  				client_tuner->dev.driver == NULL)
-@@ -2048,7 +2066,10 @@ static int dvb_register(struct cx23885_tsport *port)
+@@ -2047,7 +2065,10 @@ static int dvb_register(struct cx23885_tsport *port)
  		strlcpy(info.type, "ts2020", I2C_NAME_SIZE);
  		info.addr = 0x60;
  		info.platform_data = &ts2020_config;
@@ -578,7 +578,7 @@ index f041b6931ba8..1f426fc79551 100644
  		client_tuner = i2c_new_device(adapter, &info);
  		if (client_tuner == NULL || client_tuner->dev.driver == NULL)
  			goto frontend_detach;
-@@ -2094,7 +2115,10 @@ static int dvb_register(struct cx23885_tsport *port)
+@@ -2093,7 +2114,10 @@ static int dvb_register(struct cx23885_tsport *port)
  		strlcpy(info.type, "ts2020", I2C_NAME_SIZE);
  		info.addr = 0x60;
  		info.platform_data = &ts2020_config;
@@ -589,7 +589,7 @@ index f041b6931ba8..1f426fc79551 100644
  		client_tuner = i2c_new_device(adapter, &info);
  		if (client_tuner == NULL || client_tuner->dev.driver == NULL)
  			goto frontend_detach;
-@@ -2139,7 +2163,10 @@ static int dvb_register(struct cx23885_tsport *port)
+@@ -2138,7 +2162,10 @@ static int dvb_register(struct cx23885_tsport *port)
  		strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  		info.addr = 0x64;
  		info.platform_data = &si2168_config;
@@ -600,7 +600,7 @@ index f041b6931ba8..1f426fc79551 100644
  		client_demod = i2c_new_device(&i2c_bus->i2c_adap, &info);
  		if (client_demod == NULL || client_demod->dev.driver == NULL)
  			goto frontend_detach;
-@@ -2157,7 +2184,10 @@ static int dvb_register(struct cx23885_tsport *port)
+@@ -2156,7 +2183,10 @@ static int dvb_register(struct cx23885_tsport *port)
  		strlcpy(info.type, "si2157", I2C_NAME_SIZE);
  		info.addr = 0x60;
  		info.platform_data = &si2157_config;
@@ -612,10 +612,10 @@ index f041b6931ba8..1f426fc79551 100644
  		if (client_tuner == NULL ||
  				client_tuner->dev.driver == NULL)
 diff --git a/drivers/media/pci/netup_unidvb/netup_unidvb_core.c b/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
-index 2b667b315913..0977e8793d8b 100644
+index ac547cb84de8..947ca3792fdb 100644
 --- a/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
 +++ b/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
-@@ -736,7 +736,11 @@ static int netup_unidvb_request_modules(struct device *dev)
+@@ -769,7 +769,11 @@ static int netup_unidvb_request_modules(struct device *dev)
  	int err;
  
  	while (*curr_mod != NULL) {
@@ -807,7 +807,7 @@ index 02dbc6c45423..e985ebdef216 100644
  	if (client_tuner == NULL ||
  			client_tuner->dev.driver == NULL)
 diff --git a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
-index eb7af8cb8aca..58491ba9160d 100644
+index 6643762a9ff7..aa9319aeb436 100644
 --- a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
 +++ b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
 @@ -953,7 +953,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
@@ -892,10 +892,10 @@ index 907ac01ae297..ff4448e60b39 100644
  	if (client_tuner == NULL || client_tuner->dev.driver == NULL) {
  		module_put(client_demod->dev.driver->owner);
 diff --git a/drivers/media/usb/em28xx/em28xx-dvb.c b/drivers/media/usb/em28xx/em28xx-dvb.c
-index 1a5c01202f73..23e936982f58 100644
+index 8cedef0daae4..8b93b315987e 100644
 --- a/drivers/media/usb/em28xx/em28xx-dvb.c
 +++ b/drivers/media/usb/em28xx/em28xx-dvb.c
-@@ -1716,7 +1716,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1705,7 +1705,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  			info.addr = 0x64;
  			info.platform_data = &si2168_config;
@@ -906,7 +906,7 @@ index 1a5c01202f73..23e936982f58 100644
  			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				result = -ENODEV;
-@@ -1742,7 +1745,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1731,7 +1734,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
  			info.addr = 0x60;
  			info.platform_data = &si2157_config;
@@ -917,7 +917,7 @@ index 1a5c01202f73..23e936982f58 100644
  			client = i2c_new_device(adapter, &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				module_put(dvb->i2c_client_demod->dev.driver->owner);
-@@ -1780,7 +1786,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1769,7 +1775,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  			info.addr = 0x64;
  			info.platform_data = &si2168_config;
@@ -928,7 +928,7 @@ index 1a5c01202f73..23e936982f58 100644
  			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				result = -ENODEV;
-@@ -1862,7 +1871,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1851,7 +1860,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "qm1d1c0042", I2C_NAME_SIZE);
  			info.addr = 0x61;
  			info.platform_data = &qm1d1c0042_config;
@@ -939,7 +939,7 @@ index 1a5c01202f73..23e936982f58 100644
  			client = i2c_new_device(tc90522_config.tuner_i2c,
  						&info);
  			if (client == NULL || client->dev.driver == NULL) {
-@@ -1900,7 +1912,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1889,7 +1901,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
  			info.addr = 0x64;
  			info.platform_data = &si2168_config;
@@ -950,7 +950,7 @@ index 1a5c01202f73..23e936982f58 100644
  			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
  			if (client == NULL || client->dev.driver == NULL) {
  				result = -ENODEV;
-@@ -1926,7 +1941,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
+@@ -1915,7 +1930,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
  			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
  			info.addr = 0x60;
  			info.platform_data = &si2157_config;
@@ -1026,7 +1026,7 @@ index c66ca1a5814e..845819ce0b0e 100644
  		err = -ENOMEM;
  		goto destroy_intr;
 diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
-index fd90f3737963..2abdff66a9f8 100644
+index 8f4f0e8da984..3e20ccc4bcd2 100644
 --- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
 +++ b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
 @@ -764,7 +764,11 @@ static void hns_xgmac_get_strings(u32 stringset, u8 *data)
@@ -1072,10 +1072,10 @@ index 95c0b45a68fb..24ff9dd346a1 100644
  
  	pci_read_config_byte(pdev, PCI_LATENCY_TIMER, &pci_latency);
 diff --git a/drivers/net/macvtap.c b/drivers/net/macvtap.c
-index 8060ee74f69f..b42c6167db9a 100644
+index 2bc3a4101e18..d940fce4a432 100644
 --- a/drivers/net/macvtap.c
 +++ b/drivers/net/macvtap.c
-@@ -1308,8 +1308,12 @@ static int macvtap_device_event(struct notifier_block *unused,
+@@ -1285,8 +1285,12 @@ static int macvtap_device_event(struct notifier_block *unused,
  			return notifier_from_errno(err);
  
  		devt = MKDEV(MAJOR(macvtap_major), vlan->minor);
@@ -1150,10 +1150,10 @@ index 1f3c155771b9..5858a37d45fc 100644
  		if (res->flags & IORESOURCE_DISABLED) {
  			pnp_printf(buffer, " disabled\n");
 diff --git a/drivers/staging/lustre/lustre/ptlrpc/pinger.c b/drivers/staging/lustre/lustre/ptlrpc/pinger.c
-index 8a869315c258..b14ac3caa9db 100644
+index c0529d808d81..f3baa056d169 100644
 --- a/drivers/staging/lustre/lustre/ptlrpc/pinger.c
 +++ b/drivers/staging/lustre/lustre/ptlrpc/pinger.c
-@@ -305,8 +305,12 @@ int ptlrpc_start_pinger(void)
+@@ -302,8 +302,12 @@ int ptlrpc_start_pinger(void)
  
  	strcpy(pinger_thread.t_name, "ll_ping");
  
@@ -1183,7 +1183,7 @@ index 7c619feb12d3..07859476e77c 100644
  	return snprintf(buf, PAGE_SIZE, "unconfigured\n");
  }
 diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
-index 208be5fc527a..64ac71fdfb04 100644
+index 563d7fed6e1c..6d0541603634 100644
 --- a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
 +++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
 @@ -593,7 +593,10 @@ int ieee80211_wx_set_encode_ext(struct ieee80211_device *ieee,
@@ -1239,10 +1239,10 @@ index ea4ffc2ebb2f..be17b89578c3 100644
  		tty_kref_put(tty);
  	}
 diff --git a/fs/btrfs/check-integrity.c b/fs/btrfs/check-integrity.c
-index 7706c8dc5fa6..6221e8802d44 100644
+index 66789471b49d..21928f552194 100644
 --- a/fs/btrfs/check-integrity.c
 +++ b/fs/btrfs/check-integrity.c
-@@ -2653,7 +2653,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
+@@ -2654,7 +2654,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
  		printk("[...]\n");
  		return;
  	}
@@ -1253,7 +1253,7 @@ index 7706c8dc5fa6..6221e8802d44 100644
  	indent_level += indent_add;
  	if (list_empty(&block->ref_to_list)) {
  		printk("\n");
-@@ -2682,7 +2685,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
+@@ -2683,7 +2686,10 @@ static void btrfsic_dump_tree_sub(const struct btrfsic_state *state,
  			continue;
  		}
  
@@ -1265,7 +1265,7 @@ index 7706c8dc5fa6..6221e8802d44 100644
  		btrfsic_dump_tree_sub(state, l->block_ref_to,
  				      indent_level + indent_add);
 diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
-index ff21980d0119..f6dec088d751 100644
+index 1bfac28b7e7d..12fde910d9bd 100644
 --- a/fs/quota/dquot.c
 +++ b/fs/quota/dquot.c
 @@ -198,8 +198,12 @@ static struct quota_format_type *find_quota_format(int id)
@@ -1304,7 +1304,7 @@ index 42d82f436cdd..5ee76629b048 100644
  	if (id && id[0])
  		printk(KERN_CRIT "REISERFS error (device %s): %s %s: %s\n",
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 94aa10ffe156..2379901c3f97 100644
+index d96a6118d26a..aea104252923 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -631,9 +631,12 @@ do {									\

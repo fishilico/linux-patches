@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 6 Aug 2016 11:18:33 +0200
+Subject: [PATCH] {PRINTF} dm raid: silent -Wformat-security warning
+
+Using scnprintf() with a non-literal string makes some compiler complain
+when building with -Wformat-security (eg. clang reports "format string
+is not a string literal (potentially insecure)").
+
+Here scnprintf() (used by DMEMIT()) format parameter is indirectly a
+literal string so there is no security issue.  Nevertheless adding a
+"%s" format string to silent the warning helps to detect real issues.
+---
+ drivers/md/dm-raid.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/md/dm-raid.c b/drivers/md/dm-raid.c
+index 1b9795d75ef8..cff8c2b886b9 100644
+--- a/drivers/md/dm-raid.c
++++ b/drivers/md/dm-raid.c
+@@ -3187,7 +3187,7 @@ static void raid_status(struct dm_target *ti, status_type_t type,
+ 
+ 		/* HM FIXME: do we want another state char for raid0? It shows 'D' or 'A' now */
+ 		rdev_for_each(rdev, mddev)
+-			DMEMIT(__raid_dev_status(rdev, array_in_sync));
++			DMEMIT("%s", __raid_dev_status(rdev, array_in_sync));
+ 
+ 		/*
+ 		 * In-sync/Reshape ratio:
+-- 

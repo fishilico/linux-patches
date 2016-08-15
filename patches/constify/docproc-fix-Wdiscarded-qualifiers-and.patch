@@ -1,0 +1,85 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 30 Jul 2016 09:56:35 +0200
+Subject: [PATCH] {CONSTIFY} docproc: fix -Wdiscarded-qualifiers and
+ -Wincompatible-pointer-types warnings
+
+It is too bad execvp() uses a non-const vector :(
+---
+ scripts/docproc.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/scripts/docproc.c b/scripts/docproc.c
+index 0a12593b9041..b92666130b02 100644
+--- a/scripts/docproc.c
++++ b/scripts/docproc.c
+@@ -119,7 +119,7 @@ static void usage (void)
+ /*
+  * Execute kernel-doc with parameters given in svec
+  */
+-static void exec_kernel_doc(char **svec)
++static void exec_kernel_doc(const char **svec)
+ {
+ 	pid_t pid;
+ 	int ret;
+@@ -135,7 +135,7 @@ static void exec_kernel_doc(char **svec)
+ 			strncat(real_filename, kernsrctree, PATH_MAX);
+ 			strncat(real_filename, "/" KERNELDOCPATH KERNELDOC,
+ 					PATH_MAX - strlen(real_filename));
+-			execvp(real_filename, svec);
++			execvp(real_filename, (char **)svec);
+ 			fprintf(stderr, "exec ");
+ 			perror(real_filename);
+ 			exit(1);
+@@ -261,12 +261,12 @@ static void find_export_symbols(char * filename)
+  * intfunc uses -nofunction
+  * extfunc uses -function
+  */
+-static void docfunctions(char * filename, char * type)
++static void docfunctions(const char * filename, const char * type)
+ {
+ 	int i,j;
+ 	int symcnt = 0;
+ 	int idx = 0;
+-	char **vec;
++	const char **vec;
+ 
+ 	for (i=0; i <= symfilecnt; i++)
+ 		symcnt += symfilelist[i].symbolcnt;
+@@ -306,7 +306,7 @@ static void extfunc(char * filename) { docfunctions(filename, FUNCTION);   }
+  */
+ static void singfunc(char * filename, char * line)
+ {
+-	char *vec[200]; /* Enough for specific functions */
++	const char *vec[200]; /* Enough for specific functions */
+ 	int i, idx = 0;
+ 	int startofsym = 1;
+ 	vec[idx++] = KERNELDOC;
+@@ -344,7 +344,7 @@ static void singfunc(char * filename, char * line)
+ static void docsect(char *filename, char *line)
+ {
+ 	/* kerneldoc -docbook -show-not-found -function "section" file NULL */
+-	char *vec[7];
++	const char *vec[7];
+ 	char *s;
+ 
+ 	for (s = line; *s; s++)
+@@ -370,7 +370,7 @@ static void docsect(char *filename, char *line)
+ 
+ static void find_all_symbols(char *filename)
+ {
+-	char *vec[4]; /* kerneldoc -list file NULL */
++	const char *vec[4]; /* kerneldoc -list file NULL */
+ 	pid_t pid;
+ 	int ret, i, count, start;
+ 	char real_filename[PATH_MAX + 1];
+@@ -399,7 +399,7 @@ static void find_all_symbols(char *filename)
+ 			strncat(real_filename, kernsrctree, PATH_MAX);
+ 			strncat(real_filename, "/" KERNELDOCPATH KERNELDOC,
+ 					PATH_MAX - strlen(real_filename));
+-			execvp(real_filename, vec);
++			execvp(real_filename, (char **)vec);
+ 			fprintf(stderr, "exec ");
+ 			perror(real_filename);
+ 			exit(1);
+-- 

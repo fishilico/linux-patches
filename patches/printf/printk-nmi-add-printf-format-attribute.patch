@@ -8,15 +8,15 @@ Subject: [PATCH] {PRINTF} printk/nmi: add printf format attribute
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/kernel/printk/nmi.c b/kernel/printk/nmi.c
-index b69eb8a2876f..073505b7b88c 100644
+index bc3eeb1ae6da..342bf7692f89 100644
 --- a/kernel/printk/nmi.c
 +++ b/kernel/printk/nmi.c
 @@ -58,7 +58,7 @@ static DEFINE_PER_CPU(struct nmi_seq_buf, nmi_print_seq);
   * one writer running. But the buffer might get flushed from another
   * CPU, so we need to be careful.
   */
--static int vprintk_nmi(const char *fmt, va_list args)
-+static __printf(1, 0) int vprintk_nmi(const char *fmt, va_list args)
+-static int vprintk_nmi(int level, const char *fmt, va_list args)
++static __printf(2, 0) int vprintk_nmi(int level, const char *fmt, va_list args)
  {
  	struct nmi_seq_buf *s = this_cpu_ptr(&nmi_print_seq);
  	int add = 0;

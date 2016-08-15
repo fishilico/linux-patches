@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 6 Aug 2016 11:29:45 +0200
+Subject: [PATCH] {BUG in 4.8-rc1} [media] cec-funcs.h: use bitwise and instead
+ of logical and
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc reports:
+
+    In file included from include/media/cec.h:30:0,
+                     from drivers/media/i2c/adv7604.c:43:
+    include/linux/cec-funcs.h: In function ‘cec_set_digital_service_id’:
+    include/linux/cec-funcs.h:230:35: warning: logical ‘and’ applied to
+    non-boolean constant [-Wlogical-op]
+       *msg++ = digital->channel.major && 0xff;
+                                       ^~
+    include/linux/cec-funcs.h: In function ‘cec_msg_user_control_pressed’:
+    include/linux/cec-funcs.h:1280:50: warning: logical ‘and’ applied to
+    non-boolean constant [-Wlogical-op]
+       msg->msg[4] = ui_cmd->channel_identifier.major && 0xff;
+                                                      ^~
+---
+ include/linux/cec-funcs.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/cec-funcs.h b/include/linux/cec-funcs.h
+index 82c3d3b7269d..9e054aa168f3 100644
+--- a/include/linux/cec-funcs.h
++++ b/include/linux/cec-funcs.h
+@@ -227,7 +227,7 @@ static inline void cec_set_digital_service_id(__u8 *msg,
+ 	if (digital->service_id_method == CEC_OP_SERVICE_ID_METHOD_BY_CHANNEL) {
+ 		*msg++ = (digital->channel.channel_number_fmt << 2) |
+ 			 (digital->channel.major >> 8);
+-		*msg++ = digital->channel.major && 0xff;
++		*msg++ = digital->channel.major & 0xff;
+ 		*msg++ = digital->channel.minor >> 8;
+ 		*msg++ = digital->channel.minor & 0xff;
+ 		*msg++ = 0;
+@@ -1277,7 +1277,7 @@ static inline void cec_msg_user_control_pressed(struct cec_msg *msg,
+ 		msg->len += 4;
+ 		msg->msg[3] = (ui_cmd->channel_identifier.channel_number_fmt << 2) |
+ 			      (ui_cmd->channel_identifier.major >> 8);
+-		msg->msg[4] = ui_cmd->channel_identifier.major && 0xff;
++		msg->msg[4] = ui_cmd->channel_identifier.major & 0xff;
+ 		msg->msg[5] = ui_cmd->channel_identifier.minor >> 8;
+ 		msg->msg[6] = ui_cmd->channel_identifier.minor & 0xff;
+ 		break;
+-- 

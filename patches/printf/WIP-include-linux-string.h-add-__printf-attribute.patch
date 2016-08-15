@@ -1,0 +1,85 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 6 Aug 2016 11:30:56 +0200
+Subject: [PATCH] {PRINTF} {WIP} include/linux/string.h: add __printf attribute
+ to binary printf functions
+
+This may be buggy because such functions do not have va_args.  Compilers
+or static checkers may expect functions using __printf(..., 0) to have a
+va_args somewhere in their arguments.
+---
+ include/linux/seq_buf.h   | 2 +-
+ include/linux/string.h    | 4 ++--
+ include/linux/trace_seq.h | 7 ++++---
+ lib/vsprintf.c            | 2 +-
+ 4 files changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/seq_buf.h b/include/linux/seq_buf.h
+index fb7eb9ccb1cd..6c46f0266ff5 100644
+--- a/include/linux/seq_buf.h
++++ b/include/linux/seq_buf.h
+@@ -126,7 +126,7 @@ extern int seq_buf_putmem_hex(struct seq_buf *s, const void *mem,
+ extern int seq_buf_path(struct seq_buf *s, const struct path *path, const char *esc);
+ 
+ #ifdef CONFIG_BINARY_PRINTF
+-extern int
++extern __printf(2, 0) int
+ seq_buf_bprintf(struct seq_buf *s, const char *fmt, const u32 *binary);
+ #endif
+ 
+diff --git a/include/linux/string.h b/include/linux/string.h
+index 26b6f6a66f83..e5dd8bbb946b 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -137,8 +137,8 @@ static inline int strtobool(const char *s, bool *res)
+ int match_string(const char * const *array, size_t n, const char *string);
+ 
+ #ifdef CONFIG_BINARY_PRINTF
+-int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args);
+-int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf);
++int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args) __printf(3, 0);
++int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf) __printf(3, 0);
+ int bprintf(u32 *bin_buf, size_t size, const char *fmt, ...) __printf(3, 4);
+ #endif
+ 
+diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
+index cfaf5a1d4bad..d5e87ffadd05 100644
+--- a/include/linux/trace_seq.h
++++ b/include/linux/trace_seq.h
+@@ -76,7 +76,7 @@ extern __printf(2, 3)
+ void trace_seq_printf(struct trace_seq *s, const char *fmt, ...);
+ extern __printf(2, 0)
+ void trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args);
+-extern void
++extern __printf(2, 0) void
+ trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary);
+ extern int trace_print_seq(struct seq_file *m, struct trace_seq *s);
+ extern int trace_seq_to_user(struct trace_seq *s, char __user *ubuf,
+@@ -92,10 +92,11 @@ extern void trace_seq_bitmask(struct trace_seq *s, const unsigned long *maskp,
+ 			     int nmaskbits);
+ 
+ #else /* CONFIG_TRACING */
+-static inline void trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
++static inline __printf(2, 3) void
++trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
+ {
+ }
+-static inline void
++static inline __printf(2, 0) void
+ trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary)
+ {
+ }
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 0967771d8f7f..e8fc2abca696 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -1749,7 +1749,7 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+  * @precision: precision of a number
+  * @qualifier: qualifier of a number (long, size_t, ...)
+  */
+-static noinline_for_stack
++static noinline_for_stack __printf(1, 0)
+ int format_decode(const char *fmt, struct printf_spec *spec)
+ {
+ 	const char *start = fmt;
+-- 

@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 6 Aug 2016 11:29:56 +0200
+Subject: [PATCH] {BUG in 4.8-rc1} amdgpu: initialize fence variable before
+ cleaning it
+
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
+index 7a9c369ce736..d618307470d2 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
+@@ -1161,7 +1161,7 @@ void amdgpu_uvd_ring_end_use(struct amdgpu_ring *ring)
+  */
+ int amdgpu_uvd_ring_test_ib(struct amdgpu_ring *ring, long timeout)
+ {
+-	struct fence *fence;
++	struct fence *fence = NULL /* BUG */;
+ 	long r;
+ 
+ 	r = amdgpu_uvd_get_create_msg(ring, 1, NULL);
+-- 

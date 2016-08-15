@@ -55,7 +55,6 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  mm/slub.c                                         |   4 +-
  net/dccp/ccid.c                                   |   3 +-
  net/dccp/probe.c                                  |   6 +-
- net/rds/ib.h                                      |   1 +
  net/tipc/netlink_compat.c                         |   2 +-
  scripts/genksyms/genksyms.h                       |   2 +-
  scripts/kconfig/confdata.c                        |  13 ++-
@@ -71,7 +70,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  security/tomoyo/common.c                          |   3 +-
  security/tomoyo/common.h                          |   4 +-
  sound/soc/soc-dapm.c                              |   3 +-
- 67 files changed, 220 insertions(+), 186 deletions(-)
+ 66 files changed, 219 insertions(+), 186 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index 0702d2531bc7..01ed0e57d243 100644
@@ -164,7 +163,7 @@ index 574422205005..4ac231a6dc37 100644
  #ifdef ACPI_APPLICATION
  	/*
 diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
-index c6f017458958..36968e74c46a 100644
+index 0e1ec37070d1..609572104073 100644
 --- a/drivers/ata/libata-eh.c
 +++ b/drivers/ata/libata-eh.c
 @@ -175,8 +175,9 @@ static void ata_eh_handle_port_resume(struct ata_port *ap)
@@ -206,15 +205,15 @@ index 691eeea2f19a..17ca4223fff8 100644
  		    const struct attribute_group **groups,
  		    const char *fmt, va_list args)
 diff --git a/drivers/clk/clkdev.c b/drivers/clk/clkdev.c
-index 89cc700fbc37..0deb011c8b08 100644
+index 97ae60fa1584..06340d501321 100644
 --- a/drivers/clk/clkdev.c
 +++ b/drivers/clk/clkdev.c
 @@ -250,7 +250,7 @@ struct clk_lookup_alloc {
  	char	con_id[MAX_CON_ID];
  };
  
--static struct clk_lookup * __init_refok
-+static __printf(3, 0) struct clk_lookup * __init_refok
+-static struct clk_lookup * __ref
++static __printf(3, 0) struct clk_lookup * __ref
  vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	va_list ap)
  {
@@ -238,7 +237,7 @@ index 89cc700fbc37..0deb011c8b08 100644
  						const char *dev_id, ...)
  {
 diff --git a/drivers/gpu/drm/i915/i915_gpu_error.c b/drivers/gpu/drm/i915/i915_gpu_error.c
-index 89725c9efc25..f1b9ef842c69 100644
+index 9d73d2216adc..c3c22f3ced15 100644
 --- a/drivers/gpu/drm/i915/i915_gpu_error.c
 +++ b/drivers/gpu/drm/i915/i915_gpu_error.c
 @@ -129,8 +129,9 @@ static void __i915_error_advance(struct drm_i915_error_state_buf *e,
@@ -254,10 +253,10 @@ index 89725c9efc25..f1b9ef842c69 100644
  	unsigned len;
  
 diff --git a/drivers/iio/industrialio-trigger.c b/drivers/iio/industrialio-trigger.c
-index 0c52dfe64977..e6e1b0bc7aa1 100644
+index 7ad82fdd3e5b..566d6f69f63d 100644
 --- a/drivers/iio/industrialio-trigger.c
 +++ b/drivers/iio/industrialio-trigger.c
-@@ -455,7 +455,8 @@ static void iio_trig_subirqunmask(struct irq_data *d)
+@@ -480,7 +480,8 @@ static void iio_trig_subirqunmask(struct irq_data *d)
  	trig->subirqs[d->irq - trig->subirq_base].enabled = true;
  }
  
@@ -1061,10 +1060,10 @@ index e4a355aefb25..46224f167cc9 100644
  	while (len) {
  		data = *(u16 *)buf;
 diff --git a/drivers/staging/lustre/lustre/include/lu_object.h b/drivers/staging/lustre/lustre/include/lu_object.h
-index 2816512185af..c9e71c4d0562 100644
+index 6e25c1bb6aa3..bf3bf81d4604 100644
 --- a/drivers/staging/lustre/lustre/include/lu_object.h
 +++ b/drivers/staging/lustre/lustre/include/lu_object.h
-@@ -772,8 +772,8 @@ struct lu_object *lu_object_locate(struct lu_object_header *h,
+@@ -768,8 +768,8 @@ struct lu_object *lu_object_locate(struct lu_object_header *h,
  /**
   * Printer function emitting messages through libcfs_debug_msg().
   */
@@ -1148,10 +1147,10 @@ index 562603d7aabe..7ee44756232b 100644
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
 diff --git a/include/linux/iio/iio.h b/include/linux/iio/iio.h
-index 7c29cb0124ae..0ddb5d2b6887 100644
+index 854e2dad1e0d..3c19402cb8ba 100644
 --- a/include/linux/iio/iio.h
 +++ b/include/linux/iio/iio.h
-@@ -638,7 +638,7 @@ static inline struct iio_dev *iio_priv_to_dev(void *priv)
+@@ -644,7 +644,7 @@ static inline struct iio_dev *iio_priv_to_dev(void *priv)
  void iio_device_free(struct iio_dev *indio_dev);
  struct iio_dev *devm_iio_device_alloc(struct device *dev, int sizeof_priv);
  void devm_iio_device_free(struct device *dev, struct iio_dev *indio_dev);
@@ -1186,7 +1185,7 @@ index be007610ceb0..d168c5eb913b 100644
  
  struct event_filter;
 diff --git a/kernel/audit.c b/kernel/audit.c
-index 8d528f9930da..e1f90541cf95 100644
+index a8a91bd2b2a9..d596e1b2828a 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
 @@ -1457,8 +1457,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
@@ -1201,10 +1200,10 @@ index 8d528f9930da..e1f90541cf95 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 8a4bd6b68a0b..98ba85d63941 100644
+index dade4c9559cc..27a41122f340 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -2283,7 +2283,7 @@ out:
+@@ -2513,7 +2513,7 @@ out_nobuffer:
  }
  EXPORT_SYMBOL_GPL(trace_vbprintk);
  
@@ -1214,10 +1213,10 @@ index 8a4bd6b68a0b..98ba85d63941 100644
  		      unsigned long ip, const char *fmt, va_list args)
  {
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 5167c366d6b7..b7682ae386fa 100644
+index f783df416726..b9e59bc1f085 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -700,15 +700,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -729,15 +729,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(cycle_t nsec);
@@ -1254,7 +1253,7 @@ index 0bb9cf2d53e6..34de4ba750d6 100644
  	struct trace_seq *s = &iter->seq;
  
 diff --git a/mm/slub.c b/mm/slub.c
-index 825ff4505336..f6ab953447e7 100644
+index 850737bdfbd8..d936a9416904 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
 @@ -674,8 +674,8 @@ void object_err(struct kmem_cache *s, struct page *page,
@@ -1312,18 +1311,6 @@ index 3d3fda05b32d..3c4dcc19f38b 100644
  			       &inet->inet_saddr, ntohs(inet->inet_sport),
  			       &inet->inet_daddr, ntohs(inet->inet_dport),
  			       size);
-diff --git a/net/rds/ib.h b/net/rds/ib.h
-index 627fb79aee65..7a4fa4a6a019 100644
---- a/net/rds/ib.h
-+++ b/net/rds/ib.h
-@@ -333,6 +333,7 @@ void rds_ib_conn_shutdown(struct rds_connection *conn);
- void rds_ib_state_change(struct sock *sk);
- int rds_ib_listen_init(void);
- void rds_ib_listen_stop(void);
-+__printf(2, 3)
- void __rds_ib_conn_error(struct rds_connection *conn, const char *, ...);
- int rds_ib_cm_handle_connect(struct rdma_cm_id *cm_id,
- 			     struct rdma_cm_event *event);
 diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
 index 1fd464764765..cc323c45008f 100644
 --- a/net/tipc/netlink_compat.c
@@ -1592,7 +1579,7 @@ index 361e7a284699..558ffd21c285 100644
  /********** External variable definitions. **********/
  
 diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
-index c4464858bf01..fd1dfa0aff6c 100644
+index 8698c26773b3..1431487ae366 100644
 --- a/sound/soc/soc-dapm.c
 +++ b/sound/soc/soc-dapm.c
 @@ -137,7 +137,8 @@ static void pop_wait(u32 pop_time)

@@ -8,24 +8,24 @@ Subject: [PATCH] {BUG new in 4.4} uninitialized variables
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/net/tipc/node.c b/net/tipc/node.c
-index 23d4761842a0..7fbe9a3e78a8 100644
+index 21974191e425..8688df11f992 100644
 --- a/net/tipc/node.c
 +++ b/net/tipc/node.c
-@@ -690,7 +690,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
+@@ -684,7 +684,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
  {
  	struct tipc_link_entry *le = &n->links[bearer_id];
  	struct tipc_link *l = le->link;
 -	struct tipc_media_addr *maddr;
 +	struct tipc_media_addr *maddr /* = NULL; TODO: is it useful to silent compiler warnings? */;
  	struct sk_buff_head xmitq;
+ 	int old_bearer_id = bearer_id;
  
- 	if (!l)
-@@ -709,6 +709,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
+@@ -704,6 +704,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
  	} else {
  		/* Defuse pending tipc_node_link_up() */
  		tipc_link_fsm_evt(l, LINK_RESET_EVT);
 +		maddr = NULL; /* BUG? */
  	}
  	tipc_node_write_unlock(n);
- 	tipc_bearer_xmit(n->net, bearer_id, &xmitq, maddr);
+ 	if (delete)
 -- 

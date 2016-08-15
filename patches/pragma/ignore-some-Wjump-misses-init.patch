@@ -15,7 +15,7 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
  8 files changed, 28 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 3da4cf8d18b6..e049a62f628f 100644
+index 9e66cd1d7b78..07f1e7c746e6 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
 @@ -459,6 +459,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
@@ -37,10 +37,10 @@ index 3da4cf8d18b6..e049a62f628f 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index eec9f90ba030..4d5fa9233878 100644
+index f72f23b8fdab..7c34d81c504c 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -2203,6 +2203,9 @@ static int do_check(struct verifier_env *env)
+@@ -2227,6 +2227,9 @@ static int do_check(struct verifier_env *env)
  	int insn_processed = 0;
  	bool do_print_state = false;
  
@@ -50,7 +50,7 @@ index eec9f90ba030..4d5fa9233878 100644
  	init_reg_state(regs);
  	insn_idx = 0;
  	for (;;) {
-@@ -2456,6 +2459,7 @@ process_bpf_exit:
+@@ -2480,6 +2483,7 @@ process_bpf_exit:
  
  	verbose("processed %d insns\n", insn_processed);
  	return 0;
@@ -81,7 +81,7 @@ index 5d845ffd7982..5753621fd05c 100644
  			iter->skip++;
  			iter->p = p;
 diff --git a/mm/mmap.c b/mm/mmap.c
-index de2c1769cc68..3c246ae5042d 100644
+index ca9d91bca0d6..d25019018de9 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
 @@ -629,6 +629,9 @@ int vma_adjust(struct vm_area_struct *vma, unsigned long start,
@@ -92,9 +92,9 @@ index de2c1769cc68..3c246ae5042d 100644
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wjump-misses-init"
  	if (next && !insert) {
- 		struct vm_area_struct *exporter = NULL;
+ 		struct vm_area_struct *exporter = NULL, *importer = NULL;
  
-@@ -808,6 +811,7 @@ again:			remove_next = 1 + (end > next->vm_end);
+@@ -819,6 +822,7 @@ again:
  	validate_mm(mm);
  
  	return 0;
@@ -103,10 +103,10 @@ index de2c1769cc68..3c246ae5042d 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index eb12d2161fb2..000804b5009e 100644
+index 3864b4b68fa1..041a2ad75e3e 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -1505,6 +1505,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1506,6 +1506,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  	    unlikely((err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC))))
  		return err;
  
@@ -116,7 +116,7 @@ index eb12d2161fb2..000804b5009e 100644
  	i = 0;
  	if (offset >= len)
  		goto drop_pages;
-@@ -1521,6 +1524,7 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1522,6 +1525,7 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  
  drop_pages:
  		skb_shinfo(skb)->nr_frags = i;
@@ -146,10 +146,10 @@ index 6ed9f65fb945..1a094363afc1 100644
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index 3708de2a6683..f56d608aaf12 100644
+index 32b048e524d6..a949a95b804a 100644
 --- a/net/ipv4/tcp_ipv4.c
 +++ b/net/ipv4/tcp_ipv4.c
-@@ -1885,6 +1885,7 @@ get_sk:
+@@ -1882,6 +1882,7 @@ get_sk:
  			return sk;
  		icsk = inet_csk(sk);
  	}

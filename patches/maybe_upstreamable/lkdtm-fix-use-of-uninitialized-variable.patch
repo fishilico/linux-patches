@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 30 Jul 2016 09:56:07 +0200
+Subject: [PATCH] {MAYBE UPS} lkdtm: fix use of uninitialized variable
+
+---
+ drivers/misc/lkdtm_usercopy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/misc/lkdtm_usercopy.c b/drivers/misc/lkdtm_usercopy.c
+index 5a3fd76eec27..f0b24904720d 100644
+--- a/drivers/misc/lkdtm_usercopy.c
++++ b/drivers/misc/lkdtm_usercopy.c
+@@ -40,7 +40,7 @@ static noinline void do_usercopy_stack(bool to_user, bool bad_frame)
+ {
+ 	unsigned long user_addr;
+ 	unsigned char good_stack[32];
+-	unsigned char *bad_stack;
++	unsigned char *bad_stack = NULL /* harmless bug */;
+ 	int i;
+ 
+ 	/* Exercise stack to avoid everything living in registers. */
+-- 

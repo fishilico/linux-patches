@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 6 Aug 2016 11:18:43 +0200
+Subject: [PATCH] {PRINTF} caif-hsi: silent -Wformat-security warning
+
+clang reports:
+
+    drivers/net/caif/caif_hsi.c:1204:14: error: format string is
+    not a string literal (potentially insecure) [-Werror,-Wformat-security]
+            cfhsi->wq = alloc_ordered_workqueue(cfhsi->ndev->name, WQ_MEM_RECLAIM);
+                        ^                       ~~~~~~~~~~~~~~~~~
+---
+ drivers/net/caif/caif_hsi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/caif/caif_hsi.c b/drivers/net/caif/caif_hsi.c
+index ddabce759456..cf84e0dfecb0 100644
+--- a/drivers/net/caif/caif_hsi.c
++++ b/drivers/net/caif/caif_hsi.c
+@@ -1201,7 +1201,7 @@ static int cfhsi_open(struct net_device *ndev)
+ 	clear_bit(CFHSI_AWAKE, &cfhsi->bits);
+ 
+ 	/* Create work thread. */
+-	cfhsi->wq = alloc_ordered_workqueue(cfhsi->ndev->name, WQ_MEM_RECLAIM);
++	cfhsi->wq = alloc_ordered_workqueue("%s", WQ_MEM_RECLAIM, cfhsi->ndev->name);
+ 	if (!cfhsi->wq) {
+ 		netdev_err(cfhsi->ndev, "%s: Failed to create work queue.\n",
+ 			__func__);
+-- 

@@ -159,7 +159,7 @@ index 491020b2826d..0b81cfd03555 100644
  	if (argc != 4) {
  		printf("Usage: vdso2c RAW_INPUT STRIPPED_INPUT OUTPUT\n");
 diff --git a/arch/x86/entry/vdso/vdso2c.h b/arch/x86/entry/vdso/vdso2c.h
-index 63a03bb91497..a02435d25132 100644
+index 4f741192846d..219411004323 100644
 --- a/arch/x86/entry/vdso/vdso2c.h
 +++ b/arch/x86/entry/vdso/vdso2c.h
 @@ -9,10 +9,10 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
@@ -175,7 +175,7 @@ index 63a03bb91497..a02435d25132 100644
  	unsigned long j;
  	ELF(Shdr) *symtab_hdr = NULL, *strtab_hdr, *secstrings_hdr,
  		*alt_sec = NULL;
-@@ -83,7 +83,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
+@@ -89,7 +89,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
  	for (i = 0;
  	     i < GET_LE(&symtab_hdr->sh_size) / GET_LE(&symtab_hdr->sh_entsize);
  	     i++) {
@@ -184,7 +184,7 @@ index 63a03bb91497..a02435d25132 100644
  		ELF(Sym) *sym = raw_addr + GET_LE(&symtab_hdr->sh_offset) +
  			GET_LE(&symtab_hdr->sh_entsize) * i;
  		const char *name = raw_addr + GET_LE(&strtab_hdr->sh_offset) +
-@@ -102,7 +102,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
+@@ -108,7 +108,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
  				 * on syms[k] being a signed type of the
  				 * correct width.
  				 */
@@ -1200,7 +1200,7 @@ index 360a62df2b5e..3e6b97697aa5 100644
            register int o = wordlist[key].name;
            if (o >= 0)
 diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index f921ef4ac862..52d318543f90 100644
+index 37e8ecc33ca0..2f4ebba5c43b 100644
 --- a/scripts/mod/file2alias.c
 +++ b/scripts/mod/file2alias.c
 @@ -128,7 +128,7 @@ do {                                                            \
@@ -1391,8 +1391,8 @@ index f921ef4ac862..52d318543f90 100644
  	add_wildcard(alias);
  	return 1;
  }
-@@ -1290,7 +1291,7 @@ static int do_hda_entry(const char *filename, void *symval, char *alias)
- ADD_TO_DEVTABLE("hdaudio", hda_device_id, do_hda_entry);
+@@ -1302,7 +1303,7 @@ static int do_fsl_mc_entry(const char *filename, void *symval,
+ ADD_TO_DEVTABLE("fslmc", fsl_mc_device_id, do_fsl_mc_entry);
  
  /* Does namelen bytes of name exactly match the symbol? */
 -static bool sym_is(const char *name, unsigned namelen, const char *symbol)
@@ -1400,7 +1400,7 @@ index f921ef4ac862..52d318543f90 100644
  {
  	if (namelen != strlen(symbol))
  		return false;
-@@ -1329,7 +1330,7 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
+@@ -1341,7 +1342,7 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
  	void *symval;
  	char *zeros = NULL;
  	const char *name, *identifier;
@@ -1409,7 +1409,7 @@ index f921ef4ac862..52d318543f90 100644
  
  	/* We're looking for a section relative symbol */
  	if (!sym->st_shndx || get_secindex(info, sym) >= info->num_sections)
-@@ -1352,7 +1353,7 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
+@@ -1364,7 +1365,7 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
  	identifier = strstr(name, "__");
  	if (!identifier)
  		return;

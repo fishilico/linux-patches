@@ -25,7 +25,6 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  drivers/net/ethernet/sun/niu.c                            | 1 +
  drivers/net/wireless/broadcom/b43/phy_lp.c                | 2 +-
  drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c | 5 ++++-
- drivers/net/wireless/intel/iwlwifi/mvm/rx.c               | 2 +-
  drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c      | 4 +++-
  drivers/pwm/pwm-img.c                                     | 2 +-
  drivers/scsi/qla2xxx/qla_mr.c                             | 1 +
@@ -45,10 +44,10 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  net/nfc/nci/hci.c                                         | 1 +
  net/tipc/socket.c                                         | 3 ++-
  scripts/sortextable.h                                     | 1 +
- 40 files changed, 67 insertions(+), 29 deletions(-)
+ 39 files changed, 66 insertions(+), 28 deletions(-)
 
 diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 9ef978d69c22..5983b5bc8718 100644
+index 9616cf76940c..b042776ab125 100644
 --- a/arch/x86/kernel/crash.c
 +++ b/arch/x86/kernel/crash.c
 @@ -616,7 +616,7 @@ static int determine_backup_region(u64 start, u64 end, void *arg)
@@ -61,10 +60,10 @@ index 9ef978d69c22..5983b5bc8718 100644
  
  	/*
 diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
-index 2bcfb5f2bc44..131bedd5bb4b 100644
+index 8771766d46b6..df760ec0e44e 100644
 --- a/arch/x86/kernel/hw_breakpoint.c
 +++ b/arch/x86/kernel/hw_breakpoint.c
-@@ -351,6 +351,7 @@ int arch_validate_hwbkpt_settings(struct perf_event *bp)
+@@ -352,6 +352,7 @@ int arch_validate_hwbkpt_settings(struct perf_event *bp)
  #endif
  	default:
  		WARN_ON_ONCE(1);
@@ -73,10 +72,10 @@ index 2bcfb5f2bc44..131bedd5bb4b 100644
  
  	/*
 diff --git a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
-index b64f42d2c3ae..f581e68a1088 100644
+index 6c321b0d8a1e..5803abe273e1 100644
 --- a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 +++ b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
-@@ -1016,6 +1016,10 @@ static int init_overdrive_limits(struct pp_hwmgr *hwmgr,
+@@ -1032,6 +1032,10 @@ static int init_overdrive_limits(struct pp_hwmgr *hwmgr,
  		result = init_overdrive_limits_V2_1(hwmgr,
  				powerplay_table,
  				(const ATOM_FIRMWARE_INFO_V2_1 *)fw_info);
@@ -88,10 +87,10 @@ index b64f42d2c3ae..f581e68a1088 100644
  	if (hwmgr->platform_descriptor.overdriveLimit.engineClock > 0
  		&& hwmgr->platform_descriptor.overdriveLimit.memoryClock > 0
 diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index aad26851cee3..93b7fbc4199f 100644
+index 11681501d7b1..c31ffd04532b 100644
 --- a/drivers/gpu/drm/i915/i915_gem.c
 +++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -1158,7 +1158,7 @@ static unsigned long local_clock_us(unsigned *cpu)
+@@ -1367,7 +1367,7 @@ static unsigned long local_clock_us(unsigned *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned cpu)
  {
@@ -101,10 +100,10 @@ index aad26851cee3..93b7fbc4199f 100644
  	if (time_after(local_clock_us(&this_cpu), timeout))
  		return true;
 diff --git a/drivers/gpu/drm/qxl/qxl_draw.c b/drivers/gpu/drm/qxl/qxl_draw.c
-index 56e1d633875e..7bc9fc8396ae 100644
+index ffe885395145..84a36cfc8f54 100644
 --- a/drivers/gpu/drm/qxl/qxl_draw.c
 +++ b/drivers/gpu/drm/qxl/qxl_draw.c
-@@ -280,7 +280,7 @@ void qxl_draw_dirty_fb(struct qxl_device *qdev,
+@@ -281,7 +281,7 @@ void qxl_draw_dirty_fb(struct qxl_device *qdev,
  	int i;
  	int left, right, top, bottom;
  	int width, height;
@@ -114,10 +113,10 @@ index 56e1d633875e..7bc9fc8396ae 100644
  	struct qxl_rect *rects;
  	int stride = qxl_fb->base.pitches[0];
 diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-index 1a1a87cbf109..479cc8a83d17 100644
+index dc5beff2b4aa..2318473b3aad 100644
 --- a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
 +++ b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-@@ -4054,6 +4054,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
+@@ -4052,6 +4052,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
  		goto out_err;
  
  	vmw_query_bo_switch_commit(dev_priv, sw_context);
@@ -153,7 +152,7 @@ index ca4abe1ccd8d..83193b176826 100644
  			fifo_pop(&ca->free_inc, bucket);
  
 diff --git a/drivers/media/dvb-frontends/m88rs2000.c b/drivers/media/dvb-frontends/m88rs2000.c
-index a09b12313a73..0e9975ce8cc5 100644
+index ef79a4ec31e2..e83e3dc54322 100644
 --- a/drivers/media/dvb-frontends/m88rs2000.c
 +++ b/drivers/media/dvb-frontends/m88rs2000.c
 @@ -681,6 +681,7 @@ static int m88rs2000_set_frontend(struct dvb_frontend *fe)
@@ -165,10 +164,10 @@ index a09b12313a73..0e9975ce8cc5 100644
  		reg = m88rs2000_readreg(state, 0x8c);
  		if ((reg & 0xee) == 0xee) {
 diff --git a/drivers/media/dvb-frontends/mb86a20s.c b/drivers/media/dvb-frontends/mb86a20s.c
-index fb88dddaf3a3..9f7ea694afd2 100644
+index 41325328a22e..c24ad0aa647f 100644
 --- a/drivers/media/dvb-frontends/mb86a20s.c
 +++ b/drivers/media/dvb-frontends/mb86a20s.c
-@@ -1970,6 +1970,7 @@ static int mb86a20s_read_status_and_stats(struct dvb_frontend *fe,
+@@ -1971,6 +1971,7 @@ static int mb86a20s_read_status_and_stats(struct dvb_frontend *fe,
  	if (status_nr < 0) {
  		dev_err(&state->i2c->dev,
  			"%s: Can't read frontend lock status\n", __func__);
@@ -177,7 +176,7 @@ index fb88dddaf3a3..9f7ea694afd2 100644
  	}
  
 diff --git a/drivers/media/platform/am437x/am437x-vpfe.c b/drivers/media/platform/am437x/am437x-vpfe.c
-index e749eb7c3be9..e7dcc31b9cfb 100644
+index b33b9e35e60e..4c69a41a0194 100644
 --- a/drivers/media/platform/am437x/am437x-vpfe.c
 +++ b/drivers/media/platform/am437x/am437x-vpfe.c
 @@ -1074,6 +1074,7 @@ static int vpfe_config_ccdc_image_format(struct vpfe_device *vpfe)
@@ -318,10 +317,10 @@ index 6922cbb99a04..7f71ede46738 100644
  
  	lpphy_read_tx_pctl_mode_from_hardware(dev);
 diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-index c7550dab6a23..f7db71e5189a 100644
+index f549c25608d6..0fbda204870d 100644
 --- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
 +++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-@@ -289,6 +289,7 @@ static int brcmf_sdiod_request_data(struct brcmf_sdio_dev *sdiodev, u8 fn,
+@@ -293,6 +293,7 @@ static int brcmf_sdiod_request_data(struct brcmf_sdio_dev *sdiodev, u8 fn,
  		break;
  	default:
  		brcmf_err("invalid size: %d\n", regsz);
@@ -329,7 +328,7 @@ index c7550dab6a23..f7db71e5189a 100644
  		break;
  	}
  
-@@ -421,8 +422,10 @@ u32 brcmf_sdiod_regrl(struct brcmf_sdio_dev *sdiodev, u32 addr, int *ret)
+@@ -425,8 +426,10 @@ u32 brcmf_sdiod_regrl(struct brcmf_sdio_dev *sdiodev, u32 addr, int *ret)
  
  	brcmf_dbg(SDIO, "addr:0x%08x\n", addr);
  	retval = brcmf_sdiod_addrprep(sdiodev, sizeof(data), &addr);
@@ -341,21 +340,8 @@ index c7550dab6a23..f7db71e5189a 100644
  	retval = brcmf_sdiod_regrw_helper(sdiodev, addr, sizeof(data), &data,
  					  false);
  	brcmf_dbg(SDIO, "data:0x%08x\n", data);
-diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/rx.c b/drivers/net/wireless/intel/iwlwifi/mvm/rx.c
-index ab7f7eda9c13..709227aea5a7 100644
---- a/drivers/net/wireless/intel/iwlwifi/mvm/rx.c
-+++ b/drivers/net/wireless/intel/iwlwifi/mvm/rx.c
-@@ -268,7 +268,7 @@ void iwl_mvm_rx_rx_mpdu(struct iwl_mvm *mvm, struct napi_struct *napi,
- 	struct ieee80211_sta *sta = NULL;
- 	struct sk_buff *skb;
- 	u32 len;
--	u32 ampdu_status;
-+	u32 ampdu_status = 0; /* BUG? */
- 	u32 rate_n_flags;
- 	u32 rx_pkt_status;
- 	u8 crypt_len = 0;
 diff --git a/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c b/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c
-index 445f681d08c0..7839f31ed71e 100644
+index 285818df149b..19921dc27850 100644
 --- a/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c
 +++ b/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c
 @@ -1031,9 +1031,11 @@ static u8 _rtl8723be_get_txpower_index(struct ieee80211_hw *hw, u8 path,
@@ -478,10 +464,10 @@ index 75a557432d0f..f43bc74aea02 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index 22297f9b0fd5..3e43d073fb47 100644
+index 51b4e0de1fdc..581a170f0828 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
-@@ -2026,7 +2026,7 @@ xfs_difree_finobt(
+@@ -2030,7 +2030,7 @@ xfs_difree_finobt(
  	struct xfs_agi			*agi = XFS_BUF_TO_AGI(agbp);
  	xfs_agnumber_t			agno = be32_to_cpu(agi->agi_seqno);
  	struct xfs_btree_cur		*cur;
@@ -491,10 +477,10 @@ index 22297f9b0fd5..3e43d073fb47 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 835997843846..376eee3c4fe7 100644
+index e8638fd2c0c3..546fb10ba6b6 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
-@@ -1035,7 +1035,7 @@ xlog_verify_tail(
+@@ -1036,7 +1036,7 @@ xlog_verify_tail(
  	int			count;
  	int			error = 0;
  	bool			wrapped;
@@ -504,10 +490,10 @@ index 835997843846..376eee3c4fe7 100644
  	bp = xlog_get_bp(log, 1);
  	if (!bp)
 diff --git a/include/linux/sunrpc/cache.h b/include/linux/sunrpc/cache.h
-index ed03c9f7f908..7cb947472d6b 100644
+index 62a60eeacb0a..e1b0e4c7cd07 100644
 --- a/include/linux/sunrpc/cache.h
 +++ b/include/linux/sunrpc/cache.h
-@@ -295,7 +295,7 @@ static inline int get_time(char **bpp, time_t *time)
+@@ -293,7 +293,7 @@ static inline int get_time(char **bpp, time_t *time)
  
  static inline time_t get_expiry(char **bpp)
  {
@@ -517,10 +503,10 @@ index ed03c9f7f908..7cb947472d6b 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/mm/filemap.c b/mm/filemap.c
-index 20f3b1f33f0e..5d7c6ac8cd90 100644
+index 8a287dfc5372..3045defaa112 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -626,7 +626,7 @@ static int __add_to_page_cache_locked(struct page *page,
+@@ -646,7 +646,7 @@ static int __add_to_page_cache_locked(struct page *page,
  				      void **shadowp)
  {
  	int huge = PageHuge(page);
@@ -543,10 +529,10 @@ index 8d426f637f58..bca0a08fd618 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tdls.c b/net/mac80211/tdls.c
-index 1c7d45a6d93e..58c2cfc01858 100644
+index b5d28f14b9cf..3436c1e92139 100644
 --- a/net/mac80211/tdls.c
 +++ b/net/mac80211/tdls.c
-@@ -1754,6 +1754,8 @@ call_drv:
+@@ -1755,6 +1755,8 @@ call_drv:
  		 "TDLS channel switch response received from %pM status %d\n",
  		 tf->sa, params.status);
  
@@ -556,10 +542,10 @@ index 1c7d45a6d93e..58c2cfc01858 100644
  	mutex_unlock(&local->sta_mtx);
  	dev_kfree_skb_any(params.tmpl_skb);
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index 203044379ce0..6dbf90db8cbf 100644
+index 91461c415525..60c392f7eb05 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2136,7 +2136,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
+@@ -2339,7 +2339,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
  	bool tdls_peer;
  	bool multicast;
  	u16 info_id = 0;
