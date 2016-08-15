@@ -22,9 +22,16 @@
 #
 # Build the kernel with allmodconfig configuration
 # Call with "-j$(nproc)" to compile with many processes
+#
+# Environment variables:
+#   $KBUILD_OUTPUT  Build directory
+#   $CC             C compiler (gcc, clang...)
+#   $HOSTCC         Host C Compiler (gcc, clang...)
+#   $HOSTCXX        Host C++ Compiler (g++, clang++...)
+#   $ALLYESCONFIG   if set to non-empty, build an allyesconfig instead of allmodconfig
 
 # This directory needs to be mounted with the exec flag
-export KBUILD_OUTPUT="/tmp/makepkg-$(id -nu)/gitlinux-patched"
+export KBUILD_OUTPUT="${KBUILD_OUTPUT:-/tmp/makepkg-$(id -nu)/gitlinux-patched}"
 
 # Build with clang by default
 export CC="${CC:-clang}"
@@ -33,6 +40,12 @@ export HOSTCC="${HOSTCC:-clang}"
 # Guess HOSTCXX from HOSTCC: gcc->g++ and clang->clang++
 HOSTCXX_FROM_HOSTCC="$(echo "$HOSTCC" | sed 's/gcc/g/')++"
 export HOSTCXX="${HOSTCXX:-$HOSTCXX_FROM_HOSTCC}"
+
+CONFIG_TARGET="${CONFIG_TARGET:-allmodconfig}"
+if [ -n "$ALLYESCONFIG" ]
+then
+    CONFIG_TARGET=allyesconfig
+fi
 
 # See also scripts/Makefile.extrawarn for extra warnings enabled with "make W=1, 2 or 3"
 
@@ -222,7 +235,7 @@ mkdir -p "$KBUILD_OUTPUT"
 # Use allmodconfig
 if ! [ -e "$KBUILD_OUTPUT/.config" ]
 then
-    make HOSTCC="$HOSTCC" HOSTCFLAGS="$HOSTCFLAGS" CC="$CC" allmodconfig
+    make HOSTCC="$HOSTCC" HOSTCFLAGS="$HOSTCFLAGS" CC="$CC" "$CONFIG_TARGET"
 
     # Disable some options
     # I don't want to debug Documentation/ examples.
@@ -257,6 +270,12 @@ then
 
     # Merge options
     make HOSTCC="$HOSTCC" HOSTCFLAGS="$HOSTCFLAGS" CC="$CC" oldconfig
+
+    # if allyesconfig, force static linking
+    if [ -n "$ALLYESCONFIG" ]
+    then
+        sed 's/=m$/=y/' -i "$KBUILD_OUTPUT/.config"
+    fi
 fi
 
 exec make HOSTCC="$HOSTCC" HOSTCFLAGS="$HOSTCFLAGS" CC="$CC" "$@"
