@@ -1,0 +1,238 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 9 Aug 2016 17:10:50 +0200
+Subject: [PATCH] {MAYBE UPS} include/uapi/linux: add missing files to Kbuild
+
+* Add missing files to Kbuild
+* Sort entries in Kbuild
+* Fix "make headers_check" after the changes
+
+TODO: CRYPTO_MAX_ALG_NAME definition is used in cryptouser.h but defined
+in include/linux/crypto.h (not uapi).
+---
+ include/uapi/linux/Kbuild       | 25 ++++++++++++++++++++++---
+ include/uapi/linux/bcache.h     |  2 +-
+ include/uapi/linux/btrfs_tree.h |  2 ++
+ include/uapi/linux/cryptouser.h |  6 ++++++
+ include/uapi/linux/pr.h         |  2 ++
+ include/uapi/linux/qrtr.h       |  1 +
+ 6 files changed, 34 insertions(+), 4 deletions(-)
+
+diff --git a/include/uapi/linux/Kbuild b/include/uapi/linux/Kbuild
+index 185f8ea2702f..50a21ac14384 100644
+--- a/include/uapi/linux/Kbuild
++++ b/include/uapi/linux/Kbuild
+@@ -64,7 +64,9 @@ header-y += auto_fs.h
+ header-y += auxvec.h
+ header-y += ax25.h
+ header-y += b1lli.h
++header-y += batman_adv.h
+ header-y += baycom.h
++header-y += bcache.h
+ header-y += bcm933xx_hcs.h
+ header-y += bfs_fs.h
+ header-y += binfmts.h
+@@ -75,6 +77,7 @@ header-y += bpf.h
+ header-y += bpqether.h
+ header-y += bsg.h
+ header-y += btrfs.h
++header-y += btrfs_tree.h
+ header-y += can.h
+ header-y += capability.h
+ header-y += capi.h
+@@ -90,7 +93,9 @@ header-y += coda_psdev.h
+ header-y += coff.h
+ header-y += connector.h
+ header-y += const.h
++header-y += coresight-stm.h
+ header-y += cramfs_fs.h
++header-y += cryptouser.h
+ header-y += cuda.h
+ header-y += cyclades.h
+ header-y += cycx_cfm.h
+@@ -102,6 +107,7 @@ header-y += dlm_device.h
+ header-y += dlm.h
+ header-y += dlm_netlink.h
+ header-y += dlm_plock.h
++header-y += dma-buf.h
+ header-y += dm-ioctl.h
+ header-y += dm-log-userspace.h
+ header-y += dn.h
+@@ -142,6 +148,7 @@ header-y += gigaset_dev.h
+ header-y += gpio.h
+ header-y += gsmmux.h
+ header-y += gtp.h
++header-y += hash_info.h
+ header-y += hdlcdrv.h
+ header-y += hdlc.h
+ header-y += hdreg.h
+@@ -150,6 +157,7 @@ header-y += hid.h
+ header-y += hidraw.h
+ header-y += hpet.h
+ header-y += hsr_netlink.h
++header-y += hw_breakpoint.h
+ header-y += hyperv.h
+ header-y += hysdn_if.h
+ header-y += i2c-dev.h
+@@ -221,7 +229,9 @@ header-y += ivtv.h
+ header-y += ixjuser.h
+ header-y += jffs2.h
+ header-y += joystick.h
++header-y += kcm.h
+ header-y += kcmp.h
++header-y += kcov.h
+ header-y += kdev_t.h
+ header-y += kd.h
+ header-y += kernelcapi.h
+@@ -242,11 +252,11 @@ ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/include/uapi/asm/kvm_para.h \
+ header-y += kvm_para.h
+ endif
+ 
+-header-y += hw_breakpoint.h
+ header-y += l2tp.h
+ header-y += libc-compat.h
+-header-y += lirc.h
++header-y += lightnvm.h
+ header-y += limits.h
++header-y += lirc.h
+ header-y += llc.h
+ header-y += loop.h
+ header-y += lp.h
+@@ -269,6 +279,7 @@ header-y += mii.h
+ header-y += minix_fs.h
+ header-y += mman.h
+ header-y += mmtimer.h
++header-y += module.h
+ header-y += mpls.h
+ header-y += mpls_iptunnel.h
+ header-y += mqueue.h
+@@ -309,6 +320,8 @@ header-y += nfs_fs.h
+ header-y += nfs.h
+ header-y += nfs_idmap.h
+ header-y += nfs_mount.h
++header-y += nilfs2_api.h
++header-y += nilfs2_ondisk.h
+ header-y += nl80211.h
+ header-y += n_r3964.h
+ header-y += nubus.h
+@@ -342,11 +355,13 @@ header-y += ppp_defs.h
+ header-y += ppp-ioctl.h
+ header-y += pps.h
+ header-y += prctl.h
++header-y += pr.h
+ header-y += psci.h
+ header-y += ptp_clock.h
+ header-y += ptrace.h
+ header-y += qnx4_fs.h
+ header-y += qnxtypes.h
++header-y += qrtr.h
+ header-y += quota.h
+ header-y += radeonfb.h
+ header-y += random.h
+@@ -392,9 +407,11 @@ header-y += soundcard.h
+ header-y += sound.h
+ header-y += stat.h
+ header-y += stddef.h
++header-y += stm.h
+ header-y += string.h
+ header-y += suspend_ioctls.h
+ header-y += swab.h
++header-y += sync_file.h
+ header-y += synclink.h
+ header-y += sysctl.h
+ header-y += sysinfo.h
+@@ -427,6 +444,8 @@ header-y += unistd.h
+ header-y += unix_diag.h
+ header-y += usbdevice_fs.h
+ header-y += usbip.h
++header-y += userfaultfd.h
++header-y += userio.h
+ header-y += utime.h
+ header-y += utsname.h
+ header-y += uuid.h
+@@ -461,6 +480,7 @@ header-y += vtpm_proxy.h
+ header-y += wait.h
+ header-y += wanrouter.h
+ header-y += watchdog.h
++header-y += wil6210_uapi.h
+ header-y += wimax.h
+ header-y += wireless.h
+ header-y += x25.h
+@@ -469,4 +489,3 @@ header-y += xfrm.h
+ header-y += xilinx-v4l2-controls.h
+ header-y += zorro.h
+ header-y += zorro_ids.h
+-header-y += userfaultfd.h
+diff --git a/include/uapi/linux/bcache.h b/include/uapi/linux/bcache.h
+index 22b6ad31c706..e3bb0635e94a 100644
+--- a/include/uapi/linux/bcache.h
++++ b/include/uapi/linux/bcache.h
+@@ -5,7 +5,7 @@
+  * Bcache on disk data structures
+  */
+ 
+-#include <asm/types.h>
++#include <linux/types.h>
+ 
+ #define BITMASK(name, type, field, offset, size)		\
+ static inline __u64 name(const type *k)				\
+diff --git a/include/uapi/linux/btrfs_tree.h b/include/uapi/linux/btrfs_tree.h
+index d5ad15a106a7..6a261cb52d95 100644
+--- a/include/uapi/linux/btrfs_tree.h
++++ b/include/uapi/linux/btrfs_tree.h
+@@ -1,6 +1,8 @@
+ #ifndef _BTRFS_CTREE_H_
+ #define _BTRFS_CTREE_H_
+ 
++#include <linux/types.h>
++
+ /*
+  * This header contains the structure definitions and constants used
+  * by file system objects that can be retrieved using
+diff --git a/include/uapi/linux/cryptouser.h b/include/uapi/linux/cryptouser.h
+index 79b5ded2001a..a8066ea42003 100644
+--- a/include/uapi/linux/cryptouser.h
++++ b/include/uapi/linux/cryptouser.h
+@@ -17,6 +17,10 @@
+  * this program; if not, write to the Free Software Foundation, Inc.,
+  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+  */
++#ifndef _LINUX_CRYPTOUSER_H
++#define _LINUX_CRYPTOUSER_H
++
++#include <linux/types.h>
+ 
+ /* Netlink configuration messages.  */
+ enum {
+@@ -114,3 +118,5 @@ struct crypto_report_kpp {
+ 
+ #define CRYPTO_REPORT_MAXSIZE (sizeof(struct crypto_user_alg) + \
+ 			       sizeof(struct crypto_report_blkcipher))
++
++#endif /* _LINUX_CRYPTOUSER_H */
+diff --git a/include/uapi/linux/pr.h b/include/uapi/linux/pr.h
+index 57d7c0f916b6..645ef3cf3dd0 100644
+--- a/include/uapi/linux/pr.h
++++ b/include/uapi/linux/pr.h
+@@ -1,6 +1,8 @@
+ #ifndef _UAPI_PR_H
+ #define _UAPI_PR_H
+ 
++#include <linux/types.h>
++
+ enum pr_type {
+ 	PR_WRITE_EXCLUSIVE		= 1,
+ 	PR_EXCLUSIVE_ACCESS		= 2,
+diff --git a/include/uapi/linux/qrtr.h b/include/uapi/linux/qrtr.h
+index 66c0748d26e2..9d76c566f66e 100644
+--- a/include/uapi/linux/qrtr.h
++++ b/include/uapi/linux/qrtr.h
+@@ -2,6 +2,7 @@
+ #define _LINUX_QRTR_H
+ 
+ #include <linux/socket.h>
++#include <linux/types.h>
+ 
+ struct sockaddr_qrtr {
+ 	__kernel_sa_family_t sq_family;
+-- 
