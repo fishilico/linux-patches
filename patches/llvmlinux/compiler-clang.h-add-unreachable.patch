@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 16 Aug 2016 11:08:43 +0200
+Subject: [PATCH] {For LLVMLinux} compiler-clang.h: add unreachable()
+ definition
+
+This fixes objtool warnings such as:
+
+   arch/x86/kernel/cpuid.o: warning: objtool: cpuid_smp_cpuid()+0x90:
+   function has unreachable instruction
+
+Without this, unreachable() is compiled as "do { } while (1)" (it is its
+definition in compiler.h), which is correctly detected as unreachable
+instructions by objtool.
+---
+ include/linux/compiler-clang.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/include/linux/compiler-clang.h b/include/linux/compiler-clang.h
+index de179993e039..7d7ccf57e511 100644
+--- a/include/linux/compiler-clang.h
++++ b/include/linux/compiler-clang.h
+@@ -15,3 +15,6 @@
+  * with any version that can compile the kernel
+  */
+ #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
++
++/* Same as gcc, to fix objtool warnings */
++#define unreachable() __builtin_unreachable()
+-- 
