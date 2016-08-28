@@ -197,6 +197,7 @@ then
     HOSTCFLAGS="$HOSTCFLAGS -Wno-gnu-empty-initializer"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-gnu-statement-expression"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-gnu-zero-variadic-macro-arguments"
+    HOSTCFLAGS="$HOSTCFLAGS -Wno-incompatible-pointer-types-discards-qualifiers" # constant strings get assigned to char* variables
     HOSTCFLAGS="$HOSTCFLAGS -Wno-language-extension-token" # "inline"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-long-long"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-overlength-strings" # Some string literals have more that 509 characters
@@ -220,6 +221,7 @@ then
 else
     HOSTCC="${HOSTCC:-gcc}"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-clobbered" # Flase positives of clobbered variables
+    HOSTCFLAGS="$HOSTCFLAGS -Wno-discarded-qualifiers" # Many helper programs mix const char* in char* variables
     HOSTCFLAGS="$HOSTCFLAGS -Wno-inline" # Remove funny GCC warnings
     HOSTCFLAGS="$HOSTCFLAGS -Wno-pointer-arith" # Linux does arithmetic on void pointers
     HOSTCFLAGS="$HOSTCFLAGS -Wno-error=nested-externs"
