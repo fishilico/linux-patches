@@ -50,6 +50,7 @@ do_build_test() {
 }
 
 # First compile with gcc
+# shellcheck disable=SC2030,SC2031
 (
     export CC=gcc
     export HOSTCC=gcc
@@ -58,6 +59,7 @@ do_build_test() {
 ) || exit $?
 
 # Then recompile with clang
+# shellcheck disable=SC2030,SC2031
 (
     export CC=clang
     export HOSTCC=clang
@@ -68,6 +70,7 @@ do_build_test() {
 # Now compile for ARM architecture if the compiler is found
 if [ "$(uname -m)" = "x86_64" ] && which arm-none-eabi-gcc > /dev/null 2>&1
 then
+    # shellcheck disable=SC2030,SC2031
     (
         export ARCH=arm
         export CROSS_COMPILE=arm-none-eabi-

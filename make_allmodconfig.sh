@@ -239,6 +239,8 @@ if ! [ -e "$KBUILD_OUTPUT/.config" ]
 then
     make HOSTCC="$HOSTCC" HOSTCFLAGS="$HOSTCFLAGS" CC="$CC" "$CONFIG_TARGET"
 
+    # shellcheck disable=SC2129
+
     # Disable some options
     # I don't want to debug Documentation/ examples.
     echo '# CONFIG_BUILD_DOCSRC is not set' >> "$KBUILD_OUTPUT/.config"
