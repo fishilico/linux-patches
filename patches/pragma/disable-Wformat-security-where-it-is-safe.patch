@@ -59,8 +59,6 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  kernel/debug/kdb/kdb_io.c                          | 18 +++++++++++++
  lib/test_printf.c                                  |  3 +++
  net/tipc/netlink_compat.c                          |  3 +++
- scripts/kconfig/conf.c                             | 18 +++++++++++++
- scripts/kconfig/menu.c                             |  3 +++
  sound/core/seq/seq_clientmgr.c                     |  3 +++
  sound/core/sound.c                                 |  3 +++
  sound/drivers/opl3/opl3_seq.c                      |  3 +++
@@ -69,7 +67,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  sound/pci/rme32.c                                  |  3 +++
  sound/pci/rme96.c                                  |  3 +++
  sound/usb/mixer_quirks.c                           |  3 +++
- 65 files changed, 375 insertions(+), 7 deletions(-)
+ 63 files changed, 354 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
 index 79d8ec849468..5a1216cfd9f1 100644
@@ -1422,100 +1420,6 @@ index 8e769e7a3691..a561038332cd 100644
  	tipc_tlv_sprintf(msg->rep, "\n");
  
  	return 0;
-diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
-index c3a43ab40e93..8106231b5b3e 100644
---- a/scripts/kconfig/conf.c
-+++ b/scripts/kconfig/conf.c
-@@ -75,9 +75,12 @@ static void strip(char *str)
- static void check_stdin(void)
- {
- 	if (!valid_stdin) {
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		printf(_("aborted!\n\n"));
- 		printf(_("Console input/output is redirected. "));
- 		printf(_("Run 'make oldconfig' to update configuration.\n\n"));
-+#pragma GCC diagnostic pop
- 		exit(1);
- 	}
- }
-@@ -87,7 +90,10 @@ static int conf_askvalue(struct symbol *sym, const char *def)
- 	enum symbol_type type = sym_get_type(sym);
- 
- 	if (!sym_has_value(sym))
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		printf(_("(NEW) "));
-+#pragma GCC diagnostic pop
- 
- 	line[0] = '\n';
- 	line[1] = 0;
-@@ -288,7 +294,10 @@ static int conf_choice(struct menu *menu)
- 			if (child->sym->name)
- 				printf(" (%s)", child->sym->name);
- 			if (!sym_has_value(child->sym))
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 				printf(_(" (NEW)"));
-+#pragma GCC diagnostic pop
- 			printf("\n");
- 		}
- 		printf(_("%*schoice"), indent - 1, "");
-@@ -436,7 +445,10 @@ static void check_conf(struct menu *menu)
- 				}
- 			} else if (input_mode != olddefconfig) {
- 				if (!conf_cnt++)
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 					printf(_("*\n* Restart config...\n*\n"));
-+#pragma GCC diagnostic pop
- 				rootEntry = menu_get_parent_menu(menu);
- 				conf(rootEntry);
- 			}
-@@ -637,8 +649,11 @@ int main(int ac, char **av)
- 		if (conf_get_changed()) {
- 			name = getenv("KCONFIG_NOSILENTUPDATE");
- 			if (name && *name) {
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 				fprintf(stderr,
- 					_("\n*** The configuration requires explicit update.\n\n"));
-+#pragma GCC diagnostic pop
- 				return 1;
- 			}
- 		}
-@@ -690,6 +705,8 @@ int main(int ac, char **av)
- 		/* silentoldconfig is used during the build so we shall update autoconf.
- 		 * All other commands are only used to generate a config.
- 		 */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		if (conf_get_changed() && conf_write(NULL)) {
- 			fprintf(stderr, _("\n*** Error during writing of the configuration.\n\n"));
- 			exit(1);
-@@ -709,6 +726,7 @@ int main(int ac, char **av)
- 			fprintf(stderr, _("\n*** Error during writing of the configuration.\n\n"));
- 			exit(1);
- 		}
-+#pragma GCC diagnostic pop
- 	}
- 	return 0;
- }
-diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
-index e8b0cd2ae19e..1d68adbdc0cd 100644
---- a/scripts/kconfig/menu.c
-+++ b/scripts/kconfig/menu.c
-@@ -584,7 +584,10 @@ static void get_prompt_str(struct gstr *r, struct property *prop,
- 	}
- 
- 	if (i > 0) {
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		str_printf(r, _("  Location:\n"));
-+#pragma GCC diagnostic pop
- 		for (j = 4; --i >= 0; j += 2) {
- 			menu = submenu[i];
- 			if (jump && menu == location)
 diff --git a/sound/core/seq/seq_clientmgr.c b/sound/core/seq/seq_clientmgr.c
 index d6d9419d8bac..2114cf2b2622 100644
 --- a/sound/core/seq/seq_clientmgr.c

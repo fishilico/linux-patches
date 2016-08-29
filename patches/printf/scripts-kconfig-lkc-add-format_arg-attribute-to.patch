@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 27 Aug 2016 17:46:46 +0200
+Subject: [PATCH] {PRINTF} scripts/kconfig/lkc: add format_arg attribute to
+ gettext()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When building with -Wformat-security, gcc complains about several
+printf() calls in scripts/kconfig/conf.c because it does not recognise
+the use of gettext():
+
+    scripts/kconfig/conf.c: In function ‘check_stdin’:
+    scripts/kconfig/conf.c:78:3: error: format not a string literal and
+    no format arguments [-Werror=format-security]
+       printf(_("aborted!\n\n"));
+       ^~~~~~
+
+The format_arg attribute has been defined to handle such a case.
+---
+ scripts/kconfig/lkc.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
+index 86396dfdf51f..a609f57dfb2a 100644
+--- a/scripts/kconfig/lkc.h
++++ b/scripts/kconfig/lkc.h
+@@ -11,7 +11,8 @@
+ #ifndef KBUILD_NO_NLS
+ # include <libintl.h>
+ #else
+-static inline const char *gettext(const char *txt) { return txt; }
++static inline __attribute__ ((format_arg(1)))
++const char *gettext(const char *txt) { return txt; }
+ static inline void textdomain(const char *domainname) {}
+ static inline void bindtextdomain(const char *name, const char *dir) {}
+ static inline char *bind_textdomain_codeset(const char *dn, char *c) { return c; }
+-- 
