@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 4 Sep 2016 20:37:14 +0200
+Subject: [PATCH] drm/i915/dsi: silence a warning about uninitialized return
+ value
+
+When building the kernel with clang and some warning flags, the compiler
+reports that the return value of dcs_get_backlight() may be
+uninitialized:
+
+    drivers/gpu/drm/i915/intel_dsi_dcs_backlight.c:53:2: error: variable
+    'data' is used uninitialized whenever 'for' loop exits because its
+    condition is false [-Werror,-Wsometimes-uninitialized]
+            for_each_dsi_port(port, intel_dsi->dcs_backlight_ports) {
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/gpu/drm/i915/intel_dsi.h:126:49: note: expanded from macro
+    'for_each_dsi_port'
+    #define for_each_dsi_port(__port, __ports_mask)
+                                for_each_port_masked(__port, __ports_mask)
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/gpu/drm/i915/i915_drv.h:322:26: note: expanded from macro
+    'for_each_port_masked'
+        for ((__port) = PORT_A; (__port) < I915_MAX_PORTS; (__port)++)  \
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/gpu/drm/i915/intel_dsi_dcs_backlight.c:60:9: note:
+    uninitialized use occurs here
+            return data;
+                   ^~~~
+
+As intel_dsi->dcs_backlight_ports seems to be always initialized to a
+non-null value, the content of the for loop is always executed and there
+is no bug in the current code. Nevertheless the compiler has no way of
+knowing that assumption, so initialize variable 'data' to silence the
+warning here.
+
+Signed-off-by: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+
+Sent-upstream: https://lkml.org/lkml/2016/9/4/161
+---
+ drivers/gpu/drm/i915/intel_dsi_dcs_backlight.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/i915/intel_dsi_dcs_backlight.c b/drivers/gpu/drm/i915/intel_dsi_dcs_backlight.c
+index ac7c6020c443..eec45856f910 100644
+--- a/drivers/gpu/drm/i915/intel_dsi_dcs_backlight.c
++++ b/drivers/gpu/drm/i915/intel_dsi_dcs_backlight.c
+@@ -46,7 +46,7 @@ static u32 dcs_get_backlight(struct intel_connector *connector)
+ 	struct intel_encoder *encoder = connector->encoder;
+ 	struct intel_dsi *intel_dsi = enc_to_intel_dsi(&encoder->base);
+ 	struct mipi_dsi_device *dsi_device;
+-	u8 data;
++	u8 data = 0;
+ 	enum port port;
+ 
+ 	/* FIXME: Need to take care of 16 bit brightness level */
+-- 
