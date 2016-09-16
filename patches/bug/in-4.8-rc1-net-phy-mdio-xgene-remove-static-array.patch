@@ -5,19 +5,23 @@ Subject: [PATCH] {BUG in 4.8-rc1} net/phy/mdio-xgene: remove static array
  declaration from header
 
 ---
- drivers/net/phy/mdio-xgene.c | 7 +++++++
+ drivers/net/phy/mdio-xgene.c | 9 +++++++++
  drivers/net/phy/mdio-xgene.h | 3 +++
- 2 files changed, 10 insertions(+)
+ 2 files changed, 12 insertions(+)
 
 diff --git a/drivers/net/phy/mdio-xgene.c b/drivers/net/phy/mdio-xgene.c
-index 775674808249..5e8ef6c23a78 100644
+index 775674808249..303e275e715f 100644
 --- a/drivers/net/phy/mdio-xgene.c
 +++ b/drivers/net/phy/mdio-xgene.c
-@@ -32,6 +32,11 @@
+@@ -32,6 +32,15 @@
  #include <net/ip.h>
  #include "mdio-xgene.h"
  
++#ifdef CONFIG_OF
 +static const struct of_device_id xgene_mdio_of_match[];
++#else
++static const struct of_device_id *xgene_mdio_of_match = NULL;
++#endif
 +#ifdef CONFIG_ACPI
 +static const struct acpi_device_id xgene_mdio_acpi_match[];
 +#endif
@@ -25,15 +29,6 @@ index 775674808249..5e8ef6c23a78 100644
  static bool xgene_mdio_status;
  
  static u32 xgene_enet_rd_mac(void __iomem *base_addr, u32 rd_addr)
-@@ -446,6 +451,8 @@ static const struct of_device_id xgene_mdio_of_match[] = {
- };
- 
- MODULE_DEVICE_TABLE(of, xgene_mdio_of_match);
-+#else
-+static const struct of_device_id xgene_mdio_of_match[] = {{}};
- #endif
- 
- #ifdef CONFIG_ACPI
 diff --git a/drivers/net/phy/mdio-xgene.h b/drivers/net/phy/mdio-xgene.h
 index 354241b53c1d..715970543e02 100644
 --- a/drivers/net/phy/mdio-xgene.h

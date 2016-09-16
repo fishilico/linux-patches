@@ -7,25 +7,21 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
 ---
  arch/x86/kernel/crash.c                                   | 2 +-
  arch/x86/kernel/hw_breakpoint.c                           | 1 +
+ drivers/acpi/sysfs.c                                      | 2 ++
  drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c     | 4 ++++
  drivers/gpu/drm/i915/i915_gem.c                           | 2 +-
  drivers/gpu/drm/qxl/qxl_draw.c                            | 2 +-
  drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c                   | 1 +
  drivers/iio/common/ssp_sensors/ssp_iio.c                  | 3 ++-
  drivers/md/bcache/alloc.c                                 | 2 +-
- drivers/media/dvb-frontends/m88rs2000.c                   | 1 +
- drivers/media/dvb-frontends/mb86a20s.c                    | 1 +
- drivers/media/platform/am437x/am437x-vpfe.c               | 5 ++++-
+ drivers/media/platform/am437x/am437x-vpfe.c               | 4 +++-
  drivers/media/radio/radio-si476x.c                        | 6 ++++--
- drivers/media/rc/ite-cir.c                                | 2 +-
  drivers/media/tuners/tda8290.c                            | 2 ++
  drivers/misc/qcom-coincell.c                              | 4 ++++
  drivers/misc/sgi-xp/xpc_partition.c                       | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_hmc.c                | 3 ++-
  drivers/net/ethernet/sun/niu.c                            | 1 +
  drivers/net/wireless/broadcom/b43/phy_lp.c                | 2 +-
- drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c | 5 ++++-
- drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c      | 4 +++-
+ drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c | 4 +++-
  drivers/pwm/pwm-img.c                                     | 2 +-
  drivers/scsi/qla2xxx/qla_mr.c                             | 1 +
  drivers/scsi/qla4xxx/ql4_os.c                             | 2 +-
@@ -38,13 +34,10 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  include/linux/sunrpc/cache.h                              | 2 +-
  mm/filemap.c                                              | 2 +-
  net/mac80211/mlme.c                                       | 2 +-
- net/mac80211/tdls.c                                       | 2 ++
  net/mac80211/tx.c                                         | 2 +-
  net/netfilter/core.c                                      | 2 +-
- net/nfc/nci/hci.c                                         | 1 +
  net/tipc/socket.c                                         | 3 ++-
- scripts/sortextable.h                                     | 1 +
- 39 files changed, 66 insertions(+), 28 deletions(-)
+ 32 files changed, 54 insertions(+), 25 deletions(-)
 
 diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
 index 9616cf76940c..b042776ab125 100644
@@ -71,6 +64,19 @@ index 8771766d46b6..df760ec0e44e 100644
  	}
  
  	/*
+diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
+index 358165e9f5b8..506e81706fd2 100644
+--- a/drivers/acpi/sysfs.c
++++ b/drivers/acpi/sysfs.c
+@@ -568,6 +568,8 @@ static int get_status(u32 index, acpi_event_status *status,
+ 		result = acpi_get_gpe_status(*handle, index, status);
+ 	} else if (index < (num_gpes + ACPI_NUM_FIXED_EVENTS))
+ 		result = acpi_get_event_status(index - num_gpes, status);
++	else
++	    return -EINVAL; /* -Wsometimes-uninitialized false positive: the compiler thinks num_gpes can change in a racy way */
+ 
+ 	return result;
+ }
 diff --git a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 index 6c321b0d8a1e..5803abe273e1 100644
 --- a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
@@ -113,14 +119,14 @@ index ffe885395145..84a36cfc8f54 100644
  	struct qxl_rect *rects;
  	int stride = qxl_fb->base.pitches[0];
 diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-index dc5beff2b4aa..2318473b3aad 100644
+index dc5beff2b4aa..9e1fb5cead99 100644
 --- a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
 +++ b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
 @@ -4052,6 +4052,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
  		goto out_err;
  
  	vmw_query_bo_switch_commit(dev_priv, sw_context);
-+	handle = 0; /* BUG? */
++	handle = 0; /* False positive: vmw_user_fence_create() sets the value if the function returns successfully */
  	ret = vmw_execbuf_fence_commands(file_priv, dev_priv,
  					 &fence,
  					 (user_fence_rep) ? &handle : NULL);
@@ -139,7 +145,7 @@ index a3ae165f8d9f..196350b5f9fb 100644
  	return iio_push_to_buffers_with_timestamp(indio_dev, spd->buffer,
  						  calculated_time);
 diff --git a/drivers/md/bcache/alloc.c b/drivers/md/bcache/alloc.c
-index ca4abe1ccd8d..83193b176826 100644
+index ca4abe1ccd8d..f276234199ea 100644
 --- a/drivers/md/bcache/alloc.c
 +++ b/drivers/md/bcache/alloc.c
 @@ -321,7 +321,7 @@ static int bch_allocator_thread(void *arg)
@@ -147,60 +153,28 @@ index ca4abe1ccd8d..83193b176826 100644
  		 */
  		while (!fifo_empty(&ca->free_inc)) {
 -			long bucket;
-+			long bucket = 0;
++			long bucket = 0; /* False positive: fifo_pop uses if(!fifo_empty()...) which is always true here. Maybe merge the while cond with the call to fifo_pop? */
  
  			fifo_pop(&ca->free_inc, bucket);
  
-diff --git a/drivers/media/dvb-frontends/m88rs2000.c b/drivers/media/dvb-frontends/m88rs2000.c
-index ef79a4ec31e2..e83e3dc54322 100644
---- a/drivers/media/dvb-frontends/m88rs2000.c
-+++ b/drivers/media/dvb-frontends/m88rs2000.c
-@@ -681,6 +681,7 @@ static int m88rs2000_set_frontend(struct dvb_frontend *fe)
- 	if (ret < 0)
- 		return -ENODEV;
- 
-+	status = 0; /* BUG? */
- 	for (i = 0; i < 25; i++) {
- 		reg = m88rs2000_readreg(state, 0x8c);
- 		if ((reg & 0xee) == 0xee) {
-diff --git a/drivers/media/dvb-frontends/mb86a20s.c b/drivers/media/dvb-frontends/mb86a20s.c
-index 41325328a22e..c24ad0aa647f 100644
---- a/drivers/media/dvb-frontends/mb86a20s.c
-+++ b/drivers/media/dvb-frontends/mb86a20s.c
-@@ -1971,6 +1971,7 @@ static int mb86a20s_read_status_and_stats(struct dvb_frontend *fe,
- 	if (status_nr < 0) {
- 		dev_err(&state->i2c->dev,
- 			"%s: Can't read frontend lock status\n", __func__);
-+		rc = status_nr; /* BUG? need to watch linux-next to see if it is already reported. */
- 		goto error;
- 	}
- 
 diff --git a/drivers/media/platform/am437x/am437x-vpfe.c b/drivers/media/platform/am437x/am437x-vpfe.c
-index b33b9e35e60e..4c69a41a0194 100644
+index b33b9e35e60e..1b2d5d0c342c 100644
 --- a/drivers/media/platform/am437x/am437x-vpfe.c
 +++ b/drivers/media/platform/am437x/am437x-vpfe.c
-@@ -1074,6 +1074,7 @@ static int vpfe_config_ccdc_image_format(struct vpfe_device *vpfe)
- 	case V4L2_FIELD_NONE:
- 		frm_fmt = CCDC_FRMFMT_PROGRESSIVE;
- 		/* buffer type only applicable for interlaced scan */
-+		ret = 0; /* BUG? */
- 		break;
- 
- 	case V4L2_FIELD_SEQ_TB:
-@@ -1588,8 +1589,10 @@ static int vpfe_s_fmt(struct file *file, void *priv,
+@@ -1588,8 +1588,10 @@ static int vpfe_s_fmt(struct file *file, void *priv,
  		ret = __vpfe_set_format(vpfe, fmt, &bpp);
  		if (ret)
  			return ret;
 -	} else /* Just make sure all of the fields are consistent */
 +	} else { /* Just make sure all of the fields are consistent */
  		*fmt = format;
-+		bpp = 0;
++		bpp = 0; /* BUG! */
 +	}
  
  	/* First detach any IRQ if currently attached */
  	vpfe_detach_irq(vpfe);
 diff --git a/drivers/media/radio/radio-si476x.c b/drivers/media/radio/radio-si476x.c
-index 271f725b17e8..aa5f865d47f4 100644
+index 271f725b17e8..66e5583ca1c4 100644
 --- a/drivers/media/radio/radio-si476x.c
 +++ b/drivers/media/radio/radio-si476x.c
 @@ -775,7 +775,8 @@ static int si476x_radio_s_hw_freq_seek(struct file *file, void *priv,
@@ -209,7 +183,7 @@ index 271f725b17e8..aa5f865d47f4 100644
  			goto unlock;
 -	}
 +	} else
-+		rangelow = 0; /* BUG? */
++		rangelow = 0; /* BUG! maybe use seek->rangelow? */
  	if (!seek->rangehigh) {
  		err = regmap_read(radio->core->regmap,
  				  SI476X_PROP_SEEK_BAND_TOP,
@@ -219,32 +193,19 @@ index 271f725b17e8..aa5f865d47f4 100644
  			goto unlock;
 -	}
 +	} else
-+		rangehigh = 0; /* BUG? */
++		rangehigh = 0; /* BUG! Same as above... */
  
  	if (rangelow > rangehigh) {
  		err = -EINVAL;
-diff --git a/drivers/media/rc/ite-cir.c b/drivers/media/rc/ite-cir.c
-index 0f301903aa6f..4ddb2d9b9465 100644
---- a/drivers/media/rc/ite-cir.c
-+++ b/drivers/media/rc/ite-cir.c
-@@ -228,7 +228,7 @@ static void ite_set_carrier_params(struct ite_dev *dev)
- {
- 	unsigned int freq, low_freq, high_freq;
- 	int allowance;
--	bool use_demodulator;
-+	bool use_demodulator = true; /* BUG? */
- 	bool for_tx = dev->transmitting;
- 
- 	ite_dbg("%s called", __func__);
 diff --git a/drivers/media/tuners/tda8290.c b/drivers/media/tuners/tda8290.c
-index 998e82bba9c0..d8290cc9037d 100644
+index 998e82bba9c0..6d808b52ed32 100644
 --- a/drivers/media/tuners/tda8290.c
 +++ b/drivers/media/tuners/tda8290.c
 @@ -240,6 +240,8 @@ static void tda8290_set_params(struct dvb_frontend *fe,
  	if (fe->ops.tuner_ops.set_analog_params)
  		fe->ops.tuner_ops.set_analog_params(fe, params);
  
-+	adc_sat = 0; /* BUG? */
++	adc_sat = 0; /* BUG? After 3 tries, what happens? */
 +	agc_stat = 0; /* BUG? */
  	for (i = 0; i < 3; i++) {
  		tuner_i2c_xfer_send_recv(&priv->i2c_props,
@@ -265,7 +226,7 @@ index 829a61dbd65f..cb958e350926 100644
  
  	return qcom_coincell_chgr_config(&chgr, rset, vset, enable);
 diff --git a/drivers/misc/sgi-xp/xpc_partition.c b/drivers/misc/sgi-xp/xpc_partition.c
-index 6956f7e7d439..fef483217b23 100644
+index 6956f7e7d439..b5ddd77d01a9 100644
 --- a/drivers/misc/sgi-xp/xpc_partition.c
 +++ b/drivers/misc/sgi-xp/xpc_partition.c
 @@ -70,7 +70,7 @@ xpc_get_rsvd_page_pa(int nasid)
@@ -273,24 +234,10 @@ index 6956f7e7d439..fef483217b23 100644
  	size_t len = 0;
  	size_t buf_len = 0;
 -	void *buf = buf;
-+	void *buf = NULL; /* BUG? */
++	void *buf = NULL; /* BUG? No. May need an uninitialized_variable macro instead */
  	void *buf_base = NULL;
  	enum xp_retval (*get_partition_rsvd_page_pa)
  		(void *, u64 *, unsigned long *, size_t *) =
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-index a7c7b1d9b7c8..5e8295d22d58 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-@@ -99,7 +99,8 @@ i40e_status i40e_add_sd_table_entry(struct i40e_hw *hw,
- 
- 		/* increment the ref count */
- 		I40E_INC_SD_REFCNT(&hmc_info->sd_table);
--	}
-+	} else
-+		ret_code = 0; /* BUG? */
- 	/* Increment backing page reference count */
- 	if (I40E_SD_TYPE_DIRECT == sd_entry->entry_type)
- 		I40E_INC_BP_REFCNT(&sd_entry->u.bp);
 diff --git a/drivers/net/ethernet/sun/niu.c b/drivers/net/ethernet/sun/niu.c
 index a2371aa14a49..319d647d356a 100644
 --- a/drivers/net/ethernet/sun/niu.c
@@ -317,18 +264,10 @@ index 6922cbb99a04..7f71ede46738 100644
  
  	lpphy_read_tx_pctl_mode_from_hardware(dev);
 diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-index f549c25608d6..0fbda204870d 100644
+index f549c25608d6..253173b84e49 100644
 --- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
 +++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-@@ -293,6 +293,7 @@ static int brcmf_sdiod_request_data(struct brcmf_sdio_dev *sdiodev, u8 fn,
- 		break;
- 	default:
- 		brcmf_err("invalid size: %d\n", regsz);
-+		ret = -EINVAL; /* BUG? */
- 		break;
- 	}
- 
-@@ -425,8 +426,10 @@ u32 brcmf_sdiod_regrl(struct brcmf_sdio_dev *sdiodev, u32 addr, int *ret)
+@@ -425,8 +425,10 @@ u32 brcmf_sdiod_regrl(struct brcmf_sdio_dev *sdiodev, u32 addr, int *ret)
  
  	brcmf_dbg(SDIO, "addr:0x%08x\n", addr);
  	retval = brcmf_sdiod_addrprep(sdiodev, sizeof(data), &addr);
@@ -340,23 +279,6 @@ index f549c25608d6..0fbda204870d 100644
  	retval = brcmf_sdiod_regrw_helper(sdiodev, addr, sizeof(data), &data,
  					  false);
  	brcmf_dbg(SDIO, "data:0x%08x\n", data);
-diff --git a/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c b/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c
-index 285818df149b..19921dc27850 100644
---- a/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c
-+++ b/drivers/net/wireless/realtek/rtlwifi/rtl8723be/phy.c
-@@ -1031,9 +1031,11 @@ static u8 _rtl8723be_get_txpower_index(struct ieee80211_hw *hw, u8 path,
- 		txpower = rtlefuse->txpwrlevel_cck[path][index];
- 	else if (DESC92C_RATE6M <= rate)
- 		txpower = rtlefuse->txpwrlevel_ht40_1s[path][index];
--	else
-+	else {
- 		RT_TRACE(rtlpriv, COMP_POWER_TRACKING, DBG_LOUD,
- 			 "invalid rate\n");
-+		txpower = 0;
-+	}
- 
- 	if (DESC92C_RATE6M <= rate && rate <= DESC92C_RATE54M &&
- 	    !RX_HAL_IS_CCK_RATE(rate))
 diff --git a/drivers/pwm/pwm-img.c b/drivers/pwm/pwm-img.c
 index 2fb30deee345..c2fbc56794fc 100644
 --- a/drivers/pwm/pwm-img.c
@@ -396,7 +318,7 @@ index 01c3610a60cf..d91be37a3004 100644
  	uint32_t offset;
  	uint16_t func_num;
 diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
-index 2936f3876ce5..fddd5d058386 100644
+index 2936f3876ce5..d8078944d789 100644
 --- a/drivers/usb/atm/cxacru.c
 +++ b/drivers/usb/atm/cxacru.c
 @@ -1112,7 +1112,8 @@ static int cxacru_heavy_init(struct usbatm_data *usbatm_instance,
@@ -405,7 +327,7 @@ index 2936f3876ce5..fddd5d058386 100644
  		}
 -	}
 +	} else
-+		bp = NULL; /* BUG? */
++		bp = NULL; /* not a bug as its uses are always under if(instance->modem_type->boot_rom_patch) */
  
  	cxacru_upload_firmware(instance, fw, bp);
  
@@ -503,7 +425,7 @@ index 62a60eeacb0a..e1b0e4c7cd07 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/mm/filemap.c b/mm/filemap.c
-index 8a287dfc5372..3045defaa112 100644
+index 8a287dfc5372..274d5e44aeae 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
 @@ -646,7 +646,7 @@ static int __add_to_page_cache_locked(struct page *page,
@@ -511,7 +433,7 @@ index 8a287dfc5372..3045defaa112 100644
  {
  	int huge = PageHuge(page);
 -	struct mem_cgroup *memcg;
-+	struct mem_cgroup *memcg = NULL;
++	struct mem_cgroup *memcg = NULL; /* false positive of uninitialized warning: its uses depends on !huge */
  	int error;
  
  	VM_BUG_ON_PAGE(!PageLocked(page), page);
@@ -528,19 +450,6 @@ index 8d426f637f58..bca0a08fd618 100644
  	int new_ap_level;
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
-diff --git a/net/mac80211/tdls.c b/net/mac80211/tdls.c
-index b5d28f14b9cf..3436c1e92139 100644
---- a/net/mac80211/tdls.c
-+++ b/net/mac80211/tdls.c
-@@ -1755,6 +1755,8 @@ call_drv:
- 		 "TDLS channel switch response received from %pM status %d\n",
- 		 tf->sa, params.status);
- 
-+	ret = 0; /* BUG? */
-+
- out:
- 	mutex_unlock(&local->sta_mtx);
- 	dev_kfree_skb_any(params.tmpl_skb);
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
 index 502396694f47..ca6de4f97857 100644
 --- a/net/mac80211/tx.c
@@ -567,18 +476,6 @@ index f39276d1c2d7..420673824372 100644
  	struct nf_hook_ops *elem;
  
  	hook_list = nf_find_hook_list(net, reg);
-diff --git a/net/nfc/nci/hci.c b/net/nfc/nci/hci.c
-index a0ab26d535dc..6ad74ff10308 100644
---- a/net/nfc/nci/hci.c
-+++ b/net/nfc/nci/hci.c
-@@ -745,6 +745,7 @@ int nci_hci_dev_session_init(struct nci_dev *ndev)
- 				 ndev->hci_dev->init_data.gates[0].dest_host,
- 				 ndev->hci_dev->init_data.gates[0].gate,
- 				 ndev->hci_dev->init_data.gates[0].pipe);
-+	skb = NULL; /* BUG? */
- 	if (r < 0)
- 		return r;
- 
 diff --git a/net/tipc/socket.c b/net/tipc/socket.c
 index f9f5f3c3dab5..7f1c5d7d899a 100644
 --- a/net/tipc/socket.c
@@ -593,16 +490,4 @@ index f9f5f3c3dab5..7f1c5d7d899a 100644
  
  	skb_queue_head_init(&pktchain);
  	save = m->msg_iter;
-diff --git a/scripts/sortextable.h b/scripts/sortextable.h
-index ba8700428e21..aa0c7f140ab8 100644
---- a/scripts/sortextable.h
-+++ b/scripts/sortextable.h
-@@ -177,6 +177,7 @@ do_func(Elf_Ehdr *ehdr, char const *const fname, table_sort_t custom_sort)
- 
- 	/* find main_extable_sort_needed */
- 	sort_needed_sym = NULL;
-+	sym = NULL; /* This affectation is useless but prevents a warning */
- 	for (i = 0; i < _r(&symtab_sec->sh_size) / sizeof(Elf_Sym); i++) {
- 		sym = (void *)ehdr + _r(&symtab_sec->sh_offset);
- 		sym += i;
 -- 
