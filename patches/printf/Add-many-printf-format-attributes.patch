@@ -26,6 +26,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  drivers/isdn/hysdn/hysdn_boot.c                   |   4 +-
  drivers/isdn/hysdn/hysdn_defs.h                   |   3 +-
  drivers/isdn/hysdn/hysdn_procconf.c               |  12 +-
+ drivers/isdn/hysdn/hysdn_proclog.c                |   2 +-
  drivers/isdn/hysdn/hysdn_sched.c                  |   2 +-
  drivers/md/bcache/bset.h                          |   5 +-
  drivers/pnp/interface.c                           |   2 +-
@@ -47,11 +48,11 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  include/acpi/acpiosxf.h                           |   3 +-
  include/linux/iio/iio.h                           |   2 +-
  include/linux/iio/trigger_consumer.h              |   2 +-
- include/linux/trace_events.h                      |   1 +
+ include/linux/trace_events.h                      |   3 +-
  kernel/audit.c                                    |   4 +-
  kernel/trace/trace.c                              |   2 +-
  kernel/trace/trace.h                              |   8 +-
- kernel/trace/trace_output.c                       |   4 +-
+ kernel/trace/trace_output.c                       |   6 +-
  mm/slub.c                                         |   4 +-
  net/dccp/ccid.c                                   |   3 +-
  net/dccp/probe.c                                  |   6 +-
@@ -70,7 +71,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  security/tomoyo/common.c                          |   3 +-
  security/tomoyo/common.h                          |   4 +-
  sound/soc/soc-dapm.c                              |   3 +-
- 66 files changed, 219 insertions(+), 186 deletions(-)
+ 67 files changed, 222 insertions(+), 189 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index 0702d2531bc7..01ed0e57d243 100644
@@ -740,7 +741,7 @@ index eda4741e3f2f..2e67143b12a4 100644
  
  		boot->pof_state = POF_READ_TAG_DATA;	/* now start with tag data */
 diff --git a/drivers/isdn/hysdn/hysdn_defs.h b/drivers/isdn/hysdn/hysdn_defs.h
-index cdac46a21692..456c495d54be 100644
+index cdac46a21692..6d5c4deba042 100644
 --- a/drivers/isdn/hysdn/hysdn_defs.h
 +++ b/drivers/isdn/hysdn/hysdn_defs.h
 @@ -235,7 +235,8 @@ extern void hysdn_procconf_release(void);	/* deinit proc config filesys */
@@ -749,7 +750,7 @@ index cdac46a21692..456c495d54be 100644
  extern void hysdn_proclog_release(hysdn_card *);	/* deinit proc log entry */
 -extern void hysdn_addlog(hysdn_card *, char *, ...);	/* output data to log */
 +extern __printf(2, 3)
-+void hysdn_addlog(hysdn_card *, char *, ...);	/* output data to log */
++void hysdn_addlog(hysdn_card *, const char *, ...);	/* output data to log */
  extern void hysdn_card_errlog(hysdn_card *, tErrLogEntry *, int);	/* output card log */
  
  /* boardergo.c */
@@ -790,6 +791,19 @@ index 73079213ec94..62306515bc1f 100644
  			     filep->f_mode);
  
  	if ((filep->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_WRITE) {
+diff --git a/drivers/isdn/hysdn/hysdn_proclog.c b/drivers/isdn/hysdn/hysdn_proclog.c
+index 7b5fd8fb1761..e4e687c3c300 100644
+--- a/drivers/isdn/hysdn/hysdn_proclog.c
++++ b/drivers/isdn/hysdn/hysdn_proclog.c
+@@ -66,7 +66,7 @@ hysdn_card_errlog(hysdn_card *card, tErrLogEntry *logp, int maxsize)
+ /* Log function using format specifiers for output */
+ /***************************************************/
+ void
+-hysdn_addlog(hysdn_card *card, char *fmt, ...)
++hysdn_addlog(hysdn_card *card, const char *fmt, ...)
+ {
+ 	struct procdata *pd = card->proclog;
+ 	char *cp;
 diff --git a/drivers/isdn/hysdn/hysdn_sched.c b/drivers/isdn/hysdn/hysdn_sched.c
 index 31d7c1415543..63da693c6822 100644
 --- a/drivers/isdn/hysdn/hysdn_sched.c
@@ -1173,17 +1187,19 @@ index c4f8c7409666..6b0e38074444 100644
  		    irqreturn_t (*thread)(int irq, void *p),
  		    int type,
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index be007610ceb0..d168c5eb913b 100644
+index be007610ceb0..bdf70c22d8ca 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
-@@ -157,6 +157,7 @@ trace_event_buffer_lock_reserve(struct ring_buffer **current_buffer,
+@@ -157,7 +157,8 @@ trace_event_buffer_lock_reserve(struct ring_buffer **current_buffer,
  
  void tracing_record_cmdline(struct task_struct *tsk);
  
+-int trace_output_call(struct trace_iterator *iter, char *name, char *fmt, ...);
 +__printf(3, 4)
- int trace_output_call(struct trace_iterator *iter, char *name, char *fmt, ...);
++int trace_output_call(struct trace_iterator *iter, char *name, const char *fmt, ...);
  
  struct event_filter;
+ 
 diff --git a/kernel/audit.c b/kernel/audit.c
 index a8a91bd2b2a9..d596e1b2828a 100644
 --- a/kernel/audit.c
@@ -1200,7 +1216,7 @@ index a8a91bd2b2a9..d596e1b2828a 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index dade4c9559cc..27a41122f340 100644
+index 7bc56762ca35..f1f450ec5f0a 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
 @@ -2513,7 +2513,7 @@ out_nobuffer:
@@ -1238,7 +1254,7 @@ index f783df416726..b9e59bc1f085 100644
  			   unsigned long ip, const char *fmt, ...);
  void trace_printk_seq(struct trace_seq *s);
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 0bb9cf2d53e6..34de4ba750d6 100644
+index 0bb9cf2d53e6..f1e35c71ac14 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
 @@ -245,8 +245,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
@@ -1248,10 +1264,19 @@ index 0bb9cf2d53e6..34de4ba750d6 100644
 -static int trace_output_raw(struct trace_iterator *iter, char *name,
 -			    char *fmt, va_list ap)
 +static __printf(3, 0) int trace_output_raw(struct trace_iterator *iter,
-+					   char *name, char *fmt, va_list ap)
++					   char *name, const char *fmt, va_list ap)
  {
  	struct trace_seq *s = &iter->seq;
  
+@@ -256,7 +256,7 @@ static int trace_output_raw(struct trace_iterator *iter, char *name,
+ 	return trace_handle_return(s);
+ }
+ 
+-int trace_output_call(struct trace_iterator *iter, char *name, char *fmt, ...)
++int trace_output_call(struct trace_iterator *iter, char *name, const char *fmt, ...)
+ {
+ 	va_list ap;
+ 	int ret;
 diff --git a/mm/slub.c b/mm/slub.c
 index 9adae58462f8..229782339f7d 100644
 --- a/mm/slub.c
