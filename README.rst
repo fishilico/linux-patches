@@ -73,3 +73,6 @@ Patches are occasionally sent upstream. Here are some which got successfully app
   "configfs: fix kernel infoleak through user-controlled format string"
 * https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=0fd64291031d3587753b8adc53123b277855c777
   "drm/amdgpu: increment queue when iterating on this variable."
+
+Other upstreamed patches can be found using for example
+https://github.com/torvalds/linux/commits/master?author=fishilico
