@@ -180,9 +180,9 @@ HOSTCFLAGS="$HOSTCFLAGS -Wno-format-nonliteral"
 HOSTCFLAGS="$HOSTCFLAGS -Wno-missing-field-initializers"
 HOSTCFLAGS="$HOSTCFLAGS -Wno-missing-include-dirs" # same as KCFLAGS
 HOSTCFLAGS="$HOSTCFLAGS -Wno-shadow"
+HOSTCFLAGS="$HOSTCFLAGS -Wno-sign-compare" # There are many comparaisons between signed and unsigned integers
 HOSTCFLAGS="$HOSTCFLAGS -Wno-unused-function" # Ignore missing code clean-up
 HOSTCFLAGS="$HOSTCFLAGS -Wno-unused-parameter"
-HOSTCFLAGS="$HOSTCFLAGS -Wno-error=sign-compare" # TODO
 
 if $HOSTCC -v 2>&1 | grep -q clang
 then
