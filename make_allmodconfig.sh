@@ -88,7 +88,7 @@ KCFLAGS="$KCFLAGS -Wno-error=jump-misses-init" # The compiler is not smart enoug
 KCFLAGS="$KCFLAGS -Wno-error=logical-op"
 KCFLAGS="$KCFLAGS -Wno-error=write-strings" # TODO, type acpi_string complicates things
 
-if "$CC" -v 2>&1 | grep -q clang
+if $CC -v 2>&1 | grep -q clang
 then
     KCFLAGS="$KCFLAGS -Weverything"
     KCFLAGS="$KCFLAGS -Wno-bad-function-cast" # (unsigned long *)kernel_stack_pointer(...)
@@ -149,7 +149,7 @@ then
     KCFLAGS="$KCFLAGS -Wno-error=enum-conversion" # TODO ?!? (maybe not that important)
     KCFLAGS="$KCFLAGS -Wno-error=gcc-compat" # TODO
     KCFLAGS="$KCFLAGS -Wno-error=switch" # TODO, "overflow converting case value to switch condition type"
-elif "$CC" -v 2>&1 | grep -q 'gcc version'
+elif $CC -v 2>&1 | grep -q 'gcc version'
 then
     KCFLAGS="$KCFLAGS -Wno-maybe-uninitialized" # There are too many false positives with gcc 5.2
     KCFLAGS="$KCFLAGS -Wno-frame-address" # __builtin_return_address is called with a nonzero argument
@@ -184,7 +184,7 @@ HOSTCFLAGS="$HOSTCFLAGS -Wno-unused-function" # Ignore missing code clean-up
 HOSTCFLAGS="$HOSTCFLAGS -Wno-unused-parameter"
 HOSTCFLAGS="$HOSTCFLAGS -Wno-error=sign-compare" # TODO
 
-if "$HOSTCC" -v 2>&1 | grep -q clang
+if $HOSTCC -v 2>&1 | grep -q clang
 then
     HOSTCFLAGS="$HOSTCFLAGS -Weverything"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-c99-extensions"
@@ -265,7 +265,7 @@ then
     echo 'CONFIG_DEBUG_PREEMPT=y' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_PREEMPT_TRACER=y' >> "$KBUILD_OUTPUT/.config"
 
-    if "$CC" -v 2>&1 | grep -q clang
+    if $CC -v 2>&1 | grep -q clang
     then
         # Disable GCC plugins when using clang
         echo '# CONFIG_GCC_PLUGINS is not set' >> "$KBUILD_OUTPUT/.config"
