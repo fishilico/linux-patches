@@ -63,6 +63,7 @@ def get_patch_path(patchdir, name):
             '{LLVMLinux}': 'llvmlinux',
             '{MAYBE UPS}': 'maybe_upstreamable',
             '{NOT UPSTREAMABLE}': 'not_upstreamble',
+            '{PLUGIN}': 'plugin',
             '{PRAGMA}': 'pragma',
             '{PRINTF}': 'printf',
             '{TYPO}': 'typo',

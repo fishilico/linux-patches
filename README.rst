@@ -45,6 +45,7 @@ All the patches lies in subdirectories inside ``patches/``:
 * ``patches/llvmlinux/`` patches are related to clang compatibility (c.f. http://llvm.linuxfoundation.org/ ).
 * ``patches/maybe_upstreamable/`` patches have a very low priority of being sent upstream.
 * ``patches/not_upstreamble/`` patches have no chance to go upstream (they do not comply with coding rules, introduce dirty code, etc.).
+* ``patches/plugin/`` patches implement some GCC plugins to analyze the code at compile time.
 * ``patches/pragma/`` patches introduce ``#pragma`` statement, mostly to ignore warnings when it is expected.
 * ``patches/printf/`` patches add ``__printf`` attribute to printf-like functions so that potential format string vulnerabilities are detected at build time.
 * ``patches/sent-upstream/`` patches have already been sent upstream even though they were not yet applied.
