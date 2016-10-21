@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 8 Oct 2016 15:01:40 +0200
+Subject: [PATCH] {CONSTIFY} drivers/net/wireless/ti/wlcore/debugfs constify
+ format argument
+
+---
+ drivers/net/wireless/ti/wlcore/debugfs.c | 2 +-
+ drivers/net/wireless/ti/wlcore/debugfs.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/wireless/ti/wlcore/debugfs.c b/drivers/net/wireless/ti/wlcore/debugfs.c
+index 7f672f6879d0..af051672522c 100644
+--- a/drivers/net/wireless/ti/wlcore/debugfs.c
++++ b/drivers/net/wireless/ti/wlcore/debugfs.c
+@@ -42,7 +42,7 @@
+ 
+ /* debugfs macros idea from mac80211 */
+ int wl1271_format_buffer(char __user *userbuf, size_t count,
+-			 loff_t *ppos, char *fmt, ...)
++			 loff_t *ppos, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	char buf[DEBUGFS_FORMAT_BUFFER_SIZE];
+diff --git a/drivers/net/wireless/ti/wlcore/debugfs.h b/drivers/net/wireless/ti/wlcore/debugfs.h
+index bf14676e6515..011f98f01492 100644
+--- a/drivers/net/wireless/ti/wlcore/debugfs.h
++++ b/drivers/net/wireless/ti/wlcore/debugfs.h
+@@ -27,7 +27,7 @@
+ #include "wlcore.h"
+ 
+ __printf(4, 5) int wl1271_format_buffer(char __user *userbuf, size_t count,
+-					loff_t *ppos, char *fmt, ...);
++					loff_t *ppos, const char *fmt, ...);
+ 
+ int wl1271_debugfs_init(struct wl1271 *wl);
+ void wl1271_debugfs_exit(struct wl1271 *wl);
+-- 

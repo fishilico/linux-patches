@@ -20,10 +20,10 @@ Sent-upstream: http://lists.openwall.net/linux-kernel/2014/08/02/34
  2 files changed, 25 insertions(+), 12 deletions(-)
 
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 7bb2cda3bfef..0003c302a6f2 100644
+index e6c234b1a645..6d282b549460 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1032,6 +1032,14 @@ static struct mount *clone_mnt(struct mount *old, struct dentry *root,
+@@ -1038,6 +1038,14 @@ static struct mount *clone_mnt(struct mount *old, struct dentry *root,
  	if (flag & CL_MAKE_SHARED)
  		set_mnt_shared(mnt);
  
@@ -38,7 +38,7 @@ index 7bb2cda3bfef..0003c302a6f2 100644
  	/* stick the duplicate mount on the same expiry list
  	 * as the original if that was on one */
  	if (flag & CL_EXPIRE) {
-@@ -2077,11 +2085,13 @@ static bool has_locked_children(struct mount *mnt, struct dentry *dentry)
+@@ -2120,11 +2128,13 @@ static bool has_locked_children(struct mount *mnt, struct dentry *dentry)
   * do loopback mount.
   */
  static int do_loopback(struct path *path, const char *old_name,
@@ -53,7 +53,7 @@ index 7bb2cda3bfef..0003c302a6f2 100644
  	int err;
  	if (!old_name || !*old_name)
  		return -EINVAL;
-@@ -2115,9 +2125,10 @@ static int do_loopback(struct path *path, const char *old_name,
+@@ -2158,9 +2168,10 @@ static int do_loopback(struct path *path, const char *old_name,
  		goto out2;
  
  	if (recurse)
@@ -66,7 +66,7 @@ index 7bb2cda3bfef..0003c302a6f2 100644
  
  	if (IS_ERR(mnt)) {
  		err = PTR_ERR(mnt);
-@@ -2706,7 +2717,8 @@ long do_mount(const char *dev_name, const char __user *dir_name,
+@@ -2749,7 +2760,8 @@ long do_mount(const char *dev_name, const char __user *dir_name,
  		retval = do_remount(&path, flags & ~MS_REMOUNT, mnt_flags,
  				    data_page);
  	else if (flags & MS_BIND)
@@ -77,7 +77,7 @@ index 7bb2cda3bfef..0003c302a6f2 100644
  		retval = do_change_type(&path, flags);
  	else if (flags & MS_MOVE)
 diff --git a/fs/pnode.h b/fs/pnode.h
-index 0fcdbe7ca648..c7e8e512a517 100644
+index 550f5a8b4fcf..19591b676b2c 100644
 --- a/fs/pnode.h
 +++ b/fs/pnode.h
 @@ -21,14 +21,15 @@

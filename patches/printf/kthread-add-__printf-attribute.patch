@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 17 Oct 2016 20:24:27 +0200
+Subject: [PATCH] {PRINTF} kthread: add __printf attribute
+
+---
+ include/linux/kthread.h | 2 +-
+ kernel/kthread.c        | 5 +++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/kthread.h b/include/linux/kthread.h
+index f4792437844a..60524212054a 100644
+--- a/include/linux/kthread.h
++++ b/include/linux/kthread.h
+@@ -182,7 +182,7 @@ __printf(2, 3)
+ struct kthread_worker *
+ kthread_create_worker(unsigned int flags, const char namefmt[], ...);
+ 
+-struct kthread_worker *
++__printf(3, 4) struct kthread_worker *
+ kthread_create_worker_on_cpu(int cpu, unsigned int flags,
+ 			     const char namefmt[], ...);
+ 
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index 176d2445f9df..4efcb9181b08 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -244,7 +244,8 @@ static void create_kthread(struct kthread_create_info *create)
+ 	}
+ }
+ 
+-static struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
++static __printf(4, 0)
++struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
+ 						    void *data, int node,
+ 						    const char namefmt[],
+ 						    va_list args)
+@@ -630,7 +631,7 @@ int kthread_worker_fn(void *worker_ptr)
+ }
+ EXPORT_SYMBOL_GPL(kthread_worker_fn);
+ 
+-static struct kthread_worker *
++static __printf(3, 0) struct kthread_worker *
+ __kthread_create_worker(int cpu, unsigned int flags,
+ 			const char namefmt[], va_list args)
+ {
+-- 

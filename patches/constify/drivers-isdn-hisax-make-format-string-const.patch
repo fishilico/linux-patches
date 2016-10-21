@@ -1,0 +1,199 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 8 Oct 2016 14:59:10 +0200
+Subject: [PATCH] {CONSTIFY} drivers/isdn/hisax: make format string const
+
+---
+ drivers/isdn/hisax/callc.c  |  4 ++--
+ drivers/isdn/hisax/config.c | 22 ++++++++++++----------
+ drivers/isdn/hisax/hisax.h  |  6 +++---
+ drivers/isdn/hisax/isdnl1.c |  4 ++--
+ drivers/isdn/hisax/isdnl1.h |  2 +-
+ drivers/isdn/hisax/isdnl2.c |  4 ++--
+ drivers/isdn/hisax/isdnl3.c |  2 +-
+ drivers/isdn/hisax/tei.c    |  2 +-
+ 8 files changed, 24 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/isdn/hisax/callc.c b/drivers/isdn/hisax/callc.c
+index ddec47a911a0..d6a81958577e 100644
+--- a/drivers/isdn/hisax/callc.c
++++ b/drivers/isdn/hisax/callc.c
+@@ -66,7 +66,7 @@ hisax_findcard(int driverid)
+ }
+ 
+ static __printf(3, 4) void
+-	link_debug(struct Channel *chanp, int direction, char *fmt, ...)
++	link_debug(struct Channel *chanp, int direction, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	char tmp[16];
+@@ -1069,7 +1069,7 @@ init_d_st(struct Channel *chanp)
+ }
+ 
+ static __printf(2, 3) void
+-	callc_debug(struct FsmInst *fi, char *fmt, ...)
++	callc_debug(struct FsmInst *fi, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	struct Channel *chanp = fi->userdata;
+diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.c
+index 896ab91a2d01..17e89bec2bea 100644
+--- a/drivers/isdn/hisax/config.c
++++ b/drivers/isdn/hisax/config.c
+@@ -659,14 +659,15 @@ int jiftime(char *s, long mark)
+ 
+ static u_char tmpbuf[HISAX_STATUS_BUFSIZE];
+ 
+-void VHiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt,
+-		      va_list args)
++void VHiSax_putstatus(struct IsdnCardState *cs, const char *head,
++		      const char *fmt, va_list args)
+ {
+ 	/* if head == NULL the fmt contains the full info */
+ 
+ 	u_long		flags;
+ 	int		count, i;
+-	u_char		*p;
++	u_char		*nonconst_p;
++	const u_char	*p;
+ 	isdn_ctrl	ic;
+ 	int		len;
+ 
+@@ -677,12 +678,13 @@ void VHiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt,
+ 	spin_lock_irqsave(&cs->statlock, flags);
+ 	p = tmpbuf;
+ 	if (head) {
+-		p += jiftime(p, jiffies);
+-		p += sprintf(p, " %s", head);
+-		p += vsprintf(p, fmt, args);
+-		*p++ = '\n';
+-		*p = 0;
+-		len = p - tmpbuf;
++		nonconst_p = tmpbuf;
++		nonconst_p += jiftime(nonconst_p, jiffies);
++		nonconst_p += sprintf(nonconst_p, " %s", head);
++		nonconst_p += vsprintf(nonconst_p, fmt, args);
++		*nonconst_p++ = '\n';
++		*nonconst_p = 0;
++		len = nonconst_p - tmpbuf;
+ 		p = tmpbuf;
+ 	} else {
+ 		p = fmt;
+@@ -729,7 +731,7 @@ void VHiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt,
+ 	}
+ }
+ 
+-void HiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt, ...)
++void HiSax_putstatus(struct IsdnCardState *cs, const char *head, const char *fmt, ...)
+ {
+ 	va_list args;
+ 
+diff --git a/drivers/isdn/hisax/hisax.h b/drivers/isdn/hisax/hisax.h
+index 7365b32a6a45..d4f7a847ae0a 100644
+--- a/drivers/isdn/hisax/hisax.h
++++ b/drivers/isdn/hisax/hisax.h
+@@ -179,7 +179,7 @@ struct FsmInst {
+ 	int debug;
+ 	void *userdata;
+ 	int userint;
+-	void (__printf(2, 3) *printdebug) (struct FsmInst *, char *, ...);
++	void (__printf(2, 3) *printdebug) (struct FsmInst *, const char *, ...);
+ };
+ 
+ struct FsmNode {
+@@ -1288,9 +1288,9 @@ int jiftime(char *s, long mark);
+ int HiSax_command(isdn_ctrl *ic);
+ int HiSax_writebuf_skb(int id, int chan, int ack, struct sk_buff *skb);
+ __printf(3, 4)
+-void HiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt, ...);
++void HiSax_putstatus(struct IsdnCardState *cs, const char *head, const char *fmt, ...);
+ __printf(3, 0)
+-void VHiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt, va_list args);
++void VHiSax_putstatus(struct IsdnCardState *cs, const char *head, const char *fmt, va_list args);
+ void HiSax_reportcard(int cardnr, int sel);
+ int QuickHex(char *txt, u_char *p, int cnt);
+ void LogFrame(struct IsdnCardState *cs, u_char *p, int size);
+diff --git a/drivers/isdn/hisax/isdnl1.c b/drivers/isdn/hisax/isdnl1.c
+index b52da087bb94..c809c5a3ff34 100644
+--- a/drivers/isdn/hisax/isdnl1.c
++++ b/drivers/isdn/hisax/isdnl1.c
+@@ -127,7 +127,7 @@ static char *strL1Event[] =
+ };
+ 
+ void
+-debugl1(struct IsdnCardState *cs, char *fmt, ...)
++debugl1(struct IsdnCardState *cs, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	char tmp[8];
+@@ -139,7 +139,7 @@ debugl1(struct IsdnCardState *cs, char *fmt, ...)
+ }
+ 
+ static __printf(2, 3) void
+-l1m_debug(struct FsmInst *fi, char *fmt, ...)
++l1m_debug(struct FsmInst *fi, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	struct PStack *st = fi->userdata;
+diff --git a/drivers/isdn/hisax/isdnl1.h b/drivers/isdn/hisax/isdnl1.h
+index 66ddcab19bba..b1311ef0858f 100644
+--- a/drivers/isdn/hisax/isdnl1.h
++++ b/drivers/isdn/hisax/isdnl1.h
+@@ -22,7 +22,7 @@
+ #define B_ACKPENDING	2
+ 
+ __printf(2, 3)
+-void debugl1(struct IsdnCardState *cs, char *fmt, ...);
++void debugl1(struct IsdnCardState *cs, const char *fmt, ...);
+ void DChannel_proc_xmt(struct IsdnCardState *cs);
+ void DChannel_proc_rcv(struct IsdnCardState *cs);
+ void l1_msg(struct IsdnCardState *cs, int pr, void *arg);
+diff --git a/drivers/isdn/hisax/isdnl2.c b/drivers/isdn/hisax/isdnl2.c
+index 9760d490effd..d44bae3be7af 100644
+--- a/drivers/isdn/hisax/isdnl2.c
++++ b/drivers/isdn/hisax/isdnl2.c
+@@ -22,7 +22,7 @@
+ 
+ const char *l2_revision = "$Revision: 2.30.2.4 $";
+ 
+-static void l2m_debug(struct FsmInst *fi, char *fmt, ...);
++static __printf(2, 3) /* FIXME: is it useful to repeat __printf? */ void l2m_debug(struct FsmInst *fi, const char *fmt, ...);
+ 
+ static struct Fsm l2fsm;
+ 
+@@ -1757,7 +1757,7 @@ releasestack_isdnl2(struct PStack *st)
+ }
+ 
+ static __printf(2, 3) void
+-l2m_debug(struct FsmInst *fi, char *fmt, ...)
++l2m_debug(struct FsmInst *fi, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	struct PStack *st = fi->userdata;
+diff --git a/drivers/isdn/hisax/isdnl3.c b/drivers/isdn/hisax/isdnl3.c
+index c754706f83cd..cd1d9accb969 100644
+--- a/drivers/isdn/hisax/isdnl3.c
++++ b/drivers/isdn/hisax/isdnl3.c
+@@ -67,7 +67,7 @@ static char *strL3Event[] =
+ };
+ 
+ static __printf(2, 3) void
+-	l3m_debug(struct FsmInst *fi, char *fmt, ...)
++	l3m_debug(struct FsmInst *fi, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	struct PStack *st = fi->userdata;
+diff --git a/drivers/isdn/hisax/tei.c b/drivers/isdn/hisax/tei.c
+index bf4928dc69fc..b5ee58f8adb8 100644
+--- a/drivers/isdn/hisax/tei.c
++++ b/drivers/isdn/hisax/tei.c
+@@ -391,7 +391,7 @@ tei_l2tei(struct PStack *st, int pr, void *arg)
+ }
+ 
+ static __printf(2, 3) void
+-tei_debug(struct FsmInst *fi, char *fmt, ...)
++tei_debug(struct FsmInst *fi, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	struct PStack *st = fi->userdata;
+-- 

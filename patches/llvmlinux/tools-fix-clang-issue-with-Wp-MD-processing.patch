@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 17 Oct 2016 20:24:05 +0200
+Subject: [PATCH] {LLVMLinux} tools: fix clang issue with -Wp,-MD processing
+
+clang -Wp,-MD,abc.d -Wp,-MT,xyz.o -o dest.o -c src.c
+
+correctly produces abc.d with "dest.o xyz.o: src.c" and dest.o.
+
+clang -Wp,-MD,abc.d,-MT,xyz.o -o dest.o -c src.c
+
+wrongly produces dest.d with "dest.o: src.c", and dest.o is still
+correct
+
+gcc -Wp,-MD,abc.d,-MT,xyz.o -o dest.o -c src.c
+
+produces abc.d with "xyz.o: src.c", and dest.o
+
+gcc -Wp,-MD,abc.d -Wp,-MT,xyz.o -o dest.o -c src.c
+
+too.
+
+There is bug in clang front-end which should be reported to
+https://llvm.org/bugs/ (http://llvm.org/docs/HowToSubmitABug.html)
+---
+ tools/build/Build.include | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/tools/build/Build.include b/tools/build/Build.include
+index 1dcb95e76f70..83c7be908009 100644
+--- a/tools/build/Build.include
++++ b/tools/build/Build.include
+@@ -89,10 +89,10 @@ if_changed = $(if $(strip $(any-prereq) $(arg-check)),             \
+ # - per target C flags
+ # - per object C flags
+ # - BUILD_STR macro to allow '-D"$(variable)"' constructs
+-c_flags = -Wp,-MD,$(depfile),-MT,$@ $(CFLAGS) -D"BUILD_STR(s)=\#s" $(CFLAGS_$(basetarget).o) $(CFLAGS_$(obj))
+-cxx_flags = -Wp,-MD,$(depfile),-MT,$@ $(CXXFLAGS) -D"BUILD_STR(s)=\#s" $(CXXFLAGS_$(basetarget).o) $(CXXFLAGS_$(obj))
++c_flags = -Wp,-MD,$(depfile) -Wp,-MT,$@ $(CFLAGS) -D"BUILD_STR(s)=\#s" $(CFLAGS_$(basetarget).o) $(CFLAGS_$(obj))
++cxx_flags = -Wp,-MD,$(depfile) -Wp,-MT,$@ $(CXXFLAGS) -D"BUILD_STR(s)=\#s" $(CXXFLAGS_$(basetarget).o) $(CXXFLAGS_$(obj))
+ 
+ ###
+ ## HOSTCC C flags
+ 
+-host_c_flags = -Wp,-MD,$(depfile),-MT,$@ $(CHOSTFLAGS) -D"BUILD_STR(s)=\#s" $(CHOSTFLAGS_$(basetarget).o) $(CHOSTFLAGS_$(obj))
++host_c_flags = -Wp,-MD,$(depfile) -Wp,-MT,$@ $(CHOSTFLAGS) -D"BUILD_STR(s)=\#s" $(CHOSTFLAGS_$(basetarget).o) $(CHOSTFLAGS_$(obj))
+-- 

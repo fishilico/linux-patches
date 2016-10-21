@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 17 Oct 2016 20:24:22 +0200
+Subject: [PATCH] {BUG in 4.9-rc1} nvdimm: "pmem" is 4-characters wide, not 3
+
+Found by static analysis with a gcc plugin
+---
+ drivers/nvdimm/label.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/nvdimm/label.c b/drivers/nvdimm/label.c
+index fac7cabe8f56..dd615345699f 100644
+--- a/drivers/nvdimm/label.c
++++ b/drivers/nvdimm/label.c
+@@ -938,7 +938,7 @@ int nd_pmem_namespace_label_update(struct nd_region *nd_region,
+ 		}
+ 
+ 		for_each_dpa_resource(ndd, res)
+-			if (strncmp(res->name, "pmem", 3) == 0)
++			if (strncmp(res->name, "pmem", 4) == 0)
+ 				count++;
+ 		WARN_ON_ONCE(!count);
+ 
+-- 

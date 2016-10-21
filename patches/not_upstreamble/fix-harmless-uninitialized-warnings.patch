@@ -9,7 +9,7 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  arch/x86/kernel/hw_breakpoint.c                           | 1 +
  drivers/acpi/sysfs.c                                      | 2 ++
  drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c     | 4 ++++
- drivers/gpu/drm/i915/i915_gem.c                           | 2 +-
+ drivers/gpu/drm/i915/i915_gem_request.c                   | 2 +-
  drivers/gpu/drm/qxl/qxl_draw.c                            | 2 +-
  drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c                   | 1 +
  drivers/iio/common/ssp_sensors/ssp_iio.c                  | 3 ++-
@@ -35,15 +35,14 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  mm/filemap.c                                              | 2 +-
  net/mac80211/mlme.c                                       | 2 +-
  net/mac80211/tx.c                                         | 2 +-
- net/netfilter/core.c                                      | 2 +-
  net/tipc/socket.c                                         | 3 ++-
- 32 files changed, 54 insertions(+), 25 deletions(-)
+ 31 files changed, 53 insertions(+), 24 deletions(-)
 
 diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 9616cf76940c..b042776ab125 100644
+index 650830e39e3a..574a7ff16781 100644
 --- a/arch/x86/kernel/crash.c
 +++ b/arch/x86/kernel/crash.c
-@@ -616,7 +616,7 @@ static int determine_backup_region(u64 start, u64 end, void *arg)
+@@ -632,7 +632,7 @@ static int determine_backup_region(u64 start, u64 end, void *arg)
  int crash_load_segments(struct kimage *image)
  {
  	unsigned long src_start, src_sz, elf_sz;
@@ -65,10 +64,10 @@ index 8771766d46b6..df760ec0e44e 100644
  
  	/*
 diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
-index 358165e9f5b8..506e81706fd2 100644
+index 703c26e7022c..ee287c3fe852 100644
 --- a/drivers/acpi/sysfs.c
 +++ b/drivers/acpi/sysfs.c
-@@ -568,6 +568,8 @@ static int get_status(u32 index, acpi_event_status *status,
+@@ -574,6 +574,8 @@ static int get_status(u32 index, acpi_event_status *status,
  		result = acpi_get_gpe_status(*handle, index, status);
  	} else if (index < (num_gpes + ACPI_NUM_FIXED_EVENTS))
  		result = acpi_get_event_status(index - num_gpes, status);
@@ -78,7 +77,7 @@ index 358165e9f5b8..506e81706fd2 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
-index 6c321b0d8a1e..5803abe273e1 100644
+index ccf7ebeaf892..c383a4998e00 100644
 --- a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 +++ b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 @@ -1032,6 +1032,10 @@ static int init_overdrive_limits(struct pp_hwmgr *hwmgr,
@@ -92,24 +91,24 @@ index 6c321b0d8a1e..5803abe273e1 100644
  
  	if (hwmgr->platform_descriptor.overdriveLimit.engineClock > 0
  		&& hwmgr->platform_descriptor.overdriveLimit.memoryClock > 0
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index a77ce9983f69..0e5679da5716 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -1370,7 +1370,7 @@ static unsigned long local_clock_us(unsigned *cpu)
+diff --git a/drivers/gpu/drm/i915/i915_gem_request.c b/drivers/gpu/drm/i915/i915_gem_request.c
+index 8832f8ec1583..ca7a7d6ae28b 100644
+--- a/drivers/gpu/drm/i915/i915_gem_request.c
++++ b/drivers/gpu/drm/i915/i915_gem_request.c
+@@ -689,7 +689,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
  
- static bool busywait_stop(unsigned long timeout, unsigned cpu)
+ static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
--	unsigned this_cpu;
-+	unsigned this_cpu = 0; /* -Wsometimes-uninitialized false positive */
+-	unsigned int this_cpu;
++	unsigned int this_cpu = 0; /* clang -Wsometimes-uninitialized false positive, because time_after does a typecheck on local_clock_us return value */
  
  	if (time_after(local_clock_us(&this_cpu), timeout))
  		return true;
 diff --git a/drivers/gpu/drm/qxl/qxl_draw.c b/drivers/gpu/drm/qxl/qxl_draw.c
-index ffe885395145..84a36cfc8f54 100644
+index 9b728edf1b49..bf66a903587a 100644
 --- a/drivers/gpu/drm/qxl/qxl_draw.c
 +++ b/drivers/gpu/drm/qxl/qxl_draw.c
-@@ -281,7 +281,7 @@ void qxl_draw_dirty_fb(struct qxl_device *qdev,
+@@ -278,7 +278,7 @@ void qxl_draw_dirty_fb(struct qxl_device *qdev,
  	int i;
  	int left, right, top, bottom;
  	int width, height;
@@ -264,7 +263,7 @@ index 6922cbb99a04..7f71ede46738 100644
  
  	lpphy_read_tx_pctl_mode_from_hardware(dev);
 diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-index f549c25608d6..253173b84e49 100644
+index 72139b579b18..a78a73959bfb 100644
 --- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
 +++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
 @@ -425,8 +425,10 @@ u32 brcmf_sdiod_regrl(struct brcmf_sdio_dev *sdiodev, u32 addr, int *ret)
@@ -318,7 +317,7 @@ index 01c3610a60cf..d91be37a3004 100644
  	uint32_t offset;
  	uint16_t func_num;
 diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
-index 2936f3876ce5..d8078944d789 100644
+index f7acbd650b23..0ece4599a12e 100644
 --- a/drivers/usb/atm/cxacru.c
 +++ b/drivers/usb/atm/cxacru.c
 @@ -1112,7 +1112,8 @@ static int cxacru_heavy_init(struct usbatm_data *usbatm_instance,
@@ -332,12 +331,12 @@ index 2936f3876ce5..d8078944d789 100644
  	cxacru_upload_firmware(instance, fw, bp);
  
 diff --git a/fs/btrfs/uuid-tree.c b/fs/btrfs/uuid-tree.c
-index 778282944530..0c1b403514bc 100644
+index 7fc89e4adb41..0cd94b6e730d 100644
 --- a/fs/btrfs/uuid-tree.c
 +++ b/fs/btrfs/uuid-tree.c
-@@ -142,7 +142,8 @@ int btrfs_uuid_tree_add(struct btrfs_trans_handle *trans,
- 			ret, (unsigned long long)key.objectid,
- 			(unsigned long long)key.offset, type);
+@@ -143,7 +143,8 @@ int btrfs_uuid_tree_add(struct btrfs_trans_handle *trans,
+ 			   ret, (unsigned long long)key.objectid,
+ 			   (unsigned long long)key.offset, type);
  		goto out;
 -	}
 +	} else
@@ -399,10 +398,10 @@ index 51b4e0de1fdc..581a170f0828 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index e8638fd2c0c3..546fb10ba6b6 100644
+index 9b3d7c76915d..4726956583a2 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
-@@ -1036,7 +1036,7 @@ xlog_verify_tail(
+@@ -1048,7 +1048,7 @@ xlog_verify_tail(
  	int			count;
  	int			error = 0;
  	bool			wrapped;
@@ -425,10 +424,10 @@ index 62a60eeacb0a..e1b0e4c7cd07 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/mm/filemap.c b/mm/filemap.c
-index 2d0986a64f1f..f313b8c98259 100644
+index 849f459ad078..cc0eaba67c20 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -646,7 +646,7 @@ static int __add_to_page_cache_locked(struct page *page,
+@@ -659,7 +659,7 @@ static int __add_to_page_cache_locked(struct page *page,
  				      void **shadowp)
  {
  	int huge = PageHuge(page);
@@ -438,7 +437,7 @@ index 2d0986a64f1f..f313b8c98259 100644
  
  	VM_BUG_ON_PAGE(!PageLocked(page), page);
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 8d426f637f58..bca0a08fd618 100644
+index 7486f2dab4ba..b672744cbf87 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
 @@ -1319,7 +1319,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
@@ -451,10 +450,10 @@ index 8d426f637f58..bca0a08fd618 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index 18b285e06bc8..d9a0584304d9 100644
+index 1c56abc49627..d660ebd9dd8e 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2344,7 +2344,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
+@@ -2373,7 +2373,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
  	bool tdls_peer;
  	bool multicast;
  	u16 info_id = 0;
@@ -463,19 +462,6 @@ index 18b285e06bc8..d9a0584304d9 100644
  	struct ieee80211_sub_if_data *ap_sdata;
  	enum nl80211_band band;
  	int ret;
-diff --git a/net/netfilter/core.c b/net/netfilter/core.c
-index f39276d1c2d7..420673824372 100644
---- a/net/netfilter/core.c
-+++ b/net/netfilter/core.c
-@@ -123,7 +123,7 @@ EXPORT_SYMBOL(nf_register_net_hook);
- void nf_unregister_net_hook(struct net *net, const struct nf_hook_ops *reg)
- {
- 	struct list_head *hook_list;
--	struct nf_hook_entry *entry;
-+	struct nf_hook_entry *entry = NULL; /* gcc -Wmaybe-uninitialized false positive because entry is always initialized when used */
- 	struct nf_hook_ops *elem;
- 
- 	hook_list = nf_find_hook_list(net, reg);
 diff --git a/net/tipc/socket.c b/net/tipc/socket.c
 index f9f5f3c3dab5..7f1c5d7d899a 100644
 --- a/net/tipc/socket.c

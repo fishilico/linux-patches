@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 8 Oct 2016 15:00:13 +0200
+Subject: [PATCH] {BUG} drivers/net/wireless/ath/ath10k/spectral: "background"
+ length is 10
+
+This has been found by staticly analyzing strncmp() invocations
+---
+ drivers/net/wireless/ath/ath10k/spectral.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/ath/ath10k/spectral.c b/drivers/net/wireless/ath/ath10k/spectral.c
+index 7d9b0da1b010..2ffc1fe4923b 100644
+--- a/drivers/net/wireless/ath/ath10k/spectral.c
++++ b/drivers/net/wireless/ath/ath10k/spectral.c
+@@ -338,7 +338,7 @@ static ssize_t write_file_spec_scan_ctl(struct file *file,
+ 		} else {
+ 			res = -EINVAL;
+ 		}
+-	} else if (strncmp("background", buf, 9) == 0) {
++	} else if (strncmp("background", buf, 10) == 0) {
+ 		res = ath10k_spectral_scan_config(ar, SPECTRAL_BACKGROUND);
+ 	} else if (strncmp("manual", buf, 6) == 0) {
+ 		res = ath10k_spectral_scan_config(ar, SPECTRAL_MANUAL);
+-- 

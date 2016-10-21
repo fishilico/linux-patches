@@ -4,21 +4,30 @@ Date: Sat, 4 Jul 2015 10:13:09 +0800
 Subject: [PATCH] {For LLVMLinux} Disable the use of clang integrated assembler
 
 ---
- Makefile | 5 +++++
- 1 file changed, 5 insertions(+)
+ Makefile | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index 4ad4d08a6197..701d2d2cb4e8 100644
+index 15cce261b358..9c1c798b8e63 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -679,6 +679,11 @@ KBUILD_CPPFLAGS += $(call cc-option,-Wno-unknown-warning-option,)
- #KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
- #KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
- #KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
-+
+@@ -408,6 +408,12 @@ KBUILD_AFLAGS_MODULE  := -DMODULE
+ KBUILD_CFLAGS_MODULE  := -DMODULE
+ KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
+ 
++ifeq ($(cc-name),clang)
 +# Use gas because IA does not support the gas assembly extensions used in the kernel code.
 +KBUILD_CFLAGS += -no-integrated-as
 +KBUILD_AFLAGS += -no-integrated-as
++endif
++
+ # Read KERNELRELEASE from include/config/kernel.release (if it exists)
+ KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
+ KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
+@@ -685,6 +691,7 @@ KBUILD_CPPFLAGS += $(call cc-option,-Wno-unknown-warning-option,)
+ #KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
+ #KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
+ #KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
 +
  # Quiet clang warning: comparison of unsigned expression < 0 is always false
  #KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)

@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 8 Oct 2016 14:59:48 +0200
+Subject: [PATCH] {BUG} sound/firewire/bebob/bebob: fix strncmp argument
+
+- only compile-tested
+- introduced in 9076c22ddd9d29a30426f0367dec2b40e12536de
+- found by static analysis of strncmp() invocations
+---
+ sound/firewire/bebob/bebob.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/firewire/bebob/bebob.c b/sound/firewire/bebob/bebob.c
+index 3469ac14c89c..b23cd0901553 100644
+--- a/sound/firewire/bebob/bebob.c
++++ b/sound/firewire/bebob/bebob.c
+@@ -177,7 +177,7 @@ check_audiophile_booted(struct fw_unit *unit)
+ 	if (fw_csr_string(unit->directory, CSR_MODEL, name, sizeof(name)) < 0)
+ 		return false;
+ 
+-	return strncmp(name, "FW Audiophile Bootloader", 15) != 0;
++	return strncmp(name, "FW Audiophile Bootloader", 24) != 0;
+ }
+ 
+ static void
+-- 

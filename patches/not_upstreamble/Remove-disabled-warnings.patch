@@ -6,26 +6,27 @@ Subject: [PATCH] {NOT UPSTREAMABLE} Remove disabled warnings
 Remove disabled warnings in Makefile so we have full control of the
 list of disabled warnings.
 ---
- Makefile                   | 16 ++++++++--------
+ Makefile                   | 18 +++++++++---------
  drivers/misc/cxl/Makefile  |  2 +-
- kernel/trace/Makefile      |  4 ++--
  scripts/Makefile.extrawarn | 14 +++++++-------
- 4 files changed, 18 insertions(+), 18 deletions(-)
+ 3 files changed, 17 insertions(+), 17 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 80b8671d5c46..4ad4d08a6197 100644
+index 512e47a53e9a..15cce261b358 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -620,7 +620,7 @@ ARCH_CFLAGS :=
+@@ -620,8 +620,8 @@ ARCH_CFLAGS :=
  include arch/$(SRCARCH)/Makefile
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
 -KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
+-KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
 +#KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
++#KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
  
- ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
- KBUILD_CFLAGS	+= -Os
-@@ -676,11 +676,11 @@ KBUILD_CFLAGS += $(stackp-flag)
+ ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
+ KBUILD_CFLAGS	+= $(call cc-option,-ffunction-sections,)
+@@ -682,11 +682,11 @@ KBUILD_CFLAGS += $(stackp-flag)
  ifeq ($(cc-name),clang)
  KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
  KBUILD_CPPFLAGS += $(call cc-option,-Wno-unknown-warning-option,)
@@ -41,7 +42,7 @@ index 80b8671d5c46..4ad4d08a6197 100644
  # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
  # source of a reference will be _MergedGlobals and not on of the whitelisted names.
  # See modpost pattern 2
-@@ -690,8 +690,8 @@ else
+@@ -696,8 +696,8 @@ else
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.build)
@@ -52,7 +53,7 @@ index 80b8671d5c46..4ad4d08a6197 100644
  endif
  
  ifdef CONFIG_FRAME_POINTER
-@@ -757,7 +757,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
+@@ -763,7 +763,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
  KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -71,20 +72,6 @@ index 56e9a4732ef0..46351ca0cf17 100644
  ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
  
  cxl-y				+= main.o file.o irq.o fault.o native.o
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index d0a1617b52b4..250b1a0671a5 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -1,7 +1,7 @@
- 
- # We are fully aware of the dangers of __builtin_return_address()
--FRAME_CFLAGS := $(call cc-disable-warning,frame-address)
--KBUILD_CFLAGS += $(FRAME_CFLAGS)
-+#FRAME_CFLAGS := $(call cc-disable-warning,frame-address)
-+#KBUILD_CFLAGS += $(FRAME_CFLAGS)
- 
- # Do not instrument the tracer itself:
- 
 diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
 index 53449a6ff6aa..0472b3987eb6 100644
 --- a/scripts/Makefile.extrawarn

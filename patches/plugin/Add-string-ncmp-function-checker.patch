@@ -1,0 +1,338 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 8 Oct 2016 14:56:19 +0200
+Subject: [PATCH] {PLUGIN} Add string ncmp function checker
+
+This plugins helped to detect the following bugs:
+- (not yet upstreamed) bad strncmp() call in
+  sound/firewire/bebob/bebob.c
+- (not yet upstreamed) bad strncmp() call in
+  drivers/net/wireless/ath/ath10k/spectral.c
+---
+ arch/Kconfig                                  |   6 +
+ drivers/nvme/target/core.c                    |   4 +-
+ drivers/scsi/scsi_sysfs.c                     |   2 +-
+ drivers/staging/fbtft/fbtft_device.c          |   3 +-
+ scripts/Makefile.gcc-plugins                  |   2 +
+ scripts/gcc-plugins/string_ncmp_size_plugin.c | 239 ++++++++++++++++++++++++++
+ 6 files changed, 252 insertions(+), 4 deletions(-)
+ create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index c879f2f3e216..e22f06ecd622 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -413,6 +413,12 @@ config GCC_PLUGIN_DEREF_CHECKER
+ 	help
+ 	  Check function calls involving pointers about some consistencies.
+ 
++config GCC_PLUGIN_STRING_NCMP_SIZE
++	bool "Check calls to strncmp-like functions"
++	depends on GCC_PLUGINS
++	help
++	  Check that calls like strncmp(x, "test", 4) are consistent.
++
+ config HAVE_CC_STACKPROTECTOR
+ 	bool
+ 	help
+diff --git a/drivers/nvme/target/core.c b/drivers/nvme/target/core.c
+index 6559d5afa7bf..91bb3c5d2cb1 100644
+--- a/drivers/nvme/target/core.c
++++ b/drivers/nvme/target/core.c
+@@ -852,8 +852,8 @@ static struct nvmet_subsys *nvmet_find_get_subsys(struct nvmet_port *port,
+ 	if (!port)
+ 		return NULL;
+ 
+-	if (!strncmp(NVME_DISC_SUBSYS_NAME, subsysnqn,
+-			NVMF_NQN_SIZE)) {
++	BUILD_BUG_ON(NVMF_NQN_SIZE < sizeof(NVME_DISC_SUBSYS_NAME));
++	if (!strcmp(NVME_DISC_SUBSYS_NAME, subsysnqn)) {
+ 		if (!kref_get_unless_zero(&nvmet_disc_subsys->ref))
+ 			return NULL;
+ 		return nvmet_disc_subsys;
+diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+index 88c237f8f692..c6c97ecbef3d 100644
+--- a/drivers/scsi/scsi_sysfs.c
++++ b/drivers/scsi/scsi_sysfs.c
+@@ -114,7 +114,7 @@ static int check_set(unsigned long long *val, char *src)
+ {
+ 	char *last;
+ 
+-	if (strncmp(src, "-", 20) == 0) {
++	if (strcmp(src, "-") == 0) {
+ 		*val = SCAN_WILD_CARD;
+ 	} else {
+ 		/*
+diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
+index d1f2794084ff..9949626c93ca 100644
+--- a/drivers/staging/fbtft/fbtft_device.c
++++ b/drivers/staging/fbtft/fbtft_device.c
+@@ -1468,7 +1468,8 @@ static int __init fbtft_device_init(void)
+ 	}
+ 
+ 	/* name=list lists all supported displays */
+-	if (strncmp(name, "list", FBTFT_GPIO_NAME_SIZE) == 0) {
++	BUILD_BUG_ON(FBTFT_GPIO_NAME_SIZE < sizeof("list"));
++	if (strcmp(name, "list") == 0) {
+ 		pr_info("Supported displays:\n");
+ 
+ 		for (i = 0; i < ARRAY_SIZE(displays); i++)
+diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
+index 2444b7a52ffe..85536cab72a2 100644
+--- a/scripts/Makefile.gcc-plugins
++++ b/scripts/Makefile.gcc-plugins
+@@ -19,6 +19,8 @@ ifdef CONFIG_GCC_PLUGINS
+ 
+   gcc-plugin-$(CONFIG_GCC_PLUGIN_DEREF_CHECKER) += deref_checker_plugin.so
+ 
++  gcc-plugin-$(CONFIG_GCC_PLUGIN_STRING_NCMP_SIZE) += string_ncmp_size_plugin.so
++
+   ifdef CONFIG_GCC_PLUGIN_SANCOV
+     ifeq ($(CFLAGS_KCOV),)
+       # It is needed because of the gcc-plugin.sh and gcc version checks.
+diff --git a/scripts/gcc-plugins/string_ncmp_size_plugin.c b/scripts/gcc-plugins/string_ncmp_size_plugin.c
+new file mode 100644
+index 000000000000..7b43238ad392
+--- /dev/null
++++ b/scripts/gcc-plugins/string_ncmp_size_plugin.c
+@@ -0,0 +1,239 @@
++/*
++ * Copyright 2016 by Nicolas Iooss
++ * Licensed under the GPL v2, or (at your option) v3
++ *
++ * Check that calls like strncmp(x, "test", 4) are consistent in that the size
++ * is the length of the second argument.
++ */
++
++#include "gcc-common.h"
++
++int plugin_is_GPL_compatible;
++
++static struct plugin_info string_ncmp_size_plugin_info = {
++	.version	= "20161008",
++	.help		= "String n-copy functions size checker\n",
++};
++
++/**
++ * Identifier match helpers
++ */
++static bool identifier_is(const_tree identifier, const char *str)
++{
++	size_t len = strlen(str);
++
++	if (!identifier)
++		return false;
++
++	return IDENTIFIER_LENGTH(identifier) == len && !strncmp(str, IDENTIFIER_POINTER(identifier), len);
++}
++
++/*
++ * Extract the length from a tree if it is constant
++ */
++static bool extract_constant_length(const_tree tree, HOST_WIDE_INT *plen)
++{
++	gcc_assert(TREE_CODE(TREE_TYPE(tree)) == INTEGER_TYPE);
++	if (!CONSTANT_CLASS_P(tree))
++		return false;
++	*plen = TREE_INT_CST_ELT_CHECK(tree, 0);
++	return true;
++}
++
++/* Function from Emese's initify_plugin
++ * https://github.com/ephox-gcc-plugins/initify/blob/master/initify_plugin.c
++ */
++static const_tree get_string_cst(const_tree var)
++{
++	if (var == NULL_TREE)
++		return NULL_TREE;
++
++	if (TREE_CODE(var) == STRING_CST)
++		return var;
++
++	switch (TREE_CODE_CLASS(TREE_CODE(var))) {
++	case tcc_expression:
++	case tcc_reference: {
++		int i;
++
++		for (i = 0; i < TREE_OPERAND_LENGTH(var); i++) {
++			const_tree ret = get_string_cst(TREE_OPERAND(var, i));
++
++			if (ret != NULL_TREE)
++				return ret;
++		}
++		break;
++	}
++
++	default:
++		break;
++	}
++	return NULL_TREE;
++}
++
++static void analyze_call_statement(gimple stmt)
++{
++	gcall *call_stmt;
++	const_tree fndecl, fnident, arg_src, arg_len;
++	bool is_memcmp, is_strncmp; /* FIXME add memcpy? */
++	HOST_WIDE_INT len_from_arg;
++	int srclen;
++	unsigned int arg_index;
++
++	call_stmt = as_a_gcall(stmt);
++
++	/* Get the function declaration */
++	fndecl = gimple_call_fndecl(call_stmt);
++	if (fndecl == NULL_TREE)
++		return;
++
++	/* Filter functions by name */
++	/* FIXME instead of booleans, let's categorize the parameter types in a global dictionary */
++	/* FIXME same thing for strdup/memdup ? */
++	fnident = DECL_NAME(fndecl);
++	is_memcmp = (identifier_is(fnident, "__builtin_memcmp") ||
++		     identifier_is(fnident, "memcmp") ||
++		     identifier_is(fnident, "reverse_memcmp"));
++	is_strncmp = (identifier_is(fnident, "strncmp") ||
++		      identifier_is(fnident, "ucs2_strncmp"));
++	if (!is_memcmp && !is_strncmp) {
++		/* Check that it is not a function which would be interesting
++		 * Here is the list of known functions which are not.
++		 */
++		if (!identifier_is(fnident, "memcmp_extent_buffer") &&
++		    !identifier_is(fnident, "memcmp_node_keys") &&
++		    !identifier_is(fnident, "memcmp_pages") &&
++		    !identifier_is(fnident, "memcmpb") &&
++		    !identifier_is(fnident, "memcmpshowoffset") &&
++		    !identifier_is(fnident, "masked_memcmp") && /*  FIXME may be interesting to adapt the plugin for 3 arguments */
++		    !identifier_is(fnident, "nla_memcmp") && /* FIXME may be interesting to adapt the plugin for (vect, size) functions */
++		    !identifier_is(fnident, "nvbios_memcmp") && /* FIXME may be interesting to adapt the plugin for (vect, size) functions */
++		    !identifier_is(fnident, "UniStrncmp_le")) {
++			size_t len = IDENTIFIER_LENGTH(fnident);
++			const char *name = IDENTIFIER_POINTER(fnident);
++			gcc_assert(name[len] == '\0');
++			if (strcasestr(name, "memcmp") || strcasestr(name, "strncmp")) {
++				warning_at(
++					gimple_location(stmt), 0,
++					G_("Call to %qF may be interesting to analyze in the string length analyzer plugin\n"),
++					fndecl);
++			}
++		}
++		return;
++	}
++
++	/* Retreive the length as a constant integer */
++	arg_len = gimple_call_arg(call_stmt, 2);
++	if (TREE_CODE(TREE_TYPE(arg_len)) != INTEGER_TYPE) {
++		warning_at(
++			gimple_location(stmt), 0,
++			G_("Invalid call to %qF: non-integer size\n"),
++			fndecl);
++		return;
++	}
++	if (!CONSTANT_CLASS_P(arg_len))
++		return;
++	len_from_arg = TREE_INT_CST_ELT_CHECK(arg_len, 0);
++
++	/* Retrieve the const string in the second argument */
++	arg_index = 1;
++	arg_src = gimple_call_arg(call_stmt, arg_index);
++	arg_src = get_string_cst(arg_src);
++	if (arg_src == NULL_TREE) {
++		/* Sometimes the constant if the first argument */
++		arg_index = 0;
++		arg_src = gimple_call_arg(call_stmt, arg_index);
++		arg_src = get_string_cst(arg_src);
++		if (arg_src == NULL_TREE) {
++			/* Do not do anything for calls with two variables */
++			return;
++		}
++	}
++	gcc_assert(TREE_CODE(arg_src) == STRING_CST);
++	srclen = TREE_STRING_LENGTH(arg_src) - 1;
++	if (srclen <= 0) {
++		warning_at(
++			gimple_location(stmt), 0,
++			G_("Invalid call to %qF: empty constant string\n"),
++			fndecl);
++		return;
++	}
++	/* memcmp can use \0 in its strings but not strncmp */
++	if (is_strncmp && strnlen(TREE_STRING_POINTER(arg_src), srclen) != srclen) {
++		warning_at(
++			gimple_location(stmt), 0,
++			G_("Invalid call to %qF: string with nul characters\n"),
++			fndecl);
++	}
++
++	/* Compare things: prefix or full string */
++	if (len_from_arg == srclen || len_from_arg == srclen + 1) {
++		/* All right */
++		return;
++	}
++	/* Allow strncmp(vec, "string", sizeof(vec)) where vec is a char[] */
++	if (is_strncmp) {
++		const_tree arg_vec;
++		HOST_WIDE_INT veclen;
++
++		arg_vec = gimple_call_arg(call_stmt, 1 - arg_index);
++		if (TREE_CODE(TREE_TYPE(arg_vec)) == POINTER_TYPE &&
++		    TREE_CODE(TREE_TYPE(TREE_TYPE(arg_vec))) == ARRAY_TYPE) {
++			arg_vec = TREE_TYPE(TREE_TYPE(arg_vec));
++			veclen = TREE_INT_CST_ELT_CHECK(TYPE_SIZE_UNIT(arg_vec), 0);
++			if (veclen == len_from_arg)
++				return;
++		}
++	}
++	warning_at(
++		gimple_location(stmt), 0,
++		G_("Invalid call to %qF: length %"HOST_WIDE_INT_PRINT"d but string size %lu\n"),
++		fndecl, len_from_arg, srclen);
++}
++
++static unsigned int string_ncmp_size_execute(void)
++{
++	basic_block bb;
++	gimple_stmt_iterator gsi;
++	gimple stmt;
++
++	FOR_EACH_BB_FN(bb, cfun) {
++		for (gsi = gsi_start_bb(bb); !gsi_end_p(gsi); gsi_next(&gsi)) {
++			stmt = gsi_stmt(gsi);
++			if (is_gimple_call(stmt))
++				analyze_call_statement(stmt);
++		}
++	}
++
++	return 0;
++}
++
++#define PASS_NAME string_ncmp_size
++
++#define NO_GATE
++#define TODO_FLAGS_FINISH TODO_dump_func
++
++#include "gcc-generate-gimple-pass.h"
++
++int plugin_init(struct plugin_name_args *plugin_info, struct plugin_gcc_version *version)
++{
++	const char * const plugin_name = plugin_info->base_name;
++	struct register_pass_info string_ncmp_size_pass_info;
++
++	string_ncmp_size_pass_info.pass = make_string_ncmp_size_pass();
++	string_ncmp_size_pass_info.reference_pass_name = "ssa";
++	string_ncmp_size_pass_info.ref_pass_instance_number = 1;
++	string_ncmp_size_pass_info.pos_op = PASS_POS_INSERT_AFTER;
++
++	if (!plugin_default_version_check(version, &gcc_version)) {
++		error(G_("incompatible gcc/plugin versions"));
++		return 1;
++	}
++
++	register_callback(plugin_name, PLUGIN_INFO, NULL,
++				&string_ncmp_size_plugin_info);
++	register_callback(plugin_name, PLUGIN_PASS_MANAGER_SETUP, NULL,
++				&string_ncmp_size_pass_info);
++
++	return 0;
++}
+-- 

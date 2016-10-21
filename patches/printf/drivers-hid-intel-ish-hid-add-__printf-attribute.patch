@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 8 Oct 2016 15:04:47 +0200
+Subject: [PATCH] {PRINTF} drivers/hid/intel-ish-hid: add __printf attribute
+
+---
+ drivers/hid/intel-ish-hid/ipc/pci-ish.c     |  3 ++-
+ drivers/hid/intel-ish-hid/ishtp-hid.c       | 11 +++++++++--
+ drivers/hid/intel-ish-hid/ishtp/ishtp-dev.h |  2 +-
+ 3 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/hid/intel-ish-hid/ipc/pci-ish.c b/drivers/hid/intel-ish-hid/ipc/pci-ish.c
+index 42f0beeb09fd..4c69500a319b 100644
+--- a/drivers/hid/intel-ish-hid/ipc/pci-ish.c
++++ b/drivers/hid/intel-ish-hid/ipc/pci-ish.c
+@@ -47,7 +47,8 @@ MODULE_DEVICE_TABLE(pci, ish_pci_tbl);
+  *
+  * Callback to direct log messages to Linux trace buffers
+  */
+-static void ish_event_tracer(struct ishtp_device *dev, char *format, ...)
++static __printf(2, 3)
++void ish_event_tracer(struct ishtp_device *dev, const char *format, ...)
+ {
+ 	if (trace_ishtp_dump_enabled()) {
+ 		va_list args;
+diff --git a/drivers/hid/intel-ish-hid/ishtp-hid.c b/drivers/hid/intel-ish-hid/ishtp-hid.c
+index 277983aa1d90..8c0c2e7ac04a 100644
+--- a/drivers/hid/intel-ish-hid/ishtp-hid.c
++++ b/drivers/hid/intel-ish-hid/ishtp-hid.c
+@@ -208,8 +208,15 @@ int ishtp_hid_probe(unsigned int cur_hid_dev,
+ 	hid->version = le16_to_cpu(ISH_HID_VERSION);
+ 	hid->vendor = le16_to_cpu(ISH_HID_VENDOR);
+ 	hid->product = le16_to_cpu(ISH_HID_PRODUCT);
+-	snprintf(hid->name, sizeof(hid->name), "%s %04hX:%04hX", "hid-ishtp",
+-		hid->vendor, hid->product);
++	snprintf(hid->name, sizeof(hid->name), "%s %04X:%04X", "hid-ishtp",
++		hid->vendor, hid->product); /* include/linux/hid.h defines them as __u32 and clang complains:
++drivers/hid/intel-ish-hid/ishtp-hid.c:212:3: error: format specifies type 'unsigned short' but the argument has type '__u32' (aka 'unsigned int') [-Werror,-Wformat]
++                hid->vendor, hid->product);
++                ^~~~~~~~~~~
++drivers/hid/intel-ish-hid/ishtp-hid.c:212:16: error: format specifies type 'unsigned short' but the argument has type '__u32' (aka 'unsigned int') [-Werror,-Wformat]
++                hid->vendor, hid->product);
++                             ^~~~~~~~~~~~
++*/
+ 
+ 	rv = hid_add_device(hid);
+ 	if (rv)
+diff --git a/drivers/hid/intel-ish-hid/ishtp/ishtp-dev.h b/drivers/hid/intel-ish-hid/ishtp/ishtp-dev.h
+index a94f9a8a96a0..d5a59d60ad12 100644
+--- a/drivers/hid/intel-ish-hid/ishtp/ishtp-dev.h
++++ b/drivers/hid/intel-ish-hid/ishtp/ishtp-dev.h
+@@ -238,7 +238,7 @@ struct ishtp_device {
+ 	uint64_t ishtp_host_dma_rx_buf_phys;
+ 
+ 	/* Dump to trace buffers if enabled*/
+-	void (*print_log)(struct ishtp_device *dev, char *format, ...);
++	void (__printf(2, 3) *print_log)(struct ishtp_device *dev, const char *format, ...);
+ 
+ 	/* Debug stats */
+ 	unsigned int	ipc_rx_cnt;
+-- 

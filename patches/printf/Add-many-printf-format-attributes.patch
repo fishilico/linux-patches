@@ -5,7 +5,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
 
 ---
  arch/x86/boot/tools/build.c                       |   3 +-
- drivers/acpi/acpica/acutils.h                     |  17 +--
+ drivers/acpi/acpica/acutils.h                     |   6 +-
  drivers/acpi/acpica/nsrepair2.c                   |   2 +-
  drivers/acpi/acpica/utdebug.c                     |   2 +-
  drivers/ata/libata-eh.c                           |   5 +-
@@ -71,7 +71,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  security/tomoyo/common.c                          |   3 +-
  security/tomoyo/common.h                          |   4 +-
  sound/soc/soc-dapm.c                              |   3 +-
- 67 files changed, 222 insertions(+), 189 deletions(-)
+ 67 files changed, 215 insertions(+), 185 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index 0702d2531bc7..01ed0e57d243 100644
@@ -88,10 +88,10 @@ index 0702d2531bc7..01ed0e57d243 100644
  	va_list args;
  	va_start(args, str);
 diff --git a/drivers/acpi/acpica/acutils.h b/drivers/acpi/acpica/acutils.h
-index a7dbb2b882cf..5e81d7d2eb9f 100644
+index 0a1b53c9ee0e..bfb771f24971 100644
 --- a/drivers/acpi/acpica/acutils.h
 +++ b/drivers/acpi/acpica/acutils.h
-@@ -668,18 +668,18 @@ void acpi_ut_delete_address_lists(void);
+@@ -688,18 +688,18 @@ void acpi_ut_delete_address_lists(void);
  /*
   * utxferror - various error/warning output functions
   */
@@ -113,30 +113,6 @@ index a7dbb2b882cf..5e81d7d2eb9f 100644
  acpi_ut_predefined_bios_error(const char *module_name,
  			      u32 line_number,
  			      char *pathname,
-@@ -713,16 +713,19 @@ const char *acpi_ut_scan_number(const char *string, u64 *number_ptr);
- 
- const char *acpi_ut_print_number(char *string, u64 number);
- 
--int
-+__printf(3, 0) int
- acpi_ut_vsnprintf(char *string,
- 		  acpi_size size, const char *format, va_list args);
- 
--int acpi_ut_snprintf(char *string, acpi_size size, const char *format, ...);
-+__printf(3, 4) int
-+acpi_ut_snprintf(char *string, acpi_size size, const char *format, ...);
- 
- #ifdef ACPI_APPLICATION
--int acpi_ut_file_vprintf(ACPI_FILE file, const char *format, va_list args);
-+__printf(2, 0) int
-+acpi_ut_file_vprintf(ACPI_FILE file, const char *format, va_list args);
- 
--int acpi_ut_file_printf(ACPI_FILE file, const char *format, ...);
-+__printf(2, 3) int
-+acpi_ut_file_printf(ACPI_FILE file, const char *format, ...);
- #endif
- 
- /*
 diff --git a/drivers/acpi/acpica/nsrepair2.c b/drivers/acpi/acpica/nsrepair2.c
 index d5336122486b..cc31029b9217 100644
 --- a/drivers/acpi/acpica/nsrepair2.c
@@ -151,7 +127,7 @@ index d5336122486b..cc31029b9217 100644
  					      ACPI_FDE_DWORD_BUFFER_SIZE));
  
 diff --git a/drivers/acpi/acpica/utdebug.c b/drivers/acpi/acpica/utdebug.c
-index 574422205005..4ac231a6dc37 100644
+index 044df9b0356e..b4cdb9c14a87 100644
 --- a/drivers/acpi/acpica/utdebug.c
 +++ b/drivers/acpi/acpica/utdebug.c
 @@ -189,7 +189,7 @@ acpi_debug_print(u32 requested_debug_level,
@@ -180,10 +156,10 @@ index 0e1ec37070d1..609572104073 100644
  	ehi->desc_len += vscnprintf(ehi->desc + ehi->desc_len,
  				     ATA_EH_DESC_LEN - ehi->desc_len,
 diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 0a8bdade53f2..25ede08a24cd 100644
+index ce057a568673..49effe7af87e 100644
 --- a/drivers/base/core.c
 +++ b/drivers/base/core.c
-@@ -1676,7 +1676,7 @@ static void device_create_release(struct device *dev)
+@@ -1696,7 +1696,7 @@ static void device_create_release(struct device *dev)
  	kfree(dev);
  }
  
@@ -193,10 +169,10 @@ index 0a8bdade53f2..25ede08a24cd 100644
  			   dev_t devt, void *drvdata,
  			   const struct attribute_group **groups,
 diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 691eeea2f19a..17ca4223fff8 100644
+index 4c28e1a09786..66c0ca4bb354 100644
 --- a/drivers/base/cpu.c
 +++ b/drivers/base/cpu.c
-@@ -393,7 +393,7 @@ static void device_create_release(struct device *dev)
+@@ -394,7 +394,7 @@ static void device_create_release(struct device *dev)
  	kfree(dev);
  }
  
@@ -238,10 +214,10 @@ index 97ae60fa1584..06340d501321 100644
  						const char *dev_id, ...)
  {
 diff --git a/drivers/gpu/drm/i915/i915_gpu_error.c b/drivers/gpu/drm/i915/i915_gpu_error.c
-index 9d73d2216adc..c3c22f3ced15 100644
+index 334f15df7c8d..1525d1319e95 100644
 --- a/drivers/gpu/drm/i915/i915_gpu_error.c
 +++ b/drivers/gpu/drm/i915/i915_gpu_error.c
-@@ -129,8 +129,9 @@ static void __i915_error_advance(struct drm_i915_error_state_buf *e,
+@@ -119,8 +119,9 @@ static void __i915_error_advance(struct drm_i915_error_state_buf *e,
  	e->pos += len;
  }
  
@@ -254,10 +230,10 @@ index 9d73d2216adc..c3c22f3ced15 100644
  	unsigned len;
  
 diff --git a/drivers/iio/industrialio-trigger.c b/drivers/iio/industrialio-trigger.c
-index 7ad82fdd3e5b..566d6f69f63d 100644
+index e1e104845e38..947f48a482d8 100644
 --- a/drivers/iio/industrialio-trigger.c
 +++ b/drivers/iio/industrialio-trigger.c
-@@ -480,7 +480,8 @@ static void iio_trig_subirqunmask(struct irq_data *d)
+@@ -510,7 +510,8 @@ static void iio_trig_subirqunmask(struct irq_data *d)
  	trig->subirqs[d->irq - trig->subirq_base].enabled = true;
  }
  
@@ -877,7 +853,7 @@ index c7be7bb37209..219f4964d981 100644
  				}
  			} else if (blogic_parse(&options, "NoProbeISA"))
 diff --git a/drivers/scsi/esas2r/esas2r_init.c b/drivers/scsi/esas2r/esas2r_init.c
-index 78ce4d61a69b..b3f6ff60b0b2 100644
+index d6e53aee2295..6432a50b26d8 100644
 --- a/drivers/scsi/esas2r/esas2r_init.c
 +++ b/drivers/scsi/esas2r/esas2r_init.c
 @@ -237,7 +237,7 @@ static void esas2r_claim_interrupts(struct esas2r_adapter *a)
@@ -943,7 +919,7 @@ index 7b6397bb5b94..b5cbda03cd69 100644
  		       const void *buf,
  		       size_t len);
 diff --git a/drivers/scsi/esas2r/esas2r_main.c b/drivers/scsi/esas2r/esas2r_main.c
-index 2aca4d16f39e..eccf5c8acd92 100644
+index 5092c821d088..f2e9d8aa979c 100644
 --- a/drivers/scsi/esas2r/esas2r_main.c
 +++ b/drivers/scsi/esas2r/esas2r_main.c
 @@ -198,7 +198,7 @@ static ssize_t write_hw(struct file *file, struct kobject *kobj,
@@ -955,7 +931,7 @@ index 2aca4d16f39e..eccf5c8acd92 100644
  				   sizeof(struct atto_ioctl));
  			return -ENOMEM;
  		}
-@@ -1186,7 +1186,7 @@ retry:
+@@ -1186,7 +1186,7 @@ static int esas2r_dev_targ_reset(struct scsi_cmnd *cmd, bool target_reset)
  		} else {
  			esas2r_log(ESAS2R_LOG_CRIT,
  				   "unable to allocate a request for a "
@@ -965,7 +941,7 @@ index 2aca4d16f39e..eccf5c8acd92 100644
  				   cmd->device->lun);
  		}
 diff --git a/drivers/staging/fbtft/fb_agm1264k-fl.c b/drivers/staging/fbtft/fb_agm1264k-fl.c
-index 82b46cd27ca7..4b7dfe9007aa 100644
+index 7561385761e9..95c3ff17ab4d 100644
 --- a/drivers/staging/fbtft/fb_agm1264k-fl.c
 +++ b/drivers/staging/fbtft/fb_agm1264k-fl.c
 @@ -407,7 +407,7 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
@@ -1048,7 +1024,7 @@ index 4dcea2e0b3ae..e2d90f5b456f 100644
  	while (len) {
  		data = *(u16 *)buf;
 diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index d3bc3943a983..27bf48cd47de 100644
+index 89c4b5b76ce6..d1a936fd5914 100644
 --- a/drivers/staging/fbtft/fbtft.h
 +++ b/drivers/staging/fbtft/fbtft.h
 @@ -250,7 +250,7 @@ struct fbtft_par {
@@ -1061,10 +1037,10 @@ index d3bc3943a983..27bf48cd47de 100644
  					struct device *dev,
  					struct fbtft_platform_data *pdata);
 diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
-index e4a355aefb25..46224f167cc9 100644
+index e9211831b6a1..d1f2794084ff 100644
 --- a/drivers/staging/fbtft/fbtft_device.c
 +++ b/drivers/staging/fbtft/fbtft_device.c
-@@ -1251,7 +1251,7 @@ static int write_gpio16_wr_slow(struct fbtft_par *par, void *buf, size_t len)
+@@ -1252,7 +1252,7 @@ static int write_gpio16_wr_slow(struct fbtft_par *par, void *buf, size_t len)
  #endif
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
@@ -1074,10 +1050,10 @@ index e4a355aefb25..46224f167cc9 100644
  	while (len) {
  		data = *(u16 *)buf;
 diff --git a/drivers/staging/lustre/lustre/include/lu_object.h b/drivers/staging/lustre/lustre/include/lu_object.h
-index 6e25c1bb6aa3..bf3bf81d4604 100644
+index 260643ee0d48..14ded0f8a779 100644
 --- a/drivers/staging/lustre/lustre/include/lu_object.h
 +++ b/drivers/staging/lustre/lustre/include/lu_object.h
-@@ -768,8 +768,8 @@ struct lu_object *lu_object_locate(struct lu_object_header *h,
+@@ -772,8 +772,8 @@ struct lu_object *lu_object_locate(struct lu_object_header *h,
  /**
   * Printer function emitting messages through libcfs_debug_msg().
   */
@@ -1143,7 +1119,7 @@ index 056da6ee1a35..88791e73a8bb 100644
  	va_list ap;
  
 diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
-index 562603d7aabe..7ee44756232b 100644
+index f3414c83abb1..48b21490bbeb 100644
 --- a/include/acpi/acpiosxf.h
 +++ b/include/acpi/acpiosxf.h
 @@ -337,11 +337,12 @@ acpi_status acpi_os_signal(u32 function, void *info);
@@ -1161,11 +1137,11 @@ index 562603d7aabe..7ee44756232b 100644
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
 diff --git a/include/linux/iio/iio.h b/include/linux/iio/iio.h
-index 854e2dad1e0d..3c19402cb8ba 100644
+index b4a0679e4a49..0bf571e3fbb9 100644
 --- a/include/linux/iio/iio.h
 +++ b/include/linux/iio/iio.h
-@@ -644,7 +644,7 @@ static inline struct iio_dev *iio_priv_to_dev(void *priv)
- void iio_device_free(struct iio_dev *indio_dev);
+@@ -647,7 +647,7 @@ void iio_device_free(struct iio_dev *indio_dev);
+ int devm_iio_device_match(struct device *dev, void *res, void *data);
  struct iio_dev *devm_iio_device_alloc(struct device *dev, int sizeof_priv);
  void devm_iio_device_free(struct device *dev, struct iio_dev *indio_dev);
 -struct iio_trigger *devm_iio_trigger_alloc(struct device *dev,
@@ -1201,10 +1177,10 @@ index be007610ceb0..bdf70c22d8ca 100644
  struct event_filter;
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index a8a91bd2b2a9..d596e1b2828a 100644
+index f1ca11613379..0a66eec68293 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
-@@ -1457,8 +1457,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
+@@ -1463,8 +1463,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
   * will be called a second time.  Currently, we assume that a printk
   * can't format message larger than 1024 bytes, so we don't either.
   */
@@ -1216,10 +1192,10 @@ index a8a91bd2b2a9..d596e1b2828a 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 7bc56762ca35..f1f450ec5f0a 100644
+index 8696ce6bf2f6..6fa90558106e 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -2513,7 +2513,7 @@ out_nobuffer:
+@@ -2513,7 +2513,7 @@ int trace_vbprintk(unsigned long ip, const char *fmt, va_list args)
  }
  EXPORT_SYMBOL_GPL(trace_vbprintk);
  
@@ -1229,10 +1205,10 @@ index 7bc56762ca35..f1f450ec5f0a 100644
  		      unsigned long ip, const char *fmt, va_list args)
  {
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index f783df416726..b9e59bc1f085 100644
+index fd24b1f9ac43..9502f7d9d249 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -729,15 +729,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -734,15 +734,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(cycle_t nsec);
@@ -1254,7 +1230,7 @@ index f783df416726..b9e59bc1f085 100644
  			   unsigned long ip, const char *fmt, ...);
  void trace_printk_seq(struct trace_seq *s);
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 0bb9cf2d53e6..f1e35c71ac14 100644
+index 3fc20422c166..2222fe8e3487 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
 @@ -245,8 +245,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
@@ -1278,10 +1254,10 @@ index 0bb9cf2d53e6..f1e35c71ac14 100644
  	va_list ap;
  	int ret;
 diff --git a/mm/slub.c b/mm/slub.c
-index 9adae58462f8..229782339f7d 100644
+index 2b3e740609e9..be628aaff533 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -674,8 +674,8 @@ void object_err(struct kmem_cache *s, struct page *page,
+@@ -670,8 +670,8 @@ void object_err(struct kmem_cache *s, struct page *page,
  	print_trailer(s, page, object);
  }
  
@@ -1604,7 +1580,7 @@ index 361e7a284699..558ffd21c285 100644
  /********** External variable definitions. **********/
  
 diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
-index d908ff8f9755..7347ec890af2 100644
+index 3bbe32ee4630..482978486370 100644
 --- a/sound/soc/soc-dapm.c
 +++ b/sound/soc/soc-dapm.c
 @@ -137,7 +137,8 @@ static void pop_wait(u32 pop_time)

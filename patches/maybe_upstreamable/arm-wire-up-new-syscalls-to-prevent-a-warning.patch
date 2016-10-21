@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 17 Oct 2016 20:24:25 +0200
+Subject: [PATCH] {MAYBE UPS} arm: wire-up new syscalls to prevent a warning
+
+---
+ arch/arm/include/asm/unistd.h      | 2 +-
+ arch/arm/include/uapi/asm/unistd.h | 3 +++
+ arch/arm/kernel/calls.S            | 3 +++
+ 3 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/include/asm/unistd.h b/arch/arm/include/asm/unistd.h
+index 194b69923389..ada0d29a660f 100644
+--- a/arch/arm/include/asm/unistd.h
++++ b/arch/arm/include/asm/unistd.h
+@@ -19,7 +19,7 @@
+  * This may need to be greater than __NR_last_syscall+1 in order to
+  * account for the padding in the syscall table
+  */
+-#define __NR_syscalls  (396)
++#define __NR_syscalls  (400)
+ 
+ #define __ARCH_WANT_STAT64
+ #define __ARCH_WANT_SYS_GETHOSTNAME
+diff --git a/arch/arm/include/uapi/asm/unistd.h b/arch/arm/include/uapi/asm/unistd.h
+index 2cb9dc770e1d..f03d15af2f08 100644
+--- a/arch/arm/include/uapi/asm/unistd.h
++++ b/arch/arm/include/uapi/asm/unistd.h
+@@ -420,6 +420,9 @@
+ #define __NR_copy_file_range		(__NR_SYSCALL_BASE+391)
+ #define __NR_preadv2			(__NR_SYSCALL_BASE+392)
+ #define __NR_pwritev2			(__NR_SYSCALL_BASE+393)
++#define __NR_pkey_mprotect			(__NR_SYSCALL_BASE+394)
++#define __NR_pkey_alloc			(__NR_SYSCALL_BASE+395)
++#define __NR_pkey_free			(__NR_SYSCALL_BASE+396)
+ 
+ /*
+  * The following SWIs are ARM private.
+diff --git a/arch/arm/kernel/calls.S b/arch/arm/kernel/calls.S
+index 703fa0f3cd8f..74dc18f3a1d2 100644
+--- a/arch/arm/kernel/calls.S
++++ b/arch/arm/kernel/calls.S
+@@ -403,6 +403,9 @@
+ 		CALL(sys_copy_file_range)
+ 		CALL(sys_preadv2)
+ 		CALL(sys_pwritev2)
++		CALL(sys_pkey_mprotect)
++		CALL(sys_pkey_alloc)
++		CALL(sys_pkey_free)
+ #ifndef syscalls_counted
+ .equ syscalls_padding, ((NR_syscalls + 3) & ~3) - NR_syscalls
+ #define syscalls_counted
+-- 

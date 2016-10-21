@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 17 Oct 2016 20:24:15 +0200
+Subject: [PATCH] {BUG in 4.9-rc1} [media] i2c: fix use of uninitialized
+ variable
+
+clang reports:
+
+    drivers/media/i2c/ir-kbd-i2c.c:121:7: error: variable 'toggle' is
+    uninitialized when used here [-Werror,-Wuninitialized]
+---
+ drivers/media/i2c/ir-kbd-i2c.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/media/i2c/ir-kbd-i2c.c b/drivers/media/i2c/ir-kbd-i2c.c
+index f95a6bc839d5..cede3975d04b 100644
+--- a/drivers/media/i2c/ir-kbd-i2c.c
++++ b/drivers/media/i2c/ir-kbd-i2c.c
+@@ -118,7 +118,7 @@ static int get_key_haup_common(struct IR_i2c *ir, enum rc_type *protocol,
+ 			*protocol = RC_TYPE_RC6_MCE;
+ 			dev &= 0x7f;
+ 			dprintk(1, "ir hauppauge (rc6-mce): t%d vendor=%d dev=%d code=%d\n",
+-						toggle, vendor, dev, code);
++						*ptoggle, vendor, dev, code);
+ 		} else {
+ 			*ptoggle = 0;
+ 			*protocol = RC_TYPE_RC6_6A_32;
+-- 

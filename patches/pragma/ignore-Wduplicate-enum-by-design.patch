@@ -12,11 +12,10 @@ Subject: [PATCH] {PRAGMA} ignore -Wduplicate-enum by design
  drivers/net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h |  9 +++++++++
  drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h         |  7 +++++++
  drivers/staging/comedi/comedi.h                             |  7 +++++++
- drivers/staging/rtl8723au/include/rtl8723a_cmd.h            |  7 +++++++
  include/uapi/linux/netfilter/nf_conntrack_common.h          | 10 ++++++++++
  include/uapi/linux/nl80211.h                                |  7 +++++++
  sound/pci/pcxhr/pcxhr.h                                     |  8 ++++++++
- 12 files changed, 90 insertions(+)
+ 11 files changed, 83 insertions(+)
 
 diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
 index 8554f960e21b..82ab882af58e 100644
@@ -93,7 +92,7 @@ index 90c867683076..9cf70a0851d0 100644
  /* cx231xx has two audio inputs: tuner and line in */
  enum cx231xx_amux {
 diff --git a/drivers/net/wireless/ath/ath10k/htt.h b/drivers/net/wireless/ath/ath10k/htt.h
-index 430a83e142aa..e87dcf35a553 100644
+index 0d2ed09f202b..4085f7b6f7a2 100644
 --- a/drivers/net/wireless/ath/ath10k/htt.h
 +++ b/drivers/net/wireless/ath/ath10k/htt.h
 @@ -524,6 +524,10 @@ struct htt_rx_indication_hdr {
@@ -219,31 +218,6 @@ index 08fb26b51a5f..bf35a65e2704 100644
  
  /*
   * Values for setting a clock source with INSN_CONFIG_SET_CLOCK_SRC for
-diff --git a/drivers/staging/rtl8723au/include/rtl8723a_cmd.h b/drivers/staging/rtl8723au/include/rtl8723a_cmd.h
-index f95535a915ab..b076eb2f8288 100644
---- a/drivers/staging/rtl8723au/include/rtl8723a_cmd.h
-+++ b/drivers/staging/rtl8723au/include/rtl8723a_cmd.h
-@@ -19,6 +19,10 @@
- #define H2C_BT_FW_PATCH_LEN		3
- #define H2C_BT_PWR_FORCE_LEN		3
- 
-+#ifdef __clang__
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wduplicate-enum"
-+#endif
- enum cmd_msg_element_id
- {
- 	NONE_CMDMSG_EID,
-@@ -51,6 +55,9 @@ enum cmd_msg_element_id
- 	H2C_RESET_TSF = 75,
- 	MAX_CMDMSG_EID
- };
-+#ifdef __clang__
-+#pragma GCC diagnostic pop
-+#endif
- 
- struct cmd_msg_parm {
- 	u8 eid; /* element id */
 diff --git a/include/uapi/linux/netfilter/nf_conntrack_common.h b/include/uapi/linux/netfilter/nf_conntrack_common.h
 index 6d074d14ee27..dd12dc5dd808 100644
 --- a/include/uapi/linux/netfilter/nf_conntrack_common.h
@@ -273,10 +247,10 @@ index 6d074d14ee27..dd12dc5dd808 100644
  #define NF_CT_STATE_INVALID_BIT			(1 << 0)
  #define NF_CT_STATE_BIT(ctinfo)			(1 << ((ctinfo) % IP_CT_IS_REPLY + 1))
 diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
-index 220694151434..ba1f666eca6e 100644
+index 56368e9b4622..c42c454e14cc 100644
 --- a/include/uapi/linux/nl80211.h
 +++ b/include/uapi/linux/nl80211.h
-@@ -3589,6 +3589,10 @@ enum nl80211_bss_status {
+@@ -3666,6 +3666,10 @@ enum nl80211_bss_status {
   *	trying multiple times); this is invalid in netlink -- leave out
   *	the attribute for this on CONNECT commands.
   */
@@ -287,7 +261,7 @@ index 220694151434..ba1f666eca6e 100644
  enum nl80211_auth_type {
  	NL80211_AUTHTYPE_OPEN_SYSTEM,
  	NL80211_AUTHTYPE_SHARED_KEY,
-@@ -3601,6 +3605,9 @@ enum nl80211_auth_type {
+@@ -3678,6 +3682,9 @@ enum nl80211_auth_type {
  	NL80211_AUTHTYPE_MAX = __NL80211_AUTHTYPE_NUM - 1,
  	NL80211_AUTHTYPE_AUTOMATIC
  };

@@ -12,8 +12,9 @@ Subject: [PATCH] {PRAGMA} ignore -Wuninitialized with pragmas
  include/linux/kthread.h                                  | 8 ++++++++
  include/linux/wait.h                                     | 8 ++++++++
  kernel/kthread.c                                         | 6 ++++++
+ kernel/smp.c                                             | 3 +++
  kernel/workqueue.c                                       | 3 +++
- 9 files changed, 51 insertions(+)
+ 10 files changed, 54 insertions(+)
 
 diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
 index 942384f34e22..77164d86f6f6 100644
@@ -34,13 +35,13 @@ index 942384f34e22..77164d86f6f6 100644
  	clear_bit(DISCONNECT_SENT, &connection->flags);
  	if (conn_request_state(connection, NS(conn, C_WF_CONNECTION), CS_VERBOSE) < SS_SUCCESS)
 diff --git a/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c b/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c
-index 02b519dde42a..14f8db201c2f 100644
+index a15bfb5aea47..81b9c8a47ba3 100644
 --- a/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c
 +++ b/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c
-@@ -1722,10 +1722,13 @@ static int sh_mobile_ceu_probe(struct platform_device *pdev)
+@@ -1640,10 +1640,13 @@ static int sh_mobile_ceu_probe(struct platform_device *pdev)
  	void __iomem *base;
  	unsigned int irq;
- 	int err, i;
+ 	int err;
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wuninitialized"
  	struct bus_wait wait = {
@@ -48,9 +49,9 @@ index 02b519dde42a..14f8db201c2f 100644
  		.notifier.notifier_call = bus_notify,
  	};
 +#pragma GCC diagnostic pop
- 	struct sh_mobile_ceu_companion *csi2;
  
  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	irq = platform_get_irq(pdev, 0);
 diff --git a/drivers/net/wimax/i2400m/driver.c b/drivers/net/wimax/i2400m/driver.c
 index 9c78090e72f8..2b7c3e22b7bb 100644
 --- a/drivers/net/wimax/i2400m/driver.c
@@ -113,13 +114,13 @@ index 5d5aaae3af43..507390320013 100644
  # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
  #endif
 diff --git a/include/linux/kthread.h b/include/linux/kthread.h
-index e691b6a23f72..f4b8aaf019ec 100644
+index a6e82a69c363..f4792437844a 100644
 --- a/include/linux/kthread.h
 +++ b/include/linux/kthread.h
-@@ -100,8 +100,16 @@ struct kthread_work {
+@@ -137,8 +137,16 @@ struct kthread_delayed_work {
  #ifdef CONFIG_LOCKDEP
  # define KTHREAD_WORKER_INIT_ONSTACK(worker)				\
- 	({ init_kthread_worker(&worker); worker; })
+ 	({ kthread_init_worker(&worker); worker; })
 +#ifdef __clang__
 +# define DEFINE_KTHREAD_WORKER_ONSTACK(worker)				\
 +_Pragma("GCC diagnostic push") \
@@ -134,7 +135,7 @@ index e691b6a23f72..f4b8aaf019ec 100644
  # define DEFINE_KTHREAD_WORKER_ONSTACK(worker) DEFINE_KTHREAD_WORKER(worker)
  #endif
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index c3ff74d764fa..732b3e4d6914 100644
+index 2408e8d5c05c..ce0e8ae28b0c 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
 @@ -81,8 +81,16 @@ extern void __init_waitqueue_head(wait_queue_head_t *q, const char *name, struct
@@ -155,12 +156,12 @@ index c3ff74d764fa..732b3e4d6914 100644
  # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
  #endif
 diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 9ff173dca1ae..8ae10cccf2a2 100644
+index be2cc1f9dd57..176d2445f9df 100644
 --- a/kernel/kthread.c
 +++ b/kernel/kthread.c
-@@ -659,10 +659,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
+@@ -911,10 +911,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
   */
- void flush_kthread_work(struct kthread_work *work)
+ void kthread_flush_work(struct kthread_work *work)
  {
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wuninitialized"
@@ -172,9 +173,9 @@ index 9ff173dca1ae..8ae10cccf2a2 100644
  	struct kthread_worker *worker;
  	bool noop = false;
  
-@@ -700,10 +703,13 @@ EXPORT_SYMBOL_GPL(flush_kthread_work);
+@@ -1118,10 +1121,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
   */
- void flush_kthread_worker(struct kthread_worker *worker)
+ void kthread_flush_worker(struct kthread_worker *worker)
  {
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wuninitialized"
@@ -184,10 +185,30 @@ index 9ff173dca1ae..8ae10cccf2a2 100644
  	};
 +#pragma GCC diagnostic pop
  
- 	queue_kthread_work(worker, &fwork.work);
+ 	kthread_queue_work(worker, &fwork.work);
  	wait_for_completion(&fwork.done);
+diff --git a/kernel/smp.c b/kernel/smp.c
+index bba3b201668d..9f7973012a20 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -758,12 +758,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
+ 
+ int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par, bool phys)
+ {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wuninitialized"
+ 	struct smp_call_on_cpu_struct sscs = {
+ 		.done = COMPLETION_INITIALIZER_ONSTACK(sscs.done),
+ 		.func = func,
+ 		.data = par,
+ 		.cpu  = phys ? cpu : -1,
+ 	};
++#pragma GCC diagnostic pop
+ 
+ 	INIT_WORK_ONSTACK(&sscs.work, smp_call_on_cpu_callback);
+ 
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index ef071ca73fc3..357691c7c164 100644
+index 479d840db286..a5a852fb720c 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
 @@ -2576,11 +2576,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,

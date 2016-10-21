@@ -123,7 +123,7 @@ index 5db6f45b3fed..8d902847f82e 100644
  
  	if (cpy_num == 0)
 diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
-index c2c59f9ff04b..8c58395cbb49 100644
+index 58b2dedb2a3a..5d27c3d5f3a5 100644
 --- a/fs/reiserfs/inode.c
 +++ b/fs/reiserfs/inode.c
 @@ -2239,7 +2239,7 @@ static int grab_tail_page(struct inode *inode,
@@ -168,7 +168,7 @@ index cdce05fe323e..d26ecc3da354 100644
  			       j_len_saved, jl->j_trans_id);
  		return 0;
  	}
-@@ -1604,7 +1604,7 @@ flush_older_and_return:
+@@ -1604,7 +1604,7 @@ static int flush_journal_list(struct super_block *s,
  
  	if (journal->j_last_flush_id != 0 &&
  	    (jl->j_trans_id - journal->j_last_flush_id) != 1) {
@@ -258,7 +258,7 @@ index cdce05fe323e..d26ecc3da354 100644
  					       oldest_start -
  					       SB_ONDISK_JOURNAL_1st_BLOCK
  					       (sb), oldest_trans_id);
-@@ -2499,7 +2499,7 @@ start_log_replay:
+@@ -2499,7 +2499,7 @@ static int journal_read(struct super_block *sb)
  	if (oldest_trans_id) {
  		reiserfs_debug(sb, REISERFS_DEBUG_CODE,
  			       "journal-1206: Starting replay "
@@ -329,10 +329,10 @@ index 249594a821e0..fae49d299d68 100644
  
  	/* prepare space for headers */
 diff --git a/fs/reiserfs/stree.c b/fs/reiserfs/stree.c
-index 4032d1e87c8f..51ce26836bfd 100644
+index a97e352d05d3..db03a1d63109 100644
 --- a/fs/reiserfs/stree.c
 +++ b/fs/reiserfs/stree.c
-@@ -728,8 +728,8 @@ io_error:
+@@ -728,8 +728,8 @@ int search_by_key(struct super_block *sb, const struct cpu_key *key,
  		 */
  		if (!is_tree_node(bh, expected_level)) {
  			reiserfs_error(sb, "vs-5150",

@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 17 Oct 2016 20:24:13 +0200
+Subject: [PATCH] {BUG in 4.9-rc1} ceph: fix uninitialized return value
+
+---
+ fs/ceph/super.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/fs/ceph/super.c b/fs/ceph/super.c
+index a29ffce98187..b5196cf7fd8f 100644
+--- a/fs/ceph/super.c
++++ b/fs/ceph/super.c
+@@ -845,7 +845,8 @@ static struct dentry *ceph_real_mount(struct ceph_fs_client *fsc)
+ 		err = ceph_fs_debugfs_init(fsc);
+ 		if (err < 0)
+ 			goto fail;
+-	}
++	} else
++		root = dget(fsc->sb->s_root); /* FIXME: get a reference? */
+ 
+ 	fsc->mount_state = CEPH_MOUNT_MOUNTED;
+ 	dout("mount success\n");
+-- 

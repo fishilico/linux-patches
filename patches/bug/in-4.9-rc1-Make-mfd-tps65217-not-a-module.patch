@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 17 Oct 2016 20:24:29 +0200
+Subject: [PATCH] {BUG in 4.9-rc1} Make mfd/tps65217 not a module
+
+This breaks allmodconfig on ARM:
+
+    ERROR: "irq_set_parent" [drivers/mfd/tps65217.ko] undefined!
+---
+ drivers/mfd/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index c6df6442ba2b..87e3f2461858 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -1220,7 +1220,7 @@ config MFD_TPS65090
+ 	  functionality of the device.
+ 
+ config MFD_TPS65217
+-	tristate "TI TPS65217 Power Management / White LED chips"
++	bool "TI TPS65217 Power Management / White LED chips"
+ 	depends on I2C
+ 	select MFD_CORE
+ 	select REGMAP_I2C
+-- 

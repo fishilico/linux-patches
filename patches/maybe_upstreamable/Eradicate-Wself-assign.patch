@@ -17,13 +17,13 @@ Subject: [PATCH] {MAYBE UPS} Eradicate -Wself-assign
  drivers/net/wireless/realtek/rtlwifi/rtl8192cu/rf.c |  3 ---
  drivers/scsi/bfa/bfa_fcbuild.c                      | 18 +++++-------------
  drivers/scsi/qla2xxx/qla_mbx.c                      |  3 +--
- drivers/staging/rtl8723au/hal/rtl8723a_rf6052.c     |  4 ++--
- drivers/usb/gadget/udc/core.c                       |  4 ++--
+ drivers/usb/gadget/udc/core.c                       |  2 +-
  drivers/usb/serial/iuu_phoenix.c                    |  1 -
  drivers/video/fbdev/vga16fb.c                       |  1 -
  fs/ubifs/recovery.c                                 |  1 -
  fs/ubifs/scan.c                                     |  1 -
- 19 files changed, 17 insertions(+), 43 deletions(-)
+ fs/xfs/libxfs/xfs_bmap.c                            |  4 +---
+ 19 files changed, 15 insertions(+), 43 deletions(-)
 
 diff --git a/drivers/media/dvb-frontends/dib7000p.c b/drivers/media/dvb-frontends/dib7000p.c
 index 51d37a02dd46..af79b036fa82 100644
@@ -93,7 +93,7 @@ index abc379aea713..4bc96466a369 100644
  			temporary = (Errors * 100000000) / (8 * (1 << 14));
  			temporary = temporary * 10;
 diff --git a/drivers/media/dvb-frontends/tda18271c2dd.c b/drivers/media/dvb-frontends/tda18271c2dd.c
-index de0a1c110972..934bba88a3f0 100644
+index bc247f9b553a..cf432e67c813 100644
 --- a/drivers/media/dvb-frontends/tda18271c2dd.c
 +++ b/drivers/media/dvb-frontends/tda18271c2dd.c
 @@ -678,7 +678,6 @@ static int PowerScan(struct tda_state *state,
@@ -105,7 +105,7 @@ index de0a1c110972..934bba88a3f0 100644
  			break;
  		if (CID_Gain >= CID_Target) {
 diff --git a/drivers/media/pci/bt8xx/bttv-driver.c b/drivers/media/pci/bt8xx/bttv-driver.c
-index df54e17ef864..06e98a9d7784 100644
+index 97b91a9f9fa9..2022e25db72a 100644
 --- a/drivers/media/pci/bt8xx/bttv-driver.c
 +++ b/drivers/media/pci/bt8xx/bttv-driver.c
 @@ -2041,7 +2041,7 @@ limit_scaled_size_lock       (struct bttv_fh *               fh,
@@ -178,7 +178,7 @@ index ca4442a9d631..7f8cf6ba3a14 100644
  	pr_debug("%s(): change_dongle_speed to %d for 0x%x, %d\n",
  		 __func__, speed, iobase, dongle_id);
 diff --git a/drivers/net/usb/lan78xx.c b/drivers/net/usb/lan78xx.c
-index 6a9d474b08b2..c393fdd2db33 100644
+index db558b8b32fe..3ae9c0e117fb 100644
 --- a/drivers/net/usb/lan78xx.c
 +++ b/drivers/net/usb/lan78xx.c
 @@ -868,7 +868,7 @@ static int lan78xx_read_otp(struct lan78xx_net *dev, u32 offset,
@@ -302,35 +302,11 @@ index 23698c998699..edfe5bd3ad31 100644
  	vha = fcport->vha;
  
  	ql_dbg(ql_dbg_mbx + ql_dbg_verbose, vha, 0x103e,
-diff --git a/drivers/staging/rtl8723au/hal/rtl8723a_rf6052.c b/drivers/staging/rtl8723au/hal/rtl8723a_rf6052.c
-index 24c0ff3d82bc..554cc0762580 100644
---- a/drivers/staging/rtl8723au/hal/rtl8723a_rf6052.c
-+++ b/drivers/staging/rtl8723au/hal/rtl8723a_rf6052.c
-@@ -301,8 +301,8 @@ getTxPowerWriteValByRegulatory(struct rtw_adapter *Adapter, u8 Channel,
- 		   Driver-Highpower-Mechanism is OFF. */
- 		if (pdmpriv->DynamicTxHighPowerLvl == TxHighPwrLevel_BT1)
- 			writeVal = writeVal - 0x06060606;
--		else if (pdmpriv->DynamicTxHighPowerLvl == TxHighPwrLevel_BT2)
--			writeVal = writeVal;
-+		/*else if (pdmpriv->DynamicTxHighPowerLvl == TxHighPwrLevel_BT2)
-+			writeVal = writeVal;*/
- 		*(pOutWriteVal + rf) = writeVal;
- 	}
- }
 diff --git a/drivers/usb/gadget/udc/core.c b/drivers/usb/gadget/udc/core.c
-index 40c04bb25f2f..24dcacaf78a8 100644
+index 9483489080f6..d135986ed66b 100644
 --- a/drivers/usb/gadget/udc/core.c
 +++ b/drivers/usb/gadget/udc/core.c
-@@ -108,7 +108,7 @@ int usb_ep_enable(struct usb_ep *ep)
- 
- 	ret = ep->ops->enable(ep, ep->desc);
- 	if (ret) {
--		ret = ret;
-+		/* ret = ret; */
- 		goto out;
- 	}
- 
-@@ -142,7 +142,7 @@ int usb_ep_disable(struct usb_ep *ep)
+@@ -140,7 +140,7 @@ int usb_ep_disable(struct usb_ep *ep)
  
  	ret = ep->ops->disable(ep);
  	if (ret) {
@@ -352,7 +328,7 @@ index 344b4eea4bd5..afc6e2674454 100644
  	PBmsb = (P2 >> 8 & 0x03);
  	PBlsb = P2 & 0xFF;
 diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index 283d335a759f..4e2a9717b82a 100644
+index 5f0690c8fc93..2c6a576ed84c 100644
 --- a/drivers/video/fbdev/vga16fb.c
 +++ b/drivers/video/fbdev/vga16fb.c
 @@ -1055,7 +1055,6 @@ static void vga16fb_copyarea(struct fb_info *info, const struct fb_copyarea *are
@@ -387,4 +363,26 @@ index aab87340d3de..16f03d9929e5 100644
  	dbg_scan("stop scanning LEB %d at offset %d", lnum, offs);
  	ubifs_assert(offs % c->min_io_size == 0);
  
+diff --git a/fs/xfs/libxfs/xfs_bmap.c b/fs/xfs/libxfs/xfs_bmap.c
+index c27344cf38e1..75dee62a48af 100644
+--- a/fs/xfs/libxfs/xfs_bmap.c
++++ b/fs/xfs/libxfs/xfs_bmap.c
+@@ -5204,7 +5204,7 @@ xfs_bunmapi_cow(
+ 	ep = xfs_bmap_search_extents(ip, del->br_startoff, XFS_COW_FORK, &eof,
+ 			&eidx, &got, &new);
+ 
+-	ifp = XFS_IFORK_PTR(ip, XFS_COW_FORK); ifp = ifp;
++	ifp = XFS_IFORK_PTR(ip, XFS_COW_FORK);
+ 	ASSERT((eidx >= 0) && (eidx < ifp->if_bytes /
+ 		(uint)sizeof(xfs_bmbt_rec_t)));
+ 	ASSERT(del->br_blockcount > 0);
+@@ -5232,8 +5232,6 @@ xfs_bunmapi_cow(
+ 		da_new = 0;
+ 		nblks = 0;
+ 	}
+-	qfield = qfield;
+-	nblks = nblks;
+ 
+ 	/*
+ 	 * Set flag value to use in switch statement.
 -- 

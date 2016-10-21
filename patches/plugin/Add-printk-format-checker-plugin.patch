@@ -1,0 +1,812 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 8 Oct 2016 14:39:21 +0200
+Subject: [PATCH] {PLUGIN} Add printk format checker plugin
+
+This plugin helped to detect the following bugs:
+- 901d805c33fc ("UBSAN: fix typo in format string")
+- 7703773ef1d8 ("brcmfmac: fix pmksa->bssid usage")
+---
+ arch/Kconfig                               |   7 +
+ fs/reiserfs/Makefile                       |  16 +
+ scripts/Makefile.gcc-plugins               |   5 +
+ scripts/gcc-plugins/printk_format_plugin.c | 728 +++++++++++++++++++++++++++++
+ 4 files changed, 756 insertions(+)
+ create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index b133dbed67c3..99d4d553f52e 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -400,6 +400,13 @@ config GCC_PLUGIN_LATENT_ENTROPY
+ 	   * https://grsecurity.net/
+ 	   * https://pax.grsecurity.net/
+ 
++config GCC_PLUGIN_PRINTK_FORMAT
++	bool "Check printk format strings"
++	depends on GCC_PLUGINS
++	help
++	  Check printk format strings with kernel specs.
++	  This is complementary to -Wformat-security and -Wformat=2 flags.
++
+ config HAVE_CC_STACKPROTECTOR
+ 	bool
+ 	help
+diff --git a/fs/reiserfs/Makefile b/fs/reiserfs/Makefile
+index 3c3b00165114..90da3ca592c6 100644
+--- a/fs/reiserfs/Makefile
++++ b/fs/reiserfs/Makefile
+@@ -9,6 +9,22 @@ reiserfs-objs := bitmap.o do_balan.o namei.o inode.o file.o dir.o fix_node.o \
+ 		 hashes.o tail_conversion.o journal.o resize.o \
+ 		 item_ops.o ioctl.o xattr.o lock.o
+ 
++# Disable printk format checker in some files
++-include scripts/Makefile.gcc-plugins
++CFLAGS_dir.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_do_balan.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_fix_node.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_ibalance.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_inode.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_item_ops.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_lbalance.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_namei.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_prints.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_super.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_stree.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_tail_conversion.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++CFLAGS_xattr.o += $(DISABLE_PRINTK_FORMAT_PLUGIN)
++
+ ifeq ($(CONFIG_REISERFS_PROC_INFO),y)
+ reiserfs-objs += procfs.o
+ endif
+diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
+index 060d2cb373db..a6c64f09a29a 100644
+--- a/scripts/Makefile.gcc-plugins
++++ b/scripts/Makefile.gcc-plugins
+@@ -12,6 +12,11 @@ ifdef CONFIG_GCC_PLUGINS
+     DISABLE_LATENT_ENTROPY_PLUGIN			+= -fplugin-arg-latent_entropy_plugin-disable
+   endif
+ 
++  gcc-plugin-$(CONFIG_GCC_PLUGIN_PRINTK_FORMAT)	+= printk_format_plugin.so
++  ifdef CONFIG_GCC_PLUGIN_PRINTK_FORMAT
++    DISABLE_PRINTK_FORMAT_PLUGIN			+= -fplugin-arg-printk_format_plugin-disable
++  endif
++
+   ifdef CONFIG_GCC_PLUGIN_SANCOV
+     ifeq ($(CFLAGS_KCOV),)
+       # It is needed because of the gcc-plugin.sh and gcc version checks.
+diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
+new file mode 100644
+index 000000000000..b418459716e5
+--- /dev/null
++++ b/scripts/gcc-plugins/printk_format_plugin.c
+@@ -0,0 +1,728 @@
++/*
++ * Copyrighy 2016 by Nicolas Iooss
++ *
++ * Check printf format string with kernel-style formatting
++ */
++
++#include "gcc-common.h"
++
++int plugin_is_GPL_compatible;
++
++static struct plugin_info printk_format_plugin_info = {
++	.version	= "20161008",
++	.help		= "Printk format checker\n",
++};
++
++/**
++ * Identifier match helpers
++ */
++static bool identifier_is(const_tree identifier, const char *str)
++{
++	size_t len = strlen(str);
++
++	if (!identifier)
++		return false;
++
++	return IDENTIFIER_LENGTH(identifier) == len && !strncmp(str, IDENTIFIER_POINTER(identifier), len);
++}
++
++/**
++ * Verify that the given value is an integer
++ */
++static bool is_integer_type(const_tree value)
++{
++	if (TREE_CODE(TREE_TYPE(value)) == INTEGER_TYPE)
++		return true;
++	if (TREE_CODE(TREE_TYPE(value)) == ENUMERAL_TYPE)
++		return true;
++	return false;
++}
++
++/**
++ * Check that the given type is 8-bit long
++ */
++static bool is_8bit_int_type(const_tree value)
++{
++	bool ret1, ret2; /* TODO this is to test the internals */
++	if (TREE_CODE(value) != INTEGER_TYPE)
++		return false;
++	ret1 =
++		identifier_is(TYPE_IDENTIFIER(value), "char") ||
++		identifier_is(TYPE_IDENTIFIER(value), "unsigned char") ||
++		identifier_is(TYPE_IDENTIFIER(value), "u8") ||
++		identifier_is(TYPE_IDENTIFIER(value), "__u8") ||
++		identifier_is(TYPE_IDENTIFIER(value), "uint8_t") ||
++		identifier_is(TYPE_IDENTIFIER(value), "u_char") ||
++		identifier_is(TYPE_IDENTIFIER(value), "uchar") ||
++		identifier_is(TYPE_IDENTIFIER(value), "U8") ||
++		identifier_is(TYPE_IDENTIFIER(value), "UCHAR");
++	ret2 = (TREE_INT_CST_ELT_CHECK(TYPE_SIZE(value), 0) == 8);
++	if (ret1 != ret2) {
++		error(G_("Unknown 8-bit int type! - WL %d  internal %d"), ret1, ret2);
++		debug_tree(value);
++	}
++	return ret2;
++}
++
++/**
++ * Verify that the given value is a string
++ */
++static bool is_string_type(const_tree value, const char *format)
++{
++	if (TREE_CODE(TREE_TYPE(value)) == POINTER_TYPE) {
++		const_tree subtype = TREE_TYPE(TREE_TYPE(value));
++		/* Check for char* */
++		if (is_8bit_int_type(subtype))
++			return true;
++
++		/* Check for void* */
++		if (TREE_CODE(subtype) == VOID_TYPE)
++			return true;
++
++		/* Check for pointer to char[] */
++		if (TREE_CODE(subtype) == ARRAY_TYPE && is_8bit_int_type(TREE_TYPE(subtype)))
++			return true;
++
++		if (!strncmp(format, "%4.4s", 5) || !strncmp(format, "%.4s", 4)) {
++			/* Check for acpi_name* ... */
++			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "acpi_name"))
++				return true;
++			if (TREE_CODE(subtype) == UNION_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "acpi_name_union"))
++				return true;
++			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "uint32_t"))
++				return true;
++			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "int"))
++				return true;
++			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "u32"))
++				return true;
++			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "__u32"))
++				return true;
++			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "__le32"))
++				return true;
++		}
++		if (!strncmp(format, "%.8s", 4)) {
++			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "u64"))
++				return true;
++			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "__u64"))
++				return true;
++		}
++		/* occurence in sound/pci/mixart/mixart_core.c XXX: there is a cast to char* in the source code which seems to be lost by gcc :( */
++		if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "u32"))
++			return true;
++		if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "__be32"))
++			return true;
++		if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "u16"))
++			return true;
++		if (TREE_CODE(subtype) == ARRAY_TYPE && TREE_CODE(TREE_TYPE(subtype)) == INTEGER_TYPE)
++			return true;
++	}
++	return false;
++}
++
++/**
++ * Verify that the associated pointer type is valid
++ * c.f. Documentation/printk-formats.txt
++ */
++static bool is_fmtpointer_type(const_tree value, const char *ptr_format)
++{
++	const_tree subtype;
++
++	/* First, value need to be a pointer */
++	if (TREE_CODE(TREE_TYPE(value)) != POINTER_TYPE)
++		return false;
++
++	subtype = TREE_TYPE(TREE_TYPE(value));
++
++	switch (*ptr_format) {
++	/* Order from Documentation/printk-formats.txt */
++
++	/* Symbols/Function Pointers */
++	case 'F':
++	case 'f':
++		if (TREE_CODE(subtype) == FUNCTION_TYPE)
++			return true;
++		if (TREE_CODE(subtype) == VOID_TYPE)
++			return true;
++		if (TREE_CODE(subtype) == POINTER_TYPE &&
++		    TREE_CODE(TREE_TYPE(subtype)) == FUNCTION_TYPE)
++			return true;
++		break;
++	case 'S':
++	case 's':
++	case 'B':
++		/* Can be a pointer to anything */
++		return true;
++
++	/* Kernel pointers */
++	case 'K':
++		return true;
++
++	/* Struct Resources */
++	case 'r':
++	case 'R':
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "resource"))
++			return true;
++		break;
++
++	/* Physical addresses types phys_addr_t and DMA addresses types dma_addr_t */
++	case 'a':
++		/* As some code mixes both dma_addr_t and phys_addr_t with %pad
++		 * and %pap, accept both types.
++		 */
++		if (TREE_CODE(subtype) == INTEGER_TYPE && (
++		    identifier_is(TYPE_IDENTIFIER(subtype), "dma_addr_t") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "phys_addr_t") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "resource_size_t") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "u64")))
++			return true;
++		break;
++
++	/* Raw buffer */
++	case 'E':
++		if (is_8bit_int_type(subtype))
++			return true;
++		if (TREE_CODE(subtype) == ARRAY_TYPE && is_8bit_int_type(TREE_TYPE(subtype)))
++			return true;
++		break;
++	case 'h':
++		if (TREE_CODE(subtype) == INTEGER_TYPE)
++			return true;
++		if (TREE_CODE(subtype) == ARRAY_TYPE &&
++		    TREE_CODE(TREE_TYPE(subtype)) == INTEGER_TYPE)
++			return true;
++		if (TREE_CODE(subtype) == VOID_TYPE)
++			return true;
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "vnt_mac_set_key"))
++			return true;
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "uwb_rceb"))
++			return true;
++		if (TREE_CODE(subtype) == ARRAY_TYPE &&
++		    TREE_CODE(TREE_TYPE(subtype)) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(TREE_TYPE(subtype)), "v4l2_rds_data"))
++			return true;
++		break;
++
++	/* MAC/FDDI addresses */
++	case 'M':
++	case 'm':
++		if (TREE_CODE(subtype) == INTEGER_TYPE)
++			return true;
++		if (TREE_CODE(subtype) == VOID_TYPE)
++			return true;
++		if (TREE_CODE(subtype) == ARRAY_TYPE &&
++		    is_8bit_int_type(TREE_TYPE(subtype)))
++			return true;
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "bdaddr_t"))
++			return true;
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "mac_addr"))
++			return true;
++		break;
++
++	/* IPv4/IPv6 addresses */
++	case 'I':
++	case 'i':
++		if (ptr_format[1] == '4') {
++			if (TREE_CODE(subtype) == RECORD_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "in_addr"))
++				return true;
++			if (TREE_CODE(subtype) == INTEGER_TYPE && (
++			    identifier_is(TYPE_IDENTIFIER(subtype), "__be32") ||
++			    identifier_is(TYPE_IDENTIFIER(subtype), "uint32_t") ||
++			    identifier_is(TYPE_IDENTIFIER(subtype), "u_int32_t") ||
++			    identifier_is(TYPE_IDENTIFIER(subtype), "u32") ||
++			    identifier_is(TYPE_IDENTIFIER(subtype), "__u32") ||
++			    identifier_is(TYPE_IDENTIFIER(subtype), "nes_addr_t") ||
++			    identifier_is(TYPE_IDENTIFIER(subtype), "long unsigned int")))
++				return true;
++			if (is_8bit_int_type(subtype))
++				return true;
++			if (TREE_CODE(subtype) == ARRAY_TYPE &&
++			    TREE_CODE(TREE_TYPE(subtype)) == INTEGER_TYPE)
++				return true;
++		} else if (ptr_format[1] == '6') {
++			if (TREE_CODE(subtype) == RECORD_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "in6_addr"))
++				return true;
++			if (is_8bit_int_type(subtype))
++				return true;
++			if (TREE_CODE(subtype) == ARRAY_TYPE &&
++			    TREE_CODE(TREE_TYPE(subtype)) == INTEGER_TYPE)
++				return true;
++			if (TREE_CODE(subtype) == VOID_TYPE)
++				return true;
++			if (TREE_CODE(subtype) == INTEGER_TYPE &&
++			    identifier_is(TYPE_IDENTIFIER(subtype), "u32"))
++				return true;
++		} else if (ptr_format[1] == 'S') {
++			if (TREE_CODE(subtype) == RECORD_TYPE && (
++			    identifier_is(TYPE_IDENTIFIER(subtype), "sockaddr") ||
++			    identifier_is(TYPE_IDENTIFIER(subtype), "__kernel_sockaddr_storage") ||
++			    identifier_is(TYPE_IDENTIFIER(subtype), "sockaddr_in")))
++				return true;
++		}
++		if (TREE_CODE(subtype) == UNION_TYPE) /* FIXME: detect sockaddr union */
++			return true;
++		break;
++
++	/* UUID/GUID addresses */
++	case 'U':
++		if (is_8bit_int_type(subtype))
++			return true;
++		if (TREE_CODE(subtype) == ARRAY_TYPE && is_8bit_int_type(TREE_TYPE(subtype)))
++			return true;
++		if (TREE_CODE(subtype) == RECORD_TYPE && (
++		    identifier_is(TYPE_IDENTIFIER(subtype), "ceph_fsid") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "efi_guid_t") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "orangefs_khandle") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "uuid_be") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "uuid_t") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "uuid_le")))
++			return true;
++		break;
++
++	/* dentry names */
++	case 'd':
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "dentry"))
++			return true;
++		break;
++	case 'D':
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "file"))
++			return true;
++		break;
++
++	/* block_device names */
++	case 'g':
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "block_device"))
++			return true;
++		break;
++
++	/* struct va_format */
++	case 'V':
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "va_format"))
++			return true;
++		break;
++
++	/* struct clk */
++	case 'C':
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "clk"))
++			return true;
++		break;
++
++	/* bitmap and its derivatives such as cpumask and nodemask */
++	case 'b':
++		if (TREE_CODE(subtype) == INTEGER_TYPE)
++			return true;
++		if (TREE_CODE(subtype) == VOID_TYPE)
++			return true;
++		if (TREE_CODE(subtype) == ARRAY_TYPE &&
++		    TREE_CODE(TREE_TYPE(subtype)) == INTEGER_TYPE)
++			return true;
++		if (TREE_CODE(subtype) == RECORD_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "cpumask"))
++			return true;
++		break;
++
++	/* Flags bitfields such as page flags, gfp_flags */
++	case 'G':
++		if (TREE_CODE(subtype) == INTEGER_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "gfp_t"))
++			return true;
++		if (TREE_CODE(subtype) == INTEGER_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "long unsigned int"))
++			return true;
++		break;
++
++	/* Network device features */
++	case 'N':
++		if (TREE_CODE(subtype) == INTEGER_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "netdev_features_t"))
++			return true;
++		if (TREE_CODE(subtype) == INTEGER_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "long long unsigned int"))
++			return true;
++		break;
++
++	/* Raw pointers (everything else after %p) */
++	case '\0':
++	case '\t':
++	case '\n':
++	case ' ':
++	case '!':
++	case '"':
++	case '#':
++	case '$':
++	case '%':
++	case '\'':
++	case '(':
++	case ')':
++	case '+':
++	case ',':
++	case '-':
++	case '.':
++	case '/':
++	case '0':
++	case ':':
++	case ';':
++	case '<':
++	case '=':
++	case '>':
++	case '?':
++	case '@':
++	case '[':
++	case '\\':
++	case ']':
++	case '^':
++	case '_':
++	case '{':
++	case '|':
++	case '}':
++		return true;
++	}
++
++	debug_tree(value);
++	return false;
++}
++
++/* Function from Emese's initify_plugin
++ * https://github.com/ephox-gcc-plugins/initify/blob/master/initify_plugin.c
++ */
++static const_tree get_string_cst(const_tree var)
++{
++	if (var == NULL_TREE)
++		return NULL_TREE;
++
++	if (TREE_CODE(var) == STRING_CST)
++		return var;
++
++	switch (TREE_CODE_CLASS(TREE_CODE(var))) {
++	case tcc_expression:
++	case tcc_reference: {
++		int i;
++
++		for (i = 0; i < TREE_OPERAND_LENGTH(var); i++) {
++			const_tree ret = get_string_cst(TREE_OPERAND(var, i));
++
++			if (ret != NULL_TREE)
++				return ret;
++		}
++		break;
++	}
++
++	default:
++		break;
++	}
++	return NULL_TREE;
++}
++
++/**
++ * Check a function call to a function marked with __printf attribute
++ */
++static void check_printf_function_call(const gcall *call_stmt, unsigned int fmt_idx, unsigned int arg_idx)
++{
++	const_tree format_tree, arg_tree;
++	int format_length;
++	const char *format;
++	unsigned int argnum = gimple_call_num_args(call_stmt);
++
++	gcc_assert(1 <= fmt_idx && fmt_idx <= argnum);
++	gcc_assert(1 <= arg_idx && arg_idx <= argnum + 1);
++
++	format_tree = gimple_call_arg(call_stmt, fmt_idx - 1);
++	format_tree = get_string_cst(format_tree);
++	if (format_tree == NULL_TREE) {
++		warning_at(gimple_location(call_stmt), OPT_Wformat_security, G_("Call with a non-constant string\n"));
++		return;
++	}
++	gcc_assert(TREE_CODE(format_tree) == STRING_CST);
++	format_length = TREE_STRING_LENGTH(format_tree);
++	format = TREE_STRING_POINTER(format_tree);
++	if (strnlen(format, format_length) != format_length - 1) {
++		warning_at(gimple_location(call_stmt), OPT_Wformat_security, G_("Call with a a format which contains nul character\n"));
++		return;
++	}
++
++	/* fprintf(stderr, "analyzing format: %s\n", format); */
++	while (*format) {
++		bool found;
++		const char *subs_start = format;
++		unsigned int star_count = 0;
++
++		if (*format != '%') {
++			format++;
++			continue;
++		}
++
++		/* Skip "%%" */
++		if (format[1] == '%') {
++			format += 2;
++			continue;
++		}
++
++		/* Found a % sign, skip format prefix */
++		found = true;
++		while (found) {
++			format++;
++			switch (*format) {
++			case '-':
++			case '+':
++			case ' ':
++			case '.':
++			case '#':
++			case '0': case '1': case '2': case '3': case '4':
++			case '5': case '6': case '7': case '8': case '9':
++			case 'h': case 'l': case 'L': case 't':
++			case 'z': case 'Z':
++				break;
++			case '*':
++				star_count++;
++				break;
++			default:
++				found = false;
++			}
++		}
++
++		/* Get the argument */
++		if (arg_idx > argnum) {
++			warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Not enougth arguments for format\n"));
++			return;
++		}
++		arg_tree = gimple_call_arg(call_stmt, arg_idx - 1);
++		arg_idx++;
++
++		while (star_count) {
++			/* size argument is an integer */
++			if (!is_integer_type(arg_tree)) {
++				warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Argument for the size of %.*s is not an integer\n"),
++					format + 1 - subs_start, subs_start);
++			}
++
++			/* Get next argument */
++			if (arg_idx > argnum) {
++				warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Not enougth arguments for format\n"));
++				return;
++			}
++			arg_tree = gimple_call_arg(call_stmt, arg_idx - 1);
++			arg_idx++;
++			star_count--;
++		}
++
++		/* Check the format */
++		switch (*format) {
++		case 'c':
++		case 'd':
++		case 'i':
++		case 'o':
++		case 'u':
++		case 'x':
++		case 'X':
++			/* integer type */
++			if (!is_integer_type(arg_tree)) {
++				warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Argument for %.*s is not an integer\n"),
++					format + 1 - subs_start, subs_start);
++			}
++			format++;
++			break;
++		case 's':
++			/* string type */
++			if (!is_string_type(arg_tree, subs_start)) {
++				warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Argument for %.*s is not a string\n"),
++					format + 1 - subs_start, subs_start);
++			}
++			format++;
++			break;
++		case 'p':
++			if (!is_fmtpointer_type(arg_tree, format + 1)) {
++				warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Argument for %.*s is not a good pointer\n"),
++					format + 2 - subs_start, subs_start);
++			}
++			format++;
++			break;
++		default:
++			warning(OPT_Wformat_, G_("Unexpected format %s\n"), format);
++			format++;
++			/* fprintf(stderr, "... %s\n", format); */
++			/* debug_tree(arg_tree); */
++		}
++	}
++}
++
++/**
++ * Get the printf format attribute of a function, or NULL_TREE if it does not exist
++ *
++ * The first parameter of the printf attribute is given by:
++ *    TREE_INT_CST_ELT(TREE_VALUE(ret), 0)
++ * and the second one by:
++ *    TREE_INT_CST_ELT(TREE_VALUE(TREE_CHAIN(ret)), 0)
++ */
++static const_tree get_printf_attribute(location_t loc, const_tree fntype)
++{
++	const_tree attr, attrval;
++
++	/* Look up "format" attribute in declaration type */
++	attr = lookup_attribute("format", TYPE_ATTRIBUTES(fntype));
++	if (attr == NULL_TREE)
++		return NULL_TREE;
++
++	/* Filter "printf" value */
++	attrval = TREE_VALUE(attr);
++	if (attrval == NULL_TREE)
++		return NULL_TREE;
++	if (identifier_is(TREE_VALUE(attrval), "printf") ||
++	    identifier_is(TREE_VALUE(attrval), "__printf__") ||
++	    identifier_is(TREE_VALUE(attrval), "gnu_printf")) {
++		return TREE_CHAIN(attrval);
++	}
++	if (identifier_is(TREE_VALUE(attrval), "scanf") ||
++	    identifier_is(TREE_VALUE(attrval), "__scanf__") ||
++	    identifier_is(TREE_VALUE(attrval), "gnu_scanf")) {
++		return NULL_TREE;
++	}
++	warning_at(loc, OPT_Wall, G_("Unknown format parameter %s\n"),
++		IDENTIFIER_POINTER(TREE_VALUE(attrval)));
++	return NULL_TREE;
++}
++
++/**
++ * Get the type of the specified argument in the function declaration
++ *
++ * argidx = 1 for the first argument, 2 for the second one, etc.
++ */
++static const_tree get_fct_arg_type(const_tree fntype, HOST_WIDE_INT argidx)
++{
++	const_tree arg_type;
++	function_args_iterator arg_iter;
++
++	gcc_assert(argidx > 0);
++	FOREACH_FUNCTION_ARGS(fntype, arg_type, arg_iter) {
++		argidx -= 1;
++		if (!argidx)
++			return arg_type;
++	}
++	/* the call should has been made with "argidx <= gimple_call_num_args(call_stmt)" */
++	gcc_assert(false);
++}
++
++static unsigned int printk_format_execute(void)
++{
++	basic_block bb;
++
++	/* fprintf(stderr, "Studying function %s\n", DECL_NAME_POINTER(current_function_decl)); */
++	FOR_EACH_BB_FN(bb, cfun) {
++		gimple_stmt_iterator gsi;
++
++		for (gsi = gsi_start_bb(bb); !gsi_end_p(gsi); gsi_next(&gsi)) {
++			gimple stmt;
++			gcall *call_stmt;
++			const_tree printf_attr, fmtarg_type;
++			HOST_WIDE_INT argidx1, argidx2;
++			const_tree fntype;
++
++			/* Get the statement */
++			stmt = gsi_stmt(gsi);
++			if (!is_gimple_call(stmt))
++				continue;
++
++			/* Get the function declaration */
++			call_stmt = as_a_gcall(stmt);
++			fntype = gimple_call_fntype(call_stmt);
++			if (fntype == NULL_TREE) {
++				/* Find out the functions which have no type */
++				if (gimple_call_internal_p(call_stmt) &&
++				    gimple_call_internal_fn(call_stmt) == IFN_VA_ARG) {
++					/* var_arg() call */
++					continue;
++				}
++				warning_at(gimple_location(stmt), 0, G_("Unable to get the function type\n"));
++				continue;
++			}
++
++			/* Get the printf format attribute */
++			printf_attr = get_printf_attribute(gimple_location(stmt), fntype);
++			if (!printf_attr)
++				continue;
++			argidx1 = TREE_INT_CST_ELT(TREE_VALUE(printf_attr), 0);
++			argidx2 = TREE_INT_CST_ELT(TREE_VALUE(TREE_CHAIN(printf_attr)), 0);
++
++			/* Sanity checks */
++			if (argidx1 < 1 || argidx1 > gimple_call_num_args(call_stmt)) {
++				warning_at(gimple_location(stmt), OPT_Wformat_, G_("Invalid call to function with attribute __printf(%lu, %lu)\n"), argidx1, argidx2);
++				continue;
++			}
++			if (argidx2 < 0 || argidx2 > gimple_call_num_args(call_stmt) + 1) {
++				warning_at(gimple_location(stmt), OPT_Wformat_, G_("Invalid call to function with attribute __printf(%lu, %lu)\n"), argidx1, argidx2);
++				continue;
++			}
++
++			/* Warn if the format attribute type is not const char* */
++			fmtarg_type = get_fct_arg_type(fntype, argidx1);
++			if (TREE_CODE(fmtarg_type) != POINTER_TYPE || !is_8bit_int_type(TREE_TYPE(fmtarg_type))) {
++				warning_at(gimple_location(stmt), OPT_Wformat_,
++					G_("Unexpected type for printf format attribute (not a char*)\n"));
++			} else if (!TYPE_READONLY(TREE_TYPE(fmtarg_type))) {
++				warning_at(gimple_location(stmt), OPT_Wformat_,
++					G_("Call to a function with a non-const char* format\n"));
++			}
++
++			/* Do not play with va_args-based functions */
++			if (argidx2 == 0)
++				continue;
++			/* fprintf(stderr, "... found call with printf attr (%lu, %lu)\n", argidx1, argidx2); */
++			/* debug_gimple_stmt(stmt); */
++			check_printf_function_call(call_stmt, argidx1, argidx2);
++		}
++	}
++
++	return 0;
++}
++
++#define PASS_NAME printk_format
++
++#define NO_GATE
++#define TODO_FLAGS_FINISH TODO_dump_func
++
++#include "gcc-generate-gimple-pass.h"
++
++int plugin_init(struct plugin_name_args *plugin_info, struct plugin_gcc_version *version)
++{
++	const char * const plugin_name = plugin_info->base_name;
++	struct register_pass_info printk_format_pass_info;
++	const int argc = plugin_info->argc;
++	const struct plugin_argument * const argv = plugin_info->argv;
++	int i;
++	bool enabled = true;
++
++	printk_format_pass_info.pass = make_printk_format_pass();
++	printk_format_pass_info.reference_pass_name = "ssa";
++	printk_format_pass_info.ref_pass_instance_number = 1;
++	printk_format_pass_info.pos_op = PASS_POS_INSERT_AFTER;
++
++	if (!plugin_default_version_check(version, &gcc_version)) {
++		error(G_("incompatible gcc/plugin versions"));
++		return 1;
++	}
++
++	for (i = 0; i < argc; ++i) {
++		if (!(strcmp(argv[i].key, "disable"))) {
++			enabled = false;
++			continue;
++		}
++		error(G_("unkown option '-fplugin-arg-%s-%s'"), plugin_name, argv[i].key);
++	}
++
++	register_callback(plugin_name, PLUGIN_INFO, NULL,
++				&printk_format_plugin_info);
++	if (enabled) {
++		register_callback(plugin_name, PLUGIN_PASS_MANAGER_SETUP, NULL,
++					&printk_format_pass_info);
++	}
++
++	return 0;
++}
+-- 

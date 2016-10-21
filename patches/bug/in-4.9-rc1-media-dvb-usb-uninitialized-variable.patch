@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 17 Oct 2016 20:24:19 +0200
+Subject: [PATCH] {BUG in 4.9-rc1} [media] dvb-usb: uninitialized variable
+
+Since commit 2ceeca0499d7 ("[media] rc: split nec protocol into its
+three variants") clang complains:
+
+    drivers/media/usb/dvb-usb/dib0700_core.c:716:7: error: variable
+    'protocol' is used uninitialized whenever 'if' condition is true
+    [-Werror,-Wsometimes-uninitialized]
+                    if (poll_reply->nec.system     == 0x00 &&
+                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/media/usb/dvb-usb/dib0700_core.c:763:24: note: uninitialized
+    use occurs here
+            rc_keydown(d->rc_dev, protocol, keycode, toggle);
+                                  ^~~~~~~~
+    drivers/media/usb/dvb-usb/dib0700_core.c:716:3: note: remove the
+    'if' if its condition is always false
+                    if (poll_reply->nec.system     == 0x00 &&
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/media/usb/dvb-usb/dib0700_core.c:679:2: note: variable
+    'protocol' is declared here
+            enum rc_type protocol;
+            ^
+
+While at it, remove a dangerous uninitialized_variable annotation
+---
+ drivers/media/usb/dvb-usb/dib0700_core.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/usb/dvb-usb/dib0700_core.c b/drivers/media/usb/dvb-usb/dib0700_core.c
+index f3196658fb70..50a9e5f1bc54 100644
+--- a/drivers/media/usb/dvb-usb/dib0700_core.c
++++ b/drivers/media/usb/dvb-usb/dib0700_core.c
+@@ -677,7 +677,7 @@ static void dib0700_rc_urb_completion(struct urb *purb)
+ 	struct dvb_usb_device *d = purb->context;
+ 	struct dib0700_rc_response *poll_reply;
+ 	enum rc_type protocol;
+-	u32 uninitialized_var(keycode);
++	u32 keycode;
+ 	u8 toggle;
+ 
+ 	deb_info("%s()\n", __func__);
+@@ -718,7 +718,7 @@ static void dib0700_rc_urb_completion(struct urb *purb)
+ 		    poll_reply->nec.data       == 0x00 &&
+ 		    poll_reply->nec.not_data   == 0xff) {
+ 			poll_reply->data_state = 2;
+-			break;
++			/* break; */ goto resubmit; /* FIXME: what to do? */
+ 		}
+ 
+ 		if ((poll_reply->nec.data ^ poll_reply->nec.not_data) != 0xff) {
+-- 
