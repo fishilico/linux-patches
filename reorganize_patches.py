@@ -73,6 +73,8 @@ def get_patch_path(patchdir, name):
                 directory = topicdir
                 subject = subject[len(topic) + 1:]
                 break
+    elif subject.startswith('{SENT} '):
+        subject = subject[7:]
 
     # Canonicalize the subject into a patch name
     name = re.sub(r'[^._0-9a-zA-Z]', '-', subject).strip('-')
