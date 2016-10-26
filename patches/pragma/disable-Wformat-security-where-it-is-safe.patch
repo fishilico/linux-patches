@@ -4,70 +4,54 @@ Date: Wed, 18 Mar 2015 23:20:16 +0800
 Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
 
 ---
- arch/x86/kernel/cpu/mcheck/mce.c                   |  3 ++
- arch/x86/kernel/cpu/mcheck/mce_amd.c               | 16 +++++++++++
- arch/x86/kernel/e820.c                             |  4 +++
- arch/x86/xen/smp.c                                 |  5 +++-
- crypto/pcrypt.c                                    |  3 ++
- drivers/acpi/acpi_apd.c                            |  3 ++
- drivers/acpi/acpi_lpss.c                           |  3 ++
- drivers/base/power/sysfs.c                         |  3 ++
- drivers/block/aoe/aoechr.c                         |  6 +++-
- drivers/cdrom/cdrom.c                              |  3 ++
- drivers/char/mem.c                                 |  3 ++
- drivers/cpufreq/powernow-k8.c                      |  3 ++
- drivers/gpu/drm/ttm/ttm_memory.c                   |  6 ++++
- drivers/infiniband/hw/qib/qib_file_ops.c           |  4 +++
- drivers/input/tablet/aiptek.c                      |  3 ++
- drivers/iommu/irq_remapping.c                      |  3 ++
- drivers/isdn/hisax/config.c                        |  3 ++
- drivers/isdn/hisax/hfc_pci.c                       |  3 ++
- drivers/isdn/hisax/hfc_sx.c                        |  3 ++
- drivers/isdn/hisax/q931.c                          |  9 ++++++
- drivers/md/bcache/util.h                           | 22 +++++++++++++++
- drivers/media/pci/cx23885/cx23885-dvb.c            | 33 ++++++++++++++++++++++
- drivers/media/pci/netup_unidvb/netup_unidvb_core.c |  4 +++
- drivers/media/pci/saa7164/saa7164-dvb.c            | 15 ++++++++++
- drivers/media/pci/smipcie/smipcie-main.c           |  3 ++
- drivers/media/pci/zoran/zoran_card.c               |  8 ++++++
- drivers/media/usb/cx231xx/cx231xx-dvb.c            |  6 ++++
- drivers/media/usb/dvb-usb-v2/dvbsky.c              | 15 ++++++++++
- drivers/media/usb/dvb-usb-v2/rtl28xxu.c            | 15 ++++++++++
- drivers/media/usb/dvb-usb/cxusb.c                  |  6 ++++
- drivers/media/usb/em28xx/em28xx-dvb.c              | 18 ++++++++++++
- drivers/media/usb/pvrusb2/pvrusb2-std.c            |  4 +++
- drivers/media/v4l2-core/v4l2-common.c              |  3 ++
- drivers/misc/mic/scif/scif_main.c                  |  3 ++
- drivers/misc/mic/scif/scif_nodeqp.c                |  3 ++
- .../net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c    |  4 +++
- drivers/net/fddi/defxx.c                           |  3 ++
- drivers/net/hippi/rrunner.c                        |  3 ++
- drivers/net/macvtap.c                              |  4 +++
- drivers/net/wireless/intel/ipw2x00/libipw_wx.c     |  3 ++
- .../net/wireless/intersil/hostap/hostap_ioctl.c    |  3 ++
- drivers/parport/share.c                            |  3 ++
- drivers/pnp/interface.c                            |  4 +++
- drivers/staging/lustre/lustre/ptlrpc/pinger.c      |  4 +++
- drivers/staging/most/mostcore/core.c               |  4 +++
- drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c  |  3 ++
- drivers/staging/speakup/kobjects.c                 |  6 ++++
- drivers/tty/serial/pch_uart.c                      |  3 ++
- fs/btrfs/check-integrity.c                         |  6 ++++
- fs/quota/dquot.c                                   |  4 +++
- fs/reiserfs/prints.c                               |  4 +--
- include/linux/kernel.h                             |  7 +++--
- kernel/debug/kdb/kdb_io.c                          | 18 ++++++++++++
- lib/test_printf.c                                  |  3 ++
- net/tipc/netlink_compat.c                          |  3 ++
- sound/core/seq/seq_clientmgr.c                     |  3 ++
- sound/core/sound.c                                 |  3 ++
- sound/drivers/opl3/opl3_seq.c                      |  3 ++
- sound/pci/hda/hda_bind.c                           |  4 +++
- sound/pci/korg1212/korg1212.c                      |  3 ++
- sound/pci/rme32.c                                  |  3 ++
- sound/pci/rme96.c                                  |  3 ++
- sound/usb/mixer_quirks.c                           |  3 ++
- 63 files changed, 358 insertions(+), 6 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce.c                   |  3 +++
+ arch/x86/kernel/cpu/mcheck/mce_amd.c               | 16 ++++++++++++++++
+ arch/x86/kernel/e820.c                             |  4 ++++
+ arch/x86/xen/smp.c                                 |  5 ++++-
+ crypto/pcrypt.c                                    |  3 +++
+ drivers/acpi/acpi_apd.c                            |  3 +++
+ drivers/acpi/acpi_lpss.c                           |  3 +++
+ drivers/base/power/sysfs.c                         |  3 +++
+ drivers/block/aoe/aoechr.c                         |  6 +++++-
+ drivers/cdrom/cdrom.c                              |  3 +++
+ drivers/char/mem.c                                 |  3 +++
+ drivers/gpu/drm/ttm/ttm_memory.c                   |  6 ++++++
+ drivers/infiniband/hw/qib/qib_file_ops.c           |  4 ++++
+ drivers/input/tablet/aiptek.c                      |  3 +++
+ drivers/iommu/irq_remapping.c                      |  3 +++
+ drivers/isdn/hisax/config.c                        |  3 +++
+ drivers/isdn/hisax/hfc_pci.c                       |  3 +++
+ drivers/isdn/hisax/hfc_sx.c                        |  3 +++
+ drivers/isdn/hisax/q931.c                          |  9 +++++++++
+ drivers/md/bcache/util.h                           | 22 ++++++++++++++++++++++
+ drivers/media/pci/cx23885/cx23885-dvb.c            |  3 +++
+ drivers/media/usb/cx231xx/cx231xx-dvb.c            |  6 ++++++
+ drivers/media/usb/pvrusb2/pvrusb2-std.c            |  4 ++++
+ drivers/misc/mic/scif/scif_main.c                  |  3 +++
+ drivers/misc/mic/scif/scif_nodeqp.c                |  3 +++
+ .../net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c    |  4 ++++
+ drivers/net/fddi/defxx.c                           |  3 +++
+ drivers/net/hippi/rrunner.c                        |  3 +++
+ drivers/net/macvtap.c                              |  4 ++++
+ drivers/parport/share.c                            |  3 +++
+ drivers/pnp/interface.c                            |  4 ++++
+ drivers/staging/lustre/lustre/ptlrpc/pinger.c      |  4 ++++
+ drivers/staging/most/mostcore/core.c               |  4 ++++
+ drivers/staging/speakup/kobjects.c                 |  6 ++++++
+ drivers/tty/serial/pch_uart.c                      |  3 +++
+ fs/btrfs/check-integrity.c                         |  6 ++++++
+ fs/reiserfs/prints.c                               |  4 ++--
+ include/linux/kernel.h                             |  7 +++++--
+ kernel/debug/kdb/kdb_io.c                          | 18 ++++++++++++++++++
+ lib/test_printf.c                                  |  3 +++
+ net/tipc/netlink_compat.c                          |  3 +++
+ sound/core/seq/seq_clientmgr.c                     |  3 +++
+ sound/drivers/opl3/opl3_seq.c                      |  3 +++
+ sound/pci/korg1212/korg1212.c                      |  3 +++
+ sound/pci/rme32.c                                  |  3 +++
+ sound/pci/rme96.c                                  |  3 +++
+ sound/usb/mixer_quirks.c                           |  3 +++
+ 47 files changed, 218 insertions(+), 6 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
 index a7fdf453d895..549c01c54f4a 100644
@@ -137,7 +121,7 @@ index 9b5403462936..d1a0bdd14eea 100644
  				goto out;
  
 diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index b85fe5f91c3f..f2a6f7e23d7c 100644
+index 90e8dde3ec26..6161f0d70fe5 100644
 --- a/arch/x86/kernel/e820.c
 +++ b/arch/x86/kernel/e820.c
 @@ -829,8 +829,12 @@ unsigned long __init e820_end_of_low_ram_pfn(void)
@@ -286,21 +270,6 @@ index 5bb1985ec484..cc74d75ab5a8 100644
  	}
  
  	return tty_init();
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index 0b5bf135b090..97214761604c 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -1184,7 +1184,10 @@ static void __request_acpi_cpufreq(void)
- 
-  request:
- 	pr_warn("This CPU is not supported anymore, using acpi-cpufreq instead.\n");
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(drv);
-+#pragma GCC diagnostic pop
- }
- 
- /* driver entry point for init */
 diff --git a/drivers/gpu/drm/ttm/ttm_memory.c b/drivers/gpu/drm/ttm/ttm_memory.c
 index 29855be96be0..62b8131e084a 100644
 --- a/drivers/gpu/drm/ttm/ttm_memory.c
@@ -496,21 +465,10 @@ index eedfe339d057..bc829c233126 100644
  ssize_t bch_hprint(char *buf, int64_t v);
  
 diff --git a/drivers/media/pci/cx23885/cx23885-dvb.c b/drivers/media/pci/cx23885/cx23885-dvb.c
-index 818f3c2fc98d..a7004324b994 100644
+index 818f3c2fc98d..6fee00aa86f9 100644
 --- a/drivers/media/pci/cx23885/cx23885-dvb.c
 +++ b/drivers/media/pci/cx23885/cx23885-dvb.c
-@@ -1168,7 +1168,10 @@ static int dvb_register_ci_mac(struct cx23885_tsport *port)
- 		strlcpy(info.type, "sp2", I2C_NAME_SIZE);
- 		info.addr = 0x40;
- 		info.platform_data = &sp2_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(info.type);
-+#pragma GCC diagnostic pop
- 		client_ci = i2c_new_device(&i2c_bus->i2c_adap, &info);
- 		if (client_ci == NULL || client_ci->dev.driver == NULL)
- 			return -ENODEV;
-@@ -1871,7 +1874,10 @@ static int dvb_register(struct cx23885_tsport *port)
+@@ -1871,7 +1871,10 @@ static int dvb_register(struct cx23885_tsport *port)
  			strlcpy(info.type, "si2165", I2C_NAME_SIZE);
  			info.addr = 0x64;
  			info.platform_data = &si2165_pdata;
@@ -521,223 +479,6 @@ index 818f3c2fc98d..a7004324b994 100644
  			client_demod = i2c_new_device(&i2c_bus->i2c_adap, &info);
  			if (client_demod == NULL ||
  					client_demod->dev.driver == NULL)
-@@ -1955,7 +1961,10 @@ static int dvb_register(struct cx23885_tsport *port)
- 			strlcpy(info.type, "ts2020", I2C_NAME_SIZE);
- 			info.addr = 0x60;
- 			info.platform_data = &ts2020_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client_tuner = i2c_new_device(adapter, &info);
- 			if (client_tuner == NULL ||
- 					client_tuner->dev.driver == NULL)
-@@ -1992,7 +2001,10 @@ static int dvb_register(struct cx23885_tsport *port)
- 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
- 			info.addr = 0x64;
- 			info.platform_data = &si2168_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client_demod = i2c_new_device(&i2c_bus->i2c_adap, &info);
- 			if (client_demod == NULL ||
- 					client_demod->dev.driver == NULL)
-@@ -2011,7 +2023,10 @@ static int dvb_register(struct cx23885_tsport *port)
- 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
- 			info.addr = 0x60;
- 			info.platform_data = &si2157_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client_tuner = i2c_new_device(adapter, &info);
- 			if (client_tuner == NULL ||
- 					client_tuner->dev.driver == NULL)
-@@ -2039,7 +2054,10 @@ static int dvb_register(struct cx23885_tsport *port)
- 		strlcpy(info.type, "si2168", I2C_NAME_SIZE);
- 		info.addr = 0x64;
- 		info.platform_data = &si2168_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(info.type);
-+#pragma GCC diagnostic pop
- 		client_demod = i2c_new_device(&i2c_bus2->i2c_adap, &info);
- 		if (client_demod == NULL || client_demod->dev.driver == NULL)
- 			goto frontend_detach;
-@@ -2057,7 +2075,10 @@ static int dvb_register(struct cx23885_tsport *port)
- 		strlcpy(info.type, "si2157", I2C_NAME_SIZE);
- 		info.addr = 0x60;
- 		info.platform_data = &si2157_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(info.type);
-+#pragma GCC diagnostic pop
- 		client_tuner = i2c_new_device(adapter, &info);
- 		if (client_tuner == NULL ||
- 				client_tuner->dev.driver == NULL)
-@@ -2087,7 +2108,10 @@ static int dvb_register(struct cx23885_tsport *port)
- 		strlcpy(info.type, "ts2020", I2C_NAME_SIZE);
- 		info.addr = 0x60;
- 		info.platform_data = &ts2020_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(info.type);
-+#pragma GCC diagnostic pop
- 		client_tuner = i2c_new_device(adapter, &info);
- 		if (client_tuner == NULL || client_tuner->dev.driver == NULL)
- 			goto frontend_detach;
-@@ -2133,7 +2157,10 @@ static int dvb_register(struct cx23885_tsport *port)
- 		strlcpy(info.type, "ts2020", I2C_NAME_SIZE);
- 		info.addr = 0x60;
- 		info.platform_data = &ts2020_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(info.type);
-+#pragma GCC diagnostic pop
- 		client_tuner = i2c_new_device(adapter, &info);
- 		if (client_tuner == NULL || client_tuner->dev.driver == NULL)
- 			goto frontend_detach;
-@@ -2178,7 +2205,10 @@ static int dvb_register(struct cx23885_tsport *port)
- 		strlcpy(info.type, "si2168", I2C_NAME_SIZE);
- 		info.addr = 0x64;
- 		info.platform_data = &si2168_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(info.type);
-+#pragma GCC diagnostic pop
- 		client_demod = i2c_new_device(&i2c_bus->i2c_adap, &info);
- 		if (client_demod == NULL || client_demod->dev.driver == NULL)
- 			goto frontend_detach;
-@@ -2196,7 +2226,10 @@ static int dvb_register(struct cx23885_tsport *port)
- 		strlcpy(info.type, "si2157", I2C_NAME_SIZE);
- 		info.addr = 0x60;
- 		info.platform_data = &si2157_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(info.type);
-+#pragma GCC diagnostic pop
- 		client_tuner = i2c_new_device(adapter, &info);
- 		if (client_tuner == NULL ||
- 				client_tuner->dev.driver == NULL)
-diff --git a/drivers/media/pci/netup_unidvb/netup_unidvb_core.c b/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
-index b078ac2a682c..95dab5da6e19 100644
---- a/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
-+++ b/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
-@@ -769,7 +769,11 @@ static int netup_unidvb_request_modules(struct device *dev)
- 	int err;
- 
- 	while (*curr_mod != NULL) {
-+/* The strings come from the array above */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		err = request_module(*curr_mod);
-+#pragma GCC diagnostic pop
- 		if (err) {
- 			dev_warn(dev, "request_module(%s) failed: %d\n",
- 				*curr_mod, err);
-diff --git a/drivers/media/pci/saa7164/saa7164-dvb.c b/drivers/media/pci/saa7164/saa7164-dvb.c
-index e9a783b71b45..15e56cb8704e 100644
---- a/drivers/media/pci/saa7164/saa7164-dvb.c
-+++ b/drivers/media/pci/saa7164/saa7164-dvb.c
-@@ -128,7 +128,10 @@ static int si2157_attach(struct saa7164_port *port, struct i2c_adapter *adapter,
- 	bi.platform_data = cfg;
- 	bi.addr = addr8bit >> 1;
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(bi.type);
-+#pragma GCC diagnostic pop
- 
- 	tuner = i2c_new_device(adapter, &bi);
- 	if (tuner == NULL || tuner->dev.driver == NULL)
-@@ -652,7 +655,10 @@ int saa7164_dvb_register(struct saa7164_port *port)
- 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
- 			info.addr = 0xc8 >> 1;
- 			info.platform_data = &si2168_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client_demod = i2c_new_device(&dev->i2c_bus[2].i2c_adap,
- 						      &info);
- 			if (!client_demod || !client_demod->dev.driver)
-@@ -672,7 +678,10 @@ int saa7164_dvb_register(struct saa7164_port *port)
- 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
- 			info.addr = 0xc0 >> 1;
- 			info.platform_data = &si2157_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client_tuner = i2c_new_device(&dev->i2c_bus[0].i2c_adap,
- 						      &info);
- 			if (!client_tuner || !client_tuner->dev.driver) {
-@@ -697,7 +706,10 @@ int saa7164_dvb_register(struct saa7164_port *port)
- 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
- 			info.addr = 0xcc >> 1;
- 			info.platform_data = &si2168_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client_demod = i2c_new_device(&dev->i2c_bus[2].i2c_adap,
- 						      &info);
- 			if (!client_demod || !client_demod->dev.driver)
-@@ -717,7 +729,10 @@ int saa7164_dvb_register(struct saa7164_port *port)
- 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
- 			info.addr = 0xc0 >> 1;
- 			info.platform_data = &si2157_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client_tuner = i2c_new_device(&dev->i2c_bus[1].i2c_adap,
- 						      &info);
- 			if (!client_tuner || !client_tuner->dev.driver) {
-diff --git a/drivers/media/pci/smipcie/smipcie-main.c b/drivers/media/pci/smipcie/smipcie-main.c
-index 6dbe3b4d09ce..71167e874805 100644
---- a/drivers/media/pci/smipcie/smipcie-main.c
-+++ b/drivers/media/pci/smipcie/smipcie-main.c
-@@ -492,7 +492,10 @@ static struct i2c_client *smi_add_i2c_client(struct i2c_adapter *adapter,
- {
- 	struct i2c_client *client;
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(info->type);
-+#pragma GCC diagnostic pop
- 	client = i2c_new_device(adapter, info);
- 	if (client == NULL || client->dev.driver == NULL)
- 		goto err_add_i2c_client;
-diff --git a/drivers/media/pci/zoran/zoran_card.c b/drivers/media/pci/zoran/zoran_card.c
-index 9d2697f5b455..9827b8de16ef 100644
---- a/drivers/media/pci/zoran/zoran_card.c
-+++ b/drivers/media/pci/zoran/zoran_card.c
-@@ -1356,7 +1356,11 @@ static int zoran_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (zr->card.video_codec) {
- 		codec_name = codecid_to_modulename(zr->card.video_codec);
- 		if (codec_name) {
-+/* codec_name is a constant string */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			result = request_module(codec_name);
-+#pragma GCC diagnostic pop
- 			if (result) {
- 				dprintk(1,
- 					KERN_ERR
-@@ -1368,7 +1372,11 @@ static int zoran_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (zr->card.video_vfe) {
- 		vfe_name = codecid_to_modulename(zr->card.video_vfe);
- 		if (vfe_name) {
-+/* codec_name is a constant string */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			result = request_module(vfe_name);
-+#pragma GCC diagnostic pop
- 			if (result < 0) {
- 				dprintk(1,
- 					KERN_ERR
 diff --git a/drivers/media/usb/cx231xx/cx231xx-dvb.c b/drivers/media/usb/cx231xx/cx231xx-dvb.c
 index 1417515d30eb..186dc6c5fc5d 100644
 --- a/drivers/media/usb/cx231xx/cx231xx-dvb.c
@@ -764,220 +505,6 @@ index 1417515d30eb..186dc6c5fc5d 100644
  		client = i2c_new_device(demod_i2c, &info);
  		if (client == NULL || client->dev.driver == NULL || dev->dvb->frontend == NULL) {
  			dev_err(dev->dev,
-diff --git a/drivers/media/usb/dvb-usb-v2/dvbsky.c b/drivers/media/usb/dvb-usb-v2/dvbsky.c
-index 02dbc6c45423..e985ebdef216 100644
---- a/drivers/media/usb/dvb-usb-v2/dvbsky.c
-+++ b/drivers/media/usb/dvb-usb-v2/dvbsky.c
-@@ -541,7 +541,10 @@ static int dvbsky_t680c_attach(struct dvb_usb_adapter *adap)
- 	info.addr = 0x64;
- 	info.platform_data = &si2168_config;
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(info.type);
-+#pragma GCC diagnostic pop
- 	client_demod = i2c_new_device(&d->i2c_adap, &info);
- 	if (client_demod == NULL ||
- 			client_demod->dev.driver == NULL)
-@@ -558,7 +561,10 @@ static int dvbsky_t680c_attach(struct dvb_usb_adapter *adap)
- 	info.addr = 0x60;
- 	info.platform_data = &si2157_config;
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(info.type);
-+#pragma GCC diagnostic pop
- 	client_tuner = i2c_new_device(i2c_adapter, &info);
- 	if (client_tuner == NULL ||
- 			client_tuner->dev.driver == NULL)
-@@ -576,7 +582,10 @@ static int dvbsky_t680c_attach(struct dvb_usb_adapter *adap)
- 	info.addr = 0x40;
- 	info.platform_data = &sp2_config;
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(info.type);
-+#pragma GCC diagnostic pop
- 	client_ci = i2c_new_device(&d->i2c_adap, &info);
- 
- 	if (client_ci == NULL || client_ci->dev.driver == NULL)
-@@ -626,7 +635,10 @@ static int dvbsky_t330_attach(struct dvb_usb_adapter *adap)
- 	info.addr = 0x64;
- 	info.platform_data = &si2168_config;
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(info.type);
-+#pragma GCC diagnostic pop
- 	client_demod = i2c_new_device(&d->i2c_adap, &info);
- 	if (client_demod == NULL ||
- 			client_demod->dev.driver == NULL)
-@@ -643,7 +655,10 @@ static int dvbsky_t330_attach(struct dvb_usb_adapter *adap)
- 	info.addr = 0x60;
- 	info.platform_data = &si2157_config;
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(info.type);
-+#pragma GCC diagnostic pop
- 	client_tuner = i2c_new_device(i2c_adapter, &info);
- 	if (client_tuner == NULL ||
- 			client_tuner->dev.driver == NULL)
-diff --git a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
-index c583c638e468..b5b6968387ff 100644
---- a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
-+++ b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
-@@ -953,7 +953,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
- 			mn88472_config.ts_clock = VARIABLE_TS_CLOCK;
- 			info.addr = 0x18;
- 			info.platform_data = &mn88472_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(&d->i2c_adap, &info);
- 			if (client == NULL || client->dev.driver == NULL) {
- 				dev->slave_demod = SLAVE_DEMOD_NONE;
-@@ -975,7 +978,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
- 			strlcpy(info.type, "mn88473", I2C_NAME_SIZE);
- 			info.addr = 0x18;
- 			info.platform_data = &mn88473_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(&d->i2c_adap, &info);
- 			if (client == NULL || client->dev.driver == NULL) {
- 				dev->slave_demod = SLAVE_DEMOD_NONE;
-@@ -1001,7 +1007,10 @@ static int rtl2832u_frontend_attach(struct dvb_usb_adapter *adap)
- 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
- 			info.addr = 0x64;
- 			info.platform_data = &si2168_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(&d->i2c_adap, &info);
- 			if (client == NULL || client->dev.driver == NULL) {
- 				dev->slave_demod = SLAVE_DEMOD_NONE;
-@@ -1193,7 +1202,10 @@ static int rtl2832u_tuner_attach(struct dvb_usb_adapter *adap)
- 			info.addr = 0x64;
- 			info.platform_data = &e4000_config;
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(dev->demod_i2c_adapter, &info);
- 			if (client == NULL || client->dev.driver == NULL)
- 				break;
-@@ -1292,7 +1304,10 @@ static int rtl2832u_tuner_attach(struct dvb_usb_adapter *adap)
- 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
- 			info.addr = 0x60;
- 			info.platform_data = &si2157_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(&d->i2c_adap, &info);
- 			if (client == NULL || client->dev.driver == NULL)
- 				break;
-diff --git a/drivers/media/usb/dvb-usb/cxusb.c b/drivers/media/usb/dvb-usb/cxusb.c
-index 907ac01ae297..ff4448e60b39 100644
---- a/drivers/media/usb/dvb-usb/cxusb.c
-+++ b/drivers/media/usb/dvb-usb/cxusb.c
-@@ -1335,7 +1335,10 @@ static int cxusb_mygica_t230_frontend_attach(struct dvb_usb_adapter *adap)
- 	strlcpy(info.type, "si2168", I2C_NAME_SIZE);
- 	info.addr = 0x64;
- 	info.platform_data = &si2168_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(info.type);
-+#pragma GCC diagnostic pop
- 	client_demod = i2c_new_device(&d->i2c_adap, &info);
- 	if (client_demod == NULL || client_demod->dev.driver == NULL)
- 		return -ENODEV;
-@@ -1355,7 +1358,10 @@ static int cxusb_mygica_t230_frontend_attach(struct dvb_usb_adapter *adap)
- 	strlcpy(info.type, "si2157", I2C_NAME_SIZE);
- 	info.addr = 0x60;
- 	info.platform_data = &si2157_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(info.type);
-+#pragma GCC diagnostic pop
- 	client_tuner = i2c_new_device(adapter, &info);
- 	if (client_tuner == NULL || client_tuner->dev.driver == NULL) {
- 		module_put(client_demod->dev.driver->owner);
-diff --git a/drivers/media/usb/em28xx/em28xx-dvb.c b/drivers/media/usb/em28xx/em28xx-dvb.c
-index 8cedef0daae4..8b93b315987e 100644
---- a/drivers/media/usb/em28xx/em28xx-dvb.c
-+++ b/drivers/media/usb/em28xx/em28xx-dvb.c
-@@ -1705,7 +1705,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
- 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
- 			info.addr = 0x64;
- 			info.platform_data = &si2168_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
- 			if (client == NULL || client->dev.driver == NULL) {
- 				result = -ENODEV;
-@@ -1731,7 +1734,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
- 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
- 			info.addr = 0x60;
- 			info.platform_data = &si2157_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(adapter, &info);
- 			if (client == NULL || client->dev.driver == NULL) {
- 				module_put(dvb->i2c_client_demod->dev.driver->owner);
-@@ -1769,7 +1775,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
- 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
- 			info.addr = 0x64;
- 			info.platform_data = &si2168_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
- 			if (client == NULL || client->dev.driver == NULL) {
- 				result = -ENODEV;
-@@ -1851,7 +1860,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
- 			strlcpy(info.type, "qm1d1c0042", I2C_NAME_SIZE);
- 			info.addr = 0x61;
- 			info.platform_data = &qm1d1c0042_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(tc90522_config.tuner_i2c,
- 						&info);
- 			if (client == NULL || client->dev.driver == NULL) {
-@@ -1889,7 +1901,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
- 			strlcpy(info.type, "si2168", I2C_NAME_SIZE);
- 			info.addr = 0x64;
- 			info.platform_data = &si2168_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(&dev->i2c_adap[dev->def_i2c_bus], &info);
- 			if (client == NULL || client->dev.driver == NULL) {
- 				result = -ENODEV;
-@@ -1915,7 +1930,10 @@ static int em28xx_dvb_init(struct em28xx *dev)
- 			strlcpy(info.type, "si2157", I2C_NAME_SIZE);
- 			info.addr = 0x60;
- 			info.platform_data = &si2157_config;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			request_module(info.type);
-+#pragma GCC diagnostic pop
- 			client = i2c_new_device(adapter, &info);
- 			if (client == NULL || client->dev.driver == NULL) {
- 				module_put(dvb->i2c_client_demod->dev.driver->owner);
 diff --git a/drivers/media/usb/pvrusb2/pvrusb2-std.c b/drivers/media/usb/pvrusb2/pvrusb2-std.c
 index 9a596a3a4c27..a875b5298a6c 100644
 --- a/drivers/media/usb/pvrusb2/pvrusb2-std.c
@@ -995,21 +522,6 @@ index 9a596a3a4c27..a875b5298a6c 100644
  			c1 += c2;
  			bufSize -= c2;
  			bufPtr += c2;
-diff --git a/drivers/media/v4l2-core/v4l2-common.c b/drivers/media/v4l2-core/v4l2-common.c
-index 57cfe26a393f..b2d62559edd0 100644
---- a/drivers/media/v4l2-core/v4l2-common.c
-+++ b/drivers/media/v4l2-core/v4l2-common.c
-@@ -268,7 +268,10 @@ struct v4l2_subdev *v4l2_spi_new_subdev(struct v4l2_device *v4l2_dev,
- 	BUG_ON(!v4l2_dev);
- 
- 	if (info->modalias[0])
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(info->modalias);
-+#pragma GCC diagnostic pop
- 
- 	spi = spi_new_device(master, info);
- 
 diff --git a/drivers/misc/mic/scif/scif_main.c b/drivers/misc/mic/scif/scif_main.c
 index 36d847af1209..3ac4dac56cca 100644
 --- a/drivers/misc/mic/scif/scif_main.c
@@ -1105,36 +617,6 @@ index f4099a40d547..d45375414be6 100644
  		if (IS_ERR(classdev)) {
  			macvtap_free_minor(vlan);
  			return notifier_from_errno(PTR_ERR(classdev));
-diff --git a/drivers/net/wireless/intel/ipw2x00/libipw_wx.c b/drivers/net/wireless/intel/ipw2x00/libipw_wx.c
-index dd29f46d086b..295d0238acf4 100644
---- a/drivers/net/wireless/intel/ipw2x00/libipw_wx.c
-+++ b/drivers/net/wireless/intel/ipw2x00/libipw_wx.c
-@@ -602,7 +602,10 @@ int libipw_wx_set_encodeext(struct libipw_device *ieee,
- 
- 	ops = lib80211_get_crypto_ops(alg);
- 	if (ops == NULL) {
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(module);
-+#pragma GCC diagnostic pop
- 		ops = lib80211_get_crypto_ops(alg);
- 	}
- 	if (ops == NULL) {
-diff --git a/drivers/net/wireless/intersil/hostap/hostap_ioctl.c b/drivers/net/wireless/intersil/hostap/hostap_ioctl.c
-index a5656bc0e6aa..63050ccbbe33 100644
---- a/drivers/net/wireless/intersil/hostap/hostap_ioctl.c
-+++ b/drivers/net/wireless/intersil/hostap/hostap_ioctl.c
-@@ -3268,7 +3268,10 @@ static int prism2_ioctl_siwencodeext(struct net_device *dev,
- 
- 	ops = lib80211_get_crypto_ops(alg);
- 	if (ops == NULL) {
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(module);
-+#pragma GCC diagnostic pop
- 		ops = lib80211_get_crypto_ops(alg);
- 	}
- 	if (ops == NULL) {
 diff --git a/drivers/parport/share.c b/drivers/parport/share.c
 index 3308427ed9f7..5c5dead343ec 100644
 --- a/drivers/parport/share.c
@@ -1199,21 +681,6 @@ index 329109c0024f..9754b5a2a32b 100644
  	}
  	return snprintf(buf, PAGE_SIZE, "unconfigured\n");
  }
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
-index 563d7fed6e1c..6d0541603634 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
-@@ -593,7 +593,10 @@ int ieee80211_wx_set_encode_ext(struct ieee80211_device *ieee,
- 
- 	 ops = ieee80211_get_crypto_ops(alg);
- 	if (ops == NULL) {
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		request_module(module);
-+#pragma GCC diagnostic pop
- 		ops = ieee80211_get_crypto_ops(alg);
- 	}
- 	if (ops == NULL) {
 diff --git a/drivers/staging/speakup/kobjects.c b/drivers/staging/speakup/kobjects.c
 index e744aa9730ff..e9c78d1950a1 100644
 --- a/drivers/staging/speakup/kobjects.c
@@ -1281,23 +748,6 @@ index 8e99251650b3..43f50e40b0e3 100644
  
  		btrfsic_dump_tree_sub(state, l->block_ref_to,
  				      indent_level + indent_add);
-diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
-index 1bfac28b7e7d..12fde910d9bd 100644
---- a/fs/quota/dquot.c
-+++ b/fs/quota/dquot.c
-@@ -198,8 +198,12 @@ static struct quota_format_type *find_quota_format(int id)
- 		for (qm = 0; module_names[qm].qm_fmt_id &&
- 			     module_names[qm].qm_fmt_id != id; qm++)
- 			;
-+
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		if (!module_names[qm].qm_fmt_id ||
- 		    request_module(module_names[qm].qm_mod_name))
-+#pragma GCC diagnostic pop
- 			return NULL;
- 
- 		spin_lock(&dq_list_lock);
 diff --git a/fs/reiserfs/prints.c b/fs/reiserfs/prints.c
 index 42d82f436cdd..5ee76629b048 100644
 --- a/fs/reiserfs/prints.c
@@ -1454,21 +904,6 @@ index 4c935202ce23..fe6dffa9a9a6 100644
  	list_for_each(p, &group->list_head) {
  		if (is_src)
  			s = list_entry(p, struct snd_seq_subscribers, src_list);
-diff --git a/sound/core/sound.c b/sound/core/sound.c
-index 175f9e4e01c8..4757abeba5dc 100644
---- a/sound/core/sound.c
-+++ b/sound/core/sound.c
-@@ -86,7 +86,10 @@ static void snd_request_other(int minor)
- 	case SNDRV_MINOR_TIMER:		str = "snd-timer";	break;
- 	default:			return;
- 	}
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	request_module(str);
-+#pragma GCC diagnostic pop
- }
- 
- #endif	/* modular kernel */
 diff --git a/sound/drivers/opl3/opl3_seq.c b/sound/drivers/opl3/opl3_seq.c
 index fdae5d7f421f..cb8a46fab811 100644
 --- a/sound/drivers/opl3/opl3_seq.c
@@ -1485,23 +920,6 @@ index fdae5d7f421f..cb8a46fab811 100644
 +#pragma GCC diagnostic pop
  	if (client < 0)
  		return client;
- 
-diff --git a/sound/pci/hda/hda_bind.c b/sound/pci/hda/hda_bind.c
-index 6efadbfb3fe3..c1a025c08e4b 100644
---- a/sound/pci/hda/hda_bind.c
-+++ b/sound/pci/hda/hda_bind.c
-@@ -198,8 +198,12 @@ static void request_codec_module(struct hda_codec *codec)
- 		break;
- 	}
- 
-+/* snd_hdac_codec_modalias never returns a string with % */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	if (mod)
- 		request_module(mod);
-+#pragma GCC diagnostic pop
- #endif /* MODULE */
- }
  
 diff --git a/sound/pci/korg1212/korg1212.c b/sound/pci/korg1212/korg1212.c
 index 565f7f55c3ca..688fdacce40e 100644

@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 22 Oct 2016 11:42:20 +0200
+Subject: [PATCH] {CONSTIFY} security: constify security_kernel_module_request
+ argument
+
+---
+ include/linux/lsm_audit.h | 2 +-
+ include/linux/lsm_hooks.h | 2 +-
+ include/linux/security.h  | 4 ++--
+ security/security.c       | 2 +-
+ security/selinux/hooks.c  | 2 +-
+ 5 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/lsm_audit.h b/include/linux/lsm_audit.h
+index e58e577117b6..5bdd4426b910 100644
+--- a/include/linux/lsm_audit.h
++++ b/include/linux/lsm_audit.h
+@@ -74,7 +74,7 @@ struct common_audit_data {
+ 			char *key_desc;
+ 		} key_struct;
+ #endif
+-		char *kmod_name;
++		const char *kmod_name;
+ 		struct lsm_ioctlop_audit *op;
+ 		struct file *file;
+ 	} u;
+diff --git a/include/linux/lsm_hooks.h b/include/linux/lsm_hooks.h
+index 558adfa5c8a8..2bf0fb9ebfe9 100644
+--- a/include/linux/lsm_hooks.h
++++ b/include/linux/lsm_hooks.h
+@@ -1487,7 +1487,7 @@ union security_list_options {
+ 	void (*cred_transfer)(struct cred *new, const struct cred *old);
+ 	int (*kernel_act_as)(struct cred *new, u32 secid);
+ 	int (*kernel_create_files_as)(struct cred *new, struct inode *inode);
+-	int (*kernel_module_request)(char *kmod_name);
++	int (*kernel_module_request)(const char *kmod_name);
+ 	int (*kernel_read_file)(struct file *file, enum kernel_read_file_id id);
+ 	int (*kernel_post_read_file)(struct file *file, char *buf, loff_t size,
+ 				     enum kernel_read_file_id id);
+diff --git a/include/linux/security.h b/include/linux/security.h
+index c2125e9093e8..2401466cff46 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -312,7 +312,7 @@ int security_prepare_creds(struct cred *new, const struct cred *old, gfp_t gfp);
+ void security_transfer_creds(struct cred *new, const struct cred *old);
+ int security_kernel_act_as(struct cred *new, u32 secid);
+ int security_kernel_create_files_as(struct cred *new, struct inode *inode);
+-int security_kernel_module_request(char *kmod_name);
++int security_kernel_module_request(const char *kmod_name);
+ int security_kernel_read_file(struct file *file, enum kernel_read_file_id id);
+ int security_kernel_post_read_file(struct file *file, char *buf, loff_t size,
+ 				   enum kernel_read_file_id id);
+@@ -891,7 +891,7 @@ static inline int security_kernel_create_files_as(struct cred *cred,
+ 	return 0;
+ }
+ 
+-static inline int security_kernel_module_request(char *kmod_name)
++static inline int security_kernel_module_request(const char *kmod_name)
+ {
+ 	return 0;
+ }
+diff --git a/security/security.c b/security/security.c
+index f825304f04a7..5762d9f8bc90 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -927,7 +927,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
+ 	return call_int_hook(kernel_create_files_as, 0, new, inode);
+ }
+ 
+-int security_kernel_module_request(char *kmod_name)
++int security_kernel_module_request(const char *kmod_name)
+ {
+ 	return call_int_hook(kernel_module_request, 0, kmod_name);
+ }
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index caa7544a92ee..4587dbb09cef 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -3799,7 +3799,7 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
+ 	return ret;
+ }
+ 
+-static int selinux_kernel_module_request(char *kmod_name)
++static int selinux_kernel_module_request(const char *kmod_name)
+ {
+ 	u32 sid;
+ 	struct common_audit_data ad;
+-- 

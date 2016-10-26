@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 22 Oct 2016 11:42:32 +0200
+Subject: [PATCH] {CONSTIFY} kmod: constify call_modprobe() parameter
+
+---
+ kernel/kmod.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/kmod.c b/kernel/kmod.c
+index 0277d1216f80..77441f3b08da 100644
+--- a/kernel/kmod.c
++++ b/kernel/kmod.c
+@@ -66,7 +66,7 @@ static void free_modprobe_argv(struct subprocess_info *info)
+ 	kfree(info->argv);
+ }
+ 
+-static int call_modprobe(char *module_name, int wait)
++static int call_modprobe(const char *modname, int wait)
+ {
+ 	struct subprocess_info *info;
+ 	static char *envp[] = {
+@@ -75,12 +75,13 @@ static int call_modprobe(char *module_name, int wait)
+ 		"PATH=/sbin:/usr/sbin:/bin:/usr/bin",
+ 		NULL
+ 	};
++	char *module_name;
+ 
+ 	char **argv = kmalloc(sizeof(char *[5]), GFP_KERNEL);
+ 	if (!argv)
+ 		goto out;
+ 
+-	module_name = kstrdup(module_name, GFP_KERNEL);
++	module_name = kstrdup(modname, GFP_KERNEL);
+ 	if (!module_name)
+ 		goto free_argv;
+ 
+-- 

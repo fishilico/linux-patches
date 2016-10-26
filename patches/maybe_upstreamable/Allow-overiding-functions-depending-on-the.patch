@@ -1,0 +1,79 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 22 Oct 2016 11:40:16 +0200
+Subject: [PATCH] {MAYBE UPS} Allow overiding functions depending on the
+ presence of variable arguments.
+
+This is useful to prevent useless -Wformat-security warnings from
+request_module(), alloc_workqueue() and other functions.
+---
+ include/linux/compiler.h | 57 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 8f36a0b55c72..11448253d2e3 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -606,4 +606,61 @@ _Pragma("GCC diagnostic pop")
+ # define __kprobes
+ # define nokprobe_inline	inline
+ #endif
++
++/**
++ * Allow overloading functions depending on the presence of variable arguments.
++ * If there are arguments, expand to 'with', otherwise to 'noarg'.
++ * There is a limit to 160 variable arguments, which would be enough for all
++ * the use cases in the kernel.
++ *
++ * For example in Linux 4.8, the highest number of variable arguments in a call
++ * to request_module() was in include/linux/mod_devicetable.h (used by
++ * drivers/net/phy/phy_device.c), with 32 arguments in the expansion of:
++ *     (MDIO_ID_FMT, MDIO_ID_ARGS(phy_id))
++ *
++ * The main use-case of this macro is to work around -Wformat-security warnings
++ * by diverting calls to function without any format string parameter to an
++ * implementation which does not use printf formatting.
++ */
++#define has_args(with, noarg, args...) _has_args(args, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, \
++	with, with, with, with, with, with, with, with, with, with, noarg)
++#define _has_args(dummy, _160, \
++	_159, _158, _157, _156, _155, _154, _153, _152, _151, _150, \
++	_149, _148, _147, _146, _145, _144, _143, _142, _141, _140, \
++	_139, _138, _137, _136, _135, _134, _133, _132, _131, _130, \
++	_129, _128, _127, _126, _125, _124, _123, _122, _121, _120, \
++	_119, _118, _117, _116, _115, _114, _113, _112, _111, _110, \
++	_109, _108, _107, _106, _105, _104, _103, _102, _101, _100, \
++	_99, _98, _97, _96, _95, _94, _93, _92, _91, _90, \
++	_89, _88, _87, _86, _85, _84, _83, _82, _81, _80, \
++	_79, _78, _77, _76, _75, _74, _73, _72, _71, _70, \
++	_69, _68, _67, _66, _65, _64, _63, _62, _61, _60, \
++	_59, _58, _57, _56, _55, _54, _53, _52, _51, _50, \
++	_49, _48, _47, _46, _45, _44, _43, _42, _41, _40, \
++	_39, _38, _37, _36, _35, _34, _33, _32, _31, _30, \
++	_29, _28, _27, _26, _25, _24, _23, _22, _21, _20, \
++	_19, _18, _17, _16, _15, _14, _13, _12, _11, _10, \
++	_9, _8, _7, _6, _5, _4, _3, _2, _1, _0, ...) _0
++
++/* Sanity check */
++#if has_args(1, 0, "no argument") || has_args(0, 1, "one argument", 1) || \
++    has_args(0, 1, "eight arguments", 1, 2, 3, 4, 5, 6, 7, 8)
++#error Invalid has_args() implementation
++#endif
++
+ #endif /* __LINUX_COMPILER_H */
+-- 
