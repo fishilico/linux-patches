@@ -48,6 +48,7 @@ All the patches lies in subdirectories inside ``patches/``:
 * ``patches/plugin/`` patches implement some GCC plugins to analyze the code at compile time.
 * ``patches/pragma/`` patches introduce ``#pragma`` statement, mostly to ignore warnings when it is expected.
 * ``patches/printf/`` patches add ``__printf`` attribute to printf-like functions so that potential format string vulnerabilities are detected at build time.
+* ``patches/rejected/`` patches were rejected (sometimes silently) by kernel developers.
 * ``patches/sent-upstream/`` patches have already been sent upstream even though they were not yet applied.
 * ``patches/typo/`` patches fix typos which are sprinkled all around in the kernel.
 

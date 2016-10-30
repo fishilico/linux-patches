@@ -56,25 +56,24 @@ def get_patch_path(patchdir, name):
         return None
 
     # Find a suitable directory, for the topic of the patch
-    if not directory:
-        KNOWN_TOPICS = {
-            '{CONSTIFY}': 'constify',
-            '{For LLVMLinux}': 'llvmlinux',
-            '{LLVMLinux}': 'llvmlinux',
-            '{MAYBE UPS}': 'maybe_upstreamable',
-            '{NOT UPSTREAMABLE}': 'not_upstreamble',
-            '{PLUGIN}': 'plugin',
-            '{PRAGMA}': 'pragma',
-            '{PRINTF}': 'printf',
-            '{TYPO}': 'typo',
-        }
-        for topic, topicdir in KNOWN_TOPICS.items():
-            if subject.startswith(topic + ' '):
-                directory = topicdir
-                subject = subject[len(topic) + 1:]
-                break
-    elif subject.startswith('{SENT} '):
-        subject = subject[7:]
+    KNOWN_TOPICS = {
+        '{CONSTIFY}': 'constify',
+        '{For LLVMLinux}': 'llvmlinux',
+        '{LLVMLinux}': 'llvmlinux',
+        '{MAYBE UPS}': 'maybe_upstreamable',
+        '{NOT UPSTREAMABLE}': 'not_upstreamble',
+        '{PLUGIN}': 'plugin',
+        '{PRAGMA}': 'pragma',
+        '{PRINTF}': 'printf',
+        '{REJECTED}': 'rejected',
+        '{SENT}': 'sent-upstream',
+        '{TYPO}': 'typo',
+    }
+    for topic, topicdir in KNOWN_TOPICS.items():
+        if subject.startswith(topic + ' '):
+            directory = topicdir
+            subject = subject[len(topic) + 1:]
+            break
 
     # Canonicalize the subject into a patch name
     name = re.sub(r'[^._0-9a-zA-Z]', '-', subject).strip('-')
