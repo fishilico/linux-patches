@@ -31,5 +31,5 @@ VERSION="${VERSION#v}"
 
 set -x -e
 git reset HEAD
-git add patches
+git add patches tracked-patches.txt
 git commit -m "Linux $VERSION"
