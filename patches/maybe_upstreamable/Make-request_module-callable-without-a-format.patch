@@ -6,15 +6,15 @@ Subject: [PATCH] {MAYBE UPS} Make request_module() callable without a format
 
 This avoid having to use %s when using format strings
 ---
- include/linux/kmod.h | 22 ++++++++++++++++------
+ include/linux/kmod.h | 18 ++++++++++++------
  kernel/kmod.c        | 45 ++++++++++++++++++++++++++++++++++-----------
- 2 files changed, 50 insertions(+), 17 deletions(-)
+ 2 files changed, 46 insertions(+), 17 deletions(-)
 
 diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-index fcfd2bf14d3f..934e4265a559 100644
+index fcfd2bf14d3f..0f2816ad98e5 100644
 --- a/include/linux/kmod.h
 +++ b/include/linux/kmod.h
-@@ -32,15 +32,25 @@
+@@ -32,15 +32,21 @@
  extern char modprobe_path[]; /* for sysctl */
  /* modprobe exit status on success, -ve on error.  Return value
   * usually useless though. */
@@ -26,10 +26,6 @@ index fcfd2bf14d3f..934e4265a559 100644
 +int __request_module_fmt(bool wait, const char *name, ...);
 +
 +/* Switch on varargs */
-+/* TODO: find out the max number of args right now
-+include/linux/mod_devicetable.h (used by drivers/net/phy/phy_device.c):
-+    (MDIO_ID_FMT, MDIO_ID_ARGS(phy_id)) : 32 args
-+*/
 +#define __request_module_maybe_fmt(w, mod...) \
 +	has_args(__request_module_fmt, __request_module, mod)(w, mod)
 +

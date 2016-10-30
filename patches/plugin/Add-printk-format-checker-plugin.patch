@@ -10,8 +10,8 @@ This plugin helped to detect the following bugs:
  arch/Kconfig                               |   7 +
  fs/reiserfs/Makefile                       |  16 +
  scripts/Makefile.gcc-plugins               |   5 +
- scripts/gcc-plugins/printk_format_plugin.c | 728 +++++++++++++++++++++++++++++
- 4 files changed, 756 insertions(+)
+ scripts/gcc-plugins/printk_format_plugin.c | 732 +++++++++++++++++++++++++++++
+ 4 files changed, 760 insertions(+)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -77,10 +77,10 @@ index 060d2cb373db..a6c64f09a29a 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..b418459716e5
+index 000000000000..4a6a0ca25423
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,728 @@
+@@ -0,0 +1,732 @@
 +/*
 + * Copyrighy 2016 by Nicolas Iooss
 + *
@@ -122,29 +122,21 @@ index 000000000000..b418459716e5
 +}
 +
 +/**
-+ * Check that the given type is 8-bit long
++ * Check that the given type is 8-bit integer
 + */
 +static bool is_8bit_int_type(const_tree value)
 +{
-+	bool ret1, ret2; /* TODO this is to test the internals */
-+	if (TREE_CODE(value) != INTEGER_TYPE)
-+		return false;
-+	ret1 =
-+		identifier_is(TYPE_IDENTIFIER(value), "char") ||
-+		identifier_is(TYPE_IDENTIFIER(value), "unsigned char") ||
-+		identifier_is(TYPE_IDENTIFIER(value), "u8") ||
-+		identifier_is(TYPE_IDENTIFIER(value), "__u8") ||
-+		identifier_is(TYPE_IDENTIFIER(value), "uint8_t") ||
-+		identifier_is(TYPE_IDENTIFIER(value), "u_char") ||
-+		identifier_is(TYPE_IDENTIFIER(value), "uchar") ||
-+		identifier_is(TYPE_IDENTIFIER(value), "U8") ||
-+		identifier_is(TYPE_IDENTIFIER(value), "UCHAR");
-+	ret2 = (TREE_INT_CST_ELT_CHECK(TYPE_SIZE(value), 0) == 8);
-+	if (ret1 != ret2) {
-+		error(G_("Unknown 8-bit int type! - WL %d  internal %d"), ret1, ret2);
-+		debug_tree(value);
-+	}
-+	return ret2;
++	return TREE_CODE(value) == INTEGER_TYPE &&
++		(TREE_INT_CST_ELT_CHECK(TYPE_SIZE(value), 0) == 8);
++}
++
++/**
++ * Check that the given type is 32-bit integer
++ */
++static bool is_32bit_int_type(const_tree value)
++{
++	return TREE_CODE(value) == INTEGER_TYPE &&
++		(TREE_INT_CST_ELT_CHECK(TYPE_SIZE(value), 0) == 32);
 +}
 +
 +/**
@@ -217,7 +209,7 @@ index 000000000000..b418459716e5
 +	subtype = TREE_TYPE(TREE_TYPE(value));
 +
 +	switch (*ptr_format) {
-+	/* Order from Documentation/printk-formats.txt */
++	/* Order of formats taken from Documentation/printk-formats.txt */
 +
 +	/* Symbols/Function Pointers */
 +	case 'F':
@@ -313,15 +305,9 @@ index 000000000000..b418459716e5
 +			if (TREE_CODE(subtype) == RECORD_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "in_addr"))
 +				return true;
 +			if (TREE_CODE(subtype) == INTEGER_TYPE && (
-+			    identifier_is(TYPE_IDENTIFIER(subtype), "__be32") ||
-+			    identifier_is(TYPE_IDENTIFIER(subtype), "uint32_t") ||
-+			    identifier_is(TYPE_IDENTIFIER(subtype), "u_int32_t") ||
-+			    identifier_is(TYPE_IDENTIFIER(subtype), "u32") ||
-+			    identifier_is(TYPE_IDENTIFIER(subtype), "__u32") ||
-+			    identifier_is(TYPE_IDENTIFIER(subtype), "nes_addr_t") ||
++			    is_8bit_int_type(subtype) ||
++			    is_32bit_int_type(subtype) ||
 +			    identifier_is(TYPE_IDENTIFIER(subtype), "long unsigned int")))
-+				return true;
-+			if (is_8bit_int_type(subtype))
 +				return true;
 +			if (TREE_CODE(subtype) == ARRAY_TYPE &&
 +			    TREE_CODE(TREE_TYPE(subtype)) == INTEGER_TYPE)
@@ -361,8 +347,8 @@ index 000000000000..b418459716e5
 +		    identifier_is(TYPE_IDENTIFIER(subtype), "efi_guid_t") ||
 +		    identifier_is(TYPE_IDENTIFIER(subtype), "orangefs_khandle") ||
 +		    identifier_is(TYPE_IDENTIFIER(subtype), "uuid_be") ||
-+		    identifier_is(TYPE_IDENTIFIER(subtype), "uuid_t") ||
-+		    identifier_is(TYPE_IDENTIFIER(subtype), "uuid_le")))
++		    identifier_is(TYPE_IDENTIFIER(subtype), "uuid_le") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "uuid_t")))
 +			return true;
 +		break;
 +
@@ -506,38 +492,151 @@ index 000000000000..b418459716e5
 +}
 +
 +/**
-+ * Check a function call to a function marked with __printf attribute
++ * Get the printf format attribute of a function, or NULL_TREE if it does not exist
++ *
++ * The first parameter of the printf attribute is given by:
++ *    TREE_INT_CST_ELT(TREE_VALUE(ret), 0)
++ * and the second one by:
++ *    TREE_INT_CST_ELT(TREE_VALUE(TREE_CHAIN(ret)), 0)
 + */
-+static void check_printf_function_call(const gcall *call_stmt, unsigned int fmt_idx, unsigned int arg_idx)
++static const_tree get_printf_attribute(location_t loc, const_tree fntype)
 +{
-+	const_tree format_tree, arg_tree;
++	const_tree attr, attrval;
++
++	/* Look up "format" attribute in declaration type */
++	attr = lookup_attribute("format", TYPE_ATTRIBUTES(fntype));
++	if (attr == NULL_TREE)
++		return NULL_TREE;
++
++	/* Filter "printf" value */
++	attrval = TREE_VALUE(attr);
++	if (attrval == NULL_TREE)
++		return NULL_TREE;
++	if (identifier_is(TREE_VALUE(attrval), "printf") ||
++	    identifier_is(TREE_VALUE(attrval), "__printf__") ||
++	    identifier_is(TREE_VALUE(attrval), "gnu_printf")) {
++		return TREE_CHAIN(attrval);
++	}
++
++	/* Ignore "scanf" format attribute */
++	if (identifier_is(TREE_VALUE(attrval), "scanf") ||
++	    identifier_is(TREE_VALUE(attrval), "__scanf__") ||
++	    identifier_is(TREE_VALUE(attrval), "gnu_scanf")) {
++		return NULL_TREE;
++	}
++	warning_at(loc, OPT_Wall, G_("Unknown format parameter %s\n"),
++		   IDENTIFIER_POINTER(TREE_VALUE(attrval)));
++	return NULL_TREE;
++}
++
++/**
++ * Get the type of the specified argument in the function declaration
++ *
++ * argidx = 1 for the first argument, 2 for the second one, etc.
++ */
++static const_tree get_fct_arg_type(const_tree fntype, HOST_WIDE_INT argidx)
++{
++	const_tree arg_type;
++	function_args_iterator arg_iter;
++
++	gcc_assert(argidx > 0);
++	FOREACH_FUNCTION_ARGS(fntype, arg_type, arg_iter) {
++		argidx -= 1;
++		if (!argidx)
++			return arg_type;
++	}
++	/* the call should has been made with "argidx <= gimple_call_num_args(call_stmt)" */
++	gcc_assert(false);
++}
++
++/**
++ * Analyze the calls to functions using printf-formatted arguments in a GIMPLE
++ * statement
++ */
++static void analyze_statement(gimple stmt)
++{
++	gcall *call_stmt;
++	const_tree printf_attr, fmtarg_type;
++	HOST_WIDE_INT fmt_idx, arg_idx;
++	const_tree fntype, format_tree, arg_tree;
 +	int format_length;
 +	const char *format;
-+	unsigned int argnum = gimple_call_num_args(call_stmt);
++	unsigned int argnum;
 +
-+	gcc_assert(1 <= fmt_idx && fmt_idx <= argnum);
-+	gcc_assert(1 <= arg_idx && arg_idx <= argnum + 1);
++	/* Get the function declaration */
++	call_stmt = as_a_gcall(stmt);
++	fntype = gimple_call_fntype(call_stmt);
++	if (fntype == NULL_TREE) {
++		/* This happens when calling var_arg() */
++		if (gimple_call_internal_p(call_stmt) &&
++		    gimple_call_internal_fn(call_stmt) == IFN_VA_ARG) {
++			return;
++		}
++		warning_at(gimple_location(stmt), 0,
++			   G_("Unable to get the function type\n"));
++		return;
++	}
 +
++	/* Get the printf format attribute */
++	printf_attr = get_printf_attribute(gimple_location(stmt), fntype);
++	if (!printf_attr)
++		return;
++	fmt_idx = TREE_INT_CST_ELT(TREE_VALUE(printf_attr), 0);
++	arg_idx = TREE_INT_CST_ELT(TREE_VALUE(TREE_CHAIN(printf_attr)), 0);
++
++	/* Sanity checks on the number of arguments */
++	argnum = gimple_call_num_args(call_stmt);
++	if (fmt_idx < 1 || fmt_idx > argnum) {
++		warning_at(gimple_location(stmt), OPT_Wformat_,
++			   G_("Invalid call to function with attribute __printf(%lu, %lu)\n"),
++			   fmt_idx, arg_idx);
++		return;
++	}
++	if (arg_idx < 0 || arg_idx > argnum + 1) {
++		warning_at(gimple_location(stmt), OPT_Wformat_,
++			   G_("Invalid call to function with attribute __printf(%lu, %lu)\n"),
++			   fmt_idx, arg_idx);
++		return;
++	}
++
++	/* Warn if the format attribute type is not const char* */
++	fmtarg_type = get_fct_arg_type(fntype, fmt_idx);
++	if (TREE_CODE(fmtarg_type) != POINTER_TYPE ||
++	    !is_8bit_int_type(TREE_TYPE(fmtarg_type))) {
++		warning_at(gimple_location(stmt), OPT_Wformat_,
++			G_("Unexpected type for printf format attribute (not a char*)\n"));
++	} else if (!TYPE_READONLY(TREE_TYPE(fmtarg_type))) {
++		warning_at(gimple_location(stmt), OPT_Wformat_,
++			   G_("Call to a function with a non-const char* format\n"));
++	}
++
++	/* Do not play with va_args-based functions */
++	if (arg_idx == 0)
++		return;
++
++	/* Retrieve the format string */
 +	format_tree = gimple_call_arg(call_stmt, fmt_idx - 1);
 +	format_tree = get_string_cst(format_tree);
 +	if (format_tree == NULL_TREE) {
-+		warning_at(gimple_location(call_stmt), OPT_Wformat_security, G_("Call with a non-constant string\n"));
++		warning_at(gimple_location(call_stmt), OPT_Wformat_security,
++			   G_("Call with a non-constant string\n"));
 +		return;
 +	}
 +	gcc_assert(TREE_CODE(format_tree) == STRING_CST);
 +	format_length = TREE_STRING_LENGTH(format_tree);
 +	format = TREE_STRING_POINTER(format_tree);
 +	if (strnlen(format, format_length) != format_length - 1) {
-+		warning_at(gimple_location(call_stmt), OPT_Wformat_security, G_("Call with a a format which contains nul character\n"));
++		warning_at(gimple_location(call_stmt), OPT_Wformat_security,
++			   G_("Call with a a format which contains nul character\n"));
 +		return;
 +	}
 +
-+	/* fprintf(stderr, "analyzing format: %s\n", format); */
 +	while (*format) {
 +		bool found;
 +		const char *subs_start = format;
 +		unsigned int star_count = 0;
 +
++		/* Skip normal characters */
 +		if (*format != '%') {
 +			format++;
 +			continue;
@@ -565,6 +664,7 @@ index 000000000000..b418459716e5
 +			case 'z': case 'Z':
 +				break;
 +			case '*':
++				/* There may be several stars, like "%*.*s" */
 +				star_count++;
 +				break;
 +			default:
@@ -572,9 +672,10 @@ index 000000000000..b418459716e5
 +			}
 +		}
 +
-+		/* Get the argument */
++		/* Get the current argument for the format */
 +		if (arg_idx > argnum) {
-+			warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Not enougth arguments for format\n"));
++			warning_at(gimple_location(call_stmt), OPT_Wformat_,
++				   G_("Not enough arguments for format\n"));
 +			return;
 +		}
 +		arg_tree = gimple_call_arg(call_stmt, arg_idx - 1);
@@ -583,13 +684,17 @@ index 000000000000..b418459716e5
 +		while (star_count) {
 +			/* size argument is an integer */
 +			if (!is_integer_type(arg_tree)) {
-+				warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Argument for the size of %.*s is not an integer\n"),
-+					format + 1 - subs_start, subs_start);
++				warning_at(gimple_location(call_stmt),
++					   OPT_Wformat_,
++					   G_("Argument for the size of %.*s is not an integer\n"),
++					   format + 1 - subs_start, subs_start);
 +			}
 +
-+			/* Get next argument */
++			/* Get the next argument */
 +			if (arg_idx > argnum) {
-+				warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Not enougth arguments for format\n"));
++				warning_at(gimple_location(call_stmt),
++					   OPT_Wformat_,
++					   G_("Not enough arguments for format\n"));
 +				return;
 +			}
 +			arg_tree = gimple_call_arg(call_stmt, arg_idx - 1);
@@ -608,158 +713,57 @@ index 000000000000..b418459716e5
 +		case 'X':
 +			/* integer type */
 +			if (!is_integer_type(arg_tree)) {
-+				warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Argument for %.*s is not an integer\n"),
-+					format + 1 - subs_start, subs_start);
++				warning_at(gimple_location(call_stmt),
++					   OPT_Wformat_,
++					   G_("Argument for %.*s is not an integer\n"),
++					   format + 1 - subs_start, subs_start);
 +			}
 +			format++;
 +			break;
 +		case 's':
 +			/* string type */
 +			if (!is_string_type(arg_tree, subs_start)) {
-+				warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Argument for %.*s is not a string\n"),
-+					format + 1 - subs_start, subs_start);
++				warning_at(gimple_location(call_stmt),
++					   OPT_Wformat_,
++					   G_("Argument for %.*s is not a string\n"),
++					   format + 1 - subs_start, subs_start);
 +			}
 +			format++;
 +			break;
 +		case 'p':
++			/* pointer type */
 +			if (!is_fmtpointer_type(arg_tree, format + 1)) {
-+				warning_at(gimple_location(call_stmt), OPT_Wformat_, G_("Argument for %.*s is not a good pointer\n"),
-+					format + 2 - subs_start, subs_start);
++				warning_at(gimple_location(call_stmt),
++					   OPT_Wformat_,
++					   G_("Argument for %.*s is not a good pointer\n"),
++					   format + 2 - subs_start, subs_start);
 +			}
 +			format++;
 +			break;
 +		default:
-+			warning(OPT_Wformat_, G_("Unexpected format %s\n"), format);
++			warning_at(gimple_location(call_stmt), OPT_Wformat_,
++				   G_("Unexpected format %s\n"), format);
 +			format++;
-+			/* fprintf(stderr, "... %s\n", format); */
-+			/* debug_tree(arg_tree); */
 +		}
 +	}
-+}
-+
-+/**
-+ * Get the printf format attribute of a function, or NULL_TREE if it does not exist
-+ *
-+ * The first parameter of the printf attribute is given by:
-+ *    TREE_INT_CST_ELT(TREE_VALUE(ret), 0)
-+ * and the second one by:
-+ *    TREE_INT_CST_ELT(TREE_VALUE(TREE_CHAIN(ret)), 0)
-+ */
-+static const_tree get_printf_attribute(location_t loc, const_tree fntype)
-+{
-+	const_tree attr, attrval;
-+
-+	/* Look up "format" attribute in declaration type */
-+	attr = lookup_attribute("format", TYPE_ATTRIBUTES(fntype));
-+	if (attr == NULL_TREE)
-+		return NULL_TREE;
-+
-+	/* Filter "printf" value */
-+	attrval = TREE_VALUE(attr);
-+	if (attrval == NULL_TREE)
-+		return NULL_TREE;
-+	if (identifier_is(TREE_VALUE(attrval), "printf") ||
-+	    identifier_is(TREE_VALUE(attrval), "__printf__") ||
-+	    identifier_is(TREE_VALUE(attrval), "gnu_printf")) {
-+		return TREE_CHAIN(attrval);
-+	}
-+	if (identifier_is(TREE_VALUE(attrval), "scanf") ||
-+	    identifier_is(TREE_VALUE(attrval), "__scanf__") ||
-+	    identifier_is(TREE_VALUE(attrval), "gnu_scanf")) {
-+		return NULL_TREE;
-+	}
-+	warning_at(loc, OPT_Wall, G_("Unknown format parameter %s\n"),
-+		IDENTIFIER_POINTER(TREE_VALUE(attrval)));
-+	return NULL_TREE;
-+}
-+
-+/**
-+ * Get the type of the specified argument in the function declaration
-+ *
-+ * argidx = 1 for the first argument, 2 for the second one, etc.
-+ */
-+static const_tree get_fct_arg_type(const_tree fntype, HOST_WIDE_INT argidx)
-+{
-+	const_tree arg_type;
-+	function_args_iterator arg_iter;
-+
-+	gcc_assert(argidx > 0);
-+	FOREACH_FUNCTION_ARGS(fntype, arg_type, arg_iter) {
-+		argidx -= 1;
-+		if (!argidx)
-+			return arg_type;
-+	}
-+	/* the call should has been made with "argidx <= gimple_call_num_args(call_stmt)" */
-+	gcc_assert(false);
 +}
 +
 +static unsigned int printk_format_execute(void)
 +{
 +	basic_block bb;
 +
-+	/* fprintf(stderr, "Studying function %s\n", DECL_NAME_POINTER(current_function_decl)); */
 +	FOR_EACH_BB_FN(bb, cfun) {
 +		gimple_stmt_iterator gsi;
 +
 +		for (gsi = gsi_start_bb(bb); !gsi_end_p(gsi); gsi_next(&gsi)) {
 +			gimple stmt;
-+			gcall *call_stmt;
-+			const_tree printf_attr, fmtarg_type;
-+			HOST_WIDE_INT argidx1, argidx2;
-+			const_tree fntype;
 +
 +			/* Get the statement */
 +			stmt = gsi_stmt(gsi);
 +			if (!is_gimple_call(stmt))
 +				continue;
 +
-+			/* Get the function declaration */
-+			call_stmt = as_a_gcall(stmt);
-+			fntype = gimple_call_fntype(call_stmt);
-+			if (fntype == NULL_TREE) {
-+				/* Find out the functions which have no type */
-+				if (gimple_call_internal_p(call_stmt) &&
-+				    gimple_call_internal_fn(call_stmt) == IFN_VA_ARG) {
-+					/* var_arg() call */
-+					continue;
-+				}
-+				warning_at(gimple_location(stmt), 0, G_("Unable to get the function type\n"));
-+				continue;
-+			}
-+
-+			/* Get the printf format attribute */
-+			printf_attr = get_printf_attribute(gimple_location(stmt), fntype);
-+			if (!printf_attr)
-+				continue;
-+			argidx1 = TREE_INT_CST_ELT(TREE_VALUE(printf_attr), 0);
-+			argidx2 = TREE_INT_CST_ELT(TREE_VALUE(TREE_CHAIN(printf_attr)), 0);
-+
-+			/* Sanity checks */
-+			if (argidx1 < 1 || argidx1 > gimple_call_num_args(call_stmt)) {
-+				warning_at(gimple_location(stmt), OPT_Wformat_, G_("Invalid call to function with attribute __printf(%lu, %lu)\n"), argidx1, argidx2);
-+				continue;
-+			}
-+			if (argidx2 < 0 || argidx2 > gimple_call_num_args(call_stmt) + 1) {
-+				warning_at(gimple_location(stmt), OPT_Wformat_, G_("Invalid call to function with attribute __printf(%lu, %lu)\n"), argidx1, argidx2);
-+				continue;
-+			}
-+
-+			/* Warn if the format attribute type is not const char* */
-+			fmtarg_type = get_fct_arg_type(fntype, argidx1);
-+			if (TREE_CODE(fmtarg_type) != POINTER_TYPE || !is_8bit_int_type(TREE_TYPE(fmtarg_type))) {
-+				warning_at(gimple_location(stmt), OPT_Wformat_,
-+					G_("Unexpected type for printf format attribute (not a char*)\n"));
-+			} else if (!TYPE_READONLY(TREE_TYPE(fmtarg_type))) {
-+				warning_at(gimple_location(stmt), OPT_Wformat_,
-+					G_("Call to a function with a non-const char* format\n"));
-+			}
-+
-+			/* Do not play with va_args-based functions */
-+			if (argidx2 == 0)
-+				continue;
-+			/* fprintf(stderr, "... found call with printf attr (%lu, %lu)\n", argidx1, argidx2); */
-+			/* debug_gimple_stmt(stmt); */
-+			check_printf_function_call(call_stmt, argidx1, argidx2);
++			analyze_statement(stmt);
 +		}
 +	}
 +

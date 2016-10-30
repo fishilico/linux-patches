@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 29 Oct 2016 22:33:19 +0200
+Subject: [PATCH] {MAYBE UPS} Make alloc_workqueue() callable without
+ triggering -Wformat-security
+
+This makes it possible to use a local variable as workqueue name without
+the compiler to complain about this usage, and without any potential
+issue related to character '%'.
+---
+ include/linux/workqueue.h | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index fc6e22186405..cf1da87ea808 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -362,6 +362,13 @@ extern struct workqueue_struct *
+ __alloc_workqueue_key(const char *fmt, unsigned int flags, int max_active,
+ 	struct lock_class_key *key, const char *lock_name, ...) __printf(1, 6);
+ 
++/* Switch on varargs */
++#define __alloc_workqueue_key_nofmt(fmt, flags, max_active, key, lock_name) \
++	__alloc_workqueue_key("%s", (flags), (max_active), (key), (lock_name), (fmt))
++#define __alloc_workqueue_key_fmt(fmt, flags, max_active, key, lock_name...)		\
++	has_args(__alloc_workqueue_key, __alloc_workqueue_key_nofmt, lock_name)(	\
++		(fmt), (flags), (max_active), (key), lock_name)
++
+ /**
+  * alloc_workqueue - allocate a workqueue
+  * @fmt: printf format for the name of the workqueue
+@@ -386,13 +393,13 @@ __alloc_workqueue_key(const char *fmt, unsigned int flags, int max_active,
+ 									\
+ 	__lock_name = #fmt#args;					\
+ 									\
+-	__alloc_workqueue_key((fmt), (flags), (max_active),		\
+-			      &__key, __lock_name, ##args);		\
++	__alloc_workqueue_key_fmt((fmt), (flags), (max_active),		\
++				  &__key, __lock_name, ##args);		\
+ })
+ #else
+ #define alloc_workqueue(fmt, flags, max_active, args...)		\
+-	__alloc_workqueue_key((fmt), (flags), (max_active),		\
+-			      NULL, NULL, ##args)
++	__alloc_workqueue_key_fmt((fmt), (flags), (max_active),		\
++				  NULL, NULL, ##args)
+ #endif
+ 
+ /**
+-- 
