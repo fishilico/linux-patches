@@ -84,6 +84,10 @@ def get_patch_path(patchdir, name):
         directory = 'bug'
         name = name[4:]
 
+    if not directory:
+        sys.stderr.write("Warning: patch {} has no specific directory\n"
+                         .format(name))
+
     return os.path.join(directory, name) + '.patch'
 
 def reorganize_patches(patchdir):
