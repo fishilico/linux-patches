@@ -96,6 +96,7 @@ then
     KCFLAGS="$KCFLAGS -Wno-c99-extensions" # Use C99 features
     KCFLAGS="$KCFLAGS -Wno-c++-compat" # Empty structs exist
     KCFLAGS="$KCFLAGS -Wno-class-varargs" # net/9p passes kuid_t/kgid_t in varargs
+    KCFLAGS="$KCFLAGS -Wno-comma" # There are legimitate uses like "while ((n = read(...)), n > 0)"
     KCFLAGS="$KCFLAGS -Wno-constant-logical-operand" # Allow using CONFIG_... in logical expressions
     KCFLAGS="$KCFLAGS -Wno-covered-switch-default" # Covered switch may use "default:BUG();"
     KCFLAGS="$KCFLAGS -Wno-disabled-macro-expansion" # "inline" macro is recursive
@@ -189,6 +190,7 @@ then
     HOSTCFLAGS="$HOSTCFLAGS -Weverything"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-c99-extensions"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-cast-qual" # Some pointer casts don't specify const
+    HOSTCFLAGS="$HOSTCFLAGS -Wno-comma" # There are legimitate uses like "while ((n = read(...)), n > 0)"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-covered-switch-default" # Some switch one enums cover all values
     HOSTCFLAGS="$HOSTCFLAGS -Wno-disabled-macro-expansion" # Linux has recursive macros
     HOSTCFLAGS="$HOSTCFLAGS -Wno-documentation"
