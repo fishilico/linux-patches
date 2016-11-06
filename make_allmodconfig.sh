@@ -130,6 +130,7 @@ then
     KCFLAGS="$KCFLAGS -Wno-unreachable-code-break"
     KCFLAGS="$KCFLAGS -Wno-unreachable-code-return"
     KCFLAGS="$KCFLAGS -Wno-used-but-marked-unused" # inline functions are used
+    KCFLAGS="$KCFLAGS -Wno-varargs" # There are functions with u8 args before "...", which leads to undefined behavior
     KCFLAGS="$KCFLAGS -Wno-variadic-macros" # Macros with ... in arguments
     KCFLAGS="$KCFLAGS -Wno-vla" # Variable-length arrays are used in compile-time asserts
 
