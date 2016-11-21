@@ -1,0 +1,179 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Takashi Sakamoto <o-takashi@sakamocchi.jp>
+Date: Fri, 18 Nov 2016 06:11:24 +0900
+Subject: [PATCH] ALSA: bebob: compare whole string for model name so that
+ readers are not confused
+
+A modalias of 'ieee1394:ven00000D6Cmo00010060sp' hits units for M-Audio
+FireWire Audiophile only. However the unit has two states relevant to
+loaded firmware. Initial firmware returns 'FW Audiophile Bootloader',
+while functional firmware returns 'FW Audiophile'.
+
+ALSA bebob driver compares the units' model name to strings of 24 characters
+by the first 15 characters. This is shorter way to differentiate these two
+states but confusing to readers.
+
+This commit improves the code for this point. Kernel stack is consumed more in
+call of check_audiophile_booted() by a bit.
+
+With initial firmware:
+$ ./linux-firewire-utils/src/crpp < /sys/bus/firewire/devices/fw1/config_rom
+               ROM header and bus information block
+               -----------------------------------------------------------------
+400  04276da6  bus_info_length 4, crc_length 39, crc 28070
+404  31333934  bus_name "1394"
+408  006481f2  irmc 0, cmc 0, isc 0, bmc 0, pmc 0, cyc_clk_acc 100,
+               max_rec 8 (512), max_rom 1, gen 15, spd 2 (S400)
+40c  000d6c03  company_id 000d6c     |
+410  102b7e2e  device_id 03102b7e2e  | EUI-64 000d6c03102b7e2e
+
+               root directory
+               -----------------------------------------------------------------
+414  00067414  directory_length 6, crc 29716
+418  0c0083c0  node capabilities per IEEE 1394
+41c  03000d6c  vendor
+420  81000009  --> descriptor leaf at 444
+424  17010060  model
+428  8100000c  --> descriptor leaf at 458
+42c  d1000001  --> unit directory at 430
+
+               unit directory at 430
+               -----------------------------------------------------------------
+430  00049da1  directory_length 4, crc 40353 (should be 48611)
+434  1200a02d  specifier id: 1394 TA
+438  13014001  version: Vender Unique and AV/C
+43c  17010060  model
+440  8100000f  --> descriptor leaf at 47c
+
+               descriptor leaf at 444
+               -----------------------------------------------------------------
+444  0004073e  leaf_length 4, crc 1854
+448  00000000  textual descriptor
+44c  00000000  minimal ASCII
+450  4d2d4155  "M-AU"
+454  44494f00  "DIO"
+
+               descriptor leaf at 458
+               -----------------------------------------------------------------
+458  00086f21  leaf_length 8, crc 28449
+45c  00000000  textual descriptor
+460  00000000  minimal ASCII
+464  46572041  "FW A"
+468  7564696f  "udio"
+46c  7068696c  "phil"
+470  6520426f  "e Bo"
+474  6f746c6f  "otlo"
+478  61646572  "ader"
+
+               descriptor leaf at 47c
+               -----------------------------------------------------------------
+47c  00086f21  leaf_length 8, crc 28449
+480  00000000  textual descriptor
+484  00000000  minimal ASCII
+488  46572041  "FW A"
+48c  7564696f  "udio"
+490  7068696c  "phil"
+494  6520426f  "e Bo"
+498  6f746c6f  "otlo"
+49c  61646572  "ader"
+
+With functional firmware:
+$ ./linux-firewire-utils/src/crpp < /sys/bus/firewire/devices/fw1/config_rom
+               ROM header and bus information block
+               -----------------------------------------------------------------
+400  042de16f  bus_info_length 4, crc_length 45, crc 57711
+404  31333934  bus_name "1394"
+408  f0648122  irmc 1, cmc 1, isc 1, bmc 1, pmc 0, cyc_clk_acc 100,
+               max_rec 8 (512), max_rom 1, gen 2, spd 2 (S400)
+40c  000d6c03  company_id 000d6c     |
+410  002b7e2e  device_id 03002b7e2e  | EUI-64 000d6c03002b7e2e
+
+               root directory
+               -----------------------------------------------------------------
+414  0009dac4  directory_length 9, crc 56004
+418  0400000d  hardware version
+41c  0c0083c0  node capabilities per IEEE 1394
+420  03000d6c  vendor
+424  81000012  --> descriptor leaf at 46c
+428  17010060  model
+42c  81000015  --> descriptor leaf at 480
+430  13ffffff  version
+434  d1000002  --> unit directory at 43c
+438  d4000006  --> dependent info directory at 450
+
+               unit directory at 43c
+               -----------------------------------------------------------------
+43c  00041eb9  directory_length 4, crc 7865
+440  1200a02d  specifier id: 1394 TA
+444  13014001  version: Vender Unique and AV/C
+448  17010060  model
+44c  81000014  --> descriptor leaf at 49c
+
+               dependent info directory at 450
+               -----------------------------------------------------------------
+450  000637c7  directory_length 6, crc 14279
+454  120007f5  specifier id
+458  13000001  version
+45c  3affffc7  (immediate value)
+460  3b100000  (immediate value)
+464  3cffffc7  (immediate value)
+468  3d600000  (immediate value)
+
+               descriptor leaf at 46c
+               -----------------------------------------------------------------
+46c  0004b8e4  leaf_length 4, crc 47332
+470  00000000  textual descriptor
+474  00000000  minimal ASCII
+478  4d2d4175  "M-Au"
+47c  64696f00  "dio"
+
+               descriptor leaf at 480
+               -----------------------------------------------------------------
+480  0006194b  leaf_length 6, crc 6475
+484  00000000  textual descriptor
+488  00000000  minimal ASCII
+48c  46572041  "FW A"
+490  7564696f  "udio"
+494  7068696c  "phil"
+498  65000000  "e"
+
+               descriptor leaf at 49c
+               -----------------------------------------------------------------
+49c  0006194b  leaf_length 6, crc 6475
+4a0  00000000  textual descriptor
+4a4  00000000  minimal ASCII
+4a8  46572041  "FW A"
+4ac  7564696f  "udio"
+4b0  7068696c  "phil"
+4b4  65000000  "e"
+
+Reported-by: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Reported-by: Joe Perches <joe@perches.com>
+Signed-off-by: Takashi Sakamoto <o-takashi@sakamocchi.jp>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+Sent-upstream: https://git.kernel.org/cgit/linux/kernel/git/tiwai/sound.git/commit/sound/firewire/bebob/bebob.c?id=2e57069c869f3009ae70a429d6719a545de43522
+---
+ sound/firewire/bebob/bebob.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sound/firewire/bebob/bebob.c b/sound/firewire/bebob/bebob.c
+index 3469ac14c89c..730ea91d9be8 100644
+--- a/sound/firewire/bebob/bebob.c
++++ b/sound/firewire/bebob/bebob.c
+@@ -172,12 +172,12 @@ get_saffire_spec(struct fw_unit *unit)
+ static bool
+ check_audiophile_booted(struct fw_unit *unit)
+ {
+-	char name[24] = {0};
++	char name[28] = {0};
+ 
+ 	if (fw_csr_string(unit->directory, CSR_MODEL, name, sizeof(name)) < 0)
+ 		return false;
+ 
+-	return strncmp(name, "FW Audiophile Bootloader", 15) != 0;
++	return strncmp(name, "FW Audiophile Bootloader", 24) != 0;
+ }
+ 
+ static void
+-- 
