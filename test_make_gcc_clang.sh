@@ -84,10 +84,8 @@ fi
 
 msg_green 'Compiling with gcc and clang succeded :)'
 
-LOGFILE="make.log_clang_$(date '+%Y-%m-%d')"
-echo "Compiling with clang and logging to $LOGFILE"
+# Remove the output directory to free space
 rm -r "$KBUILD_OUTPUT"
-set_title 'Linux:clang with log'
-./make_allmodconfig.sh -j1 -k > "$LOGFILE" 2>&1 || exit $?
+
 msg_green 'All done :)'
 set_title 'Linux:done :)'
