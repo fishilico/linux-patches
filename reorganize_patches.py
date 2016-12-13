@@ -50,10 +50,19 @@ def get_patch_path(patchdir, name):
                 subject = matches.group(1)
             if line.startswith('Sent-upstream:'):
                 directory = 'sent-upstream'
-    if subject is None:
+    if not subject:
         sys.stderr.write("Error: unable to read the subject of patch {}\n"
                          .format(name))
         return None
+
+    subject = subject.strip()
+
+    # If the subject starts with a bracket (eg. [media]), git removes it when
+    # applying the patch, which leads to information loss.
+    # This can be fixed by adding tag {SENT} for example.
+    if subject.startswith('['):
+        sys.stderr.write("Warning: subject of patch {} starts with a bracket\n"
+                         .format(name))
 
     # Find a suitable directory, for the topic of the patch
     KNOWN_TOPICS = {
