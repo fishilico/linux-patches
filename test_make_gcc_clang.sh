@@ -67,6 +67,23 @@ do_build_test() {
     do_build_test clang
 ) || exit $?
 
+# Then compile again with gcc in 32-bit mode,
+# when linking with libcrypto works (needs lib32-openssl).
+# Do not use clang as it does not work yet
+# (cf. https://lists.linuxfoundation.org/pipermail/llvmlinux/2014-December/001133.html)
+echo 'int main(void){return 0;}' > "$KBUILD_OUTPUT/libcryptotest.c"
+if gcc -m32 -Werror "$KBUILD_OUTPUT/libcryptotest.c" -o "$KBUILD_OUTPUT/libcryptotest" -lcrypto
+then
+    # shellcheck disable=SC2030,SC2031
+    (
+        export ARCH='i386'
+        export CC='gcc -m32'
+        export HOSTCC='gcc -m32'
+        export HOSTCXX='g++ -m32'
+        do_build_test 'gcc-32'
+    ) || exit $?
+fi
+
 # Now compile for ARM architecture if the compiler is found
 if [ "$(uname -m)" = "x86_64" ] && which arm-none-eabi-gcc > /dev/null 2>&1
 then
