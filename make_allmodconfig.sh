@@ -102,6 +102,7 @@ then
     KCFLAGS="$KCFLAGS -Wno-disabled-macro-expansion" # "inline" macro is recursive
     KCFLAGS="$KCFLAGS -Wno-documentation" # don't check documentation strings
     KCFLAGS="$KCFLAGS -Wno-documentation-unknown-command" # don't check documentation strings
+    KCFLAGS="$KCFLAGS -Wno-duplicate-decl-specifier" # "const typeof(var)" creates false positives in many places
     KCFLAGS="$KCFLAGS -Wno-empty-translation-unit" # scripts/mod/empty.c is empty
     KCFLAGS="$KCFLAGS -Wno-extended-offsetof" # Use offsetof(type, field.subfield)
     KCFLAGS="$KCFLAGS -Wno-format-invalid-specifier" # clang doesn't know about %Zu
