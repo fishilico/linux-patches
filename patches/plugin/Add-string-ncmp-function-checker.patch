@@ -4,10 +4,10 @@ Date: Sat, 8 Oct 2016 14:56:19 +0200
 Subject: [PATCH] {PLUGIN} Add string ncmp function checker
 
 This plugins helped to detect the following bugs:
-- (not yet upstreamed) bad strncmp() call in
-  sound/firewire/bebob/bebob.c
-- (not yet upstreamed) bad strncmp() call in
-  drivers/net/wireless/ath/ath10k/spectral.c
+- 2e57069c869f ("ALSA: bebob: compare whole string for model name so
+  that readers are not confused")
+- 31b239824ece ("ath10k: use the right length of "background"")
+- 2d9a02744f5a ("nvdimm: use the right length of "pmem"")
 ---
  arch/Kconfig                                  |   6 +
  drivers/nvme/target/core.c                    |   4 +-
@@ -19,10 +19,10 @@ This plugins helped to detect the following bugs:
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index c879f2f3e216..e22f06ecd622 100644
+index 898e95dbe155..22aa9d04678f 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -413,6 +413,12 @@ config GCC_PLUGIN_DEREF_CHECKER
+@@ -422,6 +422,12 @@ config GCC_PLUGIN_DEREF_CHECKER
  	help
  	  Check function calls involving pointers about some consistencies.
  
@@ -36,10 +36,10 @@ index c879f2f3e216..e22f06ecd622 100644
  	bool
  	help
 diff --git a/drivers/nvme/target/core.c b/drivers/nvme/target/core.c
-index a21437a33adb..3e85f496d385 100644
+index b1d66ed655c9..2b85c9d58e5f 100644
 --- a/drivers/nvme/target/core.c
 +++ b/drivers/nvme/target/core.c
-@@ -856,8 +856,8 @@ static struct nvmet_subsys *nvmet_find_get_subsys(struct nvmet_port *port,
+@@ -858,8 +858,8 @@ static struct nvmet_subsys *nvmet_find_get_subsys(struct nvmet_port *port,
  	if (!port)
  		return NULL;
  
@@ -51,7 +51,7 @@ index a21437a33adb..3e85f496d385 100644
  			return NULL;
  		return nvmet_disc_subsys;
 diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index 88c237f8f692..c6c97ecbef3d 100644
+index f5d036abc423..3fcb7c3c8dde 100644
 --- a/drivers/scsi/scsi_sysfs.c
 +++ b/drivers/scsi/scsi_sysfs.c
 @@ -114,7 +114,7 @@ static int check_set(unsigned long long *val, char *src)
@@ -64,7 +64,7 @@ index 88c237f8f692..c6c97ecbef3d 100644
  	} else {
  		/*
 diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
-index d1f2794084ff..9949626c93ca 100644
+index 5a16bfa0b430..0ce9b956efce 100644
 --- a/drivers/staging/fbtft/fbtft_device.c
 +++ b/drivers/staging/fbtft/fbtft_device.c
 @@ -1468,7 +1468,8 @@ static int __init fbtft_device_init(void)

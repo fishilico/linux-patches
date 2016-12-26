@@ -5,7 +5,6 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  reported by clang
 
 ---
- arch/x86/kernel/crash.c                                   | 2 +-
  arch/x86/kernel/hw_breakpoint.c                           | 1 +
  drivers/acpi/sysfs.c                                      | 2 ++
  drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c     | 4 ++++
@@ -14,7 +13,6 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c                   | 1 +
  drivers/iio/common/ssp_sensors/ssp_iio.c                  | 3 ++-
  drivers/md/bcache/alloc.c                                 | 2 +-
- drivers/media/platform/am437x/am437x-vpfe.c               | 4 +++-
  drivers/media/radio/radio-si476x.c                        | 6 ++++--
  drivers/media/tuners/tda8290.c                            | 2 ++
  drivers/misc/qcom-coincell.c                              | 4 ++++
@@ -36,21 +34,8 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  net/mac80211/mlme.c                                       | 2 +-
  net/mac80211/tx.c                                         | 2 +-
  net/tipc/socket.c                                         | 3 ++-
- 31 files changed, 53 insertions(+), 24 deletions(-)
+ 29 files changed, 49 insertions(+), 22 deletions(-)
 
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 650830e39e3a..574a7ff16781 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -632,7 +632,7 @@ static int determine_backup_region(u64 start, u64 end, void *arg)
- int crash_load_segments(struct kimage *image)
- {
- 	unsigned long src_start, src_sz, elf_sz;
--	void *elf_addr;
-+	void *elf_addr = NULL; /* gcc -Wmaybe-uninitialized false positive */
- 	int ret;
- 
- 	/*
 diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
 index 8771766d46b6..df760ec0e44e 100644
 --- a/arch/x86/kernel/hw_breakpoint.c
@@ -77,7 +62,7 @@ index 703c26e7022c..ee287c3fe852 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
-index ccf7ebeaf892..c383a4998e00 100644
+index a4e9cf429e62..9b181eb3aac5 100644
 --- a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 +++ b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 @@ -1032,6 +1032,10 @@ static int init_overdrive_limits(struct pp_hwmgr *hwmgr,
@@ -92,10 +77,10 @@ index ccf7ebeaf892..c383a4998e00 100644
  	if (hwmgr->platform_descriptor.overdriveLimit.engineClock > 0
  		&& hwmgr->platform_descriptor.overdriveLimit.memoryClock > 0
 diff --git a/drivers/gpu/drm/i915/i915_gem_request.c b/drivers/gpu/drm/i915/i915_gem_request.c
-index 8832f8ec1583..ca7a7d6ae28b 100644
+index b8f403faadbb..62d8e9abb65b 100644
 --- a/drivers/gpu/drm/i915/i915_gem_request.c
 +++ b/drivers/gpu/drm/i915/i915_gem_request.c
-@@ -689,7 +689,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
+@@ -938,7 +938,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
@@ -156,22 +141,6 @@ index ca4abe1ccd8d..f276234199ea 100644
  
  			fifo_pop(&ca->free_inc, bucket);
  
-diff --git a/drivers/media/platform/am437x/am437x-vpfe.c b/drivers/media/platform/am437x/am437x-vpfe.c
-index b33b9e35e60e..1b2d5d0c342c 100644
---- a/drivers/media/platform/am437x/am437x-vpfe.c
-+++ b/drivers/media/platform/am437x/am437x-vpfe.c
-@@ -1588,8 +1588,10 @@ static int vpfe_s_fmt(struct file *file, void *priv,
- 		ret = __vpfe_set_format(vpfe, fmt, &bpp);
- 		if (ret)
- 			return ret;
--	} else /* Just make sure all of the fields are consistent */
-+	} else { /* Just make sure all of the fields are consistent */
- 		*fmt = format;
-+		bpp = 0; /* BUG! */
-+	}
- 
- 	/* First detach any IRQ if currently attached */
- 	vpfe_detach_irq(vpfe);
 diff --git a/drivers/media/radio/radio-si476x.c b/drivers/media/radio/radio-si476x.c
 index 271f725b17e8..66e5583ca1c4 100644
 --- a/drivers/media/radio/radio-si476x.c
@@ -197,7 +166,7 @@ index 271f725b17e8..66e5583ca1c4 100644
  	if (rangelow > rangehigh) {
  		err = -EINVAL;
 diff --git a/drivers/media/tuners/tda8290.c b/drivers/media/tuners/tda8290.c
-index 998e82bba9c0..6d808b52ed32 100644
+index a59c567c55d6..3e3bd78a0676 100644
 --- a/drivers/media/tuners/tda8290.c
 +++ b/drivers/media/tuners/tda8290.c
 @@ -240,6 +240,8 @@ static void tda8290_set_params(struct dvb_frontend *fe,
@@ -238,10 +207,10 @@ index 6956f7e7d439..b5ddd77d01a9 100644
  	enum xp_retval (*get_partition_rsvd_page_pa)
  		(void *, u64 *, unsigned long *, size_t *) =
 diff --git a/drivers/net/ethernet/sun/niu.c b/drivers/net/ethernet/sun/niu.c
-index a2371aa14a49..319d647d356a 100644
+index f90d1af6d390..7bca110e64af 100644
 --- a/drivers/net/ethernet/sun/niu.c
 +++ b/drivers/net/ethernet/sun/niu.c
-@@ -7486,6 +7486,7 @@ static int niu_add_ethtool_tcam_entry(struct niu *np,
+@@ -7483,6 +7483,7 @@ static int niu_add_ethtool_tcam_entry(struct niu *np,
  					class = CLASS_CODE_USER_PROG4;
  					break;
  				default:
@@ -292,19 +261,19 @@ index 2fb30deee345..c2fbc56794fc 100644
  			"failed to configure timebase steps/divider value\n");
  		return -EINVAL;
 diff --git a/drivers/scsi/qla2xxx/qla_mr.c b/drivers/scsi/qla2xxx/qla_mr.c
-index 15dff7099955..5c2cf5586489 100644
+index 02f1de18bc2b..dbf5fb0697df 100644
 --- a/drivers/scsi/qla2xxx/qla_mr.c
 +++ b/drivers/scsi/qla2xxx/qla_mr.c
-@@ -2224,6 +2224,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
+@@ -2226,6 +2226,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
  		if (iocb_job->u.fxiocb.flags & SRB_FXDISC_RSP_DWRD_VALID)
  			iocb_job->u.fxiocb.req_data =
  			    pkt->dataword_r;
-+		res = iocb_job->u.fxiocb.result; /* BUG? */
++		res = iocb_job->u.fxiocb.result; /* BUG? Not important because qla2x00_fxdisc_sp_done does not use res */
  	} else {
  		bsg_job = sp->u.bsg_job;
- 
+ 		bsg_reply = bsg_job->reply;
 diff --git a/drivers/scsi/qla4xxx/ql4_os.c b/drivers/scsi/qla4xxx/ql4_os.c
-index 01c3610a60cf..d91be37a3004 100644
+index 9fbb33fc90c7..158ceeb897e7 100644
 --- a/drivers/scsi/qla4xxx/ql4_os.c
 +++ b/drivers/scsi/qla4xxx/ql4_os.c
 @@ -5873,7 +5873,7 @@ static void qla4xxx_boot_release(void *data)
@@ -312,7 +281,7 @@ index 01c3610a60cf..d91be37a3004 100644
  static int get_fw_boot_info(struct scsi_qla_host *ha, uint16_t ddb_index[])
  {
 -	dma_addr_t buf_dma;
-+	dma_addr_t buf_dma = 0; /* BUG? */
++	dma_addr_t buf_dma = 0; /* False positive: always initialized by dma_alloc_coherent() when used */
  	uint32_t addr, pri_addr, sec_addr;
  	uint32_t offset;
  	uint16_t func_num;
@@ -331,10 +300,10 @@ index f7acbd650b23..0ece4599a12e 100644
  	cxacru_upload_firmware(instance, fw, bp);
  
 diff --git a/fs/btrfs/uuid-tree.c b/fs/btrfs/uuid-tree.c
-index 7fc89e4adb41..0cd94b6e730d 100644
+index 161342b73ce5..75e321df5b7c 100644
 --- a/fs/btrfs/uuid-tree.c
 +++ b/fs/btrfs/uuid-tree.c
-@@ -143,7 +143,8 @@ int btrfs_uuid_tree_add(struct btrfs_trans_handle *trans,
+@@ -144,7 +144,8 @@ int btrfs_uuid_tree_add(struct btrfs_trans_handle *trans,
  			   ret, (unsigned long long)key.objectid,
  			   (unsigned long long)key.offset, type);
  		goto out;
@@ -385,7 +354,7 @@ index 75a557432d0f..f43bc74aea02 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index 51b4e0de1fdc..581a170f0828 100644
+index f272abff11e1..ff44264d380b 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
 @@ -2030,7 +2030,7 @@ xfs_difree_finobt(
@@ -398,7 +367,7 @@ index 51b4e0de1fdc..581a170f0828 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 9b3d7c76915d..4726956583a2 100644
+index 9208296e9f15..a6ab5ee9d9a6 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
 @@ -1048,7 +1048,7 @@ xlog_verify_tail(
@@ -424,10 +393,10 @@ index 62a60eeacb0a..e1b0e4c7cd07 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/mm/filemap.c b/mm/filemap.c
-index 50b52fe51937..324262a132cc 100644
+index 82f26cde830c..51898f637e5a 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -659,7 +659,7 @@ static int __add_to_page_cache_locked(struct page *page,
+@@ -610,7 +610,7 @@ static int __add_to_page_cache_locked(struct page *page,
  				      void **shadowp)
  {
  	int huge = PageHuge(page);
@@ -437,10 +406,10 @@ index 50b52fe51937..324262a132cc 100644
  
  	VM_BUG_ON_PAGE(!PageLocked(page), page);
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 7486f2dab4ba..b672744cbf87 100644
+index 098ce9b179ee..f792c0649104 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1319,7 +1319,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
+@@ -1327,7 +1327,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
  {
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;
@@ -450,10 +419,10 @@ index 7486f2dab4ba..b672744cbf87 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index bd5f4be89435..be521e5e1044 100644
+index 2c21b7039136..6eb15e8b2bcd 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2370,7 +2370,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
+@@ -2369,7 +2369,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
  	bool tdls_peer;
  	bool multicast;
  	u16 info_id = 0;
@@ -463,10 +432,10 @@ index bd5f4be89435..be521e5e1044 100644
  	enum nl80211_band band;
  	int ret;
 diff --git a/net/tipc/socket.c b/net/tipc/socket.c
-index 41f013888f07..c6aef6ded4b3 100644
+index 333c5dae0072..387fec6f7ec2 100644
 --- a/net/tipc/socket.c
 +++ b/net/tipc/socket.c
-@@ -902,7 +902,8 @@ static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dsz)
+@@ -947,7 +947,8 @@ static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dsz)
  		msg_set_destnode(mhdr, dnode);
  		msg_set_destport(mhdr, dest->addr.id.ref);
  		msg_set_hdr_sz(mhdr, BASIC_H_SIZE);

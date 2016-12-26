@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 16 Dec 2016 15:44:04 +0100
+Subject: [PATCH] {BUG in 4.10-rc1} kprobes/trace: fix __init position
+
+clang complains:
+
+    kernel/trace/trace_kprobe.c:1380:15: error: '__section__' attribute
+    only applies to functions and global variables
+    static struct __init trace_event_file *
+                  ^
+
+Fixes: d4d7ccc834fe ("kprobes/trace: Fix kprobe selftest for newer gcc")
+---
+ kernel/trace/trace_kprobe.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index 8826fcd6e965..b24cf97b80d1 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -1377,7 +1377,7 @@ kprobe_trace_selftest_target(int a1, int a2, int a3, int a4, int a5, int a6)
+ 	return a1 + a2 + a3 + a4 + a5 + a6;
+ }
+ 
+-static struct __init trace_event_file *
++static __init struct trace_event_file *
+ find_trace_probe_file(struct trace_kprobe *tk, struct trace_array *tr)
+ {
+ 	struct trace_event_file *file;
+-- 

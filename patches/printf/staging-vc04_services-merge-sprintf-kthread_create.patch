@@ -1,0 +1,122 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 16 Dec 2016 09:44:44 +0100
+Subject: [PATCH] {PRINTF} staging: vc04_services: merge sprintf+kthread_create
+ calls
+
+This silents a -Wformat-security warning found by clang:
+
+    drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c:2881:5:
+    error: format string is not a string literal (potentially insecure)
+    [-Werror,-Wformat-security]
+                                    threadname);
+                                    ^~~~~~~~~~
+    include/linux/kthread.h:25:55: note: expanded from macro
+    'kthread_create'
+            kthread_create_on_node(threadfn, data, NUMA_NO_NODE, namefmt, ##arg)
+                                                                 ^~~~~~~
+    drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c:2881:5:
+    note: treat the string as an argument to avoid this
+                                    threadname);
+                                    ^
+                                    "%s",
+    include/linux/kthread.h:25:55: note: expanded from macro
+    'kthread_create'
+            kthread_create_on_node(threadfn, data, NUMA_NO_NODE, namefmt, ##arg)
+                                                                 ^
+---
+ .../vc04_services/interface/vchiq_arm/vchiq_arm.c     | 10 ++++------
+ .../vc04_services/interface/vchiq_arm/vchiq_core.c    | 19 +++++++++----------
+ 2 files changed, 13 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
+index 0d987898b4f8..76c059283581 100644
+--- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
++++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
+@@ -2870,19 +2870,17 @@ void vchiq_platform_conn_state_changed(VCHIQ_STATE_T *state,
+ 	if (state->conn_state == VCHIQ_CONNSTATE_CONNECTED) {
+ 		write_lock_bh(&arm_state->susp_res_lock);
+ 		if (!arm_state->first_connect) {
+-			char threadname[10];
+ 			arm_state->first_connect = 1;
+ 			write_unlock_bh(&arm_state->susp_res_lock);
+-			snprintf(threadname, sizeof(threadname), "VCHIQka-%d",
+-				state->id);
+ 			arm_state->ka_thread = kthread_create(
+ 				&vchiq_keepalive_thread_func,
+ 				(void *)state,
+-				threadname);
++				"VCHIQka-%d",
++				state->id);
+ 			if (IS_ERR(arm_state->ka_thread)) {
+ 				vchiq_log_error(vchiq_susp_log_level,
+-					"vchiq: FATAL: couldn't create thread %s",
+-					threadname);
++					"vchiq: FATAL: couldn't create thread VCHIQka-%d",
++					state->id);
+ 			} else {
+ 				wake_up_process(arm_state->ka_thread);
+ 			}
+diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
+index 028e90bc1cdc..2b62f95e4c7d 100644
+--- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
++++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
+@@ -2317,7 +2317,6 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+ 	VCHIQ_SHARED_STATE_T *local;
+ 	VCHIQ_SHARED_STATE_T *remote;
+ 	VCHIQ_STATUS_T status;
+-	char threadname[10];
+ 	static int id;
+ 	int i;
+ 
+@@ -2485,40 +2484,40 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+ 	/*
+ 		bring up slot handler thread
+ 	 */
+-	snprintf(threadname, sizeof(threadname), "VCHIQ-%d", state->id);
+ 	state->slot_handler_thread = kthread_create(&slot_handler_func,
+ 		(void *)state,
+-		threadname);
++		"VCHIQ-%d",
++		state->id);
+ 
+ 	if (IS_ERR(state->slot_handler_thread)) {
+ 		vchiq_loud_error_header();
+-		vchiq_loud_error("couldn't create thread %s", threadname);
++		vchiq_loud_error("couldn't create thread VCHIQ-%d", state->id);
+ 		vchiq_loud_error_footer();
+ 		return VCHIQ_ERROR;
+ 	}
+ 	set_user_nice(state->slot_handler_thread, -19);
+ 	wake_up_process(state->slot_handler_thread);
+ 
+-	snprintf(threadname, sizeof(threadname), "VCHIQr-%d", state->id);
+ 	state->recycle_thread = kthread_create(&recycle_func,
+ 		(void *)state,
+-		threadname);
++		"VCHIQr-%d",
++		state->id);
+ 	if (IS_ERR(state->recycle_thread)) {
+ 		vchiq_loud_error_header();
+-		vchiq_loud_error("couldn't create thread %s", threadname);
++		vchiq_loud_error("couldn't create thread VCHIQr-%d", state->id);
+ 		vchiq_loud_error_footer();
+ 		return VCHIQ_ERROR;
+ 	}
+ 	set_user_nice(state->recycle_thread, -19);
+ 	wake_up_process(state->recycle_thread);
+ 
+-	snprintf(threadname, sizeof(threadname), "VCHIQs-%d", state->id);
+ 	state->sync_thread = kthread_create(&sync_func,
+ 		(void *)state,
+-		threadname);
++		"VCHIQs-%d",
++		state->id);
+ 	if (IS_ERR(state->sync_thread)) {
+ 		vchiq_loud_error_header();
+-		vchiq_loud_error("couldn't create thread %s", threadname);
++		vchiq_loud_error("couldn't create thread VCHIQs-%d", state->id);
+ 		vchiq_loud_error_footer();
+ 		return VCHIQ_ERROR;
+ 	}
+-- 

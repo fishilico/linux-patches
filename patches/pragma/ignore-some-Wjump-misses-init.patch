@@ -10,12 +10,11 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
  mm/mmap.c             | 4 ++++
  net/core/skbuff.c     | 4 ++++
  net/ipv4/fib_trie.c   | 3 +++
- net/ipv4/tcp_ipv4.c   | 1 +
  net/sched/cls_u32.c   | 4 ++++
- 8 files changed, 28 insertions(+)
+ 7 files changed, 27 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 170421edfdfe..50b6f7dc7ab0 100644
+index e57e8d90ea54..0dbc5828e88c 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
 @@ -459,6 +459,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
@@ -37,10 +36,10 @@ index 170421edfdfe..50b6f7dc7ab0 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index 8199821f54cf..56972d91afb0 100644
+index 83ed2f8f6f22..3077f7acb973 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -2577,6 +2577,9 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -2646,6 +2646,9 @@ static int do_check(struct bpf_verifier_env *env)
  	int insn_processed = 0;
  	bool do_print_state = false;
  
@@ -50,7 +49,7 @@ index 8199821f54cf..56972d91afb0 100644
  	init_reg_state(regs);
  	insn_idx = 0;
  	env->varlen_map_value_access = false;
-@@ -2842,6 +2845,7 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -2911,6 +2914,7 @@ static int do_check(struct bpf_verifier_env *env)
  
  	verbose("processed %d insns\n", insn_processed);
  	return 0;
@@ -81,7 +80,7 @@ index 32d0ad058380..da07741857a3 100644
  			iter->skip++;
  			iter->p = p;
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 1af87c14183d..3f9370b2a075 100644
+index dc4291dcc99b..495df35bed4f 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
 @@ -675,6 +675,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
@@ -103,7 +102,7 @@ index 1af87c14183d..3f9370b2a075 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 1e3e0087245b..7c3163849937 100644
+index 5a03730fbc1a..d7de80859df4 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
 @@ -1506,6 +1506,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
@@ -125,10 +124,10 @@ index 1e3e0087245b..7c3163849937 100644
  		for (; i < nfrags; i++)
  			skb_frag_unref(skb, i);
 diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
-index f10f70374092..937a2e9b11a8 100644
+index 2178b88f4d64..1a142ea340eb 100644
 --- a/net/ipv4/fib_trie.c
 +++ b/net/ipv4/fib_trie.c
-@@ -1313,6 +1313,8 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1402,6 +1402,8 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->gets);
  #endif
  
@@ -137,7 +136,7 @@ index f10f70374092..937a2e9b11a8 100644
  	/* Step 1: Travel to the longest prefix match in the trie */
  	for (;;) {
  		index = get_cindex(key, n);
-@@ -1476,6 +1478,7 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1565,6 +1567,7 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->semantic_match_miss);
  #endif
  	goto backtrace;
@@ -145,18 +144,6 @@ index f10f70374092..937a2e9b11a8 100644
  }
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
-diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index 2259114c7242..7799e4ce6b47 100644
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -1925,6 +1925,7 @@ static void *listening_get_next(struct seq_file *seq, void *cur)
- 		if (sk->sk_family == st->family)
- 			return sk;
- 	}
-+#pragma GCC diagnostic pop
- 	spin_unlock_bh(&ilb->lock);
- 	st->offset = 0;
- 	if (++st->bucket < INET_LHTABLE_SIZE)
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
 index ae83c3aec308..e4d7fecdfad0 100644
 --- a/net/sched/cls_u32.c

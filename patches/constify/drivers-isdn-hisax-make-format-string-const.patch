@@ -4,15 +4,15 @@ Date: Sat, 8 Oct 2016 14:59:10 +0200
 Subject: [PATCH] {CONSTIFY} drivers/isdn/hisax: make format string const
 
 ---
- drivers/isdn/hisax/callc.c  |  4 ++--
- drivers/isdn/hisax/config.c | 22 ++++++++++++----------
- drivers/isdn/hisax/hisax.h  |  6 +++---
- drivers/isdn/hisax/isdnl1.c |  4 ++--
- drivers/isdn/hisax/isdnl1.h |  2 +-
- drivers/isdn/hisax/isdnl2.c |  4 ++--
- drivers/isdn/hisax/isdnl3.c |  2 +-
- drivers/isdn/hisax/tei.c    |  2 +-
- 8 files changed, 24 insertions(+), 22 deletions(-)
+ drivers/isdn/hisax/callc.c  | 4 ++--
+ drivers/isdn/hisax/config.c | 4 ++--
+ drivers/isdn/hisax/hisax.h  | 6 +++---
+ drivers/isdn/hisax/isdnl1.c | 4 ++--
+ drivers/isdn/hisax/isdnl1.h | 2 +-
+ drivers/isdn/hisax/isdnl2.c | 4 ++--
+ drivers/isdn/hisax/isdnl3.c | 2 +-
+ drivers/isdn/hisax/tei.c    | 2 +-
+ 8 files changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/isdn/hisax/callc.c b/drivers/isdn/hisax/callc.c
 index ddec47a911a0..d6a81958577e 100644
@@ -37,59 +37,29 @@ index ddec47a911a0..d6a81958577e 100644
  	va_list args;
  	struct Channel *chanp = fi->userdata;
 diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.c
-index 896ab91a2d01..17e89bec2bea 100644
+index 53a86c335e6d..ec78d30fcf6c 100644
 --- a/drivers/isdn/hisax/config.c
 +++ b/drivers/isdn/hisax/config.c
-@@ -659,14 +659,15 @@ int jiftime(char *s, long mark)
+@@ -659,7 +659,7 @@ int jiftime(char *s, long mark)
  
  static u_char tmpbuf[HISAX_STATUS_BUFSIZE];
  
--void VHiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt,
--		      va_list args)
-+void VHiSax_putstatus(struct IsdnCardState *cs, const char *head,
-+		      const char *fmt, va_list args)
+-void VHiSax_putstatus(struct IsdnCardState *cs, char *head, const char *fmt,
++void VHiSax_putstatus(struct IsdnCardState *cs, const char *head, const char *fmt,
+ 		      va_list args)
  {
  	/* if head == NULL the fmt contains the full info */
- 
- 	u_long		flags;
- 	int		count, i;
--	u_char		*p;
-+	u_char		*nonconst_p;
-+	const u_char	*p;
- 	isdn_ctrl	ic;
- 	int		len;
- 
-@@ -677,12 +678,13 @@ void VHiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt,
- 	spin_lock_irqsave(&cs->statlock, flags);
- 	p = tmpbuf;
- 	if (head) {
--		p += jiftime(p, jiffies);
--		p += sprintf(p, " %s", head);
--		p += vsprintf(p, fmt, args);
--		*p++ = '\n';
--		*p = 0;
--		len = p - tmpbuf;
-+		nonconst_p = tmpbuf;
-+		nonconst_p += jiftime(nonconst_p, jiffies);
-+		nonconst_p += sprintf(nonconst_p, " %s", head);
-+		nonconst_p += vsprintf(nonconst_p, fmt, args);
-+		*nonconst_p++ = '\n';
-+		*nonconst_p = 0;
-+		len = nonconst_p - tmpbuf;
- 		p = tmpbuf;
- 	} else {
- 		p = fmt;
-@@ -729,7 +731,7 @@ void VHiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt,
+@@ -729,7 +729,7 @@ void VHiSax_putstatus(struct IsdnCardState *cs, char *head, const char *fmt,
  	}
  }
  
--void HiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt, ...)
+-void HiSax_putstatus(struct IsdnCardState *cs, char *head, const char *fmt, ...)
 +void HiSax_putstatus(struct IsdnCardState *cs, const char *head, const char *fmt, ...)
  {
  	va_list args;
  
 diff --git a/drivers/isdn/hisax/hisax.h b/drivers/isdn/hisax/hisax.h
-index 7365b32a6a45..d4f7a847ae0a 100644
+index 01deefb7e515..d4f7a847ae0a 100644
 --- a/drivers/isdn/hisax/hisax.h
 +++ b/drivers/isdn/hisax/hisax.h
 @@ -179,7 +179,7 @@ struct FsmInst {
@@ -105,10 +75,10 @@ index 7365b32a6a45..d4f7a847ae0a 100644
  int HiSax_command(isdn_ctrl *ic);
  int HiSax_writebuf_skb(int id, int chan, int ack, struct sk_buff *skb);
  __printf(3, 4)
--void HiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt, ...);
+-void HiSax_putstatus(struct IsdnCardState *cs, char *head, const char *fmt, ...);
 +void HiSax_putstatus(struct IsdnCardState *cs, const char *head, const char *fmt, ...);
  __printf(3, 0)
--void VHiSax_putstatus(struct IsdnCardState *cs, char *head, char *fmt, va_list args);
+-void VHiSax_putstatus(struct IsdnCardState *cs, char *head, const char *fmt, va_list args);
 +void VHiSax_putstatus(struct IsdnCardState *cs, const char *head, const char *fmt, va_list args);
  void HiSax_reportcard(int cardnr, int sel);
  int QuickHex(char *txt, u_char *p, int cnt);
