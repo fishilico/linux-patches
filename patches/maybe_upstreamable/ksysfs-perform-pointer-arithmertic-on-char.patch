@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 29 Dec 2016 11:14:12 +0100
+Subject: [PATCH] {MAYBE UPS} ksysfs: perform pointer arithmertic on char[]
+ instead of void*
+
+Frama-C does not like using void* types:
+
+     kernel/ksysfs.c:194:[kernel] failure: lvalue of type void:
+     __start_notes
+---
+ kernel/ksysfs.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
+index ee1bc1bb8feb..ff0b5c4988ad 100644
+--- a/kernel/ksysfs.c
++++ b/kernel/ksysfs.c
+@@ -183,15 +183,15 @@ KERNEL_ATTR_RW(rcu_normal);
+ /*
+  * Make /sys/kernel/notes give the raw contents of our kernel .notes section.
+  */
+-extern const void __start_notes __weak;
+-extern const void __stop_notes __weak;
+-#define	notes_size (&__stop_notes - &__start_notes)
++extern const char __start_notes[] __weak;
++extern const char __stop_notes[] __weak;
++#define	notes_size ((size_t)(__stop_notes - __start_notes))
+ 
+ static ssize_t notes_read(struct file *filp, struct kobject *kobj,
+ 			  struct bin_attribute *bin_attr,
+ 			  char *buf, loff_t off, size_t count)
+ {
+-	memcpy(buf, &__start_notes + off, count);
++	memcpy(buf, __start_notes + off, count);
+ 	return count;
+ }
+ 
+-- 

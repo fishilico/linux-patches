@@ -1,0 +1,83 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 29 Dec 2016 12:32:09 +0100
+Subject: [PATCH] {MAYBE UPS} include/linux/poison.h: do not operate on void*
+ ponters
+
+Some static C analyzers complain about pointer arithmetics on void*
+pointers. For example Frama-C reports:
+
+    kernel/irq/spurious.c:23:[kernel] warning: using size of 'void'
+    lib/random32.c:217:[kernel] warning: using size of 'void'
+
+Include some parentheses to prevent such warnings.
+---
+ include/linux/poison.h       | 8 ++++----
+ tools/include/linux/poison.h | 8 ++++----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/include/linux/poison.h b/include/linux/poison.h
+index 51334edec506..96d617791824 100644
+--- a/include/linux/poison.h
++++ b/include/linux/poison.h
+@@ -19,15 +19,15 @@
+  * under normal circumstances, used to verify that nobody uses
+  * non-initialized list entries.
+  */
+-#define LIST_POISON1  ((void *) 0x100 + POISON_POINTER_DELTA)
+-#define LIST_POISON2  ((void *) 0x200 + POISON_POINTER_DELTA)
++#define LIST_POISON1  ((void *) (0x100 + POISON_POINTER_DELTA))
++#define LIST_POISON2  ((void *) (0x200 + POISON_POINTER_DELTA))
+ 
+ /********** include/linux/timer.h **********/
+ /*
+  * Magic number "tsta" to indicate a static timer initializer
+  * for the object debugging code.
+  */
+-#define TIMER_ENTRY_STATIC	((void *) 0x300 + POISON_POINTER_DELTA)
++#define TIMER_ENTRY_STATIC	((void *) (0x300 + POISON_POINTER_DELTA))
+ 
+ /********** mm/debug-pagealloc.c **********/
+ #ifdef CONFIG_PAGE_POISONING_ZERO
+@@ -38,7 +38,7 @@
+ 
+ /********** mm/page_alloc.c ************/
+ 
+-#define TAIL_MAPPING	((void *) 0x400 + POISON_POINTER_DELTA)
++#define TAIL_MAPPING	((void *) (0x400 + POISON_POINTER_DELTA))
+ 
+ /********** mm/slab.c **********/
+ /*
+diff --git a/tools/include/linux/poison.h b/tools/include/linux/poison.h
+index 51334edec506..96d617791824 100644
+--- a/tools/include/linux/poison.h
++++ b/tools/include/linux/poison.h
+@@ -19,15 +19,15 @@
+  * under normal circumstances, used to verify that nobody uses
+  * non-initialized list entries.
+  */
+-#define LIST_POISON1  ((void *) 0x100 + POISON_POINTER_DELTA)
+-#define LIST_POISON2  ((void *) 0x200 + POISON_POINTER_DELTA)
++#define LIST_POISON1  ((void *) (0x100 + POISON_POINTER_DELTA))
++#define LIST_POISON2  ((void *) (0x200 + POISON_POINTER_DELTA))
+ 
+ /********** include/linux/timer.h **********/
+ /*
+  * Magic number "tsta" to indicate a static timer initializer
+  * for the object debugging code.
+  */
+-#define TIMER_ENTRY_STATIC	((void *) 0x300 + POISON_POINTER_DELTA)
++#define TIMER_ENTRY_STATIC	((void *) (0x300 + POISON_POINTER_DELTA))
+ 
+ /********** mm/debug-pagealloc.c **********/
+ #ifdef CONFIG_PAGE_POISONING_ZERO
+@@ -38,7 +38,7 @@
+ 
+ /********** mm/page_alloc.c ************/
+ 
+-#define TAIL_MAPPING	((void *) 0x400 + POISON_POINTER_DELTA)
++#define TAIL_MAPPING	((void *) (0x400 + POISON_POINTER_DELTA))
+ 
+ /********** mm/slab.c **********/
+ /*
+-- 

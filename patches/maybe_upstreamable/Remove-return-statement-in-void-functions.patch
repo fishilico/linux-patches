@@ -9,13 +9,47 @@ Frama-C warning:
 
 Signed-off-by: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
 ---
+ drivers/base/cacheinfo.c    | 2 +-
+ drivers/base/class.c        | 2 +-
  fs/fs-writeback.c           | 2 +-
+ include/asm-generic/tlb.h   | 2 +-
  include/linux/clockchips.h  | 2 +-
  include/linux/crypto.h      | 2 +-
  include/linux/device.h      | 2 +-
+ include/linux/dma-mapping.h | 4 ++--
+ include/linux/ratelimit.h   | 2 +-
+ include/linux/rhashtable.h  | 6 +++---
  include/linux/timekeeping.h | 2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ lib/rhashtable.c            | 2 +-
+ mm/page_alloc.c             | 4 ++--
+ 13 files changed, 17 insertions(+), 17 deletions(-)
 
+diff --git a/drivers/base/cacheinfo.c b/drivers/base/cacheinfo.c
+index eb3af2739537..6ae29caa5617 100644
+--- a/drivers/base/cacheinfo.c
++++ b/drivers/base/cacheinfo.c
+@@ -287,7 +287,7 @@ static void cache_shared_cpu_map_remove(unsigned int cpu)
+ static void cache_override_properties(unsigned int cpu)
+ {
+ 	if (of_have_populated_dt())
+-		return cache_of_override_properties(cpu);
++		cache_of_override_properties(cpu);
+ }
+ 
+ static void free_cache_attributes(unsigned int cpu)
+diff --git a/drivers/base/class.c b/drivers/base/class.c
+index a2b2896693d6..2897d5995163 100644
+--- a/drivers/base/class.c
++++ b/drivers/base/class.c
+@@ -172,7 +172,7 @@ static int class_add_groups(struct class *cls,
+ static void class_remove_groups(struct class *cls,
+ 				const struct attribute_group **groups)
+ {
+-	return sysfs_remove_groups(&cls->p->subsys.kobj, groups);
++	sysfs_remove_groups(&cls->p->subsys.kobj, groups);
+ }
+ 
+ int __class_register(struct class *cls, struct lock_class_key *key)
 diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
 index ef600591d96f..4c6f48ce42a6 100644
 --- a/fs/fs-writeback.c
@@ -29,6 +63,19 @@ index ef600591d96f..4c6f48ce42a6 100644
  }
  EXPORT_SYMBOL(writeback_inodes_sb);
  
+diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
+index 7eed8cf3130a..abeb4a56ddff 100644
+--- a/include/asm-generic/tlb.h
++++ b/include/asm-generic/tlb.h
+@@ -155,7 +155,7 @@ static inline bool __tlb_remove_page(struct mmu_gather *tlb, struct page *page)
+  */
+ static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
+ {
+-	return tlb_remove_page_size(tlb, page, PAGE_SIZE);
++	tlb_remove_page_size(tlb, page, PAGE_SIZE);
+ }
+ 
+ #ifndef tlb_remove_check_page_size_change
 diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
 index 0d442e34c349..cf4425006617 100644
 --- a/include/linux/clockchips.h
@@ -68,6 +115,69 @@ index 491b4c0ca633..e388d1c9c62e 100644
  }
  
  /* Simple class attribute that is just a static string */
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 10c5a17b1f51..2369efc49b40 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -503,7 +503,7 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+ static inline void dma_free_coherent(struct device *dev, size_t size,
+ 		void *cpu_addr, dma_addr_t dma_handle)
+ {
+-	return dma_free_attrs(dev, size, cpu_addr, dma_handle, 0);
++	dma_free_attrs(dev, size, cpu_addr, dma_handle, 0);
+ }
+ 
+ static inline void *dma_alloc_noncoherent(struct device *dev, size_t size,
+@@ -751,7 +751,7 @@ static inline void *dma_alloc_wc(struct device *dev, size_t size,
+ static inline void dma_free_wc(struct device *dev, size_t size,
+ 			       void *cpu_addr, dma_addr_t dma_addr)
+ {
+-	return dma_free_attrs(dev, size, cpu_addr, dma_addr,
++	dma_free_attrs(dev, size, cpu_addr, dma_addr,
+ 			      DMA_ATTR_WRITE_COMBINE);
+ }
+ #ifndef dma_free_writecombine
+diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
+index 56375edf2ed2..7fc85147d1a4 100644
+--- a/include/linux/ratelimit.h
++++ b/include/linux/ratelimit.h
+@@ -48,7 +48,7 @@ static inline void ratelimit_state_init(struct ratelimit_state *rs,
+ 
+ static inline void ratelimit_default_init(struct ratelimit_state *rs)
+ {
+-	return ratelimit_state_init(rs, DEFAULT_RATELIMIT_INTERVAL,
++	ratelimit_state_init(rs, DEFAULT_RATELIMIT_INTERVAL,
+ 					DEFAULT_RATELIMIT_BURST);
+ }
+ 
+diff --git a/include/linux/rhashtable.h b/include/linux/rhashtable.h
+index 5c132d3188be..1f104cedbeca 100644
+--- a/include/linux/rhashtable.h
++++ b/include/linux/rhashtable.h
+@@ -1197,7 +1197,7 @@ static inline int rhashtable_walk_init(struct rhashtable *ht,
+ static inline void rhltable_walk_enter(struct rhltable *hlt,
+ 				       struct rhashtable_iter *iter)
+ {
+-	return rhashtable_walk_enter(&hlt->ht, iter);
++	rhashtable_walk_enter(&hlt->ht, iter);
+ }
+ 
+ /**
+@@ -1213,12 +1213,12 @@ static inline void rhltable_free_and_destroy(struct rhltable *hlt,
+ 							     void *arg),
+ 					     void *arg)
+ {
+-	return rhashtable_free_and_destroy(&hlt->ht, free_fn, arg);
++	rhashtable_free_and_destroy(&hlt->ht, free_fn, arg);
+ }
+ 
+ static inline void rhltable_destroy(struct rhltable *hlt)
+ {
+-	return rhltable_free_and_destroy(hlt, NULL, NULL);
++	rhltable_free_and_destroy(hlt, NULL, NULL);
+ }
+ 
+ #endif /* _LINUX_RHASHTABLE_H */
 diff --git a/include/linux/timekeeping.h b/include/linux/timekeeping.h
 index d2e804e15c3e..4edf20fe3a10 100644
 --- a/include/linux/timekeeping.h
@@ -81,4 +191,38 @@ index d2e804e15c3e..4edf20fe3a10 100644
  }
  #else
  /**
+diff --git a/lib/rhashtable.c b/lib/rhashtable.c
+index 32d0ad058380..7c571ef48fc7 100644
+--- a/lib/rhashtable.c
++++ b/lib/rhashtable.c
+@@ -1004,6 +1004,6 @@ EXPORT_SYMBOL_GPL(rhashtable_free_and_destroy);
+ 
+ void rhashtable_destroy(struct rhashtable *ht)
+ {
+-	return rhashtable_free_and_destroy(ht, NULL, NULL);
++	rhashtable_free_and_destroy(ht, NULL, NULL);
+ }
+ EXPORT_SYMBOL_GPL(rhashtable_destroy);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 2c6d5f64feca..f545cdb4939a 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1180,7 +1180,7 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
+ static void __meminit __init_single_pfn(unsigned long pfn, unsigned long zone,
+ 					int nid)
+ {
+-	return __init_single_page(pfn_to_page(pfn), pfn, zone, nid);
++	__init_single_page(pfn_to_page(pfn), pfn, zone, nid);
+ }
+ 
+ #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
+@@ -1327,7 +1327,7 @@ void __init __free_pages_bootmem(struct page *page, unsigned long pfn,
+ {
+ 	if (early_page_uninitialised(pfn))
+ 		return;
+-	return __free_pages_boot_core(page, order);
++	__free_pages_boot_core(page, order);
+ }
+ 
+ /*
 -- 

@@ -1,0 +1,250 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 16 Sep 2016 22:34:22 +0200
+Subject: [PATCH] {CONSTIFY} lib/kobject: constify kobject.ktype structure
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+NB: when upstreaming, split in 2 patches: make get_ktype() const and
+ktype and helper functions const
+
+grsecurity kernels warns:
+
+    drivers/firmware/memmap.c: In function ‘firmware_map_add_entry’:
+    drivers/firmware/memmap.c:160:29: error: passing argument 2 of
+    ‘kobject_init’ discards ‘const’ qualifier from pointer target type
+    [-Werror=discarded-qualifiers]
+      kobject_init(&entry->kobj, &memmap_ktype);
+                                 ^
+    In file included from include/linux/module.h:17:0,
+                     from drivers/firmware/memmap.c:20:
+    include/linux/kobject.h:92:13: note: expected ‘struct kobj_type *’
+    but argument is of type ‘const struct kobj_type *’
+     extern void kobject_init(struct kobject *kobj, struct kobj_type *ktype);
+                 ^~~~~~~~~~~~
+
+    drivers/firmware/efi/runtime-map.c: In function ‘add_sysfs_runtime_map_entry’:
+    drivers/firmware/efi/runtime-map.c:130:29: error: passing argument 2
+    of ‘kobject_init’ discards ‘const’ qualifier from pointer target
+    type [-Werror=discarded-qualifiers]
+      kobject_init(&entry->kobj, &map_ktype);
+                                 ^
+    In file included from include/linux/module.h:17:0,
+                     from drivers/firmware/efi/runtime-map.c:10:
+    include/linux/kobject.h:92:13: note: expected ‘struct kobj_type *’
+    but argument is of type ‘const struct kobj_type *’
+     extern void kobject_init(struct kobject *kobj, struct kobj_type *ktype);
+                 ^~~~~~~~~~~~
+---
+ Documentation/kobject.txt |  4 ++--
+ drivers/base/bus.c        |  4 ++--
+ drivers/base/core.c       |  2 +-
+ include/linux/kobject.h   |  8 ++++----
+ include/linux/module.h    |  2 +-
+ kernel/params.c           |  4 ++--
+ lib/kobject.c             | 12 ++++++------
+ mm/slub.c                 |  2 +-
+ 8 files changed, 19 insertions(+), 19 deletions(-)
+
+diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
+index 1be59a3a521c..7fa8f2bec626 100644
+--- a/Documentation/kobject.txt
++++ b/Documentation/kobject.txt
+@@ -116,7 +116,7 @@ Initialization of kobjects
+ Code which creates a kobject must, of course, initialize that object. Some
+ of the internal fields are setup with a (mandatory) call to kobject_init():
+ 
+-    void kobject_init(struct kobject *kobj, struct kobj_type *ktype);
++    void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
+ 
+ The ktype is required for a kobject to be created properly, as every kobject
+ must have an associated kobj_type.  After calling kobject_init(), to
+@@ -153,7 +153,7 @@ kobject_name():
+ There is a helper function to both initialize and add the kobject to the
+ kernel at the same time, called surprisingly enough kobject_init_and_add():
+ 
+-    int kobject_init_and_add(struct kobject *kobj, struct kobj_type *ktype,
++    int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
+                              struct kobject *parent, const char *fmt, ...);
+ 
+ The arguments are the same as the individual kobject_init() and
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index 6470eb8088f4..ff3343f6d5dd 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -156,14 +156,14 @@ static void bus_release(struct kobject *kobj)
+ 	bus->p = NULL;
+ }
+ 
+-static struct kobj_type bus_ktype = {
++static const struct kobj_type bus_ktype = {
+ 	.sysfs_ops	= &bus_sysfs_ops,
+ 	.release	= bus_release,
+ };
+ 
+ static int bus_uevent_filter(struct kset *kset, struct kobject *kobj)
+ {
+-	struct kobj_type *ktype = get_ktype(kobj);
++	const struct kobj_type *ktype = get_ktype(kobj);
+ 
+ 	if (ktype == &bus_ktype)
+ 		return 1;
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 6d287ab19292..76b2de3253a4 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -838,7 +838,7 @@ static struct kobj_type device_ktype = {
+ 
+ static int dev_uevent_filter(struct kset *kset, struct kobject *kobj)
+ {
+-	struct kobj_type *ktype = get_ktype(kobj);
++	const struct kobj_type *ktype = get_ktype(kobj);
+ 
+ 	if (ktype == &device_ktype) {
+ 		struct device *dev = kobj_to_dev(kobj);
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index e6284591599e..d4f2f96b9dfe 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -65,7 +65,7 @@ struct kobject {
+ 	struct list_head	entry;
+ 	struct kobject		*parent;
+ 	struct kset		*kset;
+-	struct kobj_type	*ktype;
++	const struct kobj_type	*ktype;
+ 	struct kernfs_node	*sd; /* sysfs directory entry */
+ 	struct kref		kref;
+ #ifdef CONFIG_DEBUG_KOBJECT_RELEASE
+@@ -89,13 +89,13 @@ static inline const char *kobject_name(const struct kobject *kobj)
+ 	return kobj->name;
+ }
+ 
+-extern void kobject_init(struct kobject *kobj, struct kobj_type *ktype);
++extern void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
+ extern __printf(3, 4) __must_check
+ int kobject_add(struct kobject *kobj, struct kobject *parent,
+ 		const char *fmt, ...);
+ extern __printf(4, 5) __must_check
+ int kobject_init_and_add(struct kobject *kobj,
+-			 struct kobj_type *ktype, struct kobject *parent,
++			 const struct kobj_type *ktype, struct kobject *parent,
+ 			 const char *fmt, ...);
+ 
+ extern void kobject_del(struct kobject *kobj);
+@@ -194,7 +194,7 @@ static inline void kset_put(struct kset *k)
+ 	kobject_put(&k->kobj);
+ }
+ 
+-static inline struct kobj_type *get_ktype(struct kobject *kobj)
++static inline const struct kobj_type *get_ktype(struct kobject *kobj)
+ {
+ 	return kobj->ktype;
+ }
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 7c84273d60b9..c0261d200711 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -754,7 +754,7 @@ static inline bool module_requested_async_probing(struct module *module)
+ 
+ #ifdef CONFIG_SYSFS
+ extern struct kset *module_kset;
+-extern struct kobj_type module_ktype;
++extern const struct kobj_type module_ktype;
+ extern int module_sysfs_initialized;
+ #endif /* CONFIG_SYSFS */
+ 
+diff --git a/kernel/params.c b/kernel/params.c
+index a6d6149c0fe6..acab23bc3ccd 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -967,7 +967,7 @@ static const struct sysfs_ops module_sysfs_ops = {
+ 
+ static int uevent_filter(struct kset *kset, struct kobject *kobj)
+ {
+-	struct kobj_type *ktype = get_ktype(kobj);
++	const struct kobj_type *ktype = get_ktype(kobj);
+ 
+ 	if (ktype == &module_ktype)
+ 		return 1;
+@@ -987,7 +987,7 @@ static void module_kobj_release(struct kobject *kobj)
+ 	complete(mk->kobj_completion);
+ }
+ 
+-struct kobj_type module_ktype = {
++const struct kobj_type module_ktype = {
+ 	.release   =	module_kobj_release,
+ 	.sysfs_ops =	&module_sysfs_ops,
+ };
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 445dcaeb0f56..3de041822daf 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -48,7 +48,7 @@ const void *kobject_namespace(struct kobject *kobj)
+  */
+ static int populate_dir(struct kobject *kobj)
+ {
+-	struct kobj_type *t = get_ktype(kobj);
++	const struct kobj_type *t = get_ktype(kobj);
+ 	struct attribute *attr;
+ 	int error = 0;
+ 	int i;
+@@ -322,7 +322,7 @@ EXPORT_SYMBOL(kobject_set_name);
+  * to kobject_put(), not by a call to kfree directly to ensure that all of
+  * the memory is cleaned up properly.
+  */
+-void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
++void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
+ {
+ 	char *err_str;
+ 
+@@ -426,7 +426,7 @@ EXPORT_SYMBOL(kobject_add);
+  * kobject_add().  The same type of error handling after a call to
+  * kobject_add() and kobject lifetime rules are the same here.
+  */
+-int kobject_init_and_add(struct kobject *kobj, struct kobj_type *ktype,
++int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
+ 			 struct kobject *parent, const char *fmt, ...)
+ {
+ 	va_list args;
+@@ -614,7 +614,7 @@ static struct kobject * __must_check kobject_get_unless_zero(struct kobject *kob
+  */
+ static void kobject_cleanup(struct kobject *kobj)
+ {
+-	struct kobj_type *t = get_ktype(kobj);
++	const struct kobj_type *t = get_ktype(kobj);
+ 	const char *name = kobj->name;
+ 
+ 	pr_debug("kobject: '%s' (%p): %s, parent %p\n",
+@@ -699,7 +699,7 @@ static void dynamic_kobj_release(struct kobject *kobj)
+ 	kfree(kobj);
+ }
+ 
+-static struct kobj_type dynamic_kobj_ktype = {
++static const struct kobj_type dynamic_kobj_ktype = {
+ 	.release	= dynamic_kobj_release,
+ 	.sysfs_ops	= &kobj_sysfs_ops,
+ };
+@@ -871,7 +871,7 @@ static void kset_release(struct kobject *kobj)
+ 	kfree(kset);
+ }
+ 
+-static struct kobj_type kset_ktype = {
++static const struct kobj_type kset_ktype = {
+ 	.sysfs_ops	= &kobj_sysfs_ops,
+ 	.release = kset_release,
+ };
+diff --git a/mm/slub.c b/mm/slub.c
+index 90bb3ab6d6a2..507b68214ab7 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -5500,7 +5500,7 @@ static struct kobj_type slab_ktype = {
+ 
+ static int uevent_filter(struct kset *kset, struct kobject *kobj)
+ {
+-	struct kobj_type *ktype = get_ktype(kobj);
++	const struct kobj_type *ktype = get_ktype(kobj);
+ 
+ 	if (ktype == &slab_ktype)
+ 		return 1;
+-- 

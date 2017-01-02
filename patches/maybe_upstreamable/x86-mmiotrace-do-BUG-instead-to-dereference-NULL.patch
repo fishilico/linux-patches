@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 13 Aug 2016 13:41:50 +0200
+Subject: [PATCH] {MAYBE UPS} x86/mmiotrace: do BUG instead to dereference NULL
+
+When compiling with clang, objtools reports:
+
+    arch/x86/mm/pf_in.o: warning: objtool: get_ins_reg_val() falls
+    through to next function get_ins_reg_width()
+
+Indeed the last instructions of get_ins_reg_val() in arch/x86/mm/pf_in.s
+are:
+
+    movq    $.L.str.6, %rdi
+    xorl    %eax, %eax
+    movl    %r15d, %esi
+    callq   printk
+
+With .L.str.6 being "\0013mmiotrace: Error reg no# %d\n".
+
+Therefore clang seems to optimise away potential NULL pointer
+dereferences in get_ins_reg_val() (when inlining calls to get_reg_w32()
+and get_reg_w8()).  Replace such optimisations with BUG() statements.
+---
+ arch/x86/mm/pf_in.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/mm/pf_in.c b/arch/x86/mm/pf_in.c
+index a235869532bc..1534e37ed916 100644
+--- a/arch/x86/mm/pf_in.c
++++ b/arch/x86/mm/pf_in.c
+@@ -338,8 +338,10 @@ static unsigned char *get_reg_w8(int no, int rex, struct pt_regs *regs)
+ 		}
+ 	}
+ 
+-	if (!rv)
++	if (!rv) {
+ 		printk(KERN_ERR "mmiotrace: Error reg no# %d\n", no);
++		BUG(); /* Instead of null pointer dereference */
++	}
+ 
+ 	return rv;
+ }
+@@ -401,6 +403,7 @@ static unsigned long *get_reg_w32(int no, struct pt_regs *regs)
+ #endif
+ 	default:
+ 		printk(KERN_ERR "mmiotrace: Error reg no# %d\n", no);
++		BUG(); /* Instead of null pointer dereference */
+ 	}
+ 
+ 	return rv;
+-- 
