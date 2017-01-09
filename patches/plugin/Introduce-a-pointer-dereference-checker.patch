@@ -63,7 +63,7 @@ It has also detected some bugs reported by other people:
  drivers/xen/xenbus/xenbus_xs.c                    |   4 +-
  fs/cifs/cifsacl.c                                 |  12 +-
  fs/hfs/dir.c                                      |   2 +-
- include/asm-generic/asm-prototypes.h              |  12 +
+ include/asm-generic/asm-prototypes.h              |   6 +
  include/linux/compiler.h                          |  23 ++
  kernel/debug/kdb/kdb_support.c                    |  10 +-
  kernel/trace/trace.c                              |   7 +-
@@ -80,7 +80,7 @@ It has also detected some bugs reported by other people:
  scripts/Makefile.gcc-plugins                      |   2 +
  scripts/gcc-plugins/deref_checker_plugin.c        | 406 ++++++++++++++++++++++
  sound/core/pcm_native.c                           |   2 +-
- 54 files changed, 669 insertions(+), 77 deletions(-)
+ 54 files changed, 663 insertions(+), 77 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -860,22 +860,12 @@ index 5de5c48b418d..8a051049c6d9 100644
  	hfs_find_exit(&fd);
  	return err;
 diff --git a/include/asm-generic/asm-prototypes.h b/include/asm-generic/asm-prototypes.h
-index df13637e4017..88b12eb6067a 100644
+index 939869c772b1..7ea151802331 100644
 --- a/include/asm-generic/asm-prototypes.h
 +++ b/include/asm-generic/asm-prototypes.h
-@@ -1,7 +1,19 @@
- #include <linux/bitops.h>
-+#ifdef CONFIG_GCC_PLUGIN_DEREF_CHECKER
-+#undef __memcpy
-+#undef __memmove
-+#undef memcpy
-+#undef memmove
-+#endif
- extern void *__memset(void *, int, __kernel_size_t);
- extern void *__memcpy(void *, const void *, __kernel_size_t);
- extern void *__memmove(void *, const void *, __kernel_size_t);
- extern void *memset(void *, int, __kernel_size_t);
+@@ -11,3 +11,9 @@ extern void *memset(void *, int, __kernel_size_t);
  extern void *memcpy(void *, const void *, __kernel_size_t);
+ #undef memmove
  extern void *memmove(void *, const void *, __kernel_size_t);
 +#ifdef CONFIG_GCC_PLUGIN_DEREF_CHECKER
 +#define __memcpy(t, f, l) ({ __same_pointer_depths_chk(t, f); __memcpy(t, f, l); })
@@ -1075,10 +1065,10 @@ index 89f028b07464..90bb3ab6d6a2 100644
  }
  
 diff --git a/net/core/drop_monitor.c b/net/core/drop_monitor.c
-index 8e0c0635ee97..895b3df9846e 100644
+index fb55327dcfea..39a59ab98772 100644
 --- a/net/core/drop_monitor.c
 +++ b/net/core/drop_monitor.c
-@@ -152,7 +152,9 @@ static void trace_drop_common(struct sk_buff *skb, void *location)
+@@ -173,7 +173,9 @@ static void trace_drop_common(struct sk_buff *skb, void *location)
  	nla = genlmsg_data(nlmsg_data(nlh));
  	msg = nla_data(nla);
  	for (i = 0; i < msg->entries; i++) {
@@ -1089,7 +1079,7 @@ index 8e0c0635ee97..895b3df9846e 100644
  			msg->points[i].count++;
  			goto out;
  		}
-@@ -164,7 +166,11 @@ static void trace_drop_common(struct sk_buff *skb, void *location)
+@@ -185,7 +187,11 @@ static void trace_drop_common(struct sk_buff *skb, void *location)
  	 */
  	__nla_reserve_nohdr(dskb, sizeof(struct net_dm_drop_point));
  	nla->nla_len += NLA_ALIGN(sizeof(struct net_dm_drop_point));
