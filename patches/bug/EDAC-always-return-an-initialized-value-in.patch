@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 15 Jan 2017 12:10:35 +0100
+Subject: [PATCH] {BUG} EDAC: always return an initialized value in
+ knl_show_interleave_mode
+
+When building drivers/edac/sb_edac.c with compiler warning flags which
+aim to detect the use of uninitialized values at compile time, the
+compiler reports that knl_show_interleave_mode() may return an
+uninitialized value. This function indeed uses a switch statement to set
+a local variable ("s") and the local variable is not set to anything the
+the default statement. Anyway this would be never reached as
+knl_interleave_mode(reg) always returns a value between 0 and 3, but the
+compiler has no way of knowing this.
+
+Silent the compiler warning by initializing variable "s" too in the
+default case. While at it, make knl_show_interleave_mode() and
+show_interleave_mode() return const char* values as the returned
+pointers refer to read-only memory.
+
+Signed-off-by: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+---
+ drivers/edac/sb_edac.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/edac/sb_edac.c b/drivers/edac/sb_edac.c
+index 54ae6dc45ab2..15a068744c25 100644
+--- a/drivers/edac/sb_edac.c
++++ b/drivers/edac/sb_edac.c
+@@ -304,7 +304,7 @@ struct sbridge_info {
+ 	u64		(*rir_limit)(u32 reg);
+ 	u64		(*sad_limit)(u32 reg);
+ 	u32		(*interleave_mode)(u32 reg);
+-	char*		(*show_interleave_mode)(u32 reg);
++	const char*	(*show_interleave_mode)(u32 reg);
+ 	u32		(*dram_attr)(u32 reg);
+ 	const u32	*dram_rule;
+ 	const u32	*interleave_list;
+@@ -811,7 +811,7 @@ static u32 interleave_mode(u32 reg)
+ 	return GET_BITFIELD(reg, 1, 1);
+ }
+ 
+-char *show_interleave_mode(u32 reg)
++static const char *show_interleave_mode(u32 reg)
+ {
+ 	return interleave_mode(reg) ? "8:6" : "[8:6]XOR[18:16]";
+ }
+@@ -831,9 +831,9 @@ static u32 knl_interleave_mode(u32 reg)
+ 	return GET_BITFIELD(reg, 1, 2);
+ }
+ 
+-static char *knl_show_interleave_mode(u32 reg)
++static const char *knl_show_interleave_mode(u32 reg)
+ {
+-	char *s;
++	const char *s;
+ 
+ 	switch (knl_interleave_mode(reg)) {
+ 	case 0:
+@@ -850,6 +850,7 @@ static char *knl_show_interleave_mode(u32 reg)
+ 		break;
+ 	default:
+ 		WARN_ON(1);
++		s = "";
+ 		break;
+ 	}
+ 
+-- 

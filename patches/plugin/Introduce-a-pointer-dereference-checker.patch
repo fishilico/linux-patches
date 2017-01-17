@@ -31,7 +31,8 @@ It has also detected some bugs reported by other people:
  arch/arm/boot/compressed/string.c                 |   6 +
  arch/arm/include/asm/string.h                     |  12 +
  arch/x86/boot/compressed/misc.c                   |   4 +
- arch/x86/boot/string.h                            |   2 +-
+ arch/x86/boot/compressed/string.c                 |   5 +
+ arch/x86/boot/string.h                            |   4 +
  arch/x86/events/core.c                            |   9 +-
  arch/x86/include/asm/string_32.h                  |  24 +-
  arch/x86/include/asm/string_64.h                  |  17 +
@@ -80,7 +81,7 @@ It has also detected some bugs reported by other people:
  scripts/Makefile.gcc-plugins                      |   2 +
  scripts/gcc-plugins/deref_checker_plugin.c        | 406 ++++++++++++++++++++++
  sound/core/pcm_native.c                           |   2 +-
- 54 files changed, 663 insertions(+), 77 deletions(-)
+ 55 files changed, 671 insertions(+), 76 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -168,24 +169,43 @@ index b3c5a5f030ce..3cdce2eb1f4b 100644
  #define memmove		memmove
  
  /* Functions used by the included decompressor code below. */
+diff --git a/arch/x86/boot/compressed/string.c b/arch/x86/boot/compressed/string.c
+index cea140ce6b42..009ed75127b5 100644
+--- a/arch/x86/boot/compressed/string.c
++++ b/arch/x86/boot/compressed/string.c
+@@ -9,6 +9,11 @@
+ 
+ #include "../string.c"
+ 
++#ifdef CONFIG_GCC_PLUGIN_DEREF_CHECKER
++#undef memcpy
++#undef memmove
++#endif
++
+ #ifdef CONFIG_X86_32
+ static void *__memcpy(void *dest, const void *src, size_t n)
+ {
 diff --git a/arch/x86/boot/string.h b/arch/x86/boot/string.h
-index 3e07af1d80e3..07de6993815a 100644
+index 856cd1c85c8d..d03bfb1287be 100644
 --- a/arch/x86/boot/string.h
 +++ b/arch/x86/boot/string.h
-@@ -15,7 +15,7 @@ int memcmp(const void *s1, const void *s2, size_t len);
+@@ -15,7 +15,11 @@ int memcmp(const void *s1, const void *s2, size_t len);
   * do "undef memcpy" in .c file and link against right string.c
   */
  #ifndef __clang__ /* PR18415 */
--#define memcpy(d,s,l) __builtin_memcpy(d,s,l)
++#ifdef CONFIG_GCC_PLUGIN_DEREF_CHECKER
 +#define memcpy(d,s,l) ({ __same_pointer_depths_chk(d, s);__builtin_memcpy(d,s,l);})
++#else
+ #define memcpy(d,s,l) __builtin_memcpy(d,s,l)
++#endif
  #define memset(d,c,l) __builtin_memset(d,c,l)
  #define memcmp	__builtin_memcmp
  #endif
 diff --git a/arch/x86/events/core.c b/arch/x86/events/core.c
-index 019c5887b698..eb6ca0e4aff2 100644
+index 1635c0c8df23..846fe5ae1966 100644
 --- a/arch/x86/events/core.c
 +++ b/arch/x86/events/core.c
-@@ -2417,7 +2417,14 @@ perf_callchain_user(struct perf_callchain_entry_ctx *entry, struct pt_regs *regs
+@@ -2421,7 +2421,14 @@ perf_callchain_user(struct perf_callchain_entry_ctx *entry, struct pt_regs *regs
  		if (!valid_user_frame(fp, sizeof(frame)))
  			break;
  

@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Tue, 10 Jan 2017 12:54:36 +0100
+Subject: [PATCH] bfa: fix wrongly initialized variable in
+ bfad_im_bsg_els_ct_request()
+
+Commit 01e0e15c8b3b ("scsi: don't use fc_bsg_job::request and fc_bsg_job::reply
+directly") introduced a typo, which causes that the bsg_request variable in
+bfad_im_bsg_els_ct_request() is initialized to itself instead of pointing to
+the bsg job's request.
+
+Reported-by: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+
+Sent-upstream: https://patchwork.kernel.org/patch/9507031/
+---
+ drivers/scsi/bfa/bfad_bsg.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/scsi/bfa/bfad_bsg.c b/drivers/scsi/bfa/bfad_bsg.c
+index a9a00169ad91..b2e8c0dfc79c 100644
+--- a/drivers/scsi/bfa/bfad_bsg.c
++++ b/drivers/scsi/bfa/bfad_bsg.c
+@@ -3363,7 +3363,7 @@ bfad_im_bsg_els_ct_request(struct bsg_job *job)
+ 	struct bfad_fcxp    *drv_fcxp;
+ 	struct bfa_fcs_lport_s *fcs_port;
+ 	struct bfa_fcs_rport_s *fcs_rport;
+-	struct fc_bsg_request *bsg_request = bsg_request;
++	struct fc_bsg_request *bsg_request = job->request;
+ 	struct fc_bsg_reply *bsg_reply = job->reply;
+ 	uint32_t command_type = bsg_request->msgcode;
+ 	unsigned long flags;
+-- 
