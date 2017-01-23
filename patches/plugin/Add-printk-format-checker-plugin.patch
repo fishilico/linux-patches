@@ -12,8 +12,8 @@ This plugin helped to detect the following bugs:
  arch/Kconfig                               |   7 +
  fs/reiserfs/Makefile                       |  16 +
  scripts/Makefile.gcc-plugins               |   5 +
- scripts/gcc-plugins/printk_format_plugin.c | 732 +++++++++++++++++++++++++++++
- 4 files changed, 760 insertions(+)
+ scripts/gcc-plugins/printk_format_plugin.c | 731 +++++++++++++++++++++++++++++
+ 4 files changed, 759 insertions(+)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -79,10 +79,10 @@ index 060d2cb373db..a6c64f09a29a 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..9f37f7f07562
+index 000000000000..f8637be968df
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,732 @@
+@@ -0,0 +1,731 @@
 +/*
 + * Copyright 2016-2017 by Nicolas Iooss
 + *
@@ -94,7 +94,7 @@ index 000000000000..9f37f7f07562
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info printk_format_plugin_info = {
-+	.version	= "20161008",
++	.version	= "20170122",
 +	.help		= "Printk format checker\n",
 +};
 +
@@ -270,11 +270,10 @@ index 000000000000..9f37f7f07562
 +			return true;
 +		if (TREE_CODE(subtype) == VOID_TYPE)
 +			return true;
-+		if (TREE_CODE(subtype) == RECORD_TYPE &&
-+		    identifier_is(TYPE_IDENTIFIER(subtype), "vnt_mac_set_key"))
-+			return true;
-+		if (TREE_CODE(subtype) == RECORD_TYPE &&
-+		    identifier_is(TYPE_IDENTIFIER(subtype), "uwb_rceb"))
++		if (TREE_CODE(subtype) == RECORD_TYPE && (
++		    identifier_is(TYPE_IDENTIFIER(subtype), "atio_from_isp") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "uwb_rceb") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "vnt_mac_set_key")))
 +			return true;
 +		if (TREE_CODE(subtype) == ARRAY_TYPE &&
 +		    TREE_CODE(TREE_TYPE(subtype)) == RECORD_TYPE &&
