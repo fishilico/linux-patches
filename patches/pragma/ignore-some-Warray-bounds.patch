@@ -4,30 +4,11 @@ Date: Wed, 18 Mar 2015 16:45:09 +0800
 Subject: [PATCH] {PRAGMA} ignore some -Warray-bounds
 
 ---
- drivers/isdn/hardware/eicon/message.c  | 4 ++++
  drivers/isdn/hardware/eicon/platform.h | 4 ++++
  net/sunrpc/xprtrdma/svc_rdma_marshal.c | 3 +++
  net/wireless/util.c                    | 4 ++++
- 4 files changed, 15 insertions(+)
+ 3 files changed, 11 insertions(+)
 
-diff --git a/drivers/isdn/hardware/eicon/message.c b/drivers/isdn/hardware/eicon/message.c
-index 7cafa34c3464..9136837875e1 100644
---- a/drivers/isdn/hardware/eicon/message.c
-+++ b/drivers/isdn/hardware/eicon/message.c
-@@ -11296,9 +11296,13 @@ static void mixer_notify_update(PLCI *plci, byte others)
- 				((CAPI_MSG *) msg)->header.plci = notify_plci->Id;
- 				((CAPI_MSG *) msg)->header.ncci = 0;
- 				((CAPI_MSG *) msg)->info.facility_req.Selector = SELECTOR_LINE_INTERCONNECT;
-+/* _FAC_REQP.structs is a variable-length array */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Warray-bounds"
- 				((CAPI_MSG *) msg)->info.facility_req.structs[0] = 3;
- 				PUT_WORD(&(((CAPI_MSG *) msg)->info.facility_req.structs[1]), LI_REQ_SILENT_UPDATE);
- 				((CAPI_MSG *) msg)->info.facility_req.structs[3] = 0;
-+#pragma GCC diagnostic pop
- 				w = api_put(notify_plci->appl, (CAPI_MSG *) msg);
- 				if (w != _QUEUE_FULL)
- 				{
 diff --git a/drivers/isdn/hardware/eicon/platform.h b/drivers/isdn/hardware/eicon/platform.h
 index efa574125d76..f1faa55b2ef6 100644
 --- a/drivers/isdn/hardware/eicon/platform.h

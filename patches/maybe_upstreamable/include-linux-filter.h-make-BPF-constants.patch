@@ -1,0 +1,69 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 22 Jan 2017 21:57:28 +0100
+Subject: [PATCH] {MAYBE UPS} include/linux/filter.h: make BPF constants
+ unsigned
+
+This silents some Frama-C warnings:
+
+linux: include/linux/filter.h:729:[kernel] Case label -0x1000 + 60
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:728:[kernel] Case label -0x1000 + 56
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:727:[kernel] Case label -0x1000 + 52
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:726:[kernel] Case label -0x1000 + 48
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:725:[kernel] Case label -0x1000 + 44
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:724:[kernel] Case label -0x1000 + 40
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:723:[kernel] Case label -0x1000 + 36
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:722:[kernel] Case label -0x1000 + 32
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:721:[kernel] Case label -0x1000 + 28
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:720:[kernel] Case label -0x1000 + 24
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:719:[kernel] Case label -0x1000 + 20
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:718:[kernel] Case label -0x1000 + 16
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:717:[kernel] Case label -0x1000 + 12
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:716:[kernel] Case label -0x1000 + 8
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:715:[kernel] Case label -0x1000 + 4
+exceeds range of __u32 for switch expression. Nothing to worry.
+linux: include/linux/filter.h:714:[kernel] Case label -0x1000 + 0
+exceeds range of __u32 for switch expression. Nothing to worry.
+---
+ include/uapi/linux/filter.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/include/uapi/linux/filter.h b/include/uapi/linux/filter.h
+index c97340e43dd6..9469658e8a8a 100644
+--- a/include/uapi/linux/filter.h
++++ b/include/uapi/linux/filter.h
+@@ -61,7 +61,7 @@ struct sock_fprog {	/* Required for SO_ATTACH_FILTER. */
+    Unlike introduction new instructions, it does not break
+    existing compilers/optimizers.
+  */
+-#define SKF_AD_OFF    (-0x1000)
++#define SKF_AD_OFF    (-0x1000U)
+ #define SKF_AD_PROTOCOL 0
+ #define SKF_AD_PKTTYPE 	4
+ #define SKF_AD_IFINDEX 	8
+@@ -80,8 +80,8 @@ struct sock_fprog {	/* Required for SO_ATTACH_FILTER. */
+ #define SKF_AD_VLAN_TPID	60
+ #define SKF_AD_MAX	64
+ 
+-#define SKF_NET_OFF	(-0x100000)
+-#define SKF_LL_OFF	(-0x200000)
++#define SKF_NET_OFF	(-0x100000U)
++#define SKF_LL_OFF	(-0x200000U)
+ 
+ #define BPF_NET_OFF	SKF_NET_OFF
+ #define BPF_LL_OFF	SKF_LL_OFF
+-- 
