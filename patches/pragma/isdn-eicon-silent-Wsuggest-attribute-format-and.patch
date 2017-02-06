@@ -1,35 +1,35 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
 Date: Sun, 18 Sep 2016 12:56:20 +0200
-Subject: [PATCH] {PRAGMA} isdn/eicon: silent -Wsuggest-attribute=format with
- pragmas
+Subject: [PATCH] {PRAGMA} isdn/eicon: silent -Wsuggest-attribute=format and
+ -Wformat-security with pragmas
 
 This allows fixing all formatting errors too.
 ---
- drivers/isdn/hardware/eicon/capifunc.c  |   9 ++-
+ drivers/isdn/hardware/eicon/capifunc.c  |  15 +++-
  drivers/isdn/hardware/eicon/dadapter.c  |  12 +--
  drivers/isdn/hardware/eicon/debug.c     |   3 +
- drivers/isdn/hardware/eicon/debuglib.c  |   8 +-
+ drivers/isdn/hardware/eicon/debuglib.c  |   9 ++-
  drivers/isdn/hardware/eicon/debuglib.h  |  59 +++++++--------
- drivers/isdn/hardware/eicon/di.c        |   7 ++
+ drivers/isdn/hardware/eicon/di.c        |   8 ++
  drivers/isdn/hardware/eicon/diva.c      |   4 +-
  drivers/isdn/hardware/eicon/divasfunc.c |   2 +-
  drivers/isdn/hardware/eicon/divasi.c    |   6 +-
  drivers/isdn/hardware/eicon/divasmain.c |  10 +--
  drivers/isdn/hardware/eicon/idifunc.c   |   2 +-
- drivers/isdn/hardware/eicon/io.c        |   4 +-
+ drivers/isdn/hardware/eicon/io.c        |   7 +-
  drivers/isdn/hardware/eicon/message.c   | 126 ++++++++++++++++----------------
  drivers/isdn/hardware/eicon/mntfunc.c   |   2 +-
- drivers/isdn/hardware/eicon/os_4bri.c   |   8 +-
+ drivers/isdn/hardware/eicon/os_4bri.c   |  11 ++-
  drivers/isdn/hardware/eicon/os_bri.c    |   4 +-
  drivers/isdn/hardware/eicon/os_pri.c    |  36 ++++-----
  drivers/isdn/hardware/eicon/platform.h  |   4 +-
  drivers/isdn/hardware/eicon/s_4bri.c    |  18 ++---
  drivers/isdn/hardware/eicon/um_idi.c    |  62 ++++++++--------
- 20 files changed, 202 insertions(+), 184 deletions(-)
+ 20 files changed, 216 insertions(+), 184 deletions(-)
 
 diff --git a/drivers/isdn/hardware/eicon/capifunc.c b/drivers/isdn/hardware/eicon/capifunc.c
-index 7a0bdbdd87ea..57fcefc4ca9a 100644
+index 7a0bdbdd87ea..5b696bf46980 100644
 --- a/drivers/isdn/hardware/eicon/capifunc.c
 +++ b/drivers/isdn/hardware/eicon/capifunc.c
 @@ -62,9 +62,11 @@ extern void DIVA_DIDD_Read(DESCRIPTOR *, int);
@@ -63,6 +63,31 @@ index 7a0bdbdd87ea..57fcefc4ca9a 100644
  {
  }
  
+@@ -318,8 +321,11 @@ void sendf(APPL *appl, word command, dword Id, word Number, byte *format, ...)
+ 			if (myDriverDebugHandle.dbgMask & DL_BLK) {
+ 				xlog("\x00\x02", &msg, 0x81, length);
+ 				for (i = 0; i < dlength; i += 256) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 					DBG_BLK((((char *)(long)GET_DWORD(&msg.info.data_b3_ind.Data)) + i,
+ 						 ((dlength - i) < 256) ? (dlength - i) : 256))
++#pragma GCC diagnostic pop
+ 						if (!(myDriverDebugHandle.dbgMask & DL_PRV0))
+ 							break; /* not more if not explicitly requested */
+ 				}
+@@ -961,9 +967,12 @@ static u16 diva_send_message(struct capi_ctr *ctrl,
+ 			for (j = 0; j <
+ 				     GET_WORD(&msg->info.data_b3_req.Data_Length);
+ 			     j += 256) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 				DBG_BLK((((char *) this->xbuffer_ptr[i]) + j,
+ 					 ((GET_WORD(&msg->info.data_b3_req.Data_Length) - j) <
+ 					  256) ? (GET_WORD(&msg->info.data_b3_req.Data_Length) - j) : 256))
++#pragma GCC diagnostic pop
+ 					if (!(myDriverDebugHandle.dbgMask & DL_PRV0))
+ 						break;	/* not more if not explicitly requested */
+ 			}
 diff --git a/drivers/isdn/hardware/eicon/dadapter.c b/drivers/isdn/hardware/eicon/dadapter.c
 index 168366741301..322b4142e831 100644
 --- a/drivers/isdn/hardware/eicon/dadapter.c
@@ -139,7 +164,7 @@ index b8772bbee872..05f4bced6654 100644
  /*
    Write driver ID and driver revision to callers buffer
 diff --git a/drivers/isdn/hardware/eicon/debuglib.c b/drivers/isdn/hardware/eicon/debuglib.c
-index d5b1092a54f0..bcb0b2b3892c 100644
+index d5b1092a54f0..c2b5924eac61 100644
 --- a/drivers/isdn/hardware/eicon/debuglib.c
 +++ b/drivers/isdn/hardware/eicon/debuglib.c
 @@ -35,7 +35,7 @@ DIVA_DI_PRINTF dprintf = no_printf;
@@ -151,19 +176,20 @@ index d5b1092a54f0..bcb0b2b3892c 100644
  	{ va_list ap;							\
  		if (myDriverDebugHandle.dbg_prt)			\
  		{ va_start(ap, format);				\
-@@ -100,7 +100,11 @@ DbgRegister(char *drvName, char *drvTag, unsigned long dbgMask)
+@@ -100,7 +100,12 @@ DbgRegister(char *drvName, char *drvTag, unsigned long dbgMask)
  /*
   * Try to register debugging via old (and only) interface
   */
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-contains-nul"
 +#pragma GCC diagnostic ignored "-Wformat-extra-args"
++#pragma GCC diagnostic ignored "-Wformat-security"
  	dprintf("\000\377", &myDriverDebugHandle);
 +#pragma GCC diagnostic pop
  	if (myDriverDebugHandle.dbg_prt)
  	{
  		return (1);
-@@ -137,7 +141,7 @@ DbgDeregister(void)
+@@ -137,7 +142,7 @@ DbgDeregister(void)
  	}
  	memset(&myDriverDebugHandle, 0, sizeof(myDriverDebugHandle));
  }
@@ -262,10 +288,10 @@ index 2170de140335..a5f8f47f8269 100644
  #endif /* DIVA_NO_DEBUGLIB */
  #endif /* __DEBUGLIB_H__ */
 diff --git a/drivers/isdn/hardware/eicon/di.c b/drivers/isdn/hardware/eicon/di.c
-index cd3fba1add12..6fd261b6bac2 100644
+index cd3fba1add12..3deb7b9e490e 100644
 --- a/drivers/isdn/hardware/eicon/di.c
 +++ b/drivers/isdn/hardware/eicon/di.c
-@@ -726,7 +726,14 @@ static byte isdn_ind(ADAPTER *a,
+@@ -726,7 +726,15 @@ static byte isdn_ind(ADAPTER *a,
     active board
     ----------------------------------------------------------- */
  static void xdi_xlog(byte *msg, word code, int length) {
@@ -275,6 +301,7 @@ index cd3fba1add12..6fd261b6bac2 100644
 +/* gcc warnings */
 +#pragma GCC diagnostic ignored "-Wformat-contains-nul"
 +#pragma GCC diagnostic ignored "-Wformat-extra-args"
++#pragma GCC diagnostic ignored "-Wformat-security"
  	xdi_dbg_xlog("\x00\x02", msg, code, length);
 +#pragma GCC diagnostic pop
  }
@@ -409,10 +436,22 @@ index fef6586fe5ac..1a2c07665180 100644
  	/* dummy debug function */
  }
 diff --git a/drivers/isdn/hardware/eicon/io.c b/drivers/isdn/hardware/eicon/io.c
-index 8851ce580c23..50be8712845c 100644
+index 8851ce580c23..cb6bea3d75d8 100644
 --- a/drivers/isdn/hardware/eicon/io.c
 +++ b/drivers/isdn/hardware/eicon/io.c
-@@ -313,7 +313,7 @@ void request(PISDN_ADAPTER IoAdapter, ENTITY *e)
+@@ -111,8 +111,11 @@ dump_xlog_buffer(PISDN_ADAPTER IoAdapter, Xdesc *xlogDesc)
+ 				break;
+ 			}
+ 			logLen = (dword)(GET_WORD(&Xlog[logOut]) - (logOut * sizeof(*Xlog)));
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 			DBG_FTL_MXLOG(((char *)&Xlog[logOut + 1], (dword)(logLen - 2)))
+ 				logOut = (GET_WORD(&Xlog[logOut]) + 1) / sizeof(*Xlog);
++#pragma GCC diagnostic pop
+ 		}
+ 	DBG_FTL(("%s: ***************** end of XLOG *****************",
+ 		 &IoAdapter->Name[0]))
+@@ -313,7 +316,7 @@ void request(PISDN_ADAPTER IoAdapter, ENTITY *e)
  			if (IoAdapter)
  			{
  				syncReq->GetSerial.serial = IoAdapter->serialNo;
@@ -421,7 +460,7 @@ index 8851ce580c23..50be8712845c 100644
  					 IoAdapter->ANum, IoAdapter->serialNo))
  					return;
  			}
-@@ -323,7 +323,7 @@ void request(PISDN_ADAPTER IoAdapter, ENTITY *e)
+@@ -323,7 +326,7 @@ void request(PISDN_ADAPTER IoAdapter, ENTITY *e)
  			if (IoAdapter)
  			{
  				syncReq->GetCardType.cardtype = IoAdapter->cardType;
@@ -1009,7 +1048,7 @@ index 1cd9affb6058..91bc8b93593c 100644
  	/* dummy debug function */
  }
 diff --git a/drivers/isdn/hardware/eicon/os_4bri.c b/drivers/isdn/hardware/eicon/os_4bri.c
-index 1891246807ed..bc2e5ba7f082 100644
+index 1891246807ed..eb3a56c1b4f0 100644
 --- a/drivers/isdn/hardware/eicon/os_4bri.c
 +++ b/drivers/isdn/hardware/eicon/os_4bri.c
 @@ -165,7 +165,7 @@ int diva_4bri_init_card(diva_os_xdi_adapter_t *a)
@@ -1030,7 +1069,18 @@ index 1891246807ed..bc2e5ba7f082 100644
  		 a->xdi_adapter.Properties.Name,
  		 a->xdi_adapter.serialNo,
  		 a->resources.pci.bus, a->resources.pci.func))
-@@ -570,7 +570,7 @@ static int _4bri_get_serial_number(diva_os_xdi_adapter_t *a)
+@@ -555,7 +555,10 @@ static int _4bri_get_serial_number(diva_os_xdi_adapter_t *a)
+ 		}
+ 		PCIread(Bus, Slot, 0x50, &data[i], sizeof(data[i]), hdev);
+ 	}
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	DBG_BLK(((char *) &data[0], sizeof(data)))
++#pragma GCC diagnostic pop
+ 
+ 		serNo = data[32];
+ 	if (serNo == 0 || serNo == 0xffffffff)
+@@ -570,7 +573,7 @@ static int _4bri_get_serial_number(diva_os_xdi_adapter_t *a)
  
  	a->xdi_adapter.serialNo = serNo;
  
@@ -1039,7 +1089,7 @@ index 1891246807ed..bc2e5ba7f082 100644
  
  		return (serNo);
  }
-@@ -915,7 +915,7 @@ diva_4bri_write_sdram_block(PISDN_ADAPTER IoAdapter,
+@@ -915,7 +918,7 @@ diva_4bri_write_sdram_block(PISDN_ADAPTER IoAdapter,
  
  	if (((address + length) >= limit) || !mem) {
  		DIVA_OS_MEM_DETACH_ADDRESS(IoAdapter, p);

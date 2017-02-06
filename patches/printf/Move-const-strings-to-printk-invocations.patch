@@ -1,0 +1,1405 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 1 Feb 2017 23:46:54 +0100
+Subject: [PATCH] {PRINTF} Move const strings to printk invocations
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This fixes errors like:
+
+    arch/x86/mm/fault.c: In function ‘is_errata93’:
+    include/linux/printk.h:345:3: error: Call with a non-constant string
+    [-Werror=format-security]
+       printk(fmt, ##__VA_ARGS__);   \
+       ^~~~~~~~~~~~~~~~~~~~~~~~~~
+    arch/x86/mm/fault.c:600:3: note: in expansion of macro ‘printk_once’
+       printk_once(errata93_warning);
+       ^~~~~~~~~~~
+    arch/x86/mm/fault.c: In function ‘show_fault_oops’:
+    arch/x86/mm/fault.c:668:4: error: Call with a non-constant string
+     [-Werror=format-security]
+        printk(nx_warning, from_kuid(&init_user_ns, current_uid()));
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    arch/x86/mm/fault.c:672:4: error: Call with a non-constant string
+     [-Werror=format-security]
+        printk(smep_warning, from_kuid(&init_user_ns, current_uid()));
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---
+ arch/arm/mach-omap2/board-n8x0.c             |   3 +-
+ arch/arm/mach-omap2/usb-tusb6010.c           |  23 ++--
+ arch/x86/mm/fault.c                          |  25 ++--
+ arch/x86/platform/intel-quark/imr_selftest.c |   7 +-
+ drivers/clk/ti/adpll.c                       |   3 +-
+ drivers/iommu/omap-iommu-debug.c             |   3 +-
+ drivers/misc/pti.c                           |   3 +-
+ drivers/mtd/maps/gpio-addr-flash.c           |   3 +-
+ drivers/net/appletalk/ipddp.c                |   4 +-
+ drivers/net/ethernet/mellanox/mlxsw/core.c   |   4 +-
+ drivers/net/ethernet/mellanox/mlxsw/pci.c    |  16 +--
+ drivers/net/hamradio/6pack.c                 |  14 +--
+ drivers/net/hamradio/baycom_epp.c            |   5 +-
+ drivers/net/hamradio/mkiss.c                 |  14 +--
+ drivers/net/wan/z85230.c                     |   4 +-
+ drivers/scsi/esas2r/esas2r_log.c             |   6 +-
+ drivers/scsi/fnic/fnic_trace.c               |   5 +-
+ drivers/tty/n_hdlc.c                         |  22 +---
+ drivers/tty/serial/st-asc.c                  |   4 +-
+ fs/ext4/super.c                              |   7 +-
+ fs/nilfs2/sysfs.c                            | 168 ++++++++++++---------------
+ fs/ntfs/super.c                              |   7 +-
+ kernel/power/suspend_test.c                  |  33 ++----
+ net/802/psnap.c                              |   5 +-
+ net/appletalk/ddp.c                          |   5 +-
+ net/core/net-sysfs.c                         |  45 ++++---
+ net/decnet/af_decnet.c                       |   4 +-
+ net/ipx/af_ipx.c                             |  16 +--
+ net/llc/af_llc.c                             |  13 +--
+ 29 files changed, 171 insertions(+), 300 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
+index 6b6fda65fb3b..4a5ec626604f 100644
+--- a/arch/arm/mach-omap2/board-n8x0.c
++++ b/arch/arm/mach-omap2/board-n8x0.c
+@@ -117,7 +117,6 @@ static struct musb_hdrc_platform_data tusb_data = {
+ static void __init n8x0_usb_init(void)
+ {
+ 	int ret = 0;
+-	static char	announce[] __initdata = KERN_INFO "TUSB 6010\n";
+ 
+ 	/* PM companion chip power control pin */
+ 	ret = gpio_request_one(TUSB6010_GPIO_ENABLE, GPIOF_OUT_INIT_LOW,
+@@ -135,7 +134,7 @@ static void __init n8x0_usb_init(void)
+ 	if (ret != 0)
+ 		goto err;
+ 
+-	printk(announce);
++	printk(KERN_INFO "TUSB 6010\n");
+ 
+ 	return;
+ 
+diff --git a/arch/arm/mach-omap2/usb-tusb6010.c b/arch/arm/mach-omap2/usb-tusb6010.c
+index c2a6fbd7f8a9..2ac34bf04e6e 100644
+--- a/arch/arm/mach-omap2/usb-tusb6010.c
++++ b/arch/arm/mach-omap2/usb-tusb6010.c
+@@ -102,9 +102,6 @@ static int tusb_set_sync_mode(unsigned sysclk_ps)
+ /* tusb driver calls this when it changes the chip's clocking */
+ int tusb6010_platform_retime(unsigned is_refclk)
+ {
+-	static const char	error[] =
+-		KERN_ERR "tusb6010 %s retime error %d\n";
+-
+ 	unsigned	sysclk_ps;
+ 	int		status;
+ 
+@@ -115,12 +112,12 @@ int tusb6010_platform_retime(unsigned is_refclk)
+ 
+ 	status = tusb_set_async_mode(sysclk_ps);
+ 	if (status < 0) {
+-		printk(error, "async", status);
++		printk("tusb6010 %s retime error %d\n", "async", status);
+ 		goto done;
+ 	}
+ 	status = tusb_set_sync_mode(sysclk_ps);
+ 	if (status < 0)
+-		printk(error, "sync", status);
++		printk("tusb6010 %s retime error %d\n", "sync", status);
+ done:
+ 	return status;
+ }
+@@ -164,14 +161,12 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+ 		unsigned irq, unsigned dmachan)
+ {
+ 	int		status;
+-	static char	error[] __initdata =
+-		KERN_ERR "tusb6010 init error %d, %d\n";
+ 
+ 	/* ASYNC region, primarily for PIO */
+ 	status = gpmc_cs_request(async, SZ_16M, (unsigned long *)
+ 				&tusb_resources[0].start);
+ 	if (status < 0) {
+-		printk(error, 1, status);
++		printk(KERN_ERR "tusb6010 init error %d, %d\n", 1, status);
+ 		return status;
+ 	}
+ 	tusb_resources[0].end = tusb_resources[0].start + 0x9ff;
+@@ -186,7 +181,7 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+ 	status = gpmc_cs_request(sync, SZ_16M, (unsigned long *)
+ 				&tusb_resources[1].start);
+ 	if (status < 0) {
+-		printk(error, 2, status);
++		printk(KERN_ERR "tusb6010 init error %d, %d\n", 2, status);
+ 		return status;
+ 	}
+ 	tusb_resources[1].end = tusb_resources[1].start + 0x9ff;
+@@ -200,26 +195,26 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+ 	/* IRQ */
+ 	status = gpio_request_one(irq, GPIOF_IN, "TUSB6010 irq");
+ 	if (status < 0) {
+-		printk(error, 3, status);
++		printk(KERN_ERR "tusb6010 init error %d, %d\n", 3, status);
+ 		return status;
+ 	}
+ 	tusb_resources[2].start = gpio_to_irq(irq);
+ 
+ 	/* set up memory timings ... can speed them up later */
+ 	if (!ps_refclk) {
+-		printk(error, 4, status);
++		printk(KERN_ERR "tusb6010 init error %d, %d\n", 4, status);
+ 		return -ENODEV;
+ 	}
+ 	refclk_psec = ps_refclk;
+ 	status = tusb6010_platform_retime(1);
+ 	if (status < 0) {
+-		printk(error, 5, status);
++		printk(KERN_ERR "tusb6010 init error %d, %d\n", 5, status);
+ 		return status;
+ 	}
+ 
+ 	/* finish device setup ... */
+ 	if (!data) {
+-		printk(error, 6, status);
++		printk(KERN_ERR "tusb6010 init error %d, %d\n", 6, status);
+ 		return -ENODEV;
+ 	}
+ 	tusb_device.dev.platform_data = data;
+@@ -227,7 +222,7 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+ 	/* so far so good ... register the device */
+ 	status = platform_device_register(&tusb_device);
+ 	if (status < 0) {
+-		printk(error, 7, status);
++		printk(KERN_ERR "tusb6010 init error %d, %d\n", 7, status);
+ 		return status;
+ 	}
+ 	return 0;
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index e3254ca0eec4..ee22c2338705 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -496,15 +496,6 @@ static noinline int vmalloc_fault(unsigned long address)
+ }
+ NOKPROBE_SYMBOL(vmalloc_fault);
+ 
+-#ifdef CONFIG_CPU_SUP_AMD
+-static const char errata93_warning[] =
+-KERN_ERR 
+-"******* Your BIOS seems to not contain a fix for K8 errata #93\n"
+-"******* Working around it, but it may cause SEGVs or burn power.\n"
+-"******* Please consider a BIOS update.\n"
+-"******* Disabling USB legacy in the BIOS may also help.\n";
+-#endif
+-
+ /*
+  * No vm86 mode in 64-bit mode:
+  */
+@@ -597,7 +588,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+ 	address |= 0xffffffffUL << 32;
+ 	if ((address >= (u64)_stext && address <= (u64)_etext) ||
+ 	    (address >= MODULES_VADDR && address <= MODULES_END)) {
+-		printk_once(errata93_warning);
++		printk_once(
++KERN_ERR
++"******* Your BIOS seems to not contain a fix for K8 errata #93\n"
++"******* Working around it, but it may cause SEGVs or burn power.\n"
++"******* Please consider a BIOS update.\n"
++"******* Disabling USB legacy in the BIOS may also help.\n");
+ 		regs->ip = address;
+ 		return 1;
+ 	}
+@@ -642,11 +638,6 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
+ 	return 0;
+ }
+ 
+-static const char nx_warning[] = KERN_CRIT
+-"kernel tried to execute NX-protected page - exploit attempt? (uid: %d)\n";
+-static const char smep_warning[] = KERN_CRIT
+-"unable to execute userspace code (SMEP?) (uid: %d)\n";
+-
+ static void
+ show_fault_oops(struct pt_regs *regs, unsigned long error_code,
+ 		unsigned long address)
+@@ -665,11 +656,11 @@ show_fault_oops(struct pt_regs *regs, unsigned long error_code,
+ 		pte = lookup_address_in_pgd(pgd, address, &level);
+ 
+ 		if (pte && pte_present(*pte) && !pte_exec(*pte))
+-			printk(nx_warning, from_kuid(&init_user_ns, current_uid()));
++			printk("kernel tried to execute NX-protected page - exploit attempt? (uid: %d)\n", from_kuid(&init_user_ns, current_uid()));
+ 		if (pte && pte_present(*pte) && pte_exec(*pte) &&
+ 				(pgd_flags(*pgd) & _PAGE_USER) &&
+ 				(__read_cr4() & X86_CR4_SMEP))
+-			printk(smep_warning, from_kuid(&init_user_ns, current_uid()));
++			printk("unable to execute userspace code (SMEP?) (uid: %d)\n", from_kuid(&init_user_ns, current_uid()));
+ 	}
+ 
+ 	printk(KERN_ALERT "BUG: unable to handle kernel ");
+diff --git a/arch/x86/platform/intel-quark/imr_selftest.c b/arch/x86/platform/intel-quark/imr_selftest.c
+index b8f562049cad..209664b4c08f 100644
+--- a/arch/x86/platform/intel-quark/imr_selftest.c
++++ b/arch/x86/platform/intel-quark/imr_selftest.c
+@@ -57,7 +57,6 @@ static void __init imr_self_test(void)
+ {
+ 	phys_addr_t base  = virt_to_phys(&_text);
+ 	size_t size = virt_to_phys(&__end_rodata) - base;
+-	const char *fmt_over = "overlapped IMR @ (0x%08lx - 0x%08lx)\n";
+ 	int ret;
+ 
+ 	/* Test zero zero. */
+@@ -66,17 +65,17 @@ static void __init imr_self_test(void)
+ 
+ 	/* Test exact overlap. */
+ 	ret = imr_add_range(base, size, IMR_CPU, IMR_CPU);
+-	imr_self_test_result(ret < 0, fmt_over, __va(base), __va(base + size));
++	imr_self_test_result(ret < 0, "overlapped IMR @ (%p - %p)\n", __va(base), __va(base + size));
+ 
+ 	/* Test overlap with base inside of existing. */
+ 	base += size - IMR_ALIGN;
+ 	ret = imr_add_range(base, size, IMR_CPU, IMR_CPU);
+-	imr_self_test_result(ret < 0, fmt_over, __va(base), __va(base + size));
++	imr_self_test_result(ret < 0, "overlapped IMR @ (%p - %p)\n", __va(base), __va(base + size));
+ 
+ 	/* Test overlap with end inside of existing. */
+ 	base -= size + IMR_ALIGN * 2;
+ 	ret = imr_add_range(base, size, IMR_CPU, IMR_CPU);
+-	imr_self_test_result(ret < 0, fmt_over, __va(base), __va(base + size));
++	imr_self_test_result(ret < 0, "overlapped IMR @ (%p - %p)\n", __va(base), __va(base + size));
+ 
+ 	/* Test that a 1 KiB IMR @ zero with read/write all will bomb out. */
+ 	ret = imr_add_range(0, IMR_ALIGN, IMR_READ_ACCESS_ALL,
+diff --git a/drivers/clk/ti/adpll.c b/drivers/clk/ti/adpll.c
+index 4c337457591d..9909fd9c7a3e 100644
+--- a/drivers/clk/ti/adpll.c
++++ b/drivers/clk/ti/adpll.c
+@@ -815,13 +815,12 @@ static int ti_adpll_init_registers(struct ti_adpll_data *d)
+ 
+ static int ti_adpll_init_inputs(struct ti_adpll_data *d)
+ {
+-	const char *error = "need at least %i inputs";
+ 	struct clk *clock;
+ 	int nr_inputs;
+ 
+ 	nr_inputs = of_clk_get_parent_count(d->np);
+ 	if (nr_inputs < d->c->nr_max_inputs) {
+-		dev_err(d->dev, error, nr_inputs);
++		dev_err(d->dev, "need at least %i inputs", nr_inputs);
+ 		return -EINVAL;
+ 	}
+ 	of_clk_parent_fill(d->np, d->parent_names, nr_inputs);
+diff --git a/drivers/iommu/omap-iommu-debug.c b/drivers/iommu/omap-iommu-debug.c
+index 505548aafeff..f5fe8e2a979a 100644
+--- a/drivers/iommu/omap-iommu-debug.c
++++ b/drivers/iommu/omap-iommu-debug.c
+@@ -33,9 +33,8 @@ static inline bool is_omap_iommu_detached(struct omap_iommu *obj)
+ #define pr_reg(name)							\
+ 	do {								\
+ 		ssize_t bytes;						\
+-		const char *str = "%20s: %08x\n";			\
+ 		const int maxcol = 32;					\
+-		bytes = snprintf(p, maxcol, str, __stringify(name),	\
++		bytes = snprintf(p, maxcol, "%20s: %08x\n", __stringify(name),	\
+ 				 iommu_read_reg(obj, MMU_##name));	\
+ 		p += bytes;						\
+ 		len -= bytes;						\
+diff --git a/drivers/misc/pti.c b/drivers/misc/pti.c
+index eda38cbe8530..80e39e66e367 100644
+--- a/drivers/misc/pti.c
++++ b/drivers/misc/pti.c
+@@ -173,7 +173,6 @@ static void pti_control_frame_built_and_sent(struct pti_masterchannel *mc,
+ 	struct pti_masterchannel mccontrol = {.master = CONTROL_ID,
+ 					      .channel = 0};
+ 	const char *thread_name_p;
+-	const char *control_format = "%3d %3d %s";
+ 	u8 control_frame[CONTROL_FRAME_LEN];
+ 
+ 	if (!thread_name) {
+@@ -192,7 +191,7 @@ static void pti_control_frame_built_and_sent(struct pti_masterchannel *mc,
+ 	mccontrol.channel = pti_control_channel;
+ 	pti_control_channel = (pti_control_channel + 1) & 0x7f;
+ 
+-	snprintf(control_frame, CONTROL_FRAME_LEN, control_format, mc->master,
++	snprintf(control_frame, CONTROL_FRAME_LEN, "%3d %3d %s", mc->master,
+ 		mc->channel, thread_name_p);
+ 	pti_write_to_aperture(&mccontrol, control_frame, strlen(control_frame));
+ }
+diff --git a/drivers/mtd/maps/gpio-addr-flash.c b/drivers/mtd/maps/gpio-addr-flash.c
+index 385305e66fd1..19bf5f76b7f5 100644
+--- a/drivers/mtd/maps/gpio-addr-flash.c
++++ b/drivers/mtd/maps/gpio-addr-flash.c
+@@ -25,8 +25,7 @@
+ #include <linux/slab.h>
+ #include <linux/types.h>
+ 
+-#define pr_devinit(fmt, args...) \
+-	({ static const char __fmt[] = fmt; printk(__fmt, ## args); })
++#define pr_devinit(fmt, args...) printk((fmt), ## args)
+ 
+ #define DRIVER_NAME "gpio-addr-flash"
+ #define PFX DRIVER_NAME ": "
+diff --git a/drivers/net/appletalk/ipddp.c b/drivers/net/appletalk/ipddp.c
+index a306de4318d7..b6aac3c24d18 100644
+--- a/drivers/net/appletalk/ipddp.c
++++ b/drivers/net/appletalk/ipddp.c
+@@ -37,8 +37,6 @@
+ 
+ #include "ipddp.h"		/* Our stuff */
+ 
+-static const char version[] = KERN_INFO "ipddp.c:v0.01 8/28/97 Bradford W. Johnson <johns393@maroon.tc.umn.edu>\n";
+-
+ static struct ipddp_route *ipddp_route_list;
+ static DEFINE_SPINLOCK(ipddp_route_lock);
+ 
+@@ -77,7 +75,7 @@ static struct net_device * __init ipddp_init(void)
+ 	strcpy(dev->name, "ipddp%d");
+ 
+ 	if (version_printed++ == 0)
+-                printk(version);
++                printk(KERN_INFO "ipddp.c:v0.01 8/28/97 Bradford W. Johnson <johns393@maroon.tc.umn.edu>\n");
+ 
+ 	/* Initialize the device structure. */
+ 	dev->netdev_ops = &ipddp_netdev_ops;
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/core.c b/drivers/net/ethernet/mellanox/mlxsw/core.c
+index 57a98849551b..fa67c775d779 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/core.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/core.c
+@@ -713,10 +713,8 @@ static int mlxsw_core_rx_stats_dbg_read(struct seq_file *file, void *data)
+ 	unsigned int start;
+ 	int i;
+ 	int j;
+-	static const char hdr[] =
+-		"     NUM   RX_PACKETS     RX_BYTES RX_DROPPED\n";
+ 
+-	seq_printf(file, hdr);
++	seq_printf(file, "     NUM   RX_PACKETS     RX_BYTES RX_DROPPED\n");
+ 	for (i = 0; i < MLXSW_TRAP_ID_MAX; i++) {
+ 		rx_packets = 0;
+ 		rx_bytes = 0;
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/pci.c b/drivers/net/ethernet/mellanox/mlxsw/pci.c
+index a223c85dfde0..74f14f7b0df7 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/pci.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/pci.c
+@@ -395,10 +395,8 @@ static int mlxsw_pci_sdq_dbg_read(struct seq_file *file, void *data)
+ 	struct mlxsw_pci *mlxsw_pci = dev_get_drvdata(file->private);
+ 	struct mlxsw_pci_queue *q;
+ 	int i;
+-	static const char hdr[] =
+-		"NUM PROD_COUNT CONS_COUNT COUNT\n";
+ 
+-	seq_printf(file, hdr);
++	seq_printf(file, "NUM PROD_COUNT CONS_COUNT COUNT\n");
+ 	for (i = 0; i < mlxsw_pci_sdq_count(mlxsw_pci); i++) {
+ 		q = mlxsw_pci_sdq_get(mlxsw_pci, i);
+ 		spin_lock_bh(&q->lock);
+@@ -549,10 +547,8 @@ static int mlxsw_pci_rdq_dbg_read(struct seq_file *file, void *data)
+ 	struct mlxsw_pci *mlxsw_pci = dev_get_drvdata(file->private);
+ 	struct mlxsw_pci_queue *q;
+ 	int i;
+-	static const char hdr[] =
+-		"NUM PROD_COUNT CONS_COUNT COUNT\n";
+ 
+-	seq_printf(file, hdr);
++	seq_printf(file, "NUM PROD_COUNT CONS_COUNT COUNT\n");
+ 	for (i = 0; i < mlxsw_pci_rdq_count(mlxsw_pci); i++) {
+ 		q = mlxsw_pci_rdq_get(mlxsw_pci, i);
+ 		spin_lock_bh(&q->lock);
+@@ -608,10 +604,8 @@ static int mlxsw_pci_cq_dbg_read(struct seq_file *file, void *data)
+ 
+ 	struct mlxsw_pci_queue *q;
+ 	int i;
+-	static const char hdr[] =
+-		"NUM CONS_INDEX  SDQ_COUNT  RDQ_COUNT COUNT\n";
+ 
+-	seq_printf(file, hdr);
++	seq_printf(file, "NUM CONS_INDEX  SDQ_COUNT  RDQ_COUNT COUNT\n");
+ 	for (i = 0; i < mlxsw_pci_cq_count(mlxsw_pci); i++) {
+ 		q = mlxsw_pci_cq_get(mlxsw_pci, i);
+ 		spin_lock_bh(&q->lock);
+@@ -782,10 +776,8 @@ static int mlxsw_pci_eq_dbg_read(struct seq_file *file, void *data)
+ 	struct mlxsw_pci *mlxsw_pci = dev_get_drvdata(file->private);
+ 	struct mlxsw_pci_queue *q;
+ 	int i;
+-	static const char hdr[] =
+-		"NUM CONS_COUNT     EV_CMD    EV_COMP   EV_OTHER COUNT\n";
+ 
+-	seq_printf(file, hdr);
++	seq_printf(file, "NUM CONS_COUNT     EV_CMD    EV_COMP   EV_OTHER COUNT\n");
+ 	for (i = 0; i < mlxsw_pci_eq_count(mlxsw_pci); i++) {
+ 		q = mlxsw_pci_eq_get(mlxsw_pci, i);
+ 		spin_lock_bh(&q->lock);
+diff --git a/drivers/net/hamradio/6pack.c b/drivers/net/hamradio/6pack.c
+index 922bf440e9f1..014999259e26 100644
+--- a/drivers/net/hamradio/6pack.c
++++ b/drivers/net/hamradio/6pack.c
+@@ -791,33 +791,25 @@ static struct tty_ldisc_ops sp_ldisc = {
+ 
+ /* Initialize 6pack control device -- register 6pack line discipline */
+ 
+-static const char msg_banner[]  __initconst = KERN_INFO \
+-	"AX.25: 6pack driver, " SIXPACK_VERSION "\n";
+-static const char msg_regfail[] __initconst = KERN_ERR  \
+-	"6pack: can't register line discipline (err = %d)\n";
+-
+ static int __init sixpack_init_driver(void)
+ {
+ 	int status;
+ 
+-	printk(msg_banner);
++	printk(KERN_INFO "AX.25: 6pack driver, " SIXPACK_VERSION "\n");
+ 
+ 	/* Register the provided line protocol discipline */
+ 	if ((status = tty_register_ldisc(N_6PACK, &sp_ldisc)) != 0)
+-		printk(msg_regfail, status);
++		printk(KERN_ERR "6pack: can't register line discipline (err = %d)\n", status);
+ 
+ 	return status;
+ }
+ 
+-static const char msg_unregfail[] = KERN_ERR \
+-	"6pack: can't unregister line discipline (err = %d)\n";
+-
+ static void __exit sixpack_exit_driver(void)
+ {
+ 	int ret;
+ 
+ 	if ((ret = tty_unregister_ldisc(N_6PACK)))
+-		printk(msg_unregfail, ret);
++		printk(KERN_ERR "6pack: can't unregister line discipline (err = %d)\n", ret);
+ }
+ 
+ /* encode an AX.25 packet into 6pack */
+diff --git a/drivers/net/hamradio/baycom_epp.c b/drivers/net/hamradio/baycom_epp.c
+index a65d5a9214b0..a24ebecb39dc 100644
+--- a/drivers/net/hamradio/baycom_epp.c
++++ b/drivers/net/hamradio/baycom_epp.c
+@@ -64,9 +64,6 @@
+ 
+ /* --------------------------------------------------------------------- */
+ 
+-static const char paranoia_str[] = KERN_ERR 
+-	"baycom_epp: bad magic number for hdlcdrv_state struct in routine %s\n";
+-
+ static const char bc_drvname[] = "baycom_epp";
+ static const char bc_drvinfo[] = KERN_INFO "baycom_epp: (C) 1998-2000 Thomas Sailer, HB9JNX/AE4WA\n"
+ "baycom_epp: version 0.7\n";
+@@ -1256,7 +1253,7 @@ static void __exit cleanup_baycomepp(void)
+ 				unregister_netdev(dev);
+ 				free_netdev(dev);
+ 			} else
+-				printk(paranoia_str, "cleanup_module");
++				printk(KERN_ERR "baycom_epp: bad magic number for hdlcdrv_state struct in routine %s\n", "cleanup_module");
+ 		}
+ 	}
+ }
+diff --git a/drivers/net/hamradio/mkiss.c b/drivers/net/hamradio/mkiss.c
+index ece59c54a653..bca13c19d43e 100644
+--- a/drivers/net/hamradio/mkiss.c
++++ b/drivers/net/hamradio/mkiss.c
+@@ -973,33 +973,25 @@ static struct tty_ldisc_ops ax_ldisc = {
+ 	.write_wakeup	= mkiss_write_wakeup
+ };
+ 
+-static const char banner[] __initconst = KERN_INFO \
+-	"mkiss: AX.25 Multikiss, Hans Albas PE1AYX\n";
+-static const char msg_regfail[] __initconst = KERN_ERR \
+-	"mkiss: can't register line discipline (err = %d)\n";
+-
+ static int __init mkiss_init_driver(void)
+ {
+ 	int status;
+ 
+-	printk(banner);
++	printk(KERN_INFO "mkiss: AX.25 Multikiss, Hans Albas PE1AYX\n");
+ 
+ 	status = tty_register_ldisc(N_AX25, &ax_ldisc);
+ 	if (status != 0)
+-		printk(msg_regfail, status);
++		printk(KERN_ERR "mkiss: can't register line discipline (err = %d)\n", status);
+ 
+ 	return status;
+ }
+ 
+-static const char msg_unregfail[] = KERN_ERR \
+-	"mkiss: can't unregister line discipline (err = %d)\n";
+-
+ static void __exit mkiss_exit_driver(void)
+ {
+ 	int ret;
+ 
+ 	if ((ret = tty_unregister_ldisc(N_AX25)))
+-		printk(msg_unregfail, ret);
++		printk(KERN_ERR "mkiss: can't unregister line discipline (err = %d)\n", ret);
+ }
+ 
+ MODULE_AUTHOR("Ralf Baechle DL5RB <ralf@linux-mips.org>");
+diff --git a/drivers/net/wan/z85230.c b/drivers/net/wan/z85230.c
+index 2f0bd6955f33..f97887d41f81 100644
+--- a/drivers/net/wan/z85230.c
++++ b/drivers/net/wan/z85230.c
+@@ -1775,12 +1775,10 @@ EXPORT_SYMBOL(z8530_queue_xmit);
+ /*
+  *	Module support
+  */
+-static const char banner[] __initconst =
+-	KERN_INFO "Generic Z85C30/Z85230 interface driver v0.02\n";
+ 
+ static int __init z85230_init_driver(void)
+ {
+-	printk(banner);
++	printk(KERN_INFO "Generic Z85C30/Z85230 interface driver v0.02\n");
+ 	return 0;
+ }
+ module_init(z85230_init_driver);
+diff --git a/drivers/scsi/esas2r/esas2r_log.c b/drivers/scsi/esas2r/esas2r_log.c
+index 20689a48ad17..1edef7e1e76c 100644
+--- a/drivers/scsi/esas2r/esas2r_log.c
++++ b/drivers/scsi/esas2r/esas2r_log.c
+@@ -123,8 +123,6 @@ static __printf(3, 0) int esas2r_log_master(const long level,
+ 		int retval = 0;
+ 		char *buffer = event_buffer;
+ 		size_t buflen = EVENT_LOG_BUFF_SIZE;
+-		const char *fmt_nodev = "%s%s: ";
+-		const char *fmt_dev = "%s%s [%s, %s, %s]";
+ 		const char *slevel =
+ 			translate_esas2r_event_level_to_kernel(level);
+ 
+@@ -144,10 +142,10 @@ static __printf(3, 0) int esas2r_log_master(const long level,
+ 		 */
+ 
+ 		if (dev == NULL) {
+-			snprintf(buffer, buflen, fmt_nodev, slevel,
++			snprintf(buffer, buflen, "%s%s: ", slevel,
+ 				 ESAS2R_DRVR_NAME);
+ 		} else {
+-			snprintf(buffer, buflen, fmt_dev, slevel,
++			snprintf(buffer, buflen, "%s%s [%s, %s, %s]", slevel,
+ 				 ESAS2R_DRVR_NAME,
+ 				 (dev->driver ? dev->driver->name : "unknown"),
+ 				 (dev->bus ? dev->bus->name : "unknown"),
+diff --git a/drivers/scsi/fnic/fnic_trace.c b/drivers/scsi/fnic/fnic_trace.c
+index 5a5fa01576b7..5cdc0cf349fc 100644
+--- a/drivers/scsi/fnic/fnic_trace.c
++++ b/drivers/scsi/fnic/fnic_trace.c
+@@ -730,7 +730,7 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
+ {
+ 	struct tm tm;
+ 	int j, i = 1, len;
+-	char *fc_trace, *fmt;
++	char *fc_trace;
+ 	int ethhdr_len = sizeof(struct ethhdr) - 1;
+ 	int fcoehdr_len = sizeof(struct fcoe_hdr);
+ 	int fchdr_len = sizeof(struct fc_frame_header);
+@@ -742,10 +742,9 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
+ 
+ 	time64_to_tm(tdata->time_stamp.tv_sec, 0, &tm);
+ 
+-	fmt = "%02d:%02d:%04ld %02d:%02d:%02d.%09lu ns%8x       %c%8x\t";
+ 	len += snprintf(fnic_dbgfs_prt->buffer + len,
+ 		max_size - len,
+-		fmt,
++		"%02d:%02d:%04ld %02d:%02d:%02d.%09lu ns%8x       %c%8x\t",
+ 		tm.tm_mon + 1, tm.tm_mday, tm.tm_year + 1900,
+ 		tm.tm_hour, tm.tm_min, tm.tm_sec,
+ 		tdata->time_stamp.tv_nsec, tdata->host_no,
+diff --git a/drivers/tty/n_hdlc.c b/drivers/tty/n_hdlc.c
+index 1d0fd0bfff1a..f0b06b2b7e48 100644
+--- a/drivers/tty/n_hdlc.c
++++ b/drivers/tty/n_hdlc.c
+@@ -933,13 +933,6 @@ static struct n_hdlc_buf* n_hdlc_buf_get(struct n_hdlc_buf_list *list)
+ 	
+ }	/* end of n_hdlc_buf_get() */
+ 
+-static const char hdlc_banner[] __initconst =
+-	KERN_INFO "HDLC line discipline maxframe=%u\n";
+-static const char hdlc_register_ok[] __initconst =
+-	KERN_INFO "N_HDLC line discipline registered.\n";
+-static const char hdlc_register_fail[] __initconst =
+-	KERN_ERR "error registering line discipline: %d\n";
+-
+ static int __init n_hdlc_init(void)
+ {
+ 	int status;
+@@ -950,32 +943,27 @@ static int __init n_hdlc_init(void)
+ 	else if (maxframe > 65535)
+ 		maxframe = 65535;
+ 
+-	printk(hdlc_banner, maxframe);
++	printk(KERN_INFO "HDLC line discipline maxframe=%u\n", maxframe);
+ 
+ 	status = tty_register_ldisc(N_HDLC, &n_hdlc_ldisc);
+ 	if (!status)
+-		printk(hdlc_register_ok);
++		printk(KERN_INFO "N_HDLC line discipline registered.\n");
+ 	else
+-		printk(hdlc_register_fail, status);
++		printk(KERN_ERR "error registering line discipline: %d\n", status);
+ 
+ 	return status;
+ 	
+ }	/* end of init_module() */
+ 
+-static const char hdlc_unregister_ok[] __exitdata =
+-	KERN_INFO "N_HDLC: line discipline unregistered\n";
+-static const char hdlc_unregister_fail[] __exitdata =
+-	KERN_ERR "N_HDLC: can't unregister line discipline (err = %d)\n";
+-
+ static void __exit n_hdlc_exit(void)
+ {
+ 	/* Release tty registration of line discipline */
+ 	int status = tty_unregister_ldisc(N_HDLC);
+ 
+ 	if (status)
+-		printk(hdlc_unregister_fail, status);
++		printk(KERN_ERR "N_HDLC: can't unregister line discipline (err = %d)\n", status);
+ 	else
+-		printk(hdlc_unregister_ok);
++		printk("N_HDLC: line discipline unregistered\n");
+ }
+ 
+ module_init(n_hdlc_init);
+diff --git a/drivers/tty/serial/st-asc.c b/drivers/tty/serial/st-asc.c
+index bcb463099687..9b6cfa27cc7f 100644
+--- a/drivers/tty/serial/st-asc.c
++++ b/drivers/tty/serial/st-asc.c
+@@ -902,10 +902,8 @@ static struct platform_driver asc_serial_driver = {
+ static int __init asc_init(void)
+ {
+ 	int ret;
+-	static const char banner[] __initconst =
+-		KERN_INFO "STMicroelectronics ASC driver initialized\n";
+ 
+-	printk(banner);
++	printk(KERN_INFO "STMicroelectronics ASC driver initialized\n");
+ 
+ 	ret = uart_register_driver(&asc_uart_driver);
+ 	if (ret)
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 66845a08a87a..0b2fffab5062 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1409,8 +1409,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+ }
+ 
+ #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
+-static char deprecated_msg[] = "Mount option \"%s\" will be removed by %s\n"
+-	"Contact linux-ext4@vger.kernel.org if you think we should keep it.\n";
+ 
+ #ifdef CONFIG_QUOTA
+ static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
+@@ -1608,7 +1606,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+ 	switch (token) {
+ 	case Opt_noacl:
+ 	case Opt_nouser_xattr:
+-		ext4_msg(sb, KERN_WARNING, deprecated_msg, opt, "3.5");
++		ext4_msg(sb, KERN_WARNING,
++			"Mount option \"%s\" will be removed by %s\n"
++			"Contact linux-ext4@vger.kernel.org if you think we should keep it.\n",
++			opt, "3.5");
+ 		break;
+ 	case Opt_sb:
+ 		return 1;	/* handled by get_sb_block() */
+diff --git a/fs/nilfs2/sysfs.c b/fs/nilfs2/sysfs.c
+index 490303e3d517..2581e5c1e491 100644
+--- a/fs/nilfs2/sysfs.c
++++ b/fs/nilfs2/sysfs.c
+@@ -131,16 +131,14 @@ nilfs_snapshot_blocks_count_show(struct nilfs_snapshot_attr *attr,
+ 			(unsigned long long)atomic64_read(&root->blocks_count));
+ }
+ 
+-static const char snapshot_readme_str[] =
+-	"The group contains details about mounted snapshot.\n\n"
+-	"(1) inodes_count\n\tshow number of inodes for snapshot.\n\n"
+-	"(2) blocks_count\n\tshow number of blocks for snapshot.\n\n";
+-
+ static ssize_t
+ nilfs_snapshot_README_show(struct nilfs_snapshot_attr *attr,
+ 			    struct nilfs_root *root, char *buf)
+ {
+-	return snprintf(buf, PAGE_SIZE, snapshot_readme_str);
++	return snprintf(buf, PAGE_SIZE,
++		"The group contains details about mounted snapshot.\n\n"
++		"(1) inodes_count\n\tshow number of inodes for snapshot.\n\n"
++		"(2) blocks_count\n\tshow number of blocks for snapshot.\n\n");
+ }
+ 
+ NILFS_SNAPSHOT_RO_ATTR(inodes_count);
+@@ -233,15 +231,13 @@ void nilfs_sysfs_delete_snapshot_group(struct nilfs_root *root)
+  *                    NILFS mounted snapshots attrs                     *
+  ************************************************************************/
+ 
+-static const char mounted_snapshots_readme_str[] =
+-	"The mounted_snapshots group contains group for\n"
+-	"every mounted snapshot.\n";
+-
+ static ssize_t
+ nilfs_mounted_snapshots_README_show(struct nilfs_mounted_snapshots_attr *attr,
+ 				    struct the_nilfs *nilfs, char *buf)
+ {
+-	return snprintf(buf, PAGE_SIZE, mounted_snapshots_readme_str);
++	return snprintf(buf, PAGE_SIZE,
++		"The mounted_snapshots group contains group for\n"
++		"every mounted snapshot.\n");
+ }
+ 
+ NILFS_MOUNTED_SNAPSHOTS_RO_ATTR(README);
+@@ -333,20 +329,18 @@ nilfs_checkpoints_next_checkpoint_show(struct nilfs_checkpoints_attr *attr,
+ 	return snprintf(buf, PAGE_SIZE, "%llu\n", cno);
+ }
+ 
+-static const char checkpoints_readme_str[] =
+-	"The checkpoints group contains attributes that describe\n"
+-	"details about volume's checkpoints.\n\n"
+-	"(1) checkpoints_number\n\tshow number of checkpoints on volume.\n\n"
+-	"(2) snapshots_number\n\tshow number of snapshots on volume.\n\n"
+-	"(3) last_seg_checkpoint\n"
+-	"\tshow checkpoint number of the latest segment.\n\n"
+-	"(4) next_checkpoint\n\tshow next checkpoint number.\n\n";
+-
+ static ssize_t
+ nilfs_checkpoints_README_show(struct nilfs_checkpoints_attr *attr,
+ 				struct the_nilfs *nilfs, char *buf)
+ {
+-	return snprintf(buf, PAGE_SIZE, checkpoints_readme_str);
++	return snprintf(buf, PAGE_SIZE,
++		"The checkpoints group contains attributes that describe\n"
++		"details about volume's checkpoints.\n\n"
++		"(1) checkpoints_number\n\tshow number of checkpoints on volume.\n\n"
++		"(2) snapshots_number\n\tshow number of snapshots on volume.\n\n"
++		"(3) last_seg_checkpoint\n"
++		"\tshow checkpoint number of the latest segment.\n\n"
++		"(4) next_checkpoint\n\tshow next checkpoint number.\n\n");
+ }
+ 
+ NILFS_CHECKPOINTS_RO_ATTR(checkpoints_number);
+@@ -422,20 +416,18 @@ nilfs_segments_dirty_segments_show(struct nilfs_segments_attr *attr,
+ 	return snprintf(buf, PAGE_SIZE, "%llu\n", sustat.ss_ndirtysegs);
+ }
+ 
+-static const char segments_readme_str[] =
+-	"The segments group contains attributes that describe\n"
+-	"details about volume's segments.\n\n"
+-	"(1) segments_number\n\tshow number of segments on volume.\n\n"
+-	"(2) blocks_per_segment\n\tshow number of blocks in segment.\n\n"
+-	"(3) clean_segments\n\tshow count of clean segments.\n\n"
+-	"(4) dirty_segments\n\tshow count of dirty segments.\n\n";
+-
+ static ssize_t
+ nilfs_segments_README_show(struct nilfs_segments_attr *attr,
+ 			    struct the_nilfs *nilfs,
+ 			    char *buf)
+ {
+-	return snprintf(buf, PAGE_SIZE, segments_readme_str);
++	return snprintf(buf, PAGE_SIZE,
++		"The segments group contains attributes that describe\n"
++		"details about volume's segments.\n\n"
++		"(1) segments_number\n\tshow number of segments on volume.\n\n"
++		"(2) blocks_per_segment\n\tshow number of blocks in segment.\n\n"
++		"(3) clean_segments\n\tshow count of clean segments.\n\n"
++		"(4) dirty_segments\n\tshow count of dirty segments.\n\n");
+ }
+ 
+ NILFS_SEGMENTS_RO_ATTR(segments_number);
+@@ -645,41 +637,39 @@ nilfs_segctor_dirty_data_blocks_count_show(struct nilfs_segctor_attr *attr,
+ 	return snprintf(buf, PAGE_SIZE, "%u\n", ndirtyblks);
+ }
+ 
+-static const char segctor_readme_str[] =
+-	"The segctor group contains attributes that describe\n"
+-	"segctor thread activity details.\n\n"
+-	"(1) last_pseg_block\n"
+-	"\tshow start block number of the latest segment.\n\n"
+-	"(2) last_seg_sequence\n"
+-	"\tshow sequence value of the latest segment.\n\n"
+-	"(3) last_seg_checkpoint\n"
+-	"\tshow checkpoint number of the latest segment.\n\n"
+-	"(4) current_seg_sequence\n\tshow segment sequence counter.\n\n"
+-	"(5) current_last_full_seg\n"
+-	"\tshow index number of the latest full segment.\n\n"
+-	"(6) next_full_seg\n"
+-	"\tshow index number of the full segment index to be used next.\n\n"
+-	"(7) next_pseg_offset\n"
+-	"\tshow offset of next partial segment in the current full segment.\n\n"
+-	"(8) next_checkpoint\n\tshow next checkpoint number.\n\n"
+-	"(9) last_seg_write_time\n"
+-	"\tshow write time of the last segment in human-readable format.\n\n"
+-	"(10) last_seg_write_time_secs\n"
+-	"\tshow write time of the last segment in seconds.\n\n"
+-	"(11) last_nongc_write_time\n"
+-	"\tshow write time of the last segment not for cleaner operation "
+-	"in human-readable format.\n\n"
+-	"(12) last_nongc_write_time_secs\n"
+-	"\tshow write time of the last segment not for cleaner operation "
+-	"in seconds.\n\n"
+-	"(13) dirty_data_blocks_count\n"
+-	"\tshow number of dirty data blocks.\n\n";
+-
+ static ssize_t
+ nilfs_segctor_README_show(struct nilfs_segctor_attr *attr,
+ 			  struct the_nilfs *nilfs, char *buf)
+ {
+-	return snprintf(buf, PAGE_SIZE, segctor_readme_str);
++	return snprintf(buf, PAGE_SIZE,
++		"The segctor group contains attributes that describe\n"
++		"segctor thread activity details.\n\n"
++		"(1) last_pseg_block\n"
++		"\tshow start block number of the latest segment.\n\n"
++		"(2) last_seg_sequence\n"
++		"\tshow sequence value of the latest segment.\n\n"
++		"(3) last_seg_checkpoint\n"
++		"\tshow checkpoint number of the latest segment.\n\n"
++		"(4) current_seg_sequence\n\tshow segment sequence counter.\n\n"
++		"(5) current_last_full_seg\n"
++		"\tshow index number of the latest full segment.\n\n"
++		"(6) next_full_seg\n"
++		"\tshow index number of the full segment index to be used next.\n\n"
++		"(7) next_pseg_offset\n"
++		"\tshow offset of next partial segment in the current full segment.\n\n"
++		"(8) next_checkpoint\n\tshow next checkpoint number.\n\n"
++		"(9) last_seg_write_time\n"
++		"\tshow write time of the last segment in human-readable format.\n\n"
++		"(10) last_seg_write_time_secs\n"
++		"\tshow write time of the last segment in seconds.\n\n"
++		"(11) last_nongc_write_time\n"
++		"\tshow write time of the last segment not for cleaner operation "
++		"in human-readable format.\n\n"
++		"(12) last_nongc_write_time_secs\n"
++		"\tshow write time of the last segment not for cleaner operation "
++		"in seconds.\n\n"
++		"(13) dirty_data_blocks_count\n"
++		"\tshow number of dirty data blocks.\n\n");
+ }
+ 
+ NILFS_SEGCTOR_RO_ATTR(last_pseg_block);
+@@ -807,24 +797,22 @@ nilfs_superblock_sb_update_frequency_store(struct nilfs_superblock_attr *attr,
+ 	return count;
+ }
+ 
+-static const char sb_readme_str[] =
+-	"The superblock group contains attributes that describe\n"
+-	"superblock's details.\n\n"
+-	"(1) sb_write_time\n\tshow previous write time of super block "
+-	"in human-readable format.\n\n"
+-	"(2) sb_write_time_secs\n\tshow previous write time of super block "
+-	"in seconds.\n\n"
+-	"(3) sb_write_count\n\tshow write count of super block.\n\n"
+-	"(4) sb_update_frequency\n"
+-	"\tshow/set interval of periodical update of superblock (in seconds).\n\n"
+-	"\tYou can set preferable frequency of superblock update by command:\n\n"
+-	"\t'echo <val> > /sys/fs/<nilfs>/<dev>/superblock/sb_update_frequency'\n";
+-
+ static ssize_t
+ nilfs_superblock_README_show(struct nilfs_superblock_attr *attr,
+ 				struct the_nilfs *nilfs, char *buf)
+ {
+-	return snprintf(buf, PAGE_SIZE, sb_readme_str);
++	return snprintf(buf, PAGE_SIZE,
++		"The superblock group contains attributes that describe\n"
++		"superblock's details.\n\n"
++		"(1) sb_write_time\n\tshow previous write time of super block "
++		"in human-readable format.\n\n"
++		"(2) sb_write_time_secs\n\tshow previous write time of super block "
++		"in seconds.\n\n"
++		"(3) sb_write_count\n\tshow write count of super block.\n\n"
++		"(4) sb_update_frequency\n"
++		"\tshow/set interval of periodical update of superblock (in seconds).\n\n"
++		"\tYou can set preferable frequency of superblock update by command:\n\n"
++		"\t'echo <val> > /sys/fs/<nilfs>/<dev>/superblock/sb_update_frequency'\n");
+ }
+ 
+ NILFS_SUPERBLOCK_RO_ATTR(sb_write_time);
+@@ -914,21 +902,19 @@ ssize_t nilfs_dev_volume_name_show(struct nilfs_dev_attr *attr,
+ 			 sbp[0]->s_volume_name);
+ }
+ 
+-static const char dev_readme_str[] =
+-	"The <device> group contains attributes that describe file system\n"
+-	"partition's details.\n\n"
+-	"(1) revision\n\tshow NILFS file system revision.\n\n"
+-	"(2) blocksize\n\tshow volume block size in bytes.\n\n"
+-	"(3) device_size\n\tshow volume size in bytes.\n\n"
+-	"(4) free_blocks\n\tshow count of free blocks on volume.\n\n"
+-	"(5) uuid\n\tshow volume's UUID.\n\n"
+-	"(6) volume_name\n\tshow volume's name.\n\n";
+-
+ static ssize_t nilfs_dev_README_show(struct nilfs_dev_attr *attr,
+ 				     struct the_nilfs *nilfs,
+ 				     char *buf)
+ {
+-	return snprintf(buf, PAGE_SIZE, dev_readme_str);
++	return snprintf(buf, PAGE_SIZE,
++		"The <device> group contains attributes that describe file system\n"
++		"partition's details.\n\n"
++		"(1) revision\n\tshow NILFS file system revision.\n\n"
++		"(2) blocksize\n\tshow volume block size in bytes.\n\n"
++		"(3) device_size\n\tshow volume size in bytes.\n\n"
++		"(4) free_blocks\n\tshow count of free blocks on volume.\n\n"
++		"(5) uuid\n\tshow volume's UUID.\n\n"
++		"(6) volume_name\n\tshow volume's name.\n\n");
+ }
+ 
+ NILFS_DEV_RO_ATTR(revision);
+@@ -1078,16 +1064,14 @@ static ssize_t nilfs_feature_revision_show(struct kobject *kobj,
+ 			NILFS_CURRENT_REV, NILFS_MINOR_REV);
+ }
+ 
+-static const char features_readme_str[] =
+-	"The features group contains attributes that describe NILFS file\n"
+-	"system driver features.\n\n"
+-	"(1) revision\n\tshow current revision of NILFS file system driver.\n";
+-
+ static ssize_t nilfs_feature_README_show(struct kobject *kobj,
+ 					 struct attribute *attr,
+ 					 char *buf)
+ {
+-	return snprintf(buf, PAGE_SIZE, features_readme_str);
++	return snprintf(buf, PAGE_SIZE,
++		"The features group contains attributes that describe NILFS file\n"
++		"system driver features.\n\n"
++		"(1) revision\n\tshow current revision of NILFS file system driver.\n");
+ }
+ 
+ NILFS_FEATURE_RO_ATTR(revision);
+diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
+index ecb49870a680..151c6bf009fa 100644
+--- a/fs/ntfs/super.c
++++ b/fs/ntfs/super.c
+@@ -676,7 +676,6 @@ static bool is_boot_sector_ntfs(const struct super_block *sb,
+ static struct buffer_head *read_ntfs_boot_sector(struct super_block *sb,
+ 		const int silent)
+ {
+-	const char *read_err_str = "Unable to read %s boot sector.";
+ 	struct buffer_head *bh_primary, *bh_backup;
+ 	sector_t nr_blocks = NTFS_SB(sb)->nr_blocks;
+ 
+@@ -688,7 +687,7 @@ static struct buffer_head *read_ntfs_boot_sector(struct super_block *sb,
+ 		if (!silent)
+ 			ntfs_error(sb, "Primary boot sector is invalid.");
+ 	} else if (!silent)
+-		ntfs_error(sb, read_err_str, "primary");
++		ntfs_error(sb, "Unable to read %s boot sector.", "primary");
+ 	if (!(NTFS_SB(sb)->on_errors & ON_ERRORS_RECOVER)) {
+ 		if (bh_primary)
+ 			brelse(bh_primary);
+@@ -704,7 +703,7 @@ static struct buffer_head *read_ntfs_boot_sector(struct super_block *sb,
+ 			goto hotfix_primary_boot_sector;
+ 		brelse(bh_backup);
+ 	} else if (!silent)
+-		ntfs_error(sb, read_err_str, "backup");
++		ntfs_error(sb, "Unable to read %s boot sector.", "backup");
+ 	/* Try to read NT3.51- backup boot sector. */
+ 	if ((bh_backup = sb_bread(sb, nr_blocks >> 1))) {
+ 		if (is_boot_sector_ntfs(sb, (NTFS_BOOT_SECTOR*)
+@@ -715,7 +714,7 @@ static struct buffer_head *read_ntfs_boot_sector(struct super_block *sb,
+ 					"sector.");
+ 		brelse(bh_backup);
+ 	} else if (!silent)
+-		ntfs_error(sb, read_err_str, "backup");
++		ntfs_error(sb, "Unable to read %s boot sector.", "backup");
+ 	/* We failed. Cleanup and return. */
+ 	if (bh_primary)
+ 		brelse(bh_primary);
+diff --git a/kernel/power/suspend_test.c b/kernel/power/suspend_test.c
+index 805f586e1a90..3d187d244ebe 100644
+--- a/kernel/power/suspend_test.c
++++ b/kernel/power/suspend_test.c
+@@ -62,15 +62,6 @@ void suspend_test_finish(const char *label)
+ 
+ static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
+ {
+-	static char err_readtime[] __initdata =
+-		KERN_ERR "PM: can't read %s time, err %d\n";
+-	static char err_wakealarm [] __initdata =
+-		KERN_ERR "PM: can't set %s wakealarm, err %d\n";
+-	static char err_suspend[] __initdata =
+-		KERN_ERR "PM: suspend test failed, error %d\n";
+-	static char info_test[] __initdata =
+-		KERN_INFO "PM: test RTC wakeup from '%s' suspend\n";
+-
+ 	unsigned long		now;
+ 	struct rtc_wkalrm	alm;
+ 	int			status;
+@@ -79,7 +70,7 @@ static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
+ repeat:
+ 	status = rtc_read_time(rtc, &alm.time);
+ 	if (status < 0) {
+-		printk(err_readtime, dev_name(&rtc->dev), status);
++		printk(KERN_ERR "PM: can't read %s time, err %d\n", dev_name(&rtc->dev), status);
+ 		return;
+ 	}
+ 	rtc_tm_to_time(&alm.time, &now);
+@@ -90,29 +81,29 @@ static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
+ 
+ 	status = rtc_set_alarm(rtc, &alm);
+ 	if (status < 0) {
+-		printk(err_wakealarm, dev_name(&rtc->dev), status);
++		printk(KERN_ERR "PM: can't set %s wakealarm, err %d\n", dev_name(&rtc->dev), status);
+ 		return;
+ 	}
+ 
+ 	if (state == PM_SUSPEND_MEM) {
+-		printk(info_test, pm_states[state]);
++		printk(KERN_INFO "PM: test RTC wakeup from '%s' suspend\n", pm_states[state]);
+ 		status = pm_suspend(state);
+ 		if (status == -ENODEV)
+ 			state = PM_SUSPEND_STANDBY;
+ 	}
+ 	if (state == PM_SUSPEND_STANDBY) {
+-		printk(info_test, pm_states[state]);
++		printk(KERN_INFO "PM: test RTC wakeup from '%s' suspend\n", pm_states[state]);
+ 		status = pm_suspend(state);
+ 		if (status < 0)
+ 			state = PM_SUSPEND_FREEZE;
+ 	}
+ 	if (state == PM_SUSPEND_FREEZE) {
+-		printk(info_test, pm_states[state]);
++		printk(KERN_INFO "PM: test RTC wakeup from '%s' suspend\n", pm_states[state]);
+ 		status = pm_suspend(state);
+ 	}
+ 
+ 	if (status < 0)
+-		printk(err_suspend, status);
++		printk(KERN_ERR "PM: suspend test failed, error %d\n", status);
+ 
+ 	test_repeat_count_current++;
+ 	if (test_repeat_count_current < test_repeat_count_max)
+@@ -145,9 +136,6 @@ static int __init has_wakealarm(struct device *dev, const void *data)
+  */
+ static const char *test_state_label __initdata;
+ 
+-static char warn_bad_state[] __initdata =
+-	KERN_WARNING "PM: can't test '%s' suspend state\n";
+-
+ static int __init setup_test_suspend(char *value)
+ {
+ 	int i;
+@@ -172,16 +160,13 @@ static int __init setup_test_suspend(char *value)
+ 			return 0;
+ 		}
+ 
+-	printk(warn_bad_state, suspend_type);
++	printk(KERN_WARNING "PM: can't test '%s' suspend state\n", suspend_type);
+ 	return 0;
+ }
+ __setup("test_suspend", setup_test_suspend);
+ 
+ static int __init test_suspend(void)
+ {
+-	static const char warn_no_rtc[] __initconst =
+-		KERN_WARNING "PM: no wakealarm-capable RTC driver is ready\n";
+-
+ 	struct rtc_device	*rtc = NULL;
+ 	struct device		*dev;
+ 	suspend_state_t test_state;
+@@ -197,7 +182,7 @@ static int __init test_suspend(void)
+ 			break;
+ 	}
+ 	if (test_state == PM_SUSPEND_MAX) {
+-		printk(warn_bad_state, test_state_label);
++		printk(KERN_WARNING "PM: can't test '%s' suspend state\n", test_state_label);
+ 		return 0;
+ 	}
+ 
+@@ -208,7 +193,7 @@ static int __init test_suspend(void)
+ 		put_device(dev);
+ 	}
+ 	if (!rtc) {
+-		printk(warn_no_rtc);
++		printk(KERN_WARNING "PM: no wakealarm-capable RTC driver is ready\n");
+ 		return 0;
+ 	}
+ 
+diff --git a/net/802/psnap.c b/net/802/psnap.c
+index db6baf7cf6e9..f834c827338e 100644
+--- a/net/802/psnap.c
++++ b/net/802/psnap.c
+@@ -96,14 +96,11 @@ static int snap_request(struct datalink_proto *dl,
+ EXPORT_SYMBOL(register_snap_client);
+ EXPORT_SYMBOL(unregister_snap_client);
+ 
+-static const char snap_err_msg[] __initconst =
+-	KERN_CRIT "SNAP - unable to register with 802.2\n";
+-
+ static int __init snap_init(void)
+ {
+ 	snap_sap = llc_sap_open(0xAA, snap_rcv);
+ 	if (!snap_sap) {
+-		printk(snap_err_msg);
++		printk(KERN_CRIT "SNAP - unable to register with 802.2\n");
+ 		return -EBUSY;
+ 	}
+ 
+diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
+index 10d2bdce686e..806f4d922111 100644
+--- a/net/appletalk/ddp.c
++++ b/net/appletalk/ddp.c
+@@ -1906,9 +1906,6 @@ static unsigned char ddp_snap_id[] = { 0x08, 0x00, 0x07, 0x80, 0x9B };
+ EXPORT_SYMBOL(atrtr_get_dev);
+ EXPORT_SYMBOL(atalk_find_dev_addr);
+ 
+-static const char atalk_err_snap[] __initconst =
+-	KERN_CRIT "Unable to register DDP with SNAP.\n";
+-
+ /* Called by proto.c on kernel start up */
+ static int __init atalk_init(void)
+ {
+@@ -1920,7 +1917,7 @@ static int __init atalk_init(void)
+ 	(void)sock_register(&atalk_family_ops);
+ 	ddp_dl = register_snap_client(ddp_snap_id, atalk_rcv);
+ 	if (!ddp_dl)
+-		printk(atalk_err_snap);
++		printk(KERN_CRIT "Unable to register DDP with SNAP.\n");
+ 
+ 	dev_add_pack(&ltalk_packet_type);
+ 	dev_add_pack(&ppptalk_packet_type);
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index b0c04cf4851d..97a91b513aa7 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -29,11 +29,6 @@
+ #include "net-sysfs.h"
+ 
+ #ifdef CONFIG_SYSFS
+-static const char fmt_hex[] = "%#x\n";
+-static const char fmt_dec[] = "%d\n";
+-static const char fmt_ulong[] = "%lu\n";
+-static const char fmt_u64[] = "%llu\n";
+-
+ static inline int dev_isalive(const struct net_device *dev)
+ {
+ 	return dev->reg_state <= NETREG_REGISTERED;
+@@ -104,26 +99,26 @@ static ssize_t netdev_store(struct device *dev, struct device_attribute *attr,
+ 	return ret;
+ }
+ 
+-NETDEVICE_SHOW_RO(dev_id, fmt_hex);
+-NETDEVICE_SHOW_RO(dev_port, fmt_dec);
+-NETDEVICE_SHOW_RO(addr_assign_type, fmt_dec);
+-NETDEVICE_SHOW_RO(addr_len, fmt_dec);
+-NETDEVICE_SHOW_RO(ifindex, fmt_dec);
+-NETDEVICE_SHOW_RO(type, fmt_dec);
+-NETDEVICE_SHOW_RO(link_mode, fmt_dec);
++NETDEVICE_SHOW_RO(dev_id, "%#x\n");
++NETDEVICE_SHOW_RO(dev_port, "%d\n");
++NETDEVICE_SHOW_RO(addr_assign_type, "%d\n");
++NETDEVICE_SHOW_RO(addr_len, "%d\n");
++NETDEVICE_SHOW_RO(ifindex, "%d\n");
++NETDEVICE_SHOW_RO(type, "%d\n");
++NETDEVICE_SHOW_RO(link_mode, "%d\n");
+ 
+ static ssize_t iflink_show(struct device *dev, struct device_attribute *attr,
+ 			   char *buf)
+ {
+ 	struct net_device *ndev = to_net_dev(dev);
+ 
+-	return sprintf(buf, fmt_dec, dev_get_iflink(ndev));
++	return sprintf(buf, "%d\n", dev_get_iflink(ndev));
+ }
+ static DEVICE_ATTR_RO(iflink);
+ 
+ static ssize_t format_name_assign_type(const struct net_device *dev, char *buf)
+ {
+-	return sprintf(buf, fmt_dec, dev->name_assign_type);
++	return sprintf(buf, "%d\n", dev->name_assign_type);
+ }
+ 
+ static ssize_t name_assign_type_show(struct device *dev,
+@@ -183,7 +178,7 @@ static ssize_t carrier_show(struct device *dev,
+ {
+ 	struct net_device *netdev = to_net_dev(dev);
+ 	if (netif_running(netdev)) {
+-		return sprintf(buf, fmt_dec, !!netif_carrier_ok(netdev));
++		return sprintf(buf, "%d\n", !!netif_carrier_ok(netdev));
+ 	}
+ 	return -EINVAL;
+ }
+@@ -202,7 +197,7 @@ static ssize_t speed_show(struct device *dev,
+ 		struct ethtool_link_ksettings cmd;
+ 
+ 		if (!__ethtool_get_link_ksettings(netdev, &cmd))
+-			ret = sprintf(buf, fmt_dec, cmd.base.speed);
++			ret = sprintf(buf, "%d\n", cmd.base.speed);
+ 	}
+ 	rtnl_unlock();
+ 	return ret;
+@@ -249,7 +244,7 @@ static ssize_t dormant_show(struct device *dev,
+ 	struct net_device *netdev = to_net_dev(dev);
+ 
+ 	if (netif_running(netdev))
+-		return sprintf(buf, fmt_dec, !!netif_dormant(netdev));
++		return sprintf(buf, "%d\n", !!netif_dormant(netdev));
+ 
+ 	return -EINVAL;
+ }
+@@ -289,7 +284,7 @@ static ssize_t carrier_changes_show(struct device *dev,
+ 				    char *buf)
+ {
+ 	struct net_device *netdev = to_net_dev(dev);
+-	return sprintf(buf, fmt_dec,
++	return sprintf(buf, "%d\n",
+ 		       atomic_read(&netdev->carrier_changes));
+ }
+ static DEVICE_ATTR_RO(carrier_changes);
+@@ -306,7 +301,7 @@ static ssize_t mtu_store(struct device *dev, struct device_attribute *attr,
+ {
+ 	return netdev_store(dev, attr, buf, len, change_mtu);
+ }
+-NETDEVICE_SHOW_RW(mtu, fmt_dec);
++NETDEVICE_SHOW_RW(mtu, "%d\n");
+ 
+ static int change_flags(struct net_device *dev, unsigned long new_flags)
+ {
+@@ -318,7 +313,7 @@ static ssize_t flags_store(struct device *dev, struct device_attribute *attr,
+ {
+ 	return netdev_store(dev, attr, buf, len, change_flags);
+ }
+-NETDEVICE_SHOW_RW(flags, fmt_hex);
++NETDEVICE_SHOW_RW(flags, "%#x\n");
+ 
+ static int change_tx_queue_len(struct net_device *dev, unsigned long new_len)
+ {
+@@ -348,7 +343,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
+ 
+ 	return netdev_store(dev, attr, buf, len, change_tx_queue_len);
+ }
+-NETDEVICE_SHOW_RW(tx_queue_len, fmt_ulong);
++NETDEVICE_SHOW_RW(tx_queue_len, "%lu\n");
+ 
+ static int change_gro_flush_timeout(struct net_device *dev, unsigned long val)
+ {
+@@ -365,7 +360,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
+ 
+ 	return netdev_store(dev, attr, buf, len, change_gro_flush_timeout);
+ }
+-NETDEVICE_SHOW_RW(gro_flush_timeout, fmt_ulong);
++NETDEVICE_SHOW_RW(gro_flush_timeout, "%lu\n");
+ 
+ static ssize_t ifalias_store(struct device *dev, struct device_attribute *attr,
+ 			     const char *buf, size_t len)
+@@ -416,7 +411,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
+ {
+ 	return netdev_store(dev, attr, buf, len, change_group);
+ }
+-NETDEVICE_SHOW(group, fmt_dec);
++NETDEVICE_SHOW(group, "%d\n");
+ static DEVICE_ATTR(netdev_group, S_IRUGO | S_IWUSR, group_show, group_store);
+ 
+ static int change_proto_down(struct net_device *dev, unsigned long proto_down)
+@@ -430,7 +425,7 @@ static ssize_t proto_down_store(struct device *dev,
+ {
+ 	return netdev_store(dev, attr, buf, len, change_proto_down);
+ }
+-NETDEVICE_SHOW_RW(proto_down, fmt_dec);
++NETDEVICE_SHOW_RW(proto_down, "%d\n");
+ 
+ static ssize_t phys_port_id_show(struct device *dev,
+ 				 struct device_attribute *attr, char *buf)
+@@ -551,7 +546,7 @@ static ssize_t netstat_show(const struct device *d,
+ 		struct rtnl_link_stats64 temp;
+ 		const struct rtnl_link_stats64 *stats = dev_get_stats(dev, &temp);
+ 
+-		ret = sprintf(buf, fmt_u64, *(u64 *)(((u8 *) stats) + offset));
++		ret = sprintf(buf, "%llu\n", *(u64 *)(((u8 *) stats) + offset));
+ 	}
+ 	read_unlock(&dev_base_lock);
+ 	return ret;
+diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
+index a45c28583fcc..fde5a6e3b79d 100644
+--- a/net/decnet/af_decnet.c
++++ b/net/decnet/af_decnet.c
+@@ -2359,13 +2359,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_NETPROTO(PF_DECnet);
+ 
+-static const char banner[] __initconst = KERN_INFO "NET4: DECnet for Linux: V.2.5.68s (C) 1995-2003 Linux DECnet Project Team\n";
+-
+ static int __init decnet_init(void)
+ {
+ 	int rc;
+ 
+-	printk(banner);
++	printk(KERN_INFO "NET4: DECnet for Linux: V.2.5.68s (C) 1995-2003 Linux DECnet Project Team\n");
+ 
+ 	rc = proto_register(&dn_proto, 1);
+ 	if (rc != 0)
+diff --git a/net/ipx/af_ipx.c b/net/ipx/af_ipx.c
+index 8a9219ff2e77..57954d3f0ce7 100644
+--- a/net/ipx/af_ipx.c
++++ b/net/ipx/af_ipx.c
+@@ -1998,14 +1998,6 @@ static struct notifier_block ipx_dev_notifier = {
+ 
+ static const unsigned char ipx_8022_type = 0xE0;
+ static const unsigned char ipx_snap_id[5] = { 0x0, 0x0, 0x0, 0x81, 0x37 };
+-static const char ipx_EII_err_msg[] __initconst =
+-	KERN_CRIT "IPX: Unable to register with Ethernet II\n";
+-static const char ipx_8023_err_msg[] __initconst =
+-	KERN_CRIT "IPX: Unable to register with 802.3\n";
+-static const char ipx_llc_err_msg[] __initconst =
+-	KERN_CRIT "IPX: Unable to register with 802.2\n";
+-static const char ipx_snap_err_msg[] __initconst =
+-	KERN_CRIT "IPX: Unable to register with SNAP\n";
+ 
+ static int __init ipx_init(void)
+ {
+@@ -2020,21 +2012,21 @@ static int __init ipx_init(void)
+ 	if (pEII_datalink)
+ 		dev_add_pack(&ipx_dix_packet_type);
+ 	else
+-		printk(ipx_EII_err_msg);
++		printk(KERN_CRIT "IPX: Unable to register with Ethernet II\n");
+ 
+ 	p8023_datalink = make_8023_client();
+ 	if (p8023_datalink)
+ 		dev_add_pack(&ipx_8023_packet_type);
+ 	else
+-		printk(ipx_8023_err_msg);
++		printk(KERN_CRIT "IPX: Unable to register with 802.3\n");
+ 
+ 	p8022_datalink = register_8022_client(ipx_8022_type, ipx_rcv);
+ 	if (!p8022_datalink)
+-		printk(ipx_llc_err_msg);
++		printk(KERN_CRIT "IPX: Unable to register with 802.2\n");
+ 
+ 	pSNAP_datalink = register_snap_client(ipx_snap_id, ipx_rcv);
+ 	if (!pSNAP_datalink)
+-		printk(ipx_snap_err_msg);
++		printk(KERN_CRIT "IPX: Unable to register with SNAP\n");
+ 
+ 	register_netdevice_notifier(&ipx_dev_notifier);
+ 	ipx_register_sysctl();
+diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
+index 5e9296382420..546aa4dfc803 100644
+--- a/net/llc/af_llc.c
++++ b/net/llc/af_llc.c
+@@ -1185,13 +1185,6 @@ static const struct proto_ops llc_ui_ops = {
+ 	.sendpage    = sock_no_sendpage,
+ };
+ 
+-static const char llc_proc_err_msg[] __initconst =
+-	KERN_CRIT "LLC: Unable to register the proc_fs entries\n";
+-static const char llc_sysctl_err_msg[] __initconst =
+-	KERN_CRIT "LLC: Unable to register the sysctl entries\n";
+-static const char llc_sock_err_msg[] __initconst =
+-	KERN_CRIT "LLC: Unable to register the network family\n";
+-
+ static int __init llc2_init(void)
+ {
+ 	int rc = proto_register(&llc_proto, 0);
+@@ -1204,17 +1197,17 @@ static int __init llc2_init(void)
+ 	llc_ui_sap_last_autoport = LLC_SAP_DYN_START;
+ 	rc = llc_proc_init();
+ 	if (rc != 0) {
+-		printk(llc_proc_err_msg);
++		printk(KERN_CRIT "LLC: Unable to register the proc_fs entries\n");
+ 		goto out_station;
+ 	}
+ 	rc = llc_sysctl_init();
+ 	if (rc) {
+-		printk(llc_sysctl_err_msg);
++		printk(KERN_CRIT "LLC: Unable to register the sysctl entries\n");
+ 		goto out_proc;
+ 	}
+ 	rc = sock_register(&llc_ui_family_ops);
+ 	if (rc) {
+-		printk(llc_sock_err_msg);
++		printk(KERN_CRIT "LLC: Unable to register the network family\n");
+ 		goto out_sysctl;
+ 	}
+ 	llc_add_pack(LLC_DEST_SAP, llc_sap_handler);
+-- 

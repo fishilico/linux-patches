@@ -4,19 +4,20 @@ Date: Mon, 6 Jul 2015 13:44:37 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wformat-extra-args
 
 ---
- drivers/of/platform.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/of/platform.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-index b8064bc2b6eb..502369be4618 100644
+index b8064bc2b6eb..5ecb49701276 100644
 --- a/drivers/of/platform.c
 +++ b/drivers/of/platform.c
-@@ -90,15 +90,21 @@ void of_device_make_bus_id(struct device *dev)
+@@ -90,15 +90,23 @@ void of_device_make_bus_id(struct device *dev)
  		 */
  		reg = of_get_property(node, "reg", NULL);
  		if (reg && (addr = of_translate_address(node, reg)) != OF_BAD_ADDR) {
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-extra-args"
++#pragma GCC diagnostic ignored "-Wformat-security"
  			dev_set_name(dev, dev_name(dev) ? "%llx.%s:%s" : "%llx.%s",
  				     (unsigned long long)addr, node->name,
  				     dev_name(dev));
@@ -27,6 +28,7 @@ index b8064bc2b6eb..502369be4618 100644
  		/* format arguments only used if dev_name() resolves to NULL */
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-extra-args"
++#pragma GCC diagnostic ignored "-Wformat-security"
  		dev_set_name(dev, dev_name(dev) ? "%s:%s" : "%s",
  			     strrchr(node->full_name, '/') + 1, dev_name(dev));
 +#pragma GCC diagnostic pop

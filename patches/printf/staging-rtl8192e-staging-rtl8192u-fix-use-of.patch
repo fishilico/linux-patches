@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 1 Feb 2017 23:49:48 +0100
+Subject: [PATCH] {PRINTF} staging/rtl8192e, staging/rtl8192u: fix use of
+ sprintf
+
+sprintf() is used in a weird way. This definitely looks like a bug in a
+staging driver.
+---
+ drivers/staging/rtl8192e/rtllib_wx.c              | 6 ++++--
+ drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c | 4 +++-
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/staging/rtl8192e/rtllib_wx.c b/drivers/staging/rtl8192e/rtllib_wx.c
+index b1500ee9a5cf..8a17b900717e 100644
+--- a/drivers/staging/rtl8192e/rtllib_wx.c
++++ b/drivers/staging/rtl8192e/rtllib_wx.c
+@@ -86,8 +86,10 @@ static inline char *rtl819x_translate_scan(struct rtllib_device *ieee,
+ 	iwe.cmd = SIOCGIWNAME;
+ 	for (i = 0; i < ARRAY_SIZE(rtllib_modes); i++) {
+ 		if (network->mode&(1<<i)) {
+-			sprintf(pname, rtllib_modes[i].mode_string,
+-				rtllib_modes[i].mode_size);
++/* BUG?!? */
++			/* sprintf(pname, rtllib_modes[i].mode_string,
++				rtllib_modes[i].mode_size); */
++			strcpy(pname, rtllib_modes[i].mode_string);
+ 			pname += rtllib_modes[i].mode_size;
+ 		}
+ 	}
+diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
+index 563d7fed6e1c..683991e0b559 100644
+--- a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
++++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
+@@ -87,7 +87,9 @@ static inline char *rtl819x_translate_scan(struct ieee80211_device *ieee,
+ 	iwe.cmd = SIOCGIWNAME;
+ 	for(i=0; i<ARRAY_SIZE(ieee80211_modes); i++) {
+ 		if(network->mode&(1<<i)) {
+-			sprintf(pname,ieee80211_modes[i].mode_string,ieee80211_modes[i].mode_size);
++/* BUG?!? */
++			/* sprintf(pname,ieee80211_modes[i].mode_string,ieee80211_modes[i].mode_size); */
++			strcpy(pname, ieee80211_modes[i].mode_string);
+ 			pname +=ieee80211_modes[i].mode_size;
+ 		}
+ 	}
+-- 

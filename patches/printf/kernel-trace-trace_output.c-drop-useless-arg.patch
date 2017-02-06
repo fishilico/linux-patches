@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 1 Feb 2017 23:48:03 +0100
+Subject: [PATCH] {PRINTF} kernel/trace/trace_output.c: drop useless arg
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc with -Wformat-security complains:
+
+    kernel/trace/trace_output.c: In function ‘seq_print_sym_offset’:
+    kernel/trace/trace_output.c:315:2: error: Call with a non-constant
+    string [-Werror=format-security]
+      trace_seq_printf(s, fmt, name);
+      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    kernel/trace/trace_output.c: In function ‘seq_print_sym_short’:
+    kernel/trace/trace_output.c:300:2: error: Call with a non-constant
+    string [-Werror=format-security]
+      trace_seq_printf(s, fmt, name);
+      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---
+ kernel/trace/trace_output.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index 4d5af99486d5..48ea3c0bed28 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -287,7 +287,7 @@ static inline const char *kretprobed(const char *name)
+ #endif /* CONFIG_KRETPROBES */
+ 
+ static void
+-seq_print_sym_short(struct trace_seq *s, const char *fmt, unsigned long address)
++seq_print_sym_short(struct trace_seq *s, unsigned long address)
+ {
+ #ifdef CONFIG_KALLSYMS
+ 	char str[KSYM_SYMBOL_LEN];
+@@ -297,13 +297,12 @@ seq_print_sym_short(struct trace_seq *s, const char *fmt, unsigned long address)
+ 
+ 	name = kretprobed(str);
+ 
+-	trace_seq_printf(s, fmt, name);
++	trace_seq_printf(s, "%s", name); /* TODO trace_seq_puts? */
+ #endif
+ }
+ 
+ static void
+-seq_print_sym_offset(struct trace_seq *s, const char *fmt,
+-		     unsigned long address)
++seq_print_sym_offset(struct trace_seq *s, unsigned long address)
+ {
+ #ifdef CONFIG_KALLSYMS
+ 	char str[KSYM_SYMBOL_LEN];
+@@ -312,7 +311,7 @@ seq_print_sym_offset(struct trace_seq *s, const char *fmt,
+ 	sprint_symbol(str, address);
+ 	name = kretprobed(str);
+ 
+-	trace_seq_printf(s, fmt, name);
++	trace_seq_printf(s, "%s", name);
+ #endif
+ }
+ 
+@@ -363,9 +362,9 @@ seq_print_ip_sym(struct trace_seq *s, unsigned long ip, unsigned long sym_flags)
+ 	}
+ 
+ 	if (sym_flags & TRACE_ITER_SYM_OFFSET)
+-		seq_print_sym_offset(s, "%s", ip);
++		seq_print_sym_offset(s, ip);
+ 	else
+-		seq_print_sym_short(s, "%s", ip);
++		seq_print_sym_short(s, ip);
+ 
+ 	if (sym_flags & TRACE_ITER_SYM_ADDR)
+ 		trace_seq_printf(s, " <" IP_FMT ">", ip);
+-- 

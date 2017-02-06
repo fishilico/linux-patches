@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 1 Feb 2017 23:47:47 +0100
+Subject: [PATCH] {PRINTF} include/linux/kallsyms.h: replace print_symbol()
+ with a macro
+
+This fixes the following gcc warning when -Wformat-security is enabled:
+
+    include/linux/kallsyms.h:118:2: error: Call with a non-constant
+    string [-Werror=format-security]
+      __check_printsym_format(fmt, "");
+      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---
+ include/linux/kallsyms.h | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index 6883e197acb9..8e443c154f22 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -108,17 +108,16 @@ static inline int lookup_symbol_attrs(unsigned long addr, unsigned long *size, u
+ #endif /*CONFIG_KALLSYMS*/
+ 
+ /* This macro allows us to keep printk typechecking */
+-static __printf(1, 2)
++static __printf(1, 2) __used
+ void __check_printsym_format(const char *fmt, ...)
+ {
+ }
+ 
+-static inline void print_symbol(const char *fmt, unsigned long addr)
+-{
+-	__check_printsym_format(fmt, "");
+-	__print_symbol(fmt, (unsigned long)
+-		       __builtin_extract_return_addr((void *)addr));
+-}
++#define print_symbol(fmt, addr) do { \
++		__check_printsym_format(fmt, ""); \
++		__print_symbol(fmt, (unsigned long) \
++			       __builtin_extract_return_addr((void *)(uintptr_t)addr)); \
++	} while (0)
+ 
+ static inline void print_ip_sym(unsigned long ip)
+ {
+-- 
