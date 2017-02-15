@@ -3196,7 +3196,7 @@ index c4cb2e26de32..6dac4dabaa14 100644
  
  	hdmi->connector = vc4_hdmi_connector_init(drm, hdmi->encoder);
 diff --git a/drivers/gpu/drm/vc4/vc4_plane.c b/drivers/gpu/drm/vc4/vc4_plane.c
-index 881bf489478b..854cf21bf27b 100644
+index 686cdd3c86f2..326558632b4d 100644
 --- a/drivers/gpu/drm/vc4/vc4_plane.c
 +++ b/drivers/gpu/drm/vc4/vc4_plane.c
 @@ -858,10 +858,14 @@ struct drm_plane *vc4_plane_init(struct drm_device *dev,
@@ -3206,7 +3206,7 @@ index 881bf489478b..854cf21bf27b 100644
 +/* gcc does not like calling drm_encoder_init() with NULL */
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
- 	ret = drm_universal_plane_init(dev, plane, 0xff,
+ 	ret = drm_universal_plane_init(dev, plane, 0,
  				       &vc4_plane_funcs,
  				       formats, num_formats,
  				       type, NULL);
@@ -4783,7 +4783,7 @@ index dd7fc6659ad4..9139e6ea92c0 100644
  
  	pci_read_config_byte(pdev, PCI_LATENCY_TIMER, &pci_latency);
 diff --git a/drivers/net/macvtap.c b/drivers/net/macvtap.c
-index 23c9ea2d0e7f..a70891571544 100644
+index 76897e9df39c..eb3530f6067d 100644
 --- a/drivers/net/macvtap.c
 +++ b/drivers/net/macvtap.c
 @@ -1284,8 +1284,12 @@ static int macvtap_device_event(struct notifier_block *unused,
@@ -4800,7 +4800,7 @@ index 23c9ea2d0e7f..a70891571544 100644
  			macvtap_free_minor(vlan);
  			return notifier_from_errno(PTR_ERR(classdev));
 diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 92b08383cafa..35faafb21769 100644
+index 8c8e15b8739d..d0c0549145b9 100644
 --- a/drivers/net/phy/phy_device.c
 +++ b/drivers/net/phy/phy_device.c
 @@ -862,7 +862,10 @@ EXPORT_SYMBOL(phy_init_hw);
@@ -6473,10 +6473,10 @@ index 3a7587a0314d..9b408cccb2c0 100644
  	return count;
  }
 diff --git a/mm/slub.c b/mm/slub.c
-index 2e3d42791774..9432635a1836 100644
+index 7256fb1896a7..ff330c789222 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -3624,7 +3624,11 @@ static void list_slab_objects(struct kmem_cache *s, struct page *page,
+@@ -3628,7 +3628,11 @@ static void list_slab_objects(struct kmem_cache *s, struct page *page,
  				     sizeof(long), GFP_ATOMIC);
  	if (!map)
  		return;
@@ -6525,7 +6525,7 @@ index 85ef7bb0f176..da301eda619c 100644
  }
  
 diff --git a/net/core/dev.c b/net/core/dev.c
-index 7f218e095361..fe35185881a5 100644
+index 29101c98399f..1a34a2bf3614 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
 @@ -1051,7 +1051,10 @@ static int __dev_alloc_name(struct net *net, const char *name, char *buf)
@@ -6551,7 +6551,7 @@ index 7f218e095361..fe35185881a5 100644
  	if (!__dev_get_by_name(net, buf))
  		return i;
  
-@@ -5711,8 +5717,11 @@ static int netdev_adjacent_sysfs_add(struct net_device *dev,
+@@ -5706,8 +5712,11 @@ static int netdev_adjacent_sysfs_add(struct net_device *dev,
  			      struct list_head *dev_list)
  {
  	char linkname[IFNAMSIZ+7];
@@ -6563,7 +6563,7 @@ index 7f218e095361..fe35185881a5 100644
  	return sysfs_create_link(&(dev->dev.kobj), &(adj_dev->dev.kobj),
  				 linkname);
  }
-@@ -5721,8 +5730,11 @@ static void netdev_adjacent_sysfs_del(struct net_device *dev,
+@@ -5716,8 +5725,11 @@ static void netdev_adjacent_sysfs_del(struct net_device *dev,
  			       struct list_head *dev_list)
  {
  	char linkname[IFNAMSIZ+7];
