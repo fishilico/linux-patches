@@ -37,10 +37,11 @@ set_title() {
     printf '\033]0;%s\007' "$*"
 }
 
-# Run the build test named after $1
+# Run the build test with config $1
 do_build_test() {
     rm -r "$KBUILD_OUTPUT"
     set_title "Linux:$1"
+    export BUILDCONF="$1"
     if ! ./make_allmodconfig.sh "-j$JOBS" -k
     then
         msg_red "Compiling with $1 failed."
@@ -50,22 +51,10 @@ do_build_test() {
 }
 
 # First compile with gcc
-# shellcheck disable=SC2030,SC2031
-(
-    export CC=gcc
-    export HOSTCC=gcc
-    export HOSTCXX=g++
-    do_build_test gcc
-) || exit $?
+do_build_test gcc || exit $?
 
 # Then recompile with clang
-# shellcheck disable=SC2030,SC2031
-(
-    export CC=clang
-    export HOSTCC=clang
-    export HOSTCXX=clang++
-    do_build_test clang
-) || exit $?
+do_build_test clang || exit $?
 
 # Then compile again with gcc in 32-bit mode,
 # when linking with libcrypto works (needs lib32-openssl).
@@ -74,29 +63,13 @@ do_build_test() {
 echo 'int main(void){return 0;}' > "$KBUILD_OUTPUT/libcryptotest.c"
 if gcc -m32 -Werror "$KBUILD_OUTPUT/libcryptotest.c" -o "$KBUILD_OUTPUT/libcryptotest" -lcrypto
 then
-    # shellcheck disable=SC2030,SC2031
-    (
-        export ARCH='i386'
-        export CC='gcc -m32'
-        export HOSTCC='gcc -m32'
-        export HOSTCXX='g++ -m32'
-        do_build_test 'gcc-32'
-    ) || exit $?
+    do_build_test gcc-x86_32 || exit $?
 fi
 
 # Now compile for ARM architecture if the compiler is found
 if [ "$(uname -m)" = "x86_64" ] && which arm-none-eabi-gcc > /dev/null 2>&1
 then
-    # shellcheck disable=SC2030,SC2031
-    (
-        export ARCH=arm
-        export CROSS_COMPILE=arm-none-eabi-
-        # Define __linux__ in the compiler
-        export CC='arm-none-eabi-gcc -D__linux__'
-        export HOSTCC=gcc
-        export HOSTCXX=g++
-        do_build_test arm-gcc
-    ) || exit $?
+    do_build_test xgcc-arm || exit $?
 fi
 
 msg_green 'Compiling with gcc and clang succeded :)'

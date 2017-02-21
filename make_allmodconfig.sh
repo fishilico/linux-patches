@@ -33,14 +33,54 @@
 # This directory needs to be mounted with the exec flag
 export KBUILD_OUTPUT="${KBUILD_OUTPUT:-/tmp/makepkg-$(id -nu)/gitlinux-patched}"
 
-# Build with clang by default
-export CC="${CC:-clang}"
-export HOSTCC="${HOSTCC:-clang}"
+# Select a build configuration from BUILDCONF variable, if it exists
+case "${BUILDCONF:-}" in
+    gcc)
+        # Native gcc
+        CC=gcc
+        HOSTCC=gcc
+        HOSTCXX=g++
+        ;;
+    clang)
+        # Native clang
+        CC=clang
+        HOSTCC=clang
+        HOSTCXX=clang++
+        ;;
+    gcc-x86_32)
+        # gcc in 32-bit x86 mode
+        ARCH=i386
+        CC='gcc -m32'
+        HOSTCC='gcc -m32'
+        HOSTCXX='g++ -m32'
+        ;;
+    xgcc-arm)
+        # ARM with arm-none-eabi-... cross-compiling toolchain
+        ARCH=arm
+        CROSS_COMPILE=arm-none-eabi-
+        # Define __linux__ in the compiler
+        CC='arm-none-eabi-gcc -D__linux__'
+        HOSTCC=gcc
+        HOSTCXX=g++
+        ;;
+    '')
+        # Build with clang by default
+        CC="${CC:-clang}"
+        HOSTCC="${HOSTCC:-clang}"
+        # Guess HOSTCXX from HOSTCC: gcc->g++ and clang->clang++
+        HOSTCXX_FROM_HOSTCC="$(echo "$HOSTCC" | sed 's/gcc/g/')++"
+        HOSTCXX="${HOSTCXX:-$HOSTCXX_FROM_HOSTCC}"
+        ;;
+    *)
+        echo >&2 "Unknown build configuration $BUILDCONF"
+        exit 1
+        ;;
+esac
 
-# Guess HOSTCXX from HOSTCC: gcc->g++ and clang->clang++
-HOSTCXX_FROM_HOSTCC="$(echo "$HOSTCC" | sed 's/gcc/g/')++"
-export HOSTCXX="${HOSTCXX:-$HOSTCXX_FROM_HOSTCC}"
+# export all variables
+export ARCH CC CROSS_COMPILE HOSTCC HOSTCXX
 
+# Define the target used for configuration
 CONFIG_TARGET="${CONFIG_TARGET:-allmodconfig}"
 if [ -n "$ALLYESCONFIG" ]
 then
