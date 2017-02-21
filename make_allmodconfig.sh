@@ -52,13 +52,10 @@ fi
 export KCFLAGS='-Wall -Wextra -Werror'
 KCFLAGS="$KCFLAGS -Wfloat-equal"
 KCFLAGS="$KCFLAGS -Wformat=2"
-KCFLAGS="$KCFLAGS -Wjump-misses-init"
-KCFLAGS="$KCFLAGS -Wlogical-op"
 KCFLAGS="$KCFLAGS -Wmissing-format-attribute"
 KCFLAGS="$KCFLAGS -Wmissing-include-dirs"
 KCFLAGS="$KCFLAGS -Wmissing-prototypes"
 KCFLAGS="$KCFLAGS -Wstrict-prototypes"
-KCFLAGS="$KCFLAGS -Wtrampolines"
 KCFLAGS="$KCFLAGS -Wunknown-pragmas"
 KCFLAGS="$KCFLAGS -Wno-aggregate-return" # Linux ktime_get returns a structure
 KCFLAGS="$KCFLAGS -Wno-cast-align" # Many struct casts change the alignment
@@ -71,8 +68,6 @@ KCFLAGS="$KCFLAGS -Wno-missing-field-initializers"
 KCFLAGS="$KCFLAGS -Wno-missing-include-dirs" # -Idir/only/in/src is expanded to include both directories in $(srcdir) and output
 KCFLAGS="$KCFLAGS -Wno-missing-prototypes" # There are way too many missing #include or static in the code to make this useful
 KCFLAGS="$KCFLAGS -Wno-nested-externs" # Linux uses nested externs
-KCFLAGS="$KCFLAGS -Wno-old-style-declaration" # inline does not have to be at the beginning of declarations
-KCFLAGS="$KCFLAGS -Wno-override-init" # When defining syscall tables, overriding default value is mandatory
 KCFLAGS="$KCFLAGS -Wno-pointer-arith" # Linux does arithmetic on void pointers
 KCFLAGS="$KCFLAGS -Wno-pointer-sign" # Many functions implicitly cast pointers of different signedness
 KCFLAGS="$KCFLAGS -Wno-redundant-decls" # Some headers redefine things
@@ -80,12 +75,9 @@ KCFLAGS="$KCFLAGS -Wno-shadow" # The kernel redefines built-in functions like ff
 KCFLAGS="$KCFLAGS -Wno-sign-compare" # There are many comparaisons between signed and unsigned integers
 KCFLAGS="$KCFLAGS -Wno-trigraphs" # Ignore trigraphs like "??)"
 KCFLAGS="$KCFLAGS -Wno-type-limits" # Unsigned integers >= 0
-KCFLAGS="$KCFLAGS -Wno-unused-but-set-variable" # Many variables are never used
 KCFLAGS="$KCFLAGS -Wno-unused-const-variable"
 KCFLAGS="$KCFLAGS -Wno-unused-function" # Make the build succeed when some static functions are not used
 KCFLAGS="$KCFLAGS -Wno-unused-parameter" # There is no __unused macro, and __maybe_unused is not the common headers
-KCFLAGS="$KCFLAGS -Wno-error=jump-misses-init" # The compiler is not smart enough in many cases
-KCFLAGS="$KCFLAGS -Wno-error=logical-op"
 KCFLAGS="$KCFLAGS -Wno-error=write-strings" # TODO, type acpi_string complicates things
 
 if $CC -v 2>&1 | grep -q clang
@@ -154,8 +146,20 @@ then
     KCFLAGS="$KCFLAGS -Wno-error=switch" # TODO, "overflow converting case value to switch condition type"
 elif $CC -v 2>&1 | grep -q 'gcc version'
 then
-    KCFLAGS="$KCFLAGS -Wno-maybe-uninitialized" # There are too many false positives with gcc 5.2
+    KCFLAGS="$KCFLAGS -Wtrampolines"
+    KCFLAGS="$KCFLAGS -Wjump-misses-init"
+    KCFLAGS="$KCFLAGS -Wlogical-op"
     KCFLAGS="$KCFLAGS -Wno-frame-address" # __builtin_return_address is called with a nonzero argument
+    KCFLAGS="$KCFLAGS -Wno-old-style-declaration" # inline does not have to be at the beginning of declarations
+    KCFLAGS="$KCFLAGS -Wno-override-init" # When defining syscall tables, overriding default value is mandatory
+    KCFLAGS="$KCFLAGS -Wno-maybe-uninitialized" # There are too many false positives with gcc 5.2
+    KCFLAGS="$KCFLAGS -Wno-unused-but-set-variable" # Many variables are never used
+
+    KCFLAGS="$KCFLAGS -Wno-error=jump-misses-init" # The compiler is not smart enough in many cases
+    KCFLAGS="$KCFLAGS -Wno-error=logical-op"
+else
+    echo >&2 "Unknown compiler $CC"
+    exit 1
 fi
 
 # Initial from Makefile
@@ -222,7 +226,8 @@ then
     HOSTCFLAGS="$HOSTCFLAGS -Wno-error=sign-conversion"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-error=shorten-64-to-32"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-error=unreachable-code"
-else
+elif $HOSTCC -v 2>&1 | grep -q 'gcc version'
+then
     HOSTCC="${HOSTCC:-gcc}"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-clobbered" # Flase positives of clobbered variables
     HOSTCFLAGS="$HOSTCFLAGS -Wno-discarded-qualifiers" # Many helper programs mix const char* in char* variables
@@ -230,6 +235,9 @@ else
     HOSTCFLAGS="$HOSTCFLAGS -Wno-pointer-arith" # Linux does arithmetic on void pointers
     HOSTCFLAGS="$HOSTCFLAGS -Wno-error=nested-externs"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-error=redundant-decls"
+else
+    echo >&2 "Unknown compiler $HOSTCC"
+    exit 1
 fi
 
 set -e
