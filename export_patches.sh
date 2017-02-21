@@ -48,14 +48,14 @@ trap 'if test -d "$PATCHDIR" ; then rm -r "$PATCHDIR" ; fi' EXIT HUP INT QUIT TE
 
 # Export patches
 git -C linux format-patch --no-numbered -o "../$PATCHDIR" "$BASE_COMMIT..master" > "$PATCHDIR/raw_series" || exit $?
-sed -e 's,../[^/]\+/,,' "$PATCHDIR/raw_series" > "$PATCHDIR/series" || exit $?
+sed -e 's,\.\./[^/]\+/,,' "$PATCHDIR/raw_series" > "$PATCHDIR/series" || exit $?
 echo "$BASE_COMMIT" > "$PATCHDIR/upstream-commit.hash" || exit $?
 rm "$PATCHDIR/raw_series"
 
 # Make the git patches reproductible:
 # * Remove the commit ID
 sed -i -e '1s/\(From\) [0-9a-f]\{40\} \(Mon Sep 17 00:00:00 2001\)/\1 0000000000000000000000000000000000000000 \2/' "$PATCHDIR/"*.patch
-# * Remove the git version and the empty lines with are at the end of the files
+# * Remove the git version and the empty lines that are at the end of the files
 sed -i -e '$,/^$/d' "$PATCHDIR/"*.patch
 sed -i -e '$,/^[0-9.]*$/d' "$PATCHDIR/"*.patch
 
