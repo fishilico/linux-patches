@@ -29,6 +29,11 @@ VERSION="$(git -C linux describe "$(cat patches/upstream-commit.hash)")"
 # Remove leading "v"
 VERSION="${VERSION#v}"
 
+# Force GPG signing
+if [ "$(git config commit.gpgsign)" != true ] ; then
+    git config commit.gpgsign true
+fi
+
 set -x -e
 git reset HEAD
 git add patches tracked-patches.txt
