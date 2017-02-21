@@ -33,6 +33,9 @@ msg_green() {
 msg_red() {
     printf '\033[1;31m%s\033[m\n' "$*"
 }
+msg_yellow() {
+    printf '\033[1;33m%s\033[m\n' "$*"
+}
 set_title() {
     printf '\033]0;%s\007' "$*"
 }
@@ -50,6 +53,9 @@ do_build_test() {
     fi
 }
 
+# List of tests which were not run becase something is missing
+UNSUPPORTED_TESTS=''
+
 # First compile with gcc
 do_build_test gcc || exit $?
 
@@ -64,15 +70,25 @@ echo 'int main(void){return 0;}' > "$KBUILD_OUTPUT/libcryptotest.c"
 if gcc -m32 -Werror "$KBUILD_OUTPUT/libcryptotest.c" -o "$KBUILD_OUTPUT/libcryptotest" -lcrypto
 then
     do_build_test gcc-x86_32 || exit $?
+else
+    UNSUPPORTED_TESTS="$UNSUPPORTED_TESTS gcc-x86_32"
 fi
 
 # Now compile for ARM architecture if the compiler is found
 if [ "$(uname -m)" = "x86_64" ] && which arm-none-eabi-gcc > /dev/null 2>&1
 then
     do_build_test xgcc-arm || exit $?
+else
+    UNSUPPORTED_TESTS="$UNSUPPORTED_TESTS xgcc-arm"
 fi
 
-msg_green 'Compiling with gcc and clang succeded :)'
+msg_green 'Compiling with all configurations succeded :)'
+
+# Print a warning for unsupported tests
+if [ -n "$UNSUPPORTED_TESTS" ]
+then
+    msg_yellow "Did not compile with$UNSUPPORTED_TESTS (unsupported on this system)"
+fi
 
 # Remove the output directory to free space
 rm -r "$KBUILD_OUTPUT"
