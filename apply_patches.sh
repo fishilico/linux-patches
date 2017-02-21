@@ -57,5 +57,6 @@ done < patches/series
 # At the end, change to master branch
 git -C linux checkout -B master applying-patches || exit $?
 git -C linux branch -d applying-patches || exit $?
+git -C linux branch --set-upstream-to=origin/master master || exit $?
 
 echo "Branch master is ready."
