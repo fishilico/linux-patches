@@ -63,6 +63,13 @@ case "${BUILDCONF:-}" in
         HOSTCC=gcc
         HOSTCXX=g++
         ;;
+    gcc-framac)
+        # Use gcc with Frama-C special architecture
+        ARCH=framac
+        CC=gcc
+        HOSTCC=gcc
+        HOSTCXX=g++
+        ;;
     '')
         # Build with clang by default
         CC="${CC:-clang}"

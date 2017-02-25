@@ -82,6 +82,20 @@ else
     UNSUPPORTED_TESTS="$UNSUPPORTED_TESTS xgcc-arm"
 fi
 
+# Compile for Frama-C if the headers are found and the code is there
+if [ -d /usr/share/frama-c/libc ] && [ -d linux/arch/framac/ ]
+then
+    (
+        export CONFIG_TARGET=allnoconfig
+        do_build_test gcc-framac || exit $?
+    )
+
+    # Launch Frama-C value analysis
+    ./frama-c_value.sh || exit $?
+else
+    UNSUPPORTED_TESTS="$UNSUPPORTED_TESTS gcc-framac"
+fi
+
 msg_green 'Compiling with all configurations succeded :)'
 
 # Print a warning for unsupported tests

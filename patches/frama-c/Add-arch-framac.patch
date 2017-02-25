@@ -1,0 +1,1203 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 27 Dec 2016 19:09:50 +0100
+Subject: [PATCH] {FRAMA-C} Add arch/framac
+
+---
+ arch/framac/Kconfig                    |  75 +++++++++++++++++++++
+ arch/framac/Makefile                   |  27 ++++++++
+ arch/framac/extra/Makefile             |  13 ++++
+ arch/framac/extra/gen_lds_vars.sh      |  27 ++++++++
+ arch/framac/extra/lds_vars.c           | 120 +++++++++++++++++++++++++++++++++
+ arch/framac/include/abstract_structs.h |  45 +++++++++++++
+ arch/framac/include/asm/Kbuild         |  81 ++++++++++++++++++++++
+ arch/framac/include/asm/byteorder.h    |   6 ++
+ arch/framac/include/asm/dma-mapping.h  |  11 +++
+ arch/framac/include/asm/elf.h          |  30 +++++++++
+ arch/framac/include/asm/irqflags.h     |  15 +++++
+ arch/framac/include/asm/pgtable.h      |  65 ++++++++++++++++++
+ arch/framac/include/asm/processor.h    |  40 +++++++++++
+ arch/framac/include/asm/ptrace.h       |  23 +++++++
+ arch/framac/include/asm/sigcontext.h   |  10 +++
+ arch/framac/include/asm/thread_info.h  |  64 ++++++++++++++++++
+ arch/framac/kernel/Makefile            |  11 +++
+ arch/framac/kernel/asm-offsets.c       |  13 ++++
+ arch/framac/kernel/dma.c               |  57 ++++++++++++++++
+ arch/framac/kernel/head.c              |   6 ++
+ arch/framac/kernel/irq.c               |   5 ++
+ arch/framac/kernel/process.c           |  40 +++++++++++
+ arch/framac/kernel/ptrace.c            |  11 +++
+ arch/framac/kernel/reboot.c            |  22 ++++++
+ arch/framac/kernel/setup.c             |  12 ++++
+ arch/framac/kernel/time.c              |   5 ++
+ arch/framac/kernel/traps.c             |  10 +++
+ arch/framac/kernel/vmlinux.lds.S       |  56 +++++++++++++++
+ arch/framac/lib/Makefile               |   1 +
+ arch/framac/lib/delay.c                |  27 ++++++++
+ arch/framac/mm/Makefile                |   1 +
+ arch/framac/mm/init.c                  |   9 +++
+ 32 files changed, 938 insertions(+)
+ create mode 100644 arch/framac/Kconfig
+ create mode 100644 arch/framac/Makefile
+ create mode 100644 arch/framac/extra/Makefile
+ create mode 100644 arch/framac/extra/gen_lds_vars.sh
+ create mode 100644 arch/framac/extra/lds_vars.c
+ create mode 100644 arch/framac/include/abstract_structs.h
+ create mode 100644 arch/framac/include/asm/Kbuild
+ create mode 100644 arch/framac/include/asm/byteorder.h
+ create mode 100644 arch/framac/include/asm/dma-mapping.h
+ create mode 100644 arch/framac/include/asm/elf.h
+ create mode 100644 arch/framac/include/asm/irqflags.h
+ create mode 100644 arch/framac/include/asm/pgtable.h
+ create mode 100644 arch/framac/include/asm/processor.h
+ create mode 100644 arch/framac/include/asm/ptrace.h
+ create mode 100644 arch/framac/include/asm/sigcontext.h
+ create mode 100644 arch/framac/include/asm/thread_info.h
+ create mode 100644 arch/framac/kernel/Makefile
+ create mode 100644 arch/framac/kernel/asm-offsets.c
+ create mode 100644 arch/framac/kernel/dma.c
+ create mode 100644 arch/framac/kernel/head.c
+ create mode 100644 arch/framac/kernel/irq.c
+ create mode 100644 arch/framac/kernel/process.c
+ create mode 100644 arch/framac/kernel/ptrace.c
+ create mode 100644 arch/framac/kernel/reboot.c
+ create mode 100644 arch/framac/kernel/setup.c
+ create mode 100644 arch/framac/kernel/time.c
+ create mode 100644 arch/framac/kernel/traps.c
+ create mode 100644 arch/framac/kernel/vmlinux.lds.S
+ create mode 100644 arch/framac/lib/Makefile
+ create mode 100644 arch/framac/lib/delay.c
+ create mode 100644 arch/framac/mm/Makefile
+ create mode 100644 arch/framac/mm/init.c
+
+diff --git a/arch/framac/Kconfig b/arch/framac/Kconfig
+new file mode 100644
+index 000000000000..5311df0ea348
+--- /dev/null
++++ b/arch/framac/Kconfig
+@@ -0,0 +1,75 @@
++comment "Linux Kernel Configuration for Frama-C"
++
++config FRAMA_C
++	def_bool y
++	select BUG
++	select GENERIC_ATOMIC64
++#	select GENERIC_CLOCKEVENTS
++	select GENERIC_CPU_DEVICES
++	select GENERIC_FIND_FIRST_BIT
++	select GENERIC_IRQ_PROBE
++	select GENERIC_IRQ_SHOW
++	---help---
++	  Frama-C is a static C program checker
++
++menu "Kernel Features"
++
++#config SMP
++#	bool "Symmetric Multi-Processing"
++
++config NR_CPUS
++	int "Maximum number of CPUs" if SMP
++	range 1 2 if SMP
++	default "1" if !SMP
++	default "2" if SMP
++
++config HZ
++	int
++	default 1000
++
++config GENERIC_BUG
++	def_bool y
++
++config GENERIC_CALIBRATE_DELAY
++	def_bool y
++
++config GENERIC_CSUM
++	def_bool y
++
++config GENERIC_HWEIGHT
++	def_bool y
++
++config RWSEM_GENERIC_SPINLOCK
++	def_bool y
++
++config KERNEL_RAM_BASE_ADDRESS
++	hex "Virtual address of memory base (PAGE_OFFSET)"
++	default 0x80000000
++
++config FRAMAC_GEN_LDS_VARIABLES
++	bool "Generate .lds variables templates for Frama-C"
++	default n
++	help
++	  Generate arch/framac/lds_var.tpl.c, which is useful to build or
++	  update arch/framac/lds_var.c.
++
++endmenu
++
++source "mm/Kconfig"
++source "init/Kconfig"
++source "kernel/Kconfig.freezer"
++source "drivers/Kconfig"
++source "fs/Kconfig"
++
++menu "Executable File Formats"
++source "fs/Kconfig.binfmt"
++endmenu
++
++source "net/Kconfig"
++source "security/Kconfig"
++source "crypto/Kconfig"
++source "lib/Kconfig"
++
++menu "Kernel hacking"
++source "lib/Kconfig.debug"
++endmenu
+diff --git a/arch/framac/Makefile b/arch/framac/Makefile
+new file mode 100644
+index 000000000000..399e1b3ab6ce
+--- /dev/null
++++ b/arch/framac/Makefile
+@@ -0,0 +1,27 @@
++#  Makefile for the Frama-C arch
++
++# Save preprocessed files, if not using allyesconfig (otherwise the output files are way too big)
++ifneq ($(CONFIG_COMPILE_TEST), y)
++KBUILD_CPPFLAGS += -C -save-temps=obj
++endif
++
++# Add Frama-C headers
++KBUILD_CPPFLAGS += -I/usr/share/frama-c -D__FC_MACHDEP_X86_32
++
++# Customize flags
++KBUILD_CPPFLAGS += -D__CHECKER__ -D__FRAMAC__
++
++KBUILD_AFLAGS += -m32
++
++KBUILD_CFLAGS += -m32 -Wno-attributes -nostdlib -Werror
++KBUILD_CFLAGS += -fno-builtin -ffreestanding
++# Always include abstract structure definitions
++KBUILD_CFLAGS += -include abstract_structs.h
++LDFLAGS += -melf_i386
++
++# XXX: needed?
++KBUILD_CFLAGS += $(cflags-y)
++KBUILD_AFLAGS += $(aflags-y)
++
++core-y += arch/framac/extra/ arch/framac/kernel/ arch/framac/mm/
++libs-y += arch/framac/lib/
+diff --git a/arch/framac/extra/Makefile b/arch/framac/extra/Makefile
+new file mode 100644
+index 000000000000..941e11bfe7d8
+--- /dev/null
++++ b/arch/framac/extra/Makefile
+@@ -0,0 +1,13 @@
++extra-y += lds_vars.o
++
++extra-$(CONFIG_FRAMAC_GEN_LDS_VARIABLES) += lds_vars.tpl.c
++
++$(obj)/lds_vars.tpl.c: $(src)/gen_lds_vars.sh $(obj)/arch/framac/kernel/vmlinux.lds
++	$(call if_changed,gen_lds_vars)
++
++# Build a built-in.o object by not linking lds_vars.o
++obj- += lds_vars.o
++
++quiet_cmd_gen_lds_vars = GENVARS $@
++cmd_gen_lds_vars = \
++	sh $(srctree)/$(src)/gen_lds_vars.sh '$(srctree)' > '$@'
+diff --git a/arch/framac/extra/gen_lds_vars.sh b/arch/framac/extra/gen_lds_vars.sh
+new file mode 100644
+index 000000000000..6259dfb9a576
+--- /dev/null
++++ b/arch/framac/extra/gen_lds_vars.sh
+@@ -0,0 +1,27 @@
++#!/bin/sh
++# Generate a pattern for lds_vars.c source
++
++SRCTREE="$1"
++
++gcc -E - < ./arch/framac/kernel/vmlinux.lds | \
++    sed -e 's/\([{;]\)/\1\n/g' -e 's/\t/ /g' | \
++    sed -n 's,\(.* \)\?\([a-zA-Z0-9_]\+\) = \.;.*,\2,p' | \
++while read SYM ; do
++    # Find symbols SYM in the source tree
++    TYPE1="$( \
++        grep --exclude-dir=.git --exclude-dir=.pc "extern .* $SYM\\[\\]" -r "$SRCTREE" | \
++        sed -n 's,.*extern \+\(\(const \)\?\(struct \)\?\(unsigned \)\?[a-zA-Z0-9_*]\+\) .*,\1,p' | \
++        sort -u)"
++    if [ -z "$TYPE1" ] ; then
++        echo '/'"* $SYM not found *"'/'
++        continue
++    fi
++
++    if [ "$(echo "$TYPE1" | wc -l)" -gt 1 ]
++    then
++        echo '/'"* $SYM has several types:"
++        echo "$TYPE1" | sed 's,^, * ,'
++        echo ' *'"/"
++    fi
++    echo "$(echo "$TYPE1" | head -n1) ${SYM}[1];"
++done
+diff --git a/arch/framac/extra/lds_vars.c b/arch/framac/extra/lds_vars.c
+new file mode 100644
+index 000000000000..4f5785cdf697
+--- /dev/null
++++ b/arch/framac/extra/lds_vars.c
+@@ -0,0 +1,120 @@
++/**
++ * Define references to unsized arrays used in the code which come from the
++ * linker script.
++ * This is done because Frama-C does not support sizeless arrays.
++ *
++ * This file has been partly generated by using gen_lds_vars.sh script
++ */
++#include <linux/firmware.h>
++#include <linux/init.h>
++#include <linux/jump_label.h>
++#include <linux/moduleparam.h>
++#include <linux/pci.h>
++#include <linux/tracepoint.h>
++#include <linux/uaccess.h>
++#include <linux/dynamic_debug.h>
++
++char __init_begin[1];
++char _sinittext[1];
++char _einittext[1];
++char __per_cpu_load[1];
++char __per_cpu_start[1];
++char __per_cpu_end[1];
++char __init_end[1];
++char _stext[1];
++char _text[1];
++char __sched_text_start[1];
++char __sched_text_end[1];
++char __cpuidle_text_start[1];
++char __cpuidle_text_end[1];
++char __lock_text_start[1];
++char __lock_text_end[1];
++char __kprobes_text_start[1];
++char __kprobes_text_end[1];
++char _etext[1];
++char __dtb_start[1];
++char __dtb_end[1];
++const struct obs_kernel_param __setup_start[1];
++const struct obs_kernel_param __setup_end[1];
++initcall_t __initcall_start[1];
++initcall_t __initcall0_start[1];
++initcall_t __initcall1_start[1];
++initcall_t __initcall2_start[1];
++initcall_t __initcall3_start[1];
++initcall_t __initcall4_start[1];
++initcall_t __initcall5_start[1];
++/* __initcallrootfs_start not found */
++initcall_t __initcall6_start[1];
++initcall_t __initcall7_start[1];
++initcall_t __initcall_end[1];
++initcall_t __con_initcall_start[1];
++initcall_t __con_initcall_end[1];
++initcall_t __security_initcall_start[1];
++initcall_t __security_initcall_end[1];
++char _sdata[1];
++char __start_rodata[1];
++char __start_data_ro_after_init[1];
++char __end_data_ro_after_init[1];
++struct tracepoint __start___tracepoints_ptrs[1];
++struct tracepoint __stop___tracepoints_ptrs[1];
++const struct bug_entry __start___bug_table[1];
++const struct bug_entry __stop___bug_table[1];
++struct pci_fixup __start_pci_fixups_early[1];
++struct pci_fixup __end_pci_fixups_early[1];
++struct pci_fixup __start_pci_fixups_header[1];
++struct pci_fixup __end_pci_fixups_header[1];
++struct pci_fixup __start_pci_fixups_final[1];
++struct pci_fixup __end_pci_fixups_final[1];
++struct pci_fixup __start_pci_fixups_enable[1];
++struct pci_fixup __end_pci_fixups_enable[1];
++struct pci_fixup __start_pci_fixups_resume[1];
++struct pci_fixup __end_pci_fixups_resume[1];
++struct pci_fixup __start_pci_fixups_resume_early[1];
++struct pci_fixup __end_pci_fixups_resume_early[1];
++struct pci_fixup __start_pci_fixups_suspend[1];
++struct pci_fixup __end_pci_fixups_suspend[1];
++struct pci_fixup __start_pci_fixups_suspend_late[1];
++struct pci_fixup __end_pci_fixups_suspend_late[1];
++struct builtin_fw __start_builtin_fw[1];
++struct builtin_fw __end_builtin_fw[1];
++const struct kernel_symbol __start___ksymtab[1];
++const struct kernel_symbol __stop___ksymtab[1];
++const struct kernel_symbol __start___ksymtab_gpl[1];
++const struct kernel_symbol __stop___ksymtab_gpl[1];
++const struct kernel_symbol __start___ksymtab_unused[1];
++const struct kernel_symbol __stop___ksymtab_unused[1];
++const struct kernel_symbol __start___ksymtab_unused_gpl[1];
++const struct kernel_symbol __stop___ksymtab_unused_gpl[1];
++const struct kernel_symbol __start___ksymtab_gpl_future[1];
++const struct kernel_symbol __stop___ksymtab_gpl_future[1];
++const unsigned long __start___kcrctab[1];
++/* __stop___kcrctab not found */
++const unsigned long __start___kcrctab_gpl[1];
++/* __stop___kcrctab_gpl not found */
++const unsigned long __start___kcrctab_unused[1];
++/* __stop___kcrctab_unused not found */
++const unsigned long __start___kcrctab_unused_gpl[1];
++/* __stop___kcrctab_unused_gpl not found */
++const unsigned long __start___kcrctab_gpl_future[1];
++/* __stop___kcrctab_gpl_future not found */
++const struct kernel_param __start___param[1];
++const struct kernel_param __stop___param[1];
++/* __start___modver not found */
++/* __stop___modver not found */
++char __end_rodata[1];
++/* __start_init_task not found */
++/* __end_init_task not found */
++/* __nosave_begin not found */
++/* __nosave_end not found */
++char __start___jump_table[1];
++char __stop___jump_table[1];
++struct _ddebug __start___verbose[1];
++struct _ddebug __stop___verbose[1];
++char _edata[1];
++struct exception_table_entry __start___ex_table[1];
++struct exception_table_entry __stop___ex_table[1];
++const char __start_notes[1];
++const char __stop_notes[1];
++char __bss_start[1];
++char __bss_stop[1];
++char _end[1];
+diff --git a/arch/framac/include/abstract_structs.h b/arch/framac/include/abstract_structs.h
+new file mode 100644
+index 000000000000..0cd721254651
+--- /dev/null
++++ b/arch/framac/include/abstract_structs.h
+@@ -0,0 +1,45 @@
++#ifndef _ASM_FRAMA_C_ABSTRACT_STRUCT_H
++#define _ASM_FRAMA_C_ABSTRACT_STRUCT_H
++
++#ifndef __ASSEMBLY__
++
++/**
++ * Define some abstract types which are not defined with the minimum config.
++ * This allows Frama-C val plugin to initialize globals.
++ */
++struct dma_coherent_mem { char dummy; };
++struct dn_dev { char dummy; };
++struct forwarding_accel_ops { char dummy; };
++struct garp_port { char dummy; };
++struct in_device { char dummy; };
++struct iommu_group { char dummy; };
++struct iommu_ops { char dummy; };
++struct ipv4_devconf { char dummy; };
++struct kernfs_iattrs { char dummy; };
++
++#ifndef CONFIG_MEMCG
++struct mem_cgroup { char dummy; };
++#endif
++
++#ifndef CONFIG_MODULES
++struct module { char dummy; };
++#endif
++
++struct mrp_port { char dummy; };
++
++#ifndef CONFIG_NET_NS
++struct net_generic { char dummy; };
++#endif
++
++#ifndef CONFIG_PROC_FS
++struct proc_dir_entry { char dummy; };
++#endif
++
++struct prot_inuse { char dummy; };
++struct tcpm_hash_bucket { char dummy; };
++struct wireless_dev { char dummy; };
++struct wpan_dev { char dummy; };
++
++#endif
++
++#endif /* _ASM_FRAMA_C_ABSTRACT_STRUCT_H */
+diff --git a/arch/framac/include/asm/Kbuild b/arch/framac/include/asm/Kbuild
+new file mode 100644
+index 000000000000..6b1e5f5f83e9
+--- /dev/null
++++ b/arch/framac/include/asm/Kbuild
+@@ -0,0 +1,81 @@
++generic-y += atomic.h
++generic-y += auxvec.h
++generic-y += barrier.h
++generic-y += bitops.h
++generic-y += bitsperlong.h
++generic-y += bug.h
++generic-y += bugs.h
++generic-y += cacheflush.h
++generic-y += cache.h
++generic-y += checksum.h
++generic-y += cmpxchg.h
++generic-y += cputime.h
++generic-y += current.h
++generic-y += delay.h
++generic-y += device.h
++generic-y += div64.h
++generic-y += dma.h
++generic-y += emergency-restart.h
++generic-y += errno.h
++generic-y += exec.h
++generic-y += fcntl.h
++generic-y += ftrace.h
++generic-y += futex.h
++generic-y += hardirq.h
++generic-y += hw_irq.h
++generic-y += kvm_para.h
++generic-y += ioctl.h
++generic-y += ioctls.h
++generic-y += io.h
++generic-y += ipcbuf.h
++generic-y += irq.h
++generic-y += irq_regs.h
++generic-y += irq_work.h
++generic-y += kdebug.h
++generic-y += kmap_types.h
++generic-y += linkage.h
++generic-y += local.h
++generic-y += mcs_spinlock.h
++generic-y += mman.h
++generic-y += mmu_context.h
++generic-y += mmu.h
++generic-y += module.h
++generic-y += mutex.h
++generic-y += page.h
++generic-y += param.h
++generic-y += pci.h
++generic-y += percpu.h
++generic-y += pgalloc.h
++generic-y += poll.h
++generic-y += posix_types.h
++generic-y += preempt.h
++generic-y += resource.h
++generic-y += rwsem.h
++generic-y += scatterlist.h
++generic-y += sections.h
++generic-y += segment.h
++generic-y += sembuf.h
++generic-y += setup.h
++generic-y += shmbuf.h
++generic-y += shmparam.h
++generic-y += siginfo.h
++generic-y += signal.h
++generic-y += socket.h
++generic-y += sockios.h
++generic-y += statfs.h
++generic-y += stat.h
++generic-y += string.h
++generic-y += swab.h
++generic-y += switch_to.h
++generic-y += termbits.h
++generic-y += termios.h
++generic-y += timex.h
++generic-y += tlbflush.h
++generic-y += tlb.h
++generic-y += topology.h
++generic-y += trace_clock.h
++generic-y += types.h
++generic-y += uaccess.h
++generic-y += unaligned.h
++generic-y += unistd.h
++generic-y += word-at-a-time.h
+diff --git a/arch/framac/include/asm/byteorder.h b/arch/framac/include/asm/byteorder.h
+new file mode 100644
+index 000000000000..4516d312c49d
+--- /dev/null
++++ b/arch/framac/include/asm/byteorder.h
+@@ -0,0 +1,6 @@
++#ifndef _ASM_FRAMA_C_BYTEORDER_H
++#define _ASM_FRAMA_C_BYTEORDER_H
++
++#include <linux/byteorder/little_endian.h>
++
++#endif /* _ASM_FRAMA_C_BYTEORDER_H */
+diff --git a/arch/framac/include/asm/dma-mapping.h b/arch/framac/include/asm/dma-mapping.h
+new file mode 100644
+index 000000000000..09bfe7010933
+--- /dev/null
++++ b/arch/framac/include/asm/dma-mapping.h
+@@ -0,0 +1,11 @@
++#ifndef _ASM_FRAMA_C_DMA_MAPPING_H
++#define _ASM_FRAMA_C_DMA_MAPPING_H
++
++extern struct dma_map_ops framac_dma_ops;
++
++static inline struct dma_map_ops *get_dma_ops(struct device *dev)
++{
++	return &framac_dma_ops;
++}
++
++#endif /* _ASM_FRAMA_C_DMA_MAPPING_H */
+diff --git a/arch/framac/include/asm/elf.h b/arch/framac/include/asm/elf.h
+new file mode 100644
+index 000000000000..43d61e706128
+--- /dev/null
++++ b/arch/framac/include/asm/elf.h
+@@ -0,0 +1,30 @@
++#ifndef _ASM_FRAMA_C_ELF_H
++#define _ASM_FRAMA_C_ELF_H
++
++#include <asm/ptrace.h>
++
++typedef unsigned long elf_greg_t;
++
++#define ELF_NGREG (sizeof(struct pt_regs) / sizeof(elf_greg_t))
++typedef elf_greg_t elf_gregset_t[ELF_NGREG];
++
++typedef unsigned long elf_fpregset_t;
++
++#define ELF_CLASS	ELFCLASS32
++#define ELF_DATA	ELFDATA2LSB
++#define ELF_ARCH	EM_X86
++
++#define ELF_PLAT_INIT(regs, load_addr) do { } while (0)
++
++#define USE_ELF_CORE_DUMP
++#define CORE_DUMP_USE_REGSET
++
++#define ELF_EXEC_PAGESIZE	PAGE_SIZE
++
++#define ELF_ET_DYN_BASE         0x08000000UL
++
++#define ELF_HWCAP	(0)
++
++#define ELF_PLATFORM  (NULL)
++
++#endif /* _ASM_FRAMA_C_ELF_H */
+diff --git a/arch/framac/include/asm/irqflags.h b/arch/framac/include/asm/irqflags.h
+new file mode 100644
+index 000000000000..2cf4035657f4
+--- /dev/null
++++ b/arch/framac/include/asm/irqflags.h
+@@ -0,0 +1,15 @@
++#ifndef _ASM_FRAMA_C_IRQFLAGS_H
++#define _ASM_FRAMA_C_IRQFLAGS_H
++
++static inline unsigned long arch_local_save_flags(void)
++{
++	return 0;
++}
++
++static inline void arch_local_irq_restore(unsigned long flags)
++{
++}
++
++#include <asm-generic/irqflags.h>
++
++#endif /* _ASM_FRAMA_C_IRQFLAGS_H */
+diff --git a/arch/framac/include/asm/pgtable.h b/arch/framac/include/asm/pgtable.h
+new file mode 100644
+index 000000000000..066886852ffc
+--- /dev/null
++++ b/arch/framac/include/asm/pgtable.h
+@@ -0,0 +1,65 @@
++#ifndef _ASM_FRAMA_C_PGTABLE_H
++#define _ASM_FRAMA_C_PGTABLE_H
++
++#include <asm-generic/pgtable-nopud.h>
++#include <asm-generic/pgtable.h>
++
++#define pgtable_cache_init() do { } while (0)
++#define arch_start_context_switch(prev) do {} while (0)
++
++#define _PAGE_PRESENT	(1<<0)
++#define _PAGE_EXEC	(1<<1)
++#define _PAGE_WRITE	(1<<2)
++#define _PAGE_READ	(1<<3)
++#define _PAGE_FILE	(1<<4) /* page cache/swap */
++
++#define PAGE_NONE	__pgprot(_PAGE_PRESENT)
++#define PAGE_READONLY   __pgprot(_PAGE_PRESENT | _PAGE_READ)
++#define PAGE_COPY       PAGE_READONLY
++#define PAGE_EXEC       __pgprot(_PAGE_PRESENT | _PAGE_READ | _PAGE_EXEC)
++#define PAGE_COPY_EXEC  PAGE_EXEC
++#define PAGE_KERNEL	__pgprot(_PAGE_PRESENT | _PAGE_READ | _PAGE_WRITE | \
++				 _PAGE_EXEC)
++
++static inline int pte_file(pte_t pte)
++{
++	return pte_val(pte) & _PAGE_FILE;
++}
++
++#define swapper_pg_dir	((pgd_t *) NULL)
++
++/*
++ * Encode and decode a swap entry like ARM64:
++ *	bits 0-1:	present (must be zero)
++ *	bits 2-7:	swap type
++ *	bits 8-(max):	swap offset
++ */
++#define __SWP_TYPE_SHIFT	2
++#define __SWP_TYPE_BITS		6
++#define __SWP_TYPE_MASK		((1 << __SWP_TYPE_BITS) - 1)
++#define __SWP_OFFSET_SHIFT	(__SWP_TYPE_BITS + __SWP_TYPE_SHIFT)
++
++static inline unsigned long __swp_type(swp_entry_t entry)
++{
++	return (entry.val >> __SWP_TYPE_SHIFT) & __SWP_TYPE_MASK;
++}
++static inline unsigned long __swp_offset(swp_entry_t entry)
++{
++	return entry.val >> __SWP_OFFSET_SHIFT;
++}
++static inline swp_entry_t __swp_entry(unsigned long type, unsigned long offset)
++{
++	return (swp_entry_t) {
++		((type & __SWP_TYPE_MASK) << __SWP_TYPE_SHIFT)
++		| (offset << __SWP_OFFSET_SHIFT) };
++}
++
++static inline swp_entry_t __pte_to_swp_entry(pte_t pte)
++{
++	return (swp_entry_t) { pte_val(pte) };
++}
++static inline pte_t __swp_entry_to_pte(swp_entry_t swp)
++{
++	return (pte_t) { swp.val };
++}
++#endif /* _ASM_FRAMA_C_PGTABLE_H */
+diff --git a/arch/framac/include/asm/processor.h b/arch/framac/include/asm/processor.h
+new file mode 100644
+index 000000000000..b341573b9581
+--- /dev/null
++++ b/arch/framac/include/asm/processor.h
+@@ -0,0 +1,40 @@
++#ifndef _ASM_FRAMA_C_PROCESSOR_H
++#define _ASM_FRAMA_C_PROCESSOR_H
++
++#define TASK_SIZE PAGE_OFFSET
++
++#ifndef __ASSEMBLY__
++
++#define current_text_addr() ({ __label__ _l; _l: &&_l; })
++
++/* Define a dummy __builtin_extract_return_addr
++ * GCC documentation: https://gcc.gnu.org/onlinedocs/gcc/Return-Address.html
++ */
++#define __builtin_extract_return_addr(ptr) (ptr)
++
++struct thread_struct {
++	char dummy;
++};
++
++#define INIT_THREAD	{ }
++
++extern void start_thread(struct pt_regs *regs, unsigned long pc,
++			unsigned long sp);
++
++#define cpu_relax()	do { } while (0)
++#define cpu_relax_lowlatency()	cpu_relax()
++#define release_thread(thread)	do { } while (0)
++
++#define task_pt_regs(p) \
++	((struct pt_regs *)(THREAD_SIZE + task_stack_page(p)) - 1)
++
++#define thread_saved_pc(tsk) 0UL
++
++#define KSTK_EIP(tsk)	task_pt_regs(tsk)->pc
++#define KSTK_ESP(tsk)	task_pt_regs(tsk)->usp
++
++unsigned long get_wchan(struct task_struct *p);
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* _ASM_FRAMA_C_PROCESSOR_H */
+diff --git a/arch/framac/include/asm/ptrace.h b/arch/framac/include/asm/ptrace.h
+new file mode 100644
+index 000000000000..6da8c8be3650
+--- /dev/null
++++ b/arch/framac/include/asm/ptrace.h
+@@ -0,0 +1,23 @@
++#ifndef _ASM_FRAMA_C_PTRACE_H
++#define _ASM_FRAMA_C_PTRACE_H
++
++struct pt_regs {
++	unsigned long r0;	/* Define 6 registers for syscalls parameters */
++	unsigned long r1;
++	unsigned long r2;
++	unsigned long r3;
++	unsigned long r4;
++	unsigned long r5;
++	unsigned long r6;
++	unsigned long r_sc;	/* Syscall number */
++	unsigned long r_ret;	/* Return value */
++	unsigned long pc;	/* Program Counter */
++	unsigned long usp;	/* User Stack Pointer */
++	unsigned long fp;	/* Frame Pointer */
++};
++
++#define user_mode(regs)			true /* FIXME */
++
++#include <asm-generic/ptrace.h>
++
++#endif /* _ASM_FRAMA_C_PTRACE_H */
+diff --git a/arch/framac/include/asm/sigcontext.h b/arch/framac/include/asm/sigcontext.h
+new file mode 100644
+index 000000000000..797b8392aa72
+--- /dev/null
++++ b/arch/framac/include/asm/sigcontext.h
+@@ -0,0 +1,10 @@
++#ifndef _ASM_FRAMA_C_SIGCONTEXT_H
++#define _ASM_FRAMA_C_SIGCONTEXT_H
++
++#include <asm/ptrace.h>
++
++struct sigcontext {
++	struct pt_regs regs;
++};
++
++#endif /* _ASM_FRAMA_C_SIGCONTEXT_H */
+diff --git a/arch/framac/include/asm/thread_info.h b/arch/framac/include/asm/thread_info.h
+new file mode 100644
+index 000000000000..026466edfa4f
+--- /dev/null
++++ b/arch/framac/include/asm/thread_info.h
+@@ -0,0 +1,64 @@
++#ifndef _ASM_FRAMA_C_THREAD_INFO_H
++#define _ASM_FRAMA_C_THREAD_INFO_H
++
++#ifdef __KERNEL__
++
++/*
++ * Size of the kernel stack for each process.
++ */
++#define THREAD_SIZE_ORDER	1
++#define THREAD_SIZE		8192 /* 2 * PAGE_SIZE */
++
++#define TIF_SYSCALL_TRACE	0	/* syscall trace active */
++#define TIF_NOTIFY_RESUME	1	/* resumption notification requested */
++#define TIF_SIGPENDING		2	/* signal pending */
++#define TIF_NEED_RESCHED	3	/* rescheduling necessary */
++#define TIF_MEMDIE		4	/* is terminating due to OOM killer */
++#define TIF_SECCOMP		5	/* secure computing */
++#define TIF_SYSCALL_AUDIT	6	/* syscall auditing active */
++#define TIF_RESTORE_SIGMASK	7	/* restore signal mask in do_signal() */
++
++#ifndef __ASSEMBLY__
++
++typedef struct {
++	unsigned long seg;
++} mm_segment_t;
++
++struct thread_info {
++	struct task_struct	*task;		/* main task structure */
++	unsigned long		flags;          /* low level flags */
++	__u32                   cpu;            /* current cpu */
++	int                     preempt_count;  /* 0=>preemptible,<0=>BUG */
++	mm_segment_t            addr_limit;     /* segmentation sux */
++	struct restart_block	restart_block;
++	struct pt_regs		*regs;
++};
++
++#define INIT_THREAD_INFO(tsk)                   \
++{                                               \
++	.task           = &tsk,                 \
++	.flags          = 0,                    \
++	.cpu            = 0,                    \
++	.preempt_count  = INIT_PREEMPT_COUNT,   \
++	.addr_limit     = KERNEL_DS,            \
++	.restart_block	= {			\
++		.fn = do_no_restart_syscall,	\
++	},					\
++}
++
++#define init_thread_info	(init_thread_union.thread_info)
++#define init_stack		(init_thread_union.stack)
++
++static inline struct thread_info *current_thread_info(void)
++{
++	/* Get stack pointer from local variable, without asm */
++	unsigned long mask = THREAD_SIZE - 1;
++
++	return (struct thread_info *)(((unsigned long)&mask) & ~mask);
++}
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* __KERNEL__ */
++
++#endif /* _ASM_FRAMA_C_THREAD_INFO_H */
+diff --git a/arch/framac/kernel/Makefile b/arch/framac/kernel/Makefile
+new file mode 100644
+index 000000000000..894ba89f93de
+--- /dev/null
++++ b/arch/framac/kernel/Makefile
+@@ -0,0 +1,11 @@
++extra-y += vmlinux.lds
++
++obj-y += dma.o
++obj-y += head.o
++obj-y += irq.o
++obj-y += process.o
++obj-y += ptrace.o
++obj-y += reboot.o
++obj-y += setup.o
++obj-y += time.o
++obj-y += traps.o
+diff --git a/arch/framac/kernel/asm-offsets.c b/arch/framac/kernel/asm-offsets.c
+new file mode 100644
+index 000000000000..d0671b9f90c0
+--- /dev/null
++++ b/arch/framac/kernel/asm-offsets.c
+@@ -0,0 +1,13 @@
++#include <linux/stddef.h>
++#include <linux/sched.h>
++#include <linux/kernel_stat.h>
++#include <linux/ptrace.h>
++#include <linux/hardirq.h>
++#include <linux/kbuild.h>
++
++int main(void)
++{
++	COMMENT("TODO.");
++	BLANK();
++	return 0;
++}
+diff --git a/arch/framac/kernel/dma.c b/arch/framac/kernel/dma.c
+new file mode 100644
+index 000000000000..4a703735e8d9
+--- /dev/null
++++ b/arch/framac/kernel/dma.c
+@@ -0,0 +1,57 @@
++#include <linux/dma-mapping.h>
++#include <linux/kernel.h>
++#include <linux/scatterlist.h>
++#include <linux/module.h>
++#include <asm/pgalloc.h>
++
++static void *dma_alloc(struct device *dev, size_t size,
++		       dma_addr_t *dma_handle, gfp_t gfp,
++		       unsigned long attrs)
++{
++	void *ret;
++
++	ret = (void *)__get_free_pages(gfp, get_order(size));
++	if (ret) {
++		memset(ret, 0, size);
++		*dma_handle = virt_to_phys(ret);
++	}
++	return ret;
++}
++
++static void dma_free(struct device *dev, size_t size,
++		     void *vaddr, dma_addr_t dma_handle,
++		     unsigned long attrs)
++
++{
++	free_pages((unsigned long)vaddr, get_order(size));
++}
++
++static dma_addr_t map_page(struct device *dev, struct page *page,
++				  unsigned long offset, size_t size,
++				  enum dma_data_direction direction,
++				  unsigned long attrs)
++{
++	return page_to_phys(page) + offset;
++}
++
++static int map_sg(struct device *dev, struct scatterlist *sgl,
++		  int nents, enum dma_data_direction direction,
++		  unsigned long attrs)
++{
++	struct scatterlist *sg;
++	int i;
++
++	for_each_sg(sgl, sg, nents, i) {
++		sg->dma_address = sg_phys(sg);
++	}
++
++	return nents;
++}
++
++struct dma_map_ops framac_dma_ops = {
++	.alloc = dma_alloc,
++	.free = dma_free,
++	.map_page = map_page,
++	.map_sg = map_sg,
++};
++EXPORT_SYMBOL(framac_dma_ops);
+diff --git a/arch/framac/kernel/head.c b/arch/framac/kernel/head.c
+new file mode 100644
+index 000000000000..b40bfd7ca799
+--- /dev/null
++++ b/arch/framac/kernel/head.c
+@@ -0,0 +1,6 @@
++#include <linux/start_kernel.h>
++
++void __init _start(void)
++{
++	start_kernel();
++}
+diff --git a/arch/framac/kernel/irq.c b/arch/framac/kernel/irq.c
+new file mode 100644
+index 000000000000..53189a95bf8a
+--- /dev/null
++++ b/arch/framac/kernel/irq.c
+@@ -0,0 +1,5 @@
++#include <linux/init.h>
++
++void __init init_IRQ(void)
++{
++}
+diff --git a/arch/framac/kernel/process.c b/arch/framac/kernel/process.c
+new file mode 100644
+index 000000000000..2a5ef13b0f96
+--- /dev/null
++++ b/arch/framac/kernel/process.c
+@@ -0,0 +1,40 @@
++#include <linux/sched.h>
++
++int copy_thread(unsigned long clone_flags, unsigned long stack_start,
++		unsigned long stk_sz, struct task_struct *p)
++{
++	struct pt_regs *childregs = task_pt_regs(p);
++
++	childregs->usp = (unsigned long)childregs;
++	return 0;
++}
++
++void flush_thread(void)
++{
++}
++
++void show_regs(struct pt_regs *regs)
++{
++	pr_notice("\n");
++	show_regs_print_info(KERN_DEFAULT);
++
++	pr_notice("r1: %08lx r2: %08lx r3: %08lx r4: %08lx\n",
++		  regs->r1, regs->r2, regs->r3, regs->r4);
++
++	pr_notice("r5: %08lx r6: %08lx sc: %08lx ret: %08lx\n",
++		  regs->r5, regs->r6, regs->r_sc, regs->r_ret);
++
++	pr_notice("pc: %08lx usp:  %08lx fp: %08lx\n",
++		  regs->pc, regs->usp, regs->fp);
++}
++
++struct task_struct *__switch_to(struct task_struct *prev,
++				struct task_struct *next)
++{
++	return prev;
++}
++
++unsigned long get_wchan(struct task_struct *p)
++{
++	return 0;
++}
+diff --git a/arch/framac/kernel/ptrace.c b/arch/framac/kernel/ptrace.c
+new file mode 100644
+index 000000000000..af9fa93c43c6
+--- /dev/null
++++ b/arch/framac/kernel/ptrace.c
+@@ -0,0 +1,11 @@
++#include <linux/ptrace.h>
++
++void ptrace_disable(struct task_struct *child)
++{
++}
++
++long arch_ptrace(struct task_struct *child, long request,
++		 unsigned long addr, unsigned long data)
++{
++	return ptrace_request(child, request, addr, data);
++}
+diff --git a/arch/framac/kernel/reboot.c b/arch/framac/kernel/reboot.c
+new file mode 100644
+index 000000000000..14e28943325e
+--- /dev/null
++++ b/arch/framac/kernel/reboot.c
+@@ -0,0 +1,22 @@
++#include <linux/pm.h>
++#include <linux/reboot.h>
++
++void (*pm_power_off)(void);
++EXPORT_SYMBOL(pm_power_off);
++
++void machine_power_off(void)
++{
++	if (pm_power_off)
++		pm_power_off();
++	machine_halt();
++}
++
++void machine_halt(void)
++{
++	while (1)
++		;
++}
++
++void machine_restart(char *cmd)
++{
++}
+diff --git a/arch/framac/kernel/setup.c b/arch/framac/kernel/setup.c
+new file mode 100644
+index 000000000000..3b39b1af6d41
+--- /dev/null
++++ b/arch/framac/kernel/setup.c
+@@ -0,0 +1,12 @@
++#include <linux/init.h>
++#include <linux/mm.h>
++
++unsigned long memory_start;
++EXPORT_SYMBOL(memory_start);
++
++unsigned long memory_end;
++EXPORT_SYMBOL(memory_end);
++
++void __init setup_arch(char **cmdline_p)
++{
++}
+diff --git a/arch/framac/kernel/time.c b/arch/framac/kernel/time.c
+new file mode 100644
+index 000000000000..b400db694d39
+--- /dev/null
++++ b/arch/framac/kernel/time.c
+@@ -0,0 +1,5 @@
++#include <linux/init.h>
++
++void __init time_init(void)
++{
++}
+diff --git a/arch/framac/kernel/traps.c b/arch/framac/kernel/traps.c
+new file mode 100644
+index 000000000000..f2e174a198f1
+--- /dev/null
++++ b/arch/framac/kernel/traps.c
+@@ -0,0 +1,10 @@
++#include <linux/sched.h>
++
++void __init trap_init(void)
++{
++}
++
++void show_stack(struct task_struct *task, unsigned long *stack)
++{
++	pr_info("Show stack of task %pK at %pK\n", task, stack);
++}
+diff --git a/arch/framac/kernel/vmlinux.lds.S b/arch/framac/kernel/vmlinux.lds.S
+new file mode 100644
+index 000000000000..d5ac6fab0ff8
+--- /dev/null
++++ b/arch/framac/kernel/vmlinux.lds.S
+@@ -0,0 +1,56 @@
++/*
++ * See asm-generic/vmlinux.lds.h for expansion of some of these macros.
++ * See asm-generic/sections.h for seemingly required labels.
++*/
++#include <asm-generic/vmlinux.lds.h>
++#include <asm/cache.h>		/* for L1_CACHE_BYTES */
++#include <asm/page.h>		/* for PAGE_SIZE */
++#include <asm/thread_info.h>	/* for THREAD_SIZE */
++
++ENTRY(_start)
++
++jiffies = jiffies_64;
++
++SECTIONS
++{
++	. = 0;
++
++	__init_begin = .;
++	HEAD_TEXT_SECTION
++	INIT_TEXT_SECTION(PAGE_SIZE)
++	PERCPU_SECTION(L1_CACHE_BYTES)
++	__init_end = .;
++
++	. = ALIGN(PAGE_SIZE);
++	_stext = .;
++	.text : AT(ADDR(.text)) {
++		_text = .;
++		TEXT_TEXT
++		SCHED_TEXT
++		CPUIDLE_TEXT
++		LOCK_TEXT
++		IRQENTRY_TEXT
++		KPROBES_TEXT
++		*(.fixup)
++	}
++	_etext = .;
++
++	INIT_DATA_SECTION(PAGE_SIZE)
++
++	_sdata = .;
++	RO_DATA_SECTION(PAGE_SIZE)
++	RW_DATA_SECTION(L1_CACHE_BYTES, PAGE_SIZE, THREAD_SIZE)
++	_edata = .;
++
++	EXCEPTION_TABLE(16)
++	NOTES
++
++	BSS_SECTION(0, 0, 0)
++
++	_end = .;
++
++	STABS_DEBUG
++	DWARF_DEBUG
++
++	DISCARDS
++}
+diff --git a/arch/framac/lib/Makefile b/arch/framac/lib/Makefile
+new file mode 100644
+index 000000000000..588f2891f5ee
+--- /dev/null
++++ b/arch/framac/lib/Makefile
+@@ -0,0 +1 @@
++lib-y += delay.o
+diff --git a/arch/framac/lib/delay.c b/arch/framac/lib/delay.c
+new file mode 100644
+index 000000000000..3c5bb9161b84
+--- /dev/null
++++ b/arch/framac/lib/delay.c
+@@ -0,0 +1,27 @@
++#include <linux/compiler.h>
++#include <linux/delay.h>
++#include <linux/export.h>
++#include <linux/param.h>
++
++void __delay(unsigned long loops)
++{
++}
++EXPORT_SYMBOL(__delay);
++
++void __const_udelay(unsigned long xloops)
++{
++	__delay(xloops * HZ);
++}
++EXPORT_SYMBOL(__const_udelay);
++
++void __udelay(unsigned long usecs)
++{
++	__const_udelay(usecs * 0x000010c7);
++}
++EXPORT_SYMBOL(__udelay);
++
++void __ndelay(unsigned long nsecs)
++{
++	__const_udelay(nsecs * 0x00005);
++}
++EXPORT_SYMBOL(__ndelay);
+diff --git a/arch/framac/mm/Makefile b/arch/framac/mm/Makefile
+new file mode 100644
+index 000000000000..eb072c016176
+--- /dev/null
++++ b/arch/framac/mm/Makefile
+@@ -0,0 +1 @@
++obj-y += init.o
+diff --git a/arch/framac/mm/init.c b/arch/framac/mm/init.c
+new file mode 100644
+index 000000000000..ced507cf41e2
+--- /dev/null
++++ b/arch/framac/mm/init.c
+@@ -0,0 +1,9 @@
++#include <linux/mm.h>
++
++void __init mem_init(void)
++{
++}
++
++void free_initmem(void)
++{
++}
+-- 

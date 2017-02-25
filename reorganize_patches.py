@@ -68,6 +68,7 @@ def get_patch_path(patchdir, name):
     KNOWN_TOPICS = {
         '{CONSTIFY}': 'constify',
         '{For LLVMLinux}': 'llvmlinux',
+        '{FRAMA-C}': 'frama-c',
         '{LLVMLinux}': 'llvmlinux',
         '{MAYBE UPS}': 'maybe_upstreamable',
         '{NOT UPSTREAMABLE}': 'not_upstreamble',

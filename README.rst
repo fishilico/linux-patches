@@ -42,6 +42,7 @@ All the patches lies in subdirectories inside ``patches/``:
 
 * ``patches/bug/`` patches fix some bugs which make the compiling fail.
 * ``patches/constify/`` patches add ``const`` keyword in some places.
+* ``patches/frama-c/`` patches modify the kernel so that Frama-C can be used.
 * ``patches/llvmlinux/`` patches are related to clang compatibility (c.f. http://llvm.linuxfoundation.org/ ).
 * ``patches/maybe_upstreamable/`` patches have a very low priority of being sent upstream.
 * ``patches/not_upstreamble/`` patches have no chance to go upstream (they do not comply with coding rules, introduce dirty code, etc.).

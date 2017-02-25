@@ -1,0 +1,554 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 26 Aug 2016 13:12:46 +0200
+Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
+
+- Define specific macros compatible with Frama-C compiler
+- In kernel/signal: disable x86-specific bits
+- Remove ASM code when it is avoidable (this modifies the
+  generated/analyzed code as it means taking the "slow and untested
+  fail-over path"
+- Simplify SYSCALL_DEFINE macro (Frama-C does not understand complex
+  code as the one used to define syscalls)
+- Use string functions from Frama-C
+---
+ include/asm-generic/uaccess.h | 16 ++++++++++++++++
+ include/linux/bug.h           | 12 ++++++++++++
+ include/linux/compiler.h      | 23 ++++++++++++++++++++++-
+ include/linux/cpumask.h       |  5 +++++
+ include/linux/crypto.h        |  7 ++++++-
+ include/linux/delay.h         | 15 ++++++++++++---
+ include/linux/flex_array.h    |  5 ++++-
+ include/linux/kernel.h        |  9 +++++++++
+ include/linux/math64.h        |  2 ++
+ include/linux/pci.h           |  3 +++
+ include/linux/syscalls.h      |  7 +++++++
+ include/uapi/linux/limits.h   |  4 ++++
+ include/uapi/linux/types.h    |  2 +-
+ init/do_mounts.c              |  2 +-
+ init/do_mounts_initrd.c       |  2 +-
+ init/do_mounts_md.c           |  2 +-
+ init/do_mounts_rd.c           |  2 +-
+ init/initramfs.c              |  2 +-
+ kernel/signal.c               |  2 +-
+ kernel/time/time.c            |  8 ++++++++
+ lib/hexdump.c                 | 13 +++++++++++--
+ lib/rhashtable.c              |  7 +++++++
+ 22 files changed, 135 insertions(+), 15 deletions(-)
+
+diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
+index cc6bb319e464..3ef54f44a519 100644
+--- a/include/asm-generic/uaccess.h
++++ b/include/asm-generic/uaccess.h
+@@ -158,6 +158,21 @@ static inline __must_check long __copy_to_user(void __user *to,
+ 	__pu_err;						\
+ })
+ 
++#ifdef __FRAMAC__
++/* Frama-C does not like the access_ok() ? ... : ... ; construct:
++ * [kernel] failure: invalid implicit conversion from void to int
++ */
++#define put_user(x, ptr)					\
++({								\
++	void *__p = (ptr);					\
++	__typeof__(*(ptr)) __x = (x);				\
++	int __pu_err = -EFAULT;					\
++	might_fault();						\
++	if (access_ok(VERIFY_WRITE, __p, sizeof(*ptr)))		\
++		__put_user_fn(sizeof(*(ptr)), (ptr), &__x);	\
++	__pu_err;						\
++})
++#else
+ #define put_user(x, ptr)					\
+ ({								\
+ 	void *__p = (ptr);					\
+@@ -166,6 +181,7 @@ static inline __must_check long __copy_to_user(void __user *to,
+ 		__put_user((x), ((__typeof__(*(ptr)) *)__p)) :	\
+ 		-EFAULT;					\
+ })
++#endif
+ 
+ #ifndef __put_user_fn
+ 
+diff --git a/include/linux/bug.h b/include/linux/bug.h
+index baff2e8fc8a8..aa879bfc16f8 100644
+--- a/include/linux/bug.h
++++ b/include/linux/bug.h
+@@ -13,6 +13,17 @@ enum bug_trap_type {
+ struct pt_regs;
+ 
+ #ifdef __CHECKER__
++#ifdef __FRAMAC__
++#define __BUILD_BUG_ON_NOT_POWER_OF_2(n)	\
++	BUILD_BUG_ON(((n) & ((n) - 1)) != 0)
++#define BUILD_BUG_ON_NOT_POWER_OF_2(n) BUILD_BUG_ON((n) == 0 || (((n) & ((n) - 1)) != 0))
++#define BUILD_BUG_ON_ZERO(e) (0)
++#define BUILD_BUG_ON_NULL(e) (NULL)
++#define BUILD_BUG_ON_INVALID(e) ((void)0)
++#define BUILD_BUG_ON_MSG(cond, msg) BUG_ON(cond)
++#define BUILD_BUG_ON(condition) BUG_ON(condition)
++#define BUILD_BUG() BUG()
++#else /* __FRAMAC__ */
+ #define __BUILD_BUG_ON_NOT_POWER_OF_2(n) (0)
+ #define BUILD_BUG_ON_NOT_POWER_OF_2(n) (0)
+ #define BUILD_BUG_ON_ZERO(e) (0)
+@@ -22,6 +33,7 @@ struct pt_regs;
+ #define BUILD_BUG_ON(condition) (0)
+ #define BUILD_BUG() (0)
+ #define MAYBE_BUILD_BUG_ON(cond) (0)
++#endif /* __FRAMAC__ */
+ #else /* __CHECKER__ */
+ 
+ /* Force a compilation error if a constant expression is not a power of 2 */
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index b75f6e64af45..01735a287f3c 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -3,7 +3,7 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
+-#ifdef __CHECKER__
++#if defined(__CHECKER__) && !defined(__FRAMAC__)
+ # define __user		__attribute__((noderef, address_space(1)))
+ # define __kernel	__attribute__((address_space(0)))
+ # define __safe		__attribute__((safe))
+@@ -99,6 +99,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
+ #define __same_pointer_depths_with_volatile2_chk(p1, p2) do { } while (0)
+ #endif
+ 
++/* Frama-C doesn't understand ASM nor compiler-specific intrisics */
++#ifdef __FRAMAC__
++/* Borrow code from compiler-intel.h */
++#undef barrier
++#undef RELOC_HIDE
++#undef OPTIMIZER_HIDE_VAR
++
++#define barrier() do { } while (0)
++#define RELOC_HIDE(ptr, off) ({ \
++		unsigned long __ptr; \
++		 __ptr = (unsigned long) (ptr); \
++		(typeof(ptr)) (__ptr + (off)); \
++	})
++#define OPTIMIZER_HIDE_VAR(var) barrier()
++
++#include <asm/posix_types.h>
++extern void *memcpy(void *d, const void *s, __kernel_size_t n);
++#define __builtin_memcpy memcpy
++/* #define __builtin_constant_p(x) false   <- the code requires this macro to work */
++#define __builtin_expect(x, v) (x)
++#endif /* __FRAMAC__ */
+ /*
+  * Generic compiler-dependent macros required for kernel
+  * build go below this comment. Actual compiler/compiler version
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+index b3d2c1a89ac4..8ae5ba05de6b 100644
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -774,9 +774,14 @@ set_cpu_active(unsigned int cpu, bool active)
+  *
+  * This does the conversion, and can be used as a constant initializer.
+  */
++#ifdef __FRAMAC__
++/* Remove a check using sizeof' side effect in to_cpumask macro definition */
++#define to_cpumask(bitmap) ((struct cpumask *)(bitmap))
++#else
+ #define to_cpumask(bitmap)						\
+ 	((struct cpumask *)(1 ? (bitmap)				\
+ 			    : (void *)sizeof(__check_is_bitmap(bitmap))))
++#endif
+ 
+ static inline int __check_is_bitmap(const unsigned long *bitmap)
+ {
+diff --git a/include/linux/crypto.h b/include/linux/crypto.h
+index 8d14460e0123..e01f218f840e 100644
+--- a/include/linux/crypto.h
++++ b/include/linux/crypto.h
+@@ -544,7 +544,12 @@ struct crypto_tfm {
+ 	
+ 	struct crypto_alg *__crt_alg;
+ 
+-	void *__crt_ctx[] CRYPTO_MINALIGN_ATTR;
++	void *__crt_ctx[0] CRYPTO_MINALIGN_ATTR; /* Add [0] to silent Frama-C error:
++linux: include/linux/crypto.h:550:[kernel] user error: field base is declared with incomplete type struct crypto_tfm
++linux: include/linux/crypto.h:554:[kernel] user error: field base is declared with incomplete type struct crypto_tfm
++linux: include/linux/crypto.h:558:[kernel] user error: field base is declared with incomplete type struct crypto_tfm
++linux: include/linux/crypto.h:562:[kernel] user error: field base is declared with incomplete type struct crypto_tfm
++*/
+ };
+ 
+ struct crypto_ablkcipher {
+diff --git a/include/linux/delay.h b/include/linux/delay.h
+index a6ecb34cf547..1817fdd0a809 100644
+--- a/include/linux/delay.h
++++ b/include/linux/delay.h
+@@ -28,9 +28,18 @@ extern unsigned long loops_per_jiffy;
+ #endif
+ 
+ #ifndef mdelay
+-#define mdelay(n) (\
+-	(__builtin_constant_p(n) && (n)<=MAX_UDELAY_MS) ? udelay((n)*1000) : \
+-	({unsigned long __ms=(n); while (__ms--) udelay(1000);}))
++/* Frama-C does not like the ... ? ... : ... ; construct:
++ * [kernel] failure: invalid implicit conversion from void to void
++ */
++#define mdelay(n) ({ \
++	if (__builtin_constant_p(n) && (n) <= MAX_UDELAY_MS) \
++		udelay((n)*1000); \
++	else { \
++		unsigned long __ms = (n); \
++		while (__ms--) \
++			udelay(1000); \
++	} \
++	})
+ #endif
+ 
+ #ifndef ndelay
+diff --git a/include/linux/flex_array.h b/include/linux/flex_array.h
+index b6efb0c64408..688bf9a11131 100644
+--- a/include/linux/flex_array.h
++++ b/include/linux/flex_array.h
+@@ -24,7 +24,10 @@ struct flex_array {
+ 			int total_nr_elements;
+ 			int elems_per_part;
+ 			struct reciprocal_value reciprocal_elems;
+-			struct flex_array_part *parts[];
++			struct flex_array_part *parts[0]; /* Add [0] to silent Frama-C errors:
++include/linux/flex_array.h:20:[kernel] user error: field  is declared with incomplete type struct __anonstruct_14
++include/linux/flex_array.h:20:[kernel] user error: field  is declared with incomplete type union __anonunion_13
++*/
+ 		};
+ 		/*
+ 		 * This little trick makes sure that
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 2c4b89dd94d7..d720d50e91ea 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -14,6 +14,9 @@
+ #include <asm/byteorder.h>
+ #include <uapi/linux/kernel.h>
+ 
++#ifdef __FRAMAC__
++#include <libc/limits.h>
++#else
+ #define USHRT_MAX	((u16)(~0U))
+ #define SHRT_MAX	((s16)(USHRT_MAX>>1))
+ #define SHRT_MIN	((s16)(-SHRT_MAX - 1))
+@@ -26,6 +29,7 @@
+ #define LLONG_MAX	((long long)(~0ULL>>1))
+ #define LLONG_MIN	(-LLONG_MAX - 1)
+ #define ULLONG_MAX	(~0ULL)
++#endif /* __FRAMAC__ */
+ #define SIZE_MAX	(~(size_t)0)
+ 
+ #define U8_MAX		((u8)~0U)
+@@ -219,6 +223,10 @@ extern int _cond_resched(void);
+  *
+  * Return: an absolute value of x.
+  */
++#ifdef __FRAMAC__
++/* Frama-C does not like abs(): [kernel] failure: cannot cast from void to int */
++#define abs(x) ({ __typeof__(x) __x = (x); __x < 0 ? -__x : __x; })
++#else
+ #define abs(x)	__abs_choose_expr(x, long long,				\
+ 		__abs_choose_expr(x, long,				\
+ 		__abs_choose_expr(x, int,				\
+@@ -233,6 +241,7 @@ extern int _cond_resched(void);
+ 	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
+ 	__builtin_types_compatible_p(typeof(x), unsigned type),		\
+ 	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
++#endif
+ 
+ /**
+  * reciprocal_scale - "scale" a value into range [0, ep_ro)
+diff --git a/include/linux/math64.h b/include/linux/math64.h
+index 6e8b5b270ffe..3b0b93e341c7 100644
+--- a/include/linux/math64.h
++++ b/include/linux/math64.h
+@@ -120,9 +120,11 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
+ 	u32 ret = 0;
+ 
+ 	while (dividend >= divisor) {
++#ifndef __FRAMAC__
+ 		/* The following asm() prevents the compiler from
+ 		   optimising this loop into a modulo operation.  */
+ 		asm("" : "+rm"(dividend));
++#endif
+ 
+ 		dividend -= divisor;
+ 		ret++;
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index e2d1a124216a..5af0488fbbb4 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -115,6 +115,8 @@ typedef int __bitwise pci_power_t;
+ #define PCI_UNKNOWN	((pci_power_t __force) 5)
+ #define PCI_POWER_ERROR	((pci_power_t __force) -1)
+ 
++/* Frama-C reports a warning about pci_power_names when !CONFIG_PCI */
++#if !defined(__FRAMAC__) || defined(CONFIG_PCI)
+ /* Remember to update this when the list above changes! */
+ extern const char *pci_power_names[];
+ 
+@@ -122,6 +124,7 @@ static inline const char *pci_power_name(pci_power_t state)
+ {
+ 	return pci_power_names[1 + (__force int) state];
+ }
++#endif
+ 
+ #define PCI_PM_D2_DELAY		200
+ #define PCI_PM_D3_WAIT		10
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 20544bffe5a6..eb345cefada4 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -191,6 +191,12 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ 	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+ 
+ #define __PROTECT(...) asmlinkage_protect(__VA_ARGS__)
++#ifdef __FRAMAC__
++/* Simplify __SYSCALL_DEFINEx to make frama-C understands code */
++#define __SYSCALL_DEFINEx(x, name, ...)                    \
++	asmlinkage long sys##name(__MAP(x, __SC_DECL, __VA_ARGS__)); \
++	asmlinkage long sys##name(__MAP(x, __SC_DECL, __VA_ARGS__))
++#else
+ #define __SYSCALL_DEFINEx(x, name, ...)					\
+ 	asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))	\
+ 		__attribute__((alias(__stringify(SyS##name))));		\
+@@ -204,6 +210,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ 		return ret;						\
+ 	}								\
+ 	static inline long SYSC##name(__MAP(x,__SC_DECL,__VA_ARGS__))
++#endif
+ 
+ asmlinkage long sys32_quotactl(unsigned int cmd, const char __user *special,
+ 			       qid_t id, void __user *addr);
+diff --git a/include/uapi/linux/limits.h b/include/uapi/linux/limits.h
+index 2d0f94162fb3..4866bbdab10e 100644
+--- a/include/uapi/linux/limits.h
++++ b/include/uapi/linux/limits.h
+@@ -9,7 +9,11 @@
+ #define MAX_CANON        255	/* size of the canonical input queue */
+ #define MAX_INPUT        255	/* size of the type-ahead buffer */
+ #define NAME_MAX         255	/* # chars in a file name */
++#ifdef __FRAMAC__
++#include <libc/limits.h>
++#else
+ #define PATH_MAX        4096	/* # chars in a path name including nul */
++#endif /* __FRAMAC__ */
+ #define PIPE_BUF        4096	/* # bytes in atomic write to a pipe */
+ #define XATTR_NAME_MAX   255	/* # chars in an extended attribute name */
+ #define XATTR_SIZE_MAX 65536	/* size of an extended attribute value (64k) */
+diff --git a/include/uapi/linux/types.h b/include/uapi/linux/types.h
+index 41e5914f0a8e..08f591e2e980 100644
+--- a/include/uapi/linux/types.h
++++ b/include/uapi/linux/types.h
+@@ -18,7 +18,7 @@
+  * any application/library that wants linux/types.h.
+  */
+ 
+-#ifdef __CHECKER__
++#if defined(__CHECKER__) && !defined(__FRAMAC__)
+ #define __bitwise__ __attribute__((bitwise))
+ #else
+ #define __bitwise__
+diff --git a/init/do_mounts.c b/init/do_mounts.c
+index a9295982cc47..cc22c0417746 100644
+--- a/init/do_mounts.c
++++ b/init/do_mounts.c
+@@ -3,7 +3,7 @@
+  * to be __user pointers not __kernel pointers.  To limit the sparse
+  * noise, turn off sparse checking for this file.
+  */
+-#ifdef __CHECKER__
++#if defined(__CHECKER__) && !defined(__FRAMAC__)
+ #undef __CHECKER__
+ #warning "Sparse checking disabled for this file"
+ #endif
+diff --git a/init/do_mounts_initrd.c b/init/do_mounts_initrd.c
+index 45187a1a1219..644b76b4062b 100644
+--- a/init/do_mounts_initrd.c
++++ b/init/do_mounts_initrd.c
+@@ -3,7 +3,7 @@
+  * to be __user pointers not __kernel pointers.  To limit the sparse
+  * noise, turn off sparse checking for this file.
+  */
+-#ifdef __CHECKER__
++#if defined(__CHECKER__) && !defined(__FRAMAC__)
+ #undef __CHECKER__
+ #warning "Sparse checking disabled for this file"
+ #endif
+diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
+index 8cb6db54285b..e77193f102f7 100644
+--- a/init/do_mounts_md.c
++++ b/init/do_mounts_md.c
+@@ -3,7 +3,7 @@
+  * to be __user pointers not __kernel pointers.  To limit the sparse
+  * noise, turn off sparse checking for this file.
+  */
+-#ifdef __CHECKER__
++#if defined(__CHECKER__) && !defined(__FRAMAC__)
+ #undef __CHECKER__
+ #warning "Sparse checking disabled for this file"
+ #endif
+diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
+index dd4104c9aa12..5c8fb9193110 100644
+--- a/init/do_mounts_rd.c
++++ b/init/do_mounts_rd.c
+@@ -3,7 +3,7 @@
+  * to be __user pointers not __kernel pointers.  To limit the sparse
+  * noise, turn off sparse checking for this file.
+  */
+-#ifdef __CHECKER__
++#if defined(__CHECKER__) && !defined(__FRAMAC__)
+ #undef __CHECKER__
+ #warning "Sparse checking disabled for this file"
+ #endif
+diff --git a/init/initramfs.c b/init/initramfs.c
+index b32ad7d97ac9..0922561dea1c 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -3,7 +3,7 @@
+  * to be __user pointers not __kernel pointers.  To limit the sparse
+  * noise, turn off sparse checking for this file.
+  */
+-#ifdef __CHECKER__
++#if defined(__CHECKER__) && !defined(__FRAMAC__)
+ #undef __CHECKER__
+ #warning "Sparse checking disabled for this file"
+ #endif
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 3603d93a1968..cdf3b6ad3da4 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1097,7 +1097,7 @@ static void print_fatal_signal(int signr)
+ 	struct pt_regs *regs = signal_pt_regs();
+ 	pr_info("potentially unexpected fatal signal %d.\n", signr);
+ 
+-#if defined(__i386__) && !defined(__arch_um__)
++#if defined(__i386__) && !defined(__arch_um__) && !defined(__FRAMAC__)
+ 	pr_info("code at %08lx: ", regs->ip);
+ 	{
+ 		int i;
+diff --git a/kernel/time/time.c b/kernel/time/time.c
+index a3a9a8a029dc..3e41ab3b1562 100644
+--- a/kernel/time/time.c
++++ b/kernel/time/time.c
+@@ -368,17 +368,21 @@ EXPORT_SYMBOL(mktime64);
+ void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec)
+ {
+ 	while (nsec >= NSEC_PER_SEC) {
++#ifndef __FRAMAC__
+ 		/*
+ 		 * The following asm() prevents the compiler from
+ 		 * optimising this loop into a modulo operation. See
+ 		 * also __iter_div_u64_rem() in include/linux/time.h
+ 		 */
+ 		asm("" : "+rm"(nsec));
++#endif
+ 		nsec -= NSEC_PER_SEC;
+ 		++sec;
+ 	}
+ 	while (nsec < 0) {
++#ifndef __FRAMAC__
+ 		asm("" : "+rm"(nsec));
++#endif
+ 		nsec += NSEC_PER_SEC;
+ 		--sec;
+ 	}
+@@ -448,17 +452,21 @@ EXPORT_SYMBOL(ns_to_timeval);
+ void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
+ {
+ 	while (nsec >= NSEC_PER_SEC) {
++#ifndef __FRAMAC__
+ 		/*
+ 		 * The following asm() prevents the compiler from
+ 		 * optimising this loop into a modulo operation. See
+ 		 * also __iter_div_u64_rem() in include/linux/time.h
+ 		 */
+ 		asm("" : "+rm"(nsec));
++#endif
+ 		nsec -= NSEC_PER_SEC;
+ 		++sec;
+ 	}
+ 	while (nsec < 0) {
++#ifndef __FRAMAC__
+ 		asm("" : "+rm"(nsec));
++#endif
+ 		nsec += NSEC_PER_SEC;
+ 		--sec;
+ 	}
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index 992457b1284c..2751063061b2 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -113,7 +113,9 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 	u8 ch;
+ 	int j, lx = 0;
+ 	int ascii_column;
++#ifndef __FRAMAC__
+ 	int ret;
++#endif
+ 
+ 	if (rowsize != 16 && rowsize != 32)
+ 		rowsize = 16;
+@@ -134,13 +136,18 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 	if (!len)
+ 		goto nil;
+ 
++#ifndef __FRAMAC__
++/* Frama-C does not like get_unaligned():
++ * lib/hexdump.c:143:[kernel] failure: lvalue of type void: tmp_0
++ */
+ 	if (groupsize == 8) {
+ 		const u64 *ptr8 = buf;
+ 
+ 		for (j = 0; j < ngroups; j++) {
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+ 				       "%s%16.16llx", j ? " " : "",
+-				       get_unaligned(ptr8 + j));
++				       get_unaligned(ptr8 + j)
++				       );
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+ 			lx += ret;
+@@ -167,7 +174,9 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 				goto overflow1;
+ 			lx += ret;
+ 		}
+-	} else {
++	} else
++#endif
++	{
+ 		for (j = 0; j < len; j++) {
+ 			if (linebuflen < lx + 2)
+ 				goto overflow2;
+diff --git a/lib/rhashtable.c b/lib/rhashtable.c
+index 139a7dce8223..61d7df92d8fe 100644
+--- a/lib/rhashtable.c
++++ b/lib/rhashtable.c
+@@ -693,8 +693,10 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+ 	bool rhlist = ht->rhlist;
+ 
+ /* Variable "skip" is not initialized but not used when the goto is taken */
++#ifndef __FRAMAC__
+ #pragma GCC diagnostic push
+ #pragma GCC diagnostic ignored "-Wjump-misses-init"
++#endif
+ 	if (p) {
+ 		if (!rhlist || !(list = rcu_dereference(list->next))) {
+ 			p = rcu_dereference(p->next);
+@@ -725,7 +727,12 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+ 		}
+ 
+ next:
++#ifndef __FRAMAC__
++/* Frama-C does not like this pragma:
++ * lib/rhashtable.c:728:[kernel] user error: syntax error
++ */
+ #pragma GCC diagnostic pop
++#endif
+ 		if (!rht_is_a_nulls(p)) {
+ 			iter->skip++;
+ 			iter->p = p;
+-- 
