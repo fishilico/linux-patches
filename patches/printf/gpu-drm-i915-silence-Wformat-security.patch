@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 24 Feb 2017 21:06:49 +0100
+Subject: [PATCH] {PRINTF} gpu/drm/i915: silence -Wformat-security
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+    drivers/gpu/drm/i915/intel_hangcheck.c: In function
+    ‘hangcheck_declare_hang’:
+    drivers/gpu/drm/i915/intel_hangcheck.c:410:39: error: format not a
+    string literal and no format arguments [-Werror=format-security]
+      return i915_handle_error(i915, hung, msg);
+                                           ^~~
+---
+ drivers/gpu/drm/i915/intel_hangcheck.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/i915/intel_hangcheck.c b/drivers/gpu/drm/i915/intel_hangcheck.c
+index f05971f5586f..be3550cec8e4 100644
+--- a/drivers/gpu/drm/i915/intel_hangcheck.c
++++ b/drivers/gpu/drm/i915/intel_hangcheck.c
+@@ -407,7 +407,7 @@ static void hangcheck_declare_hang(struct drm_i915_private *i915,
+ 				 "%s, ", engine->name);
+ 	msg[len-2] = '\0';
+ 
+-	return i915_handle_error(i915, hung, msg);
++	return i915_handle_error(i915, hung, "%s", msg);
+ }
+ 
+ /*
+-- 

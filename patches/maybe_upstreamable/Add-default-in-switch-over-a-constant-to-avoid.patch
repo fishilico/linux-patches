@@ -5,23 +5,9 @@ Subject: [PATCH] {MAYBE UPS} Add default: in switch over a constant to avoid
  clang -Wswitch
 
 ---
- drivers/staging/lustre/include/linux/libcfs/libcfs_private.h | 2 +-
- include/linux/genl_magic_struct.h                            | 3 +++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ include/linux/genl_magic_struct.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h b/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
-index aab15d8112a4..2d5435029185 100644
---- a/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
-+++ b/drivers/staging/lustre/include/linux/libcfs/libcfs_private.h
-@@ -291,7 +291,7 @@ do {							    \
-  *       value  after  conversion...
-  *
-  */
--#define CLASSERT(cond) do {switch (42) {case (cond): case 0: break; } } while (0)
-+#define CLASSERT(cond) do {switch (42) {case (cond): case 0: default: break; } } while (0)
- 
- /* max value for numeric network address */
- #define MAX_NUMERIC_VALUE 0xffffffff
 diff --git a/include/linux/genl_magic_struct.h b/include/linux/genl_magic_struct.h
 index 6270a56e5edc..c6fbafb834f1 100644
 --- a/include/linux/genl_magic_struct.h

@@ -30,92 +30,92 @@ This silents a -Wformat-security warning found by clang:
  2 files changed, 13 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
-index 0d987898b4f8..76c059283581 100644
+index 8a0d214f6e9b..26fc858bf6cc 100644
 --- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
 +++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
-@@ -2870,19 +2870,17 @@ void vchiq_platform_conn_state_changed(VCHIQ_STATE_T *state,
+@@ -2837,19 +2837,17 @@ void vchiq_platform_conn_state_changed(VCHIQ_STATE_T *state,
  	if (state->conn_state == VCHIQ_CONNSTATE_CONNECTED) {
  		write_lock_bh(&arm_state->susp_res_lock);
  		if (!arm_state->first_connect) {
--			char threadname[10];
+-			char threadname[16];
  			arm_state->first_connect = 1;
  			write_unlock_bh(&arm_state->susp_res_lock);
--			snprintf(threadname, sizeof(threadname), "VCHIQka-%d",
+-			snprintf(threadname, sizeof(threadname), "vchiq-keep/%d",
 -				state->id);
  			arm_state->ka_thread = kthread_create(
  				&vchiq_keepalive_thread_func,
  				(void *)state,
 -				threadname);
-+				"VCHIQka-%d",
++				"vchiq-keep/%d",
 +				state->id);
  			if (IS_ERR(arm_state->ka_thread)) {
  				vchiq_log_error(vchiq_susp_log_level,
 -					"vchiq: FATAL: couldn't create thread %s",
 -					threadname);
-+					"vchiq: FATAL: couldn't create thread VCHIQka-%d",
++					"vchiq: FATAL: couldn't create thread vchiq-keep/%d",
 +					state->id);
  			} else {
  				wake_up_process(arm_state->ka_thread);
  			}
 diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
-index 028e90bc1cdc..2b62f95e4c7d 100644
+index d587097b261c..19187f182e3c 100644
 --- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
 +++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
-@@ -2317,7 +2317,6 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+@@ -2329,7 +2329,6 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
  	VCHIQ_SHARED_STATE_T *local;
  	VCHIQ_SHARED_STATE_T *remote;
  	VCHIQ_STATUS_T status;
--	char threadname[10];
+-	char threadname[16];
  	static int id;
  	int i;
  
-@@ -2485,40 +2484,40 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+@@ -2497,40 +2496,40 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
  	/*
  		bring up slot handler thread
  	 */
--	snprintf(threadname, sizeof(threadname), "VCHIQ-%d", state->id);
+-	snprintf(threadname, sizeof(threadname), "vchiq-slot/%d", state->id);
  	state->slot_handler_thread = kthread_create(&slot_handler_func,
  		(void *)state,
 -		threadname);
-+		"VCHIQ-%d",
++		"vchiq-slot/%d",
 +		state->id);
  
  	if (IS_ERR(state->slot_handler_thread)) {
  		vchiq_loud_error_header();
 -		vchiq_loud_error("couldn't create thread %s", threadname);
-+		vchiq_loud_error("couldn't create thread VCHIQ-%d", state->id);
++		vchiq_loud_error("couldn't create thread vchiq-slot/%d", state->id);
  		vchiq_loud_error_footer();
  		return VCHIQ_ERROR;
  	}
  	set_user_nice(state->slot_handler_thread, -19);
  	wake_up_process(state->slot_handler_thread);
  
--	snprintf(threadname, sizeof(threadname), "VCHIQr-%d", state->id);
+-	snprintf(threadname, sizeof(threadname), "vchiq-recy/%d", state->id);
  	state->recycle_thread = kthread_create(&recycle_func,
  		(void *)state,
 -		threadname);
-+		"VCHIQr-%d",
++		"vchiq-recy/%d",
 +		state->id);
  	if (IS_ERR(state->recycle_thread)) {
  		vchiq_loud_error_header();
 -		vchiq_loud_error("couldn't create thread %s", threadname);
-+		vchiq_loud_error("couldn't create thread VCHIQr-%d", state->id);
++		vchiq_loud_error("couldn't create thread vchiq-recy/%d", state->id);
  		vchiq_loud_error_footer();
  		return VCHIQ_ERROR;
  	}
  	set_user_nice(state->recycle_thread, -19);
  	wake_up_process(state->recycle_thread);
  
--	snprintf(threadname, sizeof(threadname), "VCHIQs-%d", state->id);
+-	snprintf(threadname, sizeof(threadname), "vchiq-sync/%d", state->id);
  	state->sync_thread = kthread_create(&sync_func,
  		(void *)state,
 -		threadname);
-+		"VCHIQs-%d",
++		"vchiq-sync/%d",
 +		state->id);
  	if (IS_ERR(state->sync_thread)) {
  		vchiq_loud_error_header();
 -		vchiq_loud_error("couldn't create thread %s", threadname);
-+		vchiq_loud_error("couldn't create thread VCHIQs-%d", state->id);
++		vchiq_loud_error("couldn't create thread vchiq-sync/%d", state->id);
  		vchiq_loud_error_footer();
  		return VCHIQ_ERROR;
  	}

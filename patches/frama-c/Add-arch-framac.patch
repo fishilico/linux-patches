@@ -9,13 +9,13 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/extra/Makefile             |  13 ++++
  arch/framac/extra/gen_lds_vars.sh      |  27 ++++++++
  arch/framac/extra/lds_vars.c           | 120 +++++++++++++++++++++++++++++++++
- arch/framac/include/abstract_structs.h |  45 +++++++++++++
- arch/framac/include/asm/Kbuild         |  81 ++++++++++++++++++++++
+ arch/framac/include/abstract_structs.h |  72 ++++++++++++++++++++
+ arch/framac/include/asm/Kbuild         |  84 +++++++++++++++++++++++
  arch/framac/include/asm/byteorder.h    |   6 ++
  arch/framac/include/asm/dma-mapping.h  |  11 +++
  arch/framac/include/asm/elf.h          |  30 +++++++++
  arch/framac/include/asm/irqflags.h     |  15 +++++
- arch/framac/include/asm/pgtable.h      |  65 ++++++++++++++++++
+ arch/framac/include/asm/pgtable.h      |  68 +++++++++++++++++++
  arch/framac/include/asm/processor.h    |  40 +++++++++++
  arch/framac/include/asm/ptrace.h       |  23 +++++++
  arch/framac/include/asm/sigcontext.h   |  10 +++
@@ -35,8 +35,8 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/Makefile               |   1 +
  arch/framac/lib/delay.c                |  27 ++++++++
  arch/framac/mm/Makefile                |   1 +
- arch/framac/mm/init.c                  |   9 +++
- 32 files changed, 938 insertions(+)
+ arch/framac/mm/init.c                  |  14 ++++
+ 32 files changed, 976 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Makefile
  create mode 100644 arch/framac/extra/Makefile
@@ -186,7 +186,7 @@ index 000000000000..399e1b3ab6ce
 +libs-y += arch/framac/lib/
 diff --git a/arch/framac/extra/Makefile b/arch/framac/extra/Makefile
 new file mode 100644
-index 000000000000..941e11bfe7d8
+index 000000000000..43f6c53b32b9
 --- /dev/null
 +++ b/arch/framac/extra/Makefile
 @@ -0,0 +1,13 @@
@@ -194,7 +194,7 @@ index 000000000000..941e11bfe7d8
 +
 +extra-$(CONFIG_FRAMAC_GEN_LDS_VARIABLES) += lds_vars.tpl.c
 +
-+$(obj)/lds_vars.tpl.c: $(src)/gen_lds_vars.sh $(obj)/arch/framac/kernel/vmlinux.lds
++$(obj)/lds_vars.tpl.c: $(src)/gen_lds_vars.sh $(objtree)/arch/framac/kernel/vmlinux.lds
 +	$(call if_changed,gen_lds_vars)
 +
 +# Build a built-in.o object by not linking lds_vars.o
@@ -364,10 +364,10 @@ index 000000000000..4f5785cdf697
 +char _end[1];
 diff --git a/arch/framac/include/abstract_structs.h b/arch/framac/include/abstract_structs.h
 new file mode 100644
-index 000000000000..0cd721254651
+index 000000000000..75a3f3a8512b
 --- /dev/null
 +++ b/arch/framac/include/abstract_structs.h
-@@ -0,0 +1,45 @@
+@@ -0,0 +1,72 @@
 +#ifndef _ASM_FRAMA_C_ABSTRACT_STRUCT_H
 +#define _ASM_FRAMA_C_ABSTRACT_STRUCT_H
 +
@@ -378,14 +378,30 @@ index 000000000000..0cd721254651
 + * This allows Frama-C val plugin to initialize globals.
 + */
 +struct dma_coherent_mem { char dummy; };
++
++#ifndef CONFIG_DECNET
 +struct dn_dev { char dummy; };
++#endif
++
 +struct forwarding_accel_ops { char dummy; };
 +struct garp_port { char dummy; };
++
++#ifndef CONFIG_INET
 +struct in_device { char dummy; };
++#endif
++
++#ifndef CONFIG_IOMMU_HELPER
 +struct iommu_group { char dummy; };
 +struct iommu_ops { char dummy; };
++#endif
++
++#ifndef CONFIG_INET
 +struct ipv4_devconf { char dummy; };
++#endif
++
++#ifndef CONFIG_KERNFS
 +struct kernfs_iattrs { char dummy; };
++#endif
 +
 +#ifndef CONFIG_MEMCG
 +struct mem_cgroup { char dummy; };
@@ -406,19 +422,30 @@ index 000000000000..0cd721254651
 +#endif
 +
 +struct prot_inuse { char dummy; };
++
++#ifndef CONFIG_INET
 +struct tcpm_hash_bucket { char dummy; };
++#endif
++
++#if !defined(CONFIG_WIRELESS) && !defined(CONFIG_MAC80211)
 +struct wireless_dev { char dummy; };
++#endif
++
++#if !defined(CONFIG_6LOWPAN) && !defined(CONFIG_6LOWPAN_MODULE) && \
++    !defined(CONFIG_IEEE802154) && !defined(CONFIG_IEEE802154_MODULE) && \
++    !defined(CONFIG_MAC802154) && !defined(CONFIG_MAC802154)
 +struct wpan_dev { char dummy; };
++#endif
 +
 +#endif
 +
 +#endif /* _ASM_FRAMA_C_ABSTRACT_STRUCT_H */
 diff --git a/arch/framac/include/asm/Kbuild b/arch/framac/include/asm/Kbuild
 new file mode 100644
-index 000000000000..6b1e5f5f83e9
+index 000000000000..722665cda0b5
 --- /dev/null
 +++ b/arch/framac/include/asm/Kbuild
-@@ -0,0 +1,81 @@
+@@ -0,0 +1,84 @@
 +generic-y += atomic.h
 +generic-y += auxvec.h
 +generic-y += barrier.h
@@ -429,8 +456,8 @@ index 000000000000..6b1e5f5f83e9
 +generic-y += cacheflush.h
 +generic-y += cache.h
 +generic-y += checksum.h
++generic-y += clkdev.h
 +generic-y += cmpxchg.h
-+generic-y += cputime.h
 +generic-y += current.h
 +generic-y += delay.h
 +generic-y += device.h
@@ -444,6 +471,7 @@ index 000000000000..6b1e5f5f83e9
 +generic-y += futex.h
 +generic-y += hardirq.h
 +generic-y += hw_irq.h
++generic-y += kprobes.h
 +generic-y += kvm_para.h
 +generic-y += ioctl.h
 +generic-y += ioctls.h
@@ -461,7 +489,7 @@ index 000000000000..6b1e5f5f83e9
 +generic-y += mmu_context.h
 +generic-y += mmu.h
 +generic-y += module.h
-+generic-y += mutex.h
++generic-y += msgbuf.h
 +generic-y += page.h
 +generic-y += param.h
 +generic-y += pci.h
@@ -499,6 +527,8 @@ index 000000000000..6b1e5f5f83e9
 +generic-y += uaccess.h
 +generic-y += unaligned.h
 +generic-y += unistd.h
++generic-y += user.h
++generic-y += vga.h
 +generic-y += word-at-a-time.h
 diff --git a/arch/framac/include/asm/byteorder.h b/arch/framac/include/asm/byteorder.h
 new file mode 100644
@@ -514,7 +544,7 @@ index 000000000000..4516d312c49d
 +#endif /* _ASM_FRAMA_C_BYTEORDER_H */
 diff --git a/arch/framac/include/asm/dma-mapping.h b/arch/framac/include/asm/dma-mapping.h
 new file mode 100644
-index 000000000000..09bfe7010933
+index 000000000000..7ca7032fce66
 --- /dev/null
 +++ b/arch/framac/include/asm/dma-mapping.h
 @@ -0,0 +1,11 @@
@@ -523,7 +553,7 @@ index 000000000000..09bfe7010933
 +
 +extern struct dma_map_ops framac_dma_ops;
 +
-+static inline struct dma_map_ops *get_dma_ops(struct device *dev)
++static inline struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
 +{
 +	return &framac_dma_ops;
 +}
@@ -588,10 +618,10 @@ index 000000000000..2cf4035657f4
 +#endif /* _ASM_FRAMA_C_IRQFLAGS_H */
 diff --git a/arch/framac/include/asm/pgtable.h b/arch/framac/include/asm/pgtable.h
 new file mode 100644
-index 000000000000..066886852ffc
+index 000000000000..0f2c4c197f87
 --- /dev/null
 +++ b/arch/framac/include/asm/pgtable.h
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,68 @@
 +#ifndef _ASM_FRAMA_C_PGTABLE_H
 +#define _ASM_FRAMA_C_PGTABLE_H
 +
@@ -621,6 +651,9 @@ index 000000000000..066886852ffc
 +}
 +
 +#define swapper_pg_dir	((pgd_t *) NULL)
++
++extern unsigned long empty_zero_page;
++#define ZERO_PAGE(vaddr) virt_to_page(empty_zero_page)
 +
 +/*
 + * Encode and decode a swap entry like ARM64:
@@ -942,11 +975,11 @@ index 000000000000..53189a95bf8a
 +}
 diff --git a/arch/framac/kernel/process.c b/arch/framac/kernel/process.c
 new file mode 100644
-index 000000000000..2a5ef13b0f96
+index 000000000000..beecac689061
 --- /dev/null
 +++ b/arch/framac/kernel/process.c
 @@ -0,0 +1,40 @@
-+#include <linux/sched.h>
++#include <linux/sched/task_stack.h>
 +
 +int copy_thread(unsigned long clone_flags, unsigned long stack_start,
 +		unsigned long stk_sz, struct task_struct *p)
@@ -1187,14 +1220,19 @@ index 000000000000..eb072c016176
 +obj-y += init.o
 diff --git a/arch/framac/mm/init.c b/arch/framac/mm/init.c
 new file mode 100644
-index 000000000000..ced507cf41e2
+index 000000000000..6d32fff63ca2
 --- /dev/null
 +++ b/arch/framac/mm/init.c
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,14 @@
 +#include <linux/mm.h>
++#include <linux/bootmem.h>
++
++unsigned long empty_zero_page;
 +
 +void __init mem_init(void)
 +{
++    empty_zero_page = (unsigned long)alloc_bootmem_pages(PAGE_SIZE);
++    memset((void *)empty_zero_page, 0, PAGE_SIZE);
 +}
 +
 +void free_initmem(void)

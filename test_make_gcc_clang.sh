@@ -87,8 +87,8 @@ if [ -d /usr/share/frama-c/libc ] && [ -d linux/arch/framac/ ]
 then
     (
         export CONFIG_TARGET=allnoconfig
-        do_build_test gcc-framac || exit $?
-    )
+        do_build_test gcc-framac
+    ) || exit $?
 
     # Launch Frama-C value analysis
     ./frama-c_value.sh || exit $?

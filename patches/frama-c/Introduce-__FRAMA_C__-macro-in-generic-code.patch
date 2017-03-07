@@ -12,30 +12,63 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
   code as the one used to define syscalls)
 - Use string functions from Frama-C
 ---
- include/asm-generic/uaccess.h | 16 ++++++++++++++++
- include/linux/bug.h           | 12 ++++++++++++
- include/linux/compiler.h      | 23 ++++++++++++++++++++++-
- include/linux/cpumask.h       |  5 +++++
- include/linux/crypto.h        |  7 ++++++-
- include/linux/delay.h         | 15 ++++++++++++---
- include/linux/flex_array.h    |  5 ++++-
- include/linux/kernel.h        |  9 +++++++++
- include/linux/math64.h        |  2 ++
- include/linux/pci.h           |  3 +++
- include/linux/syscalls.h      |  7 +++++++
- include/uapi/linux/limits.h   |  4 ++++
- include/uapi/linux/types.h    |  2 +-
- init/do_mounts.c              |  2 +-
- init/do_mounts_initrd.c       |  2 +-
- init/do_mounts_md.c           |  2 +-
- init/do_mounts_rd.c           |  2 +-
- init/initramfs.c              |  2 +-
- kernel/signal.c               |  2 +-
- kernel/time/time.c            |  8 ++++++++
- lib/hexdump.c                 | 13 +++++++++++--
- lib/rhashtable.c              |  7 +++++++
- 22 files changed, 135 insertions(+), 15 deletions(-)
+ drivers/block/drbd/drbd_int.h   |  2 +-
+ drivers/input/joystick/analog.c |  6 +++++-
+ include/asm-generic/uaccess.h   | 16 ++++++++++++++++
+ include/linux/bug.h             | 12 ++++++++++++
+ include/linux/compiler.h        | 23 ++++++++++++++++++++++-
+ include/linux/cpumask.h         |  5 +++++
+ include/linux/crypto.h          | 11 +++++++++--
+ include/linux/delay.h           | 15 ++++++++++++---
+ include/linux/flex_array.h      |  5 ++++-
+ include/linux/kernel.h          |  9 +++++++++
+ include/linux/math64.h          |  2 ++
+ include/linux/mfd/wl1273-core.h |  2 ++
+ include/linux/pci.h             |  3 +++
+ include/linux/syscalls.h        |  7 +++++++
+ include/uapi/linux/limits.h     |  4 ++++
+ include/uapi/linux/types.h      |  2 +-
+ init/do_mounts.c                |  2 +-
+ init/do_mounts_initrd.c         |  2 +-
+ init/do_mounts_md.c             |  2 +-
+ init/do_mounts_rd.c             |  2 +-
+ init/initramfs.c                |  2 +-
+ kernel/signal.c                 |  2 +-
+ kernel/time/time.c              |  8 ++++++++
+ lib/hexdump.c                   | 13 +++++++++++--
+ lib/rhashtable.c                |  7 +++++++
+ 25 files changed, 146 insertions(+), 18 deletions(-)
 
+diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
+index 724d1c50fc52..dc4068df08b8 100644
+--- a/drivers/block/drbd/drbd_int.h
++++ b/drivers/block/drbd/drbd_int.h
+@@ -51,7 +51,7 @@
+ #include "drbd_state.h"
+ #include "drbd_protocol.h"
+ 
+-#ifdef __CHECKER__
++#if defined(__CHECKER__) && !defined(__FRAMAC__)
+ # define __protected_by(x)       __attribute__((require_context(x,1,999,"rdwr")))
+ # define __protected_read_by(x)  __attribute__((require_context(x,1,999,"read")))
+ # define __protected_write_by(x) __attribute__((require_context(x,1,999,"write")))
+diff --git a/drivers/input/joystick/analog.c b/drivers/input/joystick/analog.c
+index 3d8ff09eba57..452f247b57ef 100644
+--- a/drivers/input/joystick/analog.c
++++ b/drivers/input/joystick/analog.c
+@@ -139,7 +139,11 @@ struct analog_port {
+  * Time macros.
+  */
+ 
+-#ifdef __i386__
++#ifdef __FRAMAC__
++#define GET_TIME(x)     do { x = analog_faketime++; } while(0)
++#define DELTA(x,y)	((y)-(x))
++#define TIME_NAME	"Unreliable"
++#elif defined(__i386__)
+ 
+ #include <linux/i8253.h>
+ 
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
 index cc6bb319e464..3ef54f44a519 100644
 --- a/include/asm-generic/uaccess.h
@@ -71,7 +104,7 @@ index cc6bb319e464..3ef54f44a519 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/bug.h b/include/linux/bug.h
-index baff2e8fc8a8..aa879bfc16f8 100644
+index 5828489309bb..f4c8a7683c5c 100644
 --- a/include/linux/bug.h
 +++ b/include/linux/bug.h
 @@ -13,6 +13,17 @@ enum bug_trap_type {
@@ -101,7 +134,7 @@ index baff2e8fc8a8..aa879bfc16f8 100644
  
  /* Force a compilation error if a constant expression is not a power of 2 */
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index b75f6e64af45..01735a287f3c 100644
+index a4281104a923..ed78f23e7287 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -3,7 +3,7 @@
@@ -113,7 +146,7 @@ index b75f6e64af45..01735a287f3c 100644
  # define __user		__attribute__((noderef, address_space(1)))
  # define __kernel	__attribute__((address_space(0)))
  # define __safe		__attribute__((safe))
-@@ -99,6 +99,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
+@@ -103,6 +103,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
  #define __same_pointer_depths_with_volatile2_chk(p1, p2) do { } while (0)
  #endif
  
@@ -142,10 +175,10 @@ index b75f6e64af45..01735a287f3c 100644
   * Generic compiler-dependent macros required for kernel
   * build go below this comment. Actual compiler/compiler version
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index b3d2c1a89ac4..8ae5ba05de6b 100644
+index 96f1e88b767c..0499872261fe 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -774,9 +774,14 @@ set_cpu_active(unsigned int cpu, bool active)
+@@ -779,9 +779,14 @@ set_cpu_active(unsigned int cpu, bool active)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -161,15 +194,26 @@ index b3d2c1a89ac4..8ae5ba05de6b 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 8d14460e0123..e01f218f840e 100644
+index 8d14460e0123..02055493f6a9 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -544,7 +544,12 @@ struct crypto_tfm {
+@@ -173,7 +173,9 @@ struct ablkcipher_request {
+ 	struct scatterlist *src;
+ 	struct scatterlist *dst;
+ 
+-	void *__ctx[] CRYPTO_MINALIGN_ATTR;
++	void *__ctx[0] CRYPTO_MINALIGN_ATTR; /* Add [0] to silence Frama-C error:
++linux: include/crypto/skcipher.h:48:[kernel] user error: field creq is declared with incomplete type struct ablkcipher_request
++*/
+ };
+ 
+ struct blkcipher_desc {
+@@ -544,7 +546,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
 -	void *__crt_ctx[] CRYPTO_MINALIGN_ATTR;
-+	void *__crt_ctx[0] CRYPTO_MINALIGN_ATTR; /* Add [0] to silent Frama-C error:
++	void *__crt_ctx[0] CRYPTO_MINALIGN_ATTR; /* Add [0] to silence Frama-C error:
 +linux: include/linux/crypto.h:550:[kernel] user error: field base is declared with incomplete type struct crypto_tfm
 +linux: include/linux/crypto.h:554:[kernel] user error: field base is declared with incomplete type struct crypto_tfm
 +linux: include/linux/crypto.h:558:[kernel] user error: field base is declared with incomplete type struct crypto_tfm
@@ -179,10 +223,10 @@ index 8d14460e0123..e01f218f840e 100644
  
  struct crypto_ablkcipher {
 diff --git a/include/linux/delay.h b/include/linux/delay.h
-index a6ecb34cf547..1817fdd0a809 100644
+index 2ecb3c46b20a..cb101cbf5e39 100644
 --- a/include/linux/delay.h
 +++ b/include/linux/delay.h
-@@ -28,9 +28,18 @@ extern unsigned long loops_per_jiffy;
+@@ -39,9 +39,18 @@ extern unsigned long loops_per_jiffy;
  #endif
  
  #ifndef mdelay
@@ -221,7 +265,7 @@ index b6efb0c64408..688bf9a11131 100644
  		/*
  		 * This little trick makes sure that
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 2c4b89dd94d7..d720d50e91ea 100644
+index fe1b027eb20e..5bc1f97b6abd 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -14,6 +14,9 @@
@@ -242,7 +286,7 @@ index 2c4b89dd94d7..d720d50e91ea 100644
  #define SIZE_MAX	(~(size_t)0)
  
  #define U8_MAX		((u8)~0U)
-@@ -219,6 +223,10 @@ extern int _cond_resched(void);
+@@ -221,6 +225,10 @@ extern int _cond_resched(void);
   *
   * Return: an absolute value of x.
   */
@@ -253,7 +297,7 @@ index 2c4b89dd94d7..d720d50e91ea 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -233,6 +241,7 @@ extern int _cond_resched(void);
+@@ -235,6 +243,7 @@ extern int _cond_resched(void);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -262,7 +306,7 @@ index 2c4b89dd94d7..d720d50e91ea 100644
  /**
   * reciprocal_scale - "scale" a value into range [0, ep_ro)
 diff --git a/include/linux/math64.h b/include/linux/math64.h
-index 6e8b5b270ffe..3b0b93e341c7 100644
+index 80690c96c734..ec76f208815e 100644
 --- a/include/linux/math64.h
 +++ b/include/linux/math64.h
 @@ -120,9 +120,11 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
@@ -277,8 +321,23 @@ index 6e8b5b270ffe..3b0b93e341c7 100644
  
  		dividend -= divisor;
  		ret++;
+diff --git a/include/linux/mfd/wl1273-core.h b/include/linux/mfd/wl1273-core.h
+index db2f3f454a1b..5124ce3698dc 100644
+--- a/include/linux/mfd/wl1273-core.h
++++ b/include/linux/mfd/wl1273-core.h
+@@ -217,8 +217,10 @@
+ 				 WL1273_IS2_TRI_OPT | \
+ 				 WL1273_IS2_RATE_48K)
+ 
++#ifndef __FRAMAC__
+ #define SCHAR_MIN (-128)
+ #define SCHAR_MAX 127
++#endif
+ 
+ #define WL1273_FR_EVENT			BIT(0)
+ #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index e2d1a124216a..5af0488fbbb4 100644
+index eb3da1a04e6c..adca37e3e64e 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -115,6 +115,8 @@ typedef int __bitwise pci_power_t;
@@ -299,10 +358,10 @@ index e2d1a124216a..5af0488fbbb4 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 20544bffe5a6..eb345cefada4 100644
+index 17282c92b5a6..d7ef0deb94de 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -191,6 +191,12 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+@@ -192,6 +192,12 @@ extern struct trace_event_functions exit_syscall_print_funcs;
  	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
  
  #define __PROTECT(...) asmlinkage_protect(__VA_ARGS__)
@@ -315,7 +374,7 @@ index 20544bffe5a6..eb345cefada4 100644
  #define __SYSCALL_DEFINEx(x, name, ...)					\
  	asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))	\
  		__attribute__((alias(__stringify(SyS##name))));		\
-@@ -204,6 +210,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+@@ -205,6 +211,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
  		return ret;						\
  	}								\
  	static inline long SYSC##name(__MAP(x,__SC_DECL,__VA_ARGS__))
@@ -405,7 +464,7 @@ index dd4104c9aa12..5c8fb9193110 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/init/initramfs.c b/init/initramfs.c
-index b32ad7d97ac9..0922561dea1c 100644
+index 981f286c1d16..1538755cfef7 100644
 --- a/init/initramfs.c
 +++ b/init/initramfs.c
 @@ -3,7 +3,7 @@
@@ -418,10 +477,10 @@ index b32ad7d97ac9..0922561dea1c 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 3603d93a1968..cdf3b6ad3da4 100644
+index 7e59ebc2c25e..18ee2837e0ec 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1097,7 +1097,7 @@ static void print_fatal_signal(int signr)
+@@ -1102,7 +1102,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  
@@ -431,7 +490,7 @@ index 3603d93a1968..cdf3b6ad3da4 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index a3a9a8a029dc..3e41ab3b1562 100644
+index 25bdd2504571..faa19b4c1816 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
 @@ -368,17 +368,21 @@ EXPORT_SYMBOL(mktime64);
@@ -524,10 +583,10 @@ index 992457b1284c..2751063061b2 100644
  			if (linebuflen < lx + 2)
  				goto overflow2;
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index 139a7dce8223..61d7df92d8fe 100644
+index d08d6db0010f..abaa12ea6716 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -693,8 +693,10 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+@@ -795,8 +795,10 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
  	bool rhlist = ht->rhlist;
  
  /* Variable "skip" is not initialized but not used when the goto is taken */
@@ -538,7 +597,7 @@ index 139a7dce8223..61d7df92d8fe 100644
  	if (p) {
  		if (!rhlist || !(list = rcu_dereference(list->next))) {
  			p = rcu_dereference(p->next);
-@@ -725,7 +727,12 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+@@ -827,7 +829,12 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
  		}
  
  next:

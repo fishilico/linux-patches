@@ -10,16 +10,16 @@ The last else if condition would be always true.
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/sta.c b/drivers/net/wireless/intel/iwlwifi/mvm/sta.c
-index 09e9e2e3ed04..78539d5677e8 100644
+index bd1dcc863d8f..ab4f17104a10 100644
 --- a/drivers/net/wireless/intel/iwlwifi/mvm/sta.c
 +++ b/drivers/net/wireless/intel/iwlwifi/mvm/sta.c
-@@ -1788,8 +1788,10 @@ int iwl_mvm_send_add_bcast_sta(struct iwl_mvm *mvm, struct ieee80211_vif *vif)
- 			 (mvmvif->bcast_sta.tfd_queue_msk &
- 			  BIT(IWL_MVM_DQA_P2P_DEVICE_QUEUE)))
+@@ -1810,8 +1810,10 @@ int iwl_mvm_send_add_bcast_sta(struct iwl_mvm *mvm, struct ieee80211_vif *vif)
+ 			queue = IWL_MVM_DQA_AP_PROBE_RESP_QUEUE;
+ 		else if (vif->type == NL80211_IFTYPE_P2P_DEVICE)
  			queue = IWL_MVM_DQA_P2P_DEVICE_QUEUE;
--		else if (WARN(1, "Missed required TXQ for adding bcast STA\n"))
+-		else if (WARN(1, "Missing required TXQ for adding bcast STA\n"))
 +		else {
-+			WARN(1, "Missed required TXQ for adding bcast STA\n");
++			WARN(1, "Missing required TXQ for adding bcast STA\n");
  			return -EINVAL;
 +		}
  

@@ -7,18 +7,17 @@ Subject: [PATCH] {MAYBE UPS} Allow overiding functions depending on the
 This is useful to prevent useless -Wformat-security warnings from
 request_module(), alloc_workqueue() and other functions.
 ---
- include/linux/compiler.h | 57 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+ include/linux/compiler.h | 56 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index e646feae3202..b75f6e64af45 100644
+index fef6d11d214c..a4281104a923 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
-@@ -597,4 +597,61 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
- # define __kprobes
- # define nokprobe_inline	inline
- #endif
-+
+@@ -600,4 +600,60 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
+ 	(_________p1); \
+ })
+ 
 +/**
 + * Allow overloading functions depending on the presence of variable arguments.
 + * If there are arguments, expand to 'with', otherwise to 'noarg'.

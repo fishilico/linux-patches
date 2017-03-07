@@ -6,23 +6,25 @@ Subject: [PATCH] {PLUGIN} Add printk format checker plugin
 This plugin helped to detect the following bugs:
 - 901d805c33fc ("UBSAN: fix typo in format string")
 - 7703773ef1d8 ("brcmfmac: fix pmksa->bssid usage")
-- (not yet upstreamed) ("[media] v4l: rcar_fdp1: use %4.4s to format a
-  4-byte string")
+- 4c171636bc2b ("[media] v4l: rcar_fdp1: use %4.4s to format a 4-byte
+  string")
 ---
  arch/Kconfig                               |   7 +
+ drivers/block/rbd.c                        |   7 +-
+ fs/nfsd/nfsctl.c                           |   9 +-
  fs/reiserfs/Makefile                       |  16 +
  scripts/Makefile.gcc-plugins               |   5 +
- scripts/gcc-plugins/printk_format_plugin.c | 731 +++++++++++++++++++++++++++++
- 4 files changed, 759 insertions(+)
+ scripts/gcc-plugins/printk_format_plugin.c | 750 +++++++++++++++++++++++++++++
+ 6 files changed, 791 insertions(+), 3 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index aafbccfbea8d..a0ad7ddca8b4 100644
+index e43383a1249f..2a970be9d53e 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -409,6 +409,13 @@ config GCC_PLUGIN_LATENT_ENTROPY
- 	   * https://grsecurity.net/
- 	   * https://pax.grsecurity.net/
+@@ -435,6 +435,13 @@ config GCC_PLUGIN_STRUCTLEAK_VERBOSE
+ 	  initialized. Since not all existing initializers are detected
+ 	  by the plugin, this can produce false positive warnings.
  
 +config GCC_PLUGIN_PRINTK_FORMAT
 +	bool "Check printk format strings"
@@ -34,6 +36,51 @@ index aafbccfbea8d..a0ad7ddca8b4 100644
  config HAVE_CC_STACKPROTECTOR
  	bool
  	help
+diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
+index 4d6807723798..473749c570d9 100644
+--- a/drivers/block/rbd.c
++++ b/drivers/block/rbd.c
+@@ -1938,10 +1938,15 @@ __rbd_osd_req_create(struct rbd_device *rbd_dev,
+ 	req->r_priv = obj_request;
+ 
+ 	req->r_base_oloc.pool = rbd_dev->layout.pool_id;
++/* FIXME this change should not be mandatory with the printk checker plugin
++ * (need to find the formats of a conditional)
++ */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	if (ceph_oid_aprintf(&req->r_base_oid, GFP_NOIO, name_format,
+ 			rbd_dev->header.object_prefix, obj_request->object_no))
+ 		goto err_req;
+-
++#pragma GCC diagnostic pop
+ 	if (ceph_osdc_alloc_messages(req, GFP_NOIO))
+ 		goto err_req;
+ 
+diff --git a/fs/nfsd/nfsctl.c b/fs/nfsd/nfsctl.c
+index 73e75ac90525..f9e3c8d00d37 100644
+--- a/fs/nfsd/nfsctl.c
++++ b/fs/nfsd/nfsctl.c
+@@ -540,12 +540,17 @@ static ssize_t
+ nfsd_print_version_support(char *buf, int remaining, const char *sep,
+ 		unsigned vers, unsigned minor)
+ {
+-	const char *format = (minor == 0) ? "%s%c%u" : "%s%c%u.%u";
+ 	bool supported = !!nfsd_vers(vers, NFSD_TEST);
+ 
+ 	if (vers == 4 && !nfsd_minorversion(minor, NFSD_TEST))
+ 		supported = false;
+-	return snprintf(buf, remaining, format, sep,
++	/* FIXME this change should not be mandatory with the printk checker plugin
++	 * (need to find the formats of a conditional)
++	 */
++	if (minor == 0)
++		return snprintf(buf, remaining, "%s%c%u", sep,
++				supported ? '+' : '-', vers);
++	return snprintf(buf, remaining, "%s%c%u.%u", sep,
+ 			supported ? '+' : '-', vers, minor);
+ }
+ 
 diff --git a/fs/reiserfs/Makefile b/fs/reiserfs/Makefile
 index 3c3b00165114..90da3ca592c6 100644
 --- a/fs/reiserfs/Makefile
@@ -62,7 +109,7 @@ index 3c3b00165114..90da3ca592c6 100644
  reiserfs-objs += procfs.o
  endif
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index 060d2cb373db..a6c64f09a29a 100644
+index 82335533620e..3962ec603972 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
 @@ -12,6 +12,11 @@ ifdef CONFIG_GCC_PLUGINS
@@ -79,10 +126,10 @@ index 060d2cb373db..a6c64f09a29a 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..f8637be968df
+index 000000000000..4cb27dae873f
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,731 @@
+@@ -0,0 +1,750 @@
 +/*
 + * Copyright 2016-2017 by Nicolas Iooss
 + *
@@ -169,6 +216,8 @@ index 000000000000..f8637be968df
 +			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "uint32_t"))
 +				return true;
 +			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "int"))
++				return true;
++			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "unsigned int"))
 +				return true;
 +			if (TREE_CODE(subtype) == INTEGER_TYPE && identifier_is(TYPE_IDENTIFIER(subtype), "u32"))
 +				return true;
@@ -484,6 +533,15 @@ index 000000000000..f8637be968df
 +				return ret;
 +		}
 +		break;
++	case tcc_declaration:
++		/* const char [] variable with known content */
++		if (TYPE_READONLY(var)) {
++			const_tree subtype = TREE_TYPE(var);
++			if (TREE_CODE(subtype) == ARRAY_TYPE && is_8bit_int_type(TREE_TYPE(subtype))) {
++				return get_string_cst(DECL_INITIAL(var));
++			}
++		}
++		break;
 +	}
 +
 +	default:
@@ -615,8 +673,13 @@ index 000000000000..f8637be968df
 +	if (arg_idx == 0)
 +		return;
 +
-+	/* Retrieve the format string */
++	/* Skip NULL format */
 +	format_tree = gimple_call_arg(call_stmt, fmt_idx - 1);
++	if (TREE_CODE(format_tree) == INTEGER_CST &&
++	    TREE_INT_CST_ELT_CHECK(format_tree, 0) == 0)
++		return;
++
++	/* Retrieve the format string */
 +	format_tree = get_string_cst(format_tree);
 +	if (format_tree == NULL_TREE) {
 +		warning_at(gimple_location(call_stmt), OPT_Wformat_security,
@@ -625,10 +688,17 @@ index 000000000000..f8637be968df
 +	}
 +	gcc_assert(TREE_CODE(format_tree) == STRING_CST);
 +	format_length = TREE_STRING_LENGTH(format_tree);
++	if (!format_length)
++		return;
 +	format = TREE_STRING_POINTER(format_tree);
 +	if (strnlen(format, format_length) != format_length - 1) {
-+		warning_at(gimple_location(call_stmt), OPT_Wformat_security,
-+			   G_("Call with a a format which contains nul character\n"));
++		/* drivers/isdn/hardware/eicon/ uses dprintf("\000\377", ...)
++		 * as a legitimate way, with no % sign.
++		 */
++		if (format[0] != '\0' || memchr(format, '%', format_length)) {
++			warning_at(gimple_location(call_stmt), OPT_Wformat_,
++				   G_("Call with a a format which contains nul character\n"));
++		}
 +		return;
 +	}
 +
@@ -781,16 +851,12 @@ index 000000000000..f8637be968df
 +int plugin_init(struct plugin_name_args *plugin_info, struct plugin_gcc_version *version)
 +{
 +	const char * const plugin_name = plugin_info->base_name;
-+	struct register_pass_info printk_format_pass_info;
 +	const int argc = plugin_info->argc;
 +	const struct plugin_argument * const argv = plugin_info->argv;
 +	int i;
 +	bool enabled = true;
 +
-+	printk_format_pass_info.pass = make_printk_format_pass();
-+	printk_format_pass_info.reference_pass_name = "ssa";
-+	printk_format_pass_info.ref_pass_instance_number = 1;
-+	printk_format_pass_info.pos_op = PASS_POS_INSERT_AFTER;
++	PASS_INFO(printk_format, "ssa", 1, PASS_POS_INSERT_AFTER);
 +
 +	if (!plugin_default_version_check(version, &gcc_version)) {
 +		error(G_("incompatible gcc/plugin versions"));

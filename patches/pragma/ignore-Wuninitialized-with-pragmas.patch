@@ -7,6 +7,7 @@ Subject: [PATCH] {PRAGMA} ignore -Wuninitialized with pragmas
  drivers/block/drbd/drbd_receiver.c                       | 3 +++
  drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c | 3 +++
  drivers/net/wimax/i2400m/driver.c                        | 3 +++
+ fs/crypto/fscrypt_private.h                              | 9 +++++++++
  include/linux/ceph/osdmap.h                              | 9 +++++++++
  include/linux/completion.h                               | 8 ++++++++
  include/linux/kthread.h                                  | 8 ++++++++
@@ -14,13 +15,13 @@ Subject: [PATCH] {PRAGMA} ignore -Wuninitialized with pragmas
  kernel/kthread.c                                         | 6 ++++++
  kernel/smp.c                                             | 3 +++
  kernel/workqueue.c                                       | 3 +++
- 10 files changed, 54 insertions(+)
+ 11 files changed, 63 insertions(+)
 
 diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index c7728dd77230..1e3ce12acbff 100644
+index aa6bf9692eff..eaf0ad14d008 100644
 --- a/drivers/block/drbd/drbd_receiver.c
 +++ b/drivers/block/drbd/drbd_receiver.c
-@@ -935,10 +935,13 @@ static int conn_connect(struct drbd_connection *connection)
+@@ -937,10 +937,13 @@ static int conn_connect(struct drbd_connection *connection)
  	int vnr, timeout, h;
  	bool discard_my_data, ok;
  	enum drbd_state_rv rv;
@@ -70,11 +71,34 @@ index 9c78090e72f8..2b7c3e22b7bb 100644
  
  	d_fnstart(4, dev, "(wimax_dev %p)\n", wimax_dev);
  	mutex_lock(&i2400m->init_mutex);
+diff --git a/fs/crypto/fscrypt_private.h b/fs/crypto/fscrypt_private.h
+index fdbb8af32eaf..c5a80ff0bba3 100644
+--- a/fs/crypto/fscrypt_private.h
++++ b/fs/crypto/fscrypt_private.h
+@@ -84,9 +84,18 @@ struct fscrypt_completion_result {
+ 	int res;
+ };
+ 
++#ifdef __clang__
+ #define DECLARE_FS_COMPLETION_RESULT(ecr) \
++_Pragma("GCC diagnostic push") \
++_Pragma("GCC diagnostic ignored \"-Wuninitialized\"") \
+ 	struct fscrypt_completion_result ecr = { \
+ 		COMPLETION_INITIALIZER_ONSTACK((ecr).completion), 0 }
++_Pragma("GCC diagnostic pop")
++#else
++#define DECLARE_FS_COMPLETION_RESULT(ecr) \
++	struct fscrypt_completion_result ecr = { \
++		COMPLETION_INITIALIZER_ONSTACK((ecr).completion), 0 }
++#endif
+ 
+ 
+ /* crypto.c */
 diff --git a/include/linux/ceph/osdmap.h b/include/linux/ceph/osdmap.h
-index 9a9041784dcf..7b08bcd6dbb9 100644
+index 938656f70807..dc4f50c069c5 100644
 --- a/include/linux/ceph/osdmap.h
 +++ b/include/linux/ceph/osdmap.h
-@@ -117,8 +117,17 @@ static inline void ceph_oid_init(struct ceph_object_id *oid)
+@@ -110,8 +110,17 @@ static inline void ceph_oid_init(struct ceph_object_id *oid)
  
  #define CEPH_OID_INIT_ONSTACK(oid)					\
      ({ ceph_oid_init(&oid); oid; })
@@ -135,10 +159,10 @@ index 4fec8b775895..0c4d2324b021 100644
  # define DEFINE_KTHREAD_WORKER_ONSTACK(worker) DEFINE_KTHREAD_WORKER(worker)
  #endif
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 1421132e9086..093c93f7905a 100644
+index aacb1282d19a..b32f774734c9 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
-@@ -81,8 +81,16 @@ extern void __init_waitqueue_head(wait_queue_head_t *q, const char *name, struct
+@@ -82,8 +82,16 @@ extern void __init_waitqueue_head(wait_queue_head_t *q, const char *name, struct
  #ifdef CONFIG_LOCKDEP
  # define __WAIT_QUEUE_HEAD_INIT_ONSTACK(name) \
  	({ init_waitqueue_head(&name); name; })
@@ -156,10 +180,10 @@ index 1421132e9086..093c93f7905a 100644
  # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
  #endif
 diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 4dce8935e104..0d209bdbf8a2 100644
+index 42c4f9809c2d..5007cd26151e 100644
 --- a/kernel/kthread.c
 +++ b/kernel/kthread.c
-@@ -914,10 +914,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
+@@ -915,10 +915,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
   */
  void kthread_flush_work(struct kthread_work *work)
  {
@@ -173,7 +197,7 @@ index 4dce8935e104..0d209bdbf8a2 100644
  	struct kthread_worker *worker;
  	bool noop = false;
  
-@@ -1121,10 +1124,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
+@@ -1122,10 +1125,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
   */
  void kthread_flush_worker(struct kthread_worker *worker)
  {
@@ -188,10 +212,10 @@ index 4dce8935e104..0d209bdbf8a2 100644
  	kthread_queue_work(worker, &fwork.work);
  	wait_for_completion(&fwork.done);
 diff --git a/kernel/smp.c b/kernel/smp.c
-index 77fcdb9f2775..3bc10009f2d2 100644
+index a817769b53c0..dd65465b0710 100644
 --- a/kernel/smp.c
 +++ b/kernel/smp.c
-@@ -764,12 +764,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
+@@ -765,12 +765,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
  
  int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par, bool phys)
  {
@@ -208,10 +232,10 @@ index 77fcdb9f2775..3bc10009f2d2 100644
  	INIT_WORK_ONSTACK(&sscs.work, smp_call_on_cpu_callback);
  
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 1d9fb6543a66..521408b092e7 100644
+index 072cbc9b175d..2c51d5213db6 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -2578,11 +2578,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
+@@ -2576,11 +2576,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
   */
  void flush_workqueue(struct workqueue_struct *wq)
  {

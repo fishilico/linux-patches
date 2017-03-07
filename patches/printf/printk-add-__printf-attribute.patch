@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 24 Feb 2017 19:30:39 +0100
+Subject: [PATCH] {PRINTF} printk: add __printf attribute
+
+---
+ kernel/printk/printk_safe.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/printk/printk_safe.c b/kernel/printk/printk_safe.c
+index 033e50a7d706..2e27a31941f4 100644
+--- a/kernel/printk/printk_safe.c
++++ b/kernel/printk/printk_safe.c
+@@ -80,8 +80,8 @@ static void queue_flush_work(struct printk_safe_seq_buf *s)
+  * happen, printk_safe_log_store() will notice the buffer->len mismatch
+  * and repeat the write.
+  */
+-static int printk_safe_log_store(struct printk_safe_seq_buf *s,
+-				 const char *fmt, va_list args)
++static __printf(2, 0) int printk_safe_log_store(struct printk_safe_seq_buf *s,
++						const char *fmt, va_list args)
+ {
+ 	int add;
+ 	size_t len;
+@@ -299,7 +299,7 @@ void printk_safe_flush_on_panic(void)
+  * one writer running. But the buffer might get flushed from another
+  * CPU, so we need to be careful.
+  */
+-static int vprintk_nmi(const char *fmt, va_list args)
++static __printf(1, 0) int vprintk_nmi(const char *fmt, va_list args)
+ {
+ 	struct printk_safe_seq_buf *s = this_cpu_ptr(&nmi_print_seq);
+ 
+@@ -330,7 +330,7 @@ static int vprintk_nmi(const char *fmt, va_list args)
+  * into itself. It uses a per-CPU buffer to store the message, just like
+  * NMI.
+  */
+-static int vprintk_safe(const char *fmt, va_list args)
++static __printf(1, 0) int vprintk_safe(const char *fmt, va_list args)
+ {
+ 	struct printk_safe_seq_buf *s = this_cpu_ptr(&safe_print_seq);
+ 
+-- 

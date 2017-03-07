@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 4 Mar 2017 13:43:18 +0100
+Subject: [PATCH] {MAYBE UPS} fs/splice: initialize ret
+
+If iter_file_splice_write is called with len = 0, it returns an
+unitialized value. In practice, callers such as splice syscall ensures
+that len != 0, but it does not hurt to add an extra layer.
+---
+ fs/splice.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/splice.c b/fs/splice.c
+index 006ba50f4ece..6dd291ebc8fe 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -713,7 +713,7 @@ iter_file_splice_write(struct pipe_inode_info *pipe, struct file *out,
+ 	int nbufs = pipe->buffers;
+ 	struct bio_vec *array = kcalloc(nbufs, sizeof(struct bio_vec),
+ 					GFP_KERNEL);
+-	ssize_t ret;
++	ssize_t ret = 0;
+ 
+ 	if (unlikely(!array))
+ 		return -ENOMEM;
+-- 

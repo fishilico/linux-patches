@@ -4,28 +4,14 @@ Date: Sat, 28 Feb 2015 11:07:33 +0800
 Subject: [PATCH] {MAYBE UPS} (grsecurity) Add some changes from grsec
 
 ---
- drivers/net/macvtap.c | 2 +-
- net/socket.c          | 8 +++++---
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ net/socket.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/macvtap.c b/drivers/net/macvtap.c
-index c27011bbe30c..76897e9df39c 100644
---- a/drivers/net/macvtap.c
-+++ b/drivers/net/macvtap.c
-@@ -1051,7 +1051,7 @@ static long macvtap_ioctl(struct file *file, unsigned int cmd,
- 
- 		ret = 0;
- 		u = q->flags;
--		if (copy_to_user(&ifr->ifr_name, vlan->dev->name, IFNAMSIZ) ||
-+		if (copy_to_user(ifr->ifr_name, vlan->dev->name, IFNAMSIZ) ||  /* Found in grsecurity patch 2015-02-27 */
- 		    put_user(u, &ifr->ifr_flags))
- 			ret = -EFAULT;
- 		macvtap_put_vlan(vlan);
 diff --git a/net/socket.c b/net/socket.c
-index 0758e13754e2..6149bede080a 100644
+index 2c1e8677ff2d..b2278fe1ef47 100644
 --- a/net/socket.c
 +++ b/net/socket.c
-@@ -1139,6 +1139,8 @@ int __sock_create(struct net *net, int family, int type, int protocol,
+@@ -1137,6 +1137,8 @@ int __sock_create(struct net *net, int family, int type, int protocol,
  		return -EAFNOSUPPORT;
  	if (type < 0 || type >= SOCK_MAX)
  		return -EINVAL;
@@ -34,7 +20,7 @@ index 0758e13754e2..6149bede080a 100644
  
  	/* Compatibility.
  
-@@ -1715,7 +1717,7 @@ SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,
+@@ -1713,7 +1715,7 @@ SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,
  	struct socket *sock;
  	struct iovec iov;
  	struct msghdr msg;
@@ -52,7 +38,7 @@ index 0758e13754e2..6149bede080a 100644
  
  	/* user mode address pointers */
  	struct sockaddr __user *uaddr;
-@@ -2764,7 +2766,7 @@ static int ethtool_ioctl(struct net *net, struct compat_ifreq __user *ifr32)
+@@ -2766,7 +2768,7 @@ static int ethtool_ioctl(struct net *net, struct compat_ifreq __user *ifr32)
  	ifr = compat_alloc_user_space(buf_size);
  	rxnfc = (void __user *)ifr + ALIGN(sizeof(struct ifreq), 8);
  

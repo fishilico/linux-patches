@@ -11,7 +11,7 @@ This avoid having to use %s when using format strings
  2 files changed, 46 insertions(+), 17 deletions(-)
 
 diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-index fcfd2bf14d3f..0f2816ad98e5 100644
+index c4e441e00db5..5dceffff202e 100644
 --- a/include/linux/kmod.h
 +++ b/include/linux/kmod.h
 @@ -32,15 +32,21 @@
@@ -43,10 +43,10 @@ index fcfd2bf14d3f..0f2816ad98e5 100644
  #endif
  
 diff --git a/kernel/kmod.c b/kernel/kmod.c
-index 909c319596de..3f0b3a157e2a 100644
+index ebba5bd6f39e..b174e676909b 100644
 --- a/kernel/kmod.c
 +++ b/kernel/kmod.c
-@@ -109,8 +109,7 @@ static int call_modprobe(const char *modname, int wait)
+@@ -111,8 +111,7 @@ static int call_modprobe(const char *modname, int wait)
  /**
   * __request_module - try to load a kernel module
   * @wait: wait (or not) for the operation to complete
@@ -56,7 +56,7 @@ index 909c319596de..3f0b3a157e2a 100644
   *
   * Load a module using the user mode module loader. The function returns
   * zero on success or a negative errno code or positive exit code from
-@@ -122,10 +121,8 @@ static int call_modprobe(const char *modname, int wait)
+@@ -124,10 +123,8 @@ static int call_modprobe(const char *modname, int wait)
   * If module auto-loading support is disabled then this function
   * becomes a no-operation.
   */
@@ -68,7 +68,7 @@ index 909c319596de..3f0b3a157e2a 100644
  	unsigned int max_modprobes;
  	int ret;
  	static atomic_t kmod_concurrent = ATOMIC_INIT(0);
-@@ -143,12 +140,6 @@ int __request_module(bool wait, const char *fmt, ...)
+@@ -145,12 +142,6 @@ int __request_module(bool wait, const char *fmt, ...)
  	if (!modprobe_path[0])
  		return 0;
  
@@ -81,7 +81,7 @@ index 909c319596de..3f0b3a157e2a 100644
  	ret = security_kernel_module_request(module_name);
  	if (ret)
  		return ret;
-@@ -187,6 +178,38 @@ int __request_module(bool wait, const char *fmt, ...)
+@@ -189,6 +180,38 @@ int __request_module(bool wait, const char *fmt, ...)
  	return ret;
  }
  EXPORT_SYMBOL(__request_module);

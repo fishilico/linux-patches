@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 5 Mar 2017 20:02:08 +0100
+Subject: [PATCH] {BUG in 4.11-rc1} ARM & generic: wire-up statx syscall
+
+---
+ arch/arm/tools/syscall.tbl        | 1 +
+ include/uapi/asm-generic/unistd.h | 2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
+index 3c2cb5d5adfa..0bb0e9c6376c 100644
+--- a/arch/arm/tools/syscall.tbl
++++ b/arch/arm/tools/syscall.tbl
+@@ -411,3 +411,4 @@
+ 394	common	pkey_mprotect		sys_pkey_mprotect
+ 395	common	pkey_alloc		sys_pkey_alloc
+ 396	common	pkey_free		sys_pkey_free
++397	common	statx			sys_statx
+diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
+index 9b1462e38b82..ff14593afa98 100644
+--- a/include/uapi/asm-generic/unistd.h
++++ b/include/uapi/asm-generic/unistd.h
+@@ -730,6 +730,8 @@ __SYSCALL(__NR_pkey_mprotect, sys_pkey_mprotect)
+ __SYSCALL(__NR_pkey_alloc,    sys_pkey_alloc)
+ #define __NR_pkey_free 290
+ __SYSCALL(__NR_pkey_free,     sys_pkey_free)
++#define __NR_statx 291
++__SYSCALL(__NR_statx, sys_statx)
+ 
+ #undef __NR_syscalls
+ #define __NR_syscalls 291
+-- 

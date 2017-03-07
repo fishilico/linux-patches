@@ -5,9 +5,8 @@ Subject: [PATCH] {PRAGMA} ignore some -Warray-bounds
 
 ---
  drivers/isdn/hardware/eicon/platform.h | 4 ++++
- net/sunrpc/xprtrdma/svc_rdma_marshal.c | 3 +++
  net/wireless/util.c                    | 4 ++++
- 3 files changed, 11 insertions(+)
+ 2 files changed, 8 insertions(+)
 
 diff --git a/drivers/isdn/hardware/eicon/platform.h b/drivers/isdn/hardware/eicon/platform.h
 index efa574125d76..f1faa55b2ef6 100644
@@ -25,26 +24,11 @@ index efa574125d76..f1faa55b2ef6 100644
  }
  static inline void PUT_DWORD(void *addr, __u32 v)
  {
-diff --git a/net/sunrpc/xprtrdma/svc_rdma_marshal.c b/net/sunrpc/xprtrdma/svc_rdma_marshal.c
-index 0ba9887f3e22..cc3dfe3849a6 100644
---- a/net/sunrpc/xprtrdma/svc_rdma_marshal.c
-+++ b/net/sunrpc/xprtrdma/svc_rdma_marshal.c
-@@ -201,7 +201,10 @@ int svc_rdma_xdr_decode_req(struct xdr_buf *rq_arg)
- 		rmsgp->rm_body.rm_padded.rm_thresh =
- 			be32_to_cpu(rmsgp->rm_body.rm_padded.rm_thresh);
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Warray-bounds"
- 		va = &rmsgp->rm_body.rm_padded.rm_pempty[4];
-+#pragma GCC diagnostic pop
- 		rq_arg->head[0].iov_base = va;
- 		len = (u32)((unsigned long)va - (unsigned long)rmsgp);
- 		rq_arg->head[0].iov_len -= len;
 diff --git a/net/wireless/util.c b/net/wireless/util.c
-index e9d040d29846..3b39b57e1a9e 100644
+index 68e5f2ecee1a..d7accf4e8de3 100644
 --- a/net/wireless/util.c
 +++ b/net/wireless/util.c
-@@ -662,7 +662,11 @@ __ieee80211_amsdu_copy_frag(struct sk_buff *skb, struct sk_buff *frame,
+@@ -659,7 +659,11 @@ __ieee80211_amsdu_copy_frag(struct sk_buff *skb, struct sk_buff *frame,
  			    int offset, int len)
  {
  	struct skb_shared_info *sh = skb_shinfo(skb);

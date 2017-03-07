@@ -13,18 +13,31 @@ Without this, unreachable() is compiled as "do { } while (1)" (it is its
 definition in compiler.h), which is correctly detected as unreachable
 instructions by objtool.
 ---
- include/linux/compiler-clang.h | 3 +++
- 1 file changed, 3 insertions(+)
+ include/linux/compiler-clang.h | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
 diff --git a/include/linux/compiler-clang.h b/include/linux/compiler-clang.h
-index de179993e039..7d7ccf57e511 100644
+index de179993e039..576cecdb4154 100644
 --- a/include/linux/compiler-clang.h
 +++ b/include/linux/compiler-clang.h
-@@ -15,3 +15,6 @@
+@@ -15,3 +15,19 @@
   * with any version that can compile the kernel
   */
  #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 +
-+/* Same as gcc, to fix objtool warnings */
-+#define unreachable() __builtin_unreachable()
++/* Same as gcc, to fix objtool warnings like:
++ * arch/x86/mm/init.o: warning: objtool: update_cache_mode_entry() falls through to next function trace_raw_output_tlb_flush()
++ */
++#ifdef CONFIG_STACK_VALIDATION
++#define annotate_unreachable() ({					\
++	asm("%c0:\t\n"							\
++	    ".pushsection .discard.unreachable\t\n"			\
++	    ".long %c0b - .\t\n"					\
++	    ".popsection\t\n" : : "i" (__LINE__));			\
++})
++#else
++#define annotate_unreachable()
++#endif
++#define unreachable() \
++	do { annotate_unreachable(); __builtin_unreachable(); } while (0)
 -- 

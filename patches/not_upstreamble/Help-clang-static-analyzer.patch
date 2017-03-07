@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 4 Mar 2017 13:43:41 +0100
+Subject: [PATCH] {NOT UPSTREAMABLE} Help clang static analyzer
+
+TODO: use WARN with <asm/bug.h> ?
+---
+ include/linux/err.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/include/linux/err.h b/include/linux/err.h
+index 1e3558845e4c..e4039eaac59f 100644
+--- a/include/linux/err.h
++++ b/include/linux/err.h
+@@ -22,6 +22,10 @@
+ 
+ static inline void * __must_check ERR_PTR(long error)
+ {
++	/* Ensure that -MAX_ERRNO <= error < 0 for static checkers */
++	if ((unsigned long)error < (unsigned long)-MAX_ERRNO) {
++		error = -1;
++	}
+ 	return (void *) error;
+ }
+ 
+-- 

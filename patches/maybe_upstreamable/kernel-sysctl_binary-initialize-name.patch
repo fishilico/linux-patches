@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 4 Mar 2017 13:43:52 +0100
+Subject: [PATCH] {MAYBE UPS} kernel/sysctl_binary: initialize name
+
+clang static analyzer warns about reading a garbage value from name[1]
+in deprecated_sysctl_warning() when performing a sysctl() call with nlen
+= 0 or 1.
+---
+ kernel/sysctl_binary.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/sysctl_binary.c b/kernel/sysctl_binary.c
+index 7e2b5e220995..f39ec2ab17e7 100644
+--- a/kernel/sysctl_binary.c
++++ b/kernel/sysctl_binary.c
+@@ -1392,7 +1392,7 @@ static void warn_on_bintable(const int *name, int nlen)
+ static ssize_t do_sysctl(int __user *args_name, int nlen,
+ 	void __user *oldval, size_t oldlen, void __user *newval, size_t newlen)
+ {
+-	int name[CTL_MAXNAME];
++	int name[CTL_MAXNAME] = {};
+ 	int i;
+ 
+ 	/* Check args->nlen. */
+-- 
