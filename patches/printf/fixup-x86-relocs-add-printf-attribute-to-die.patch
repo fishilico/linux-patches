@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 7 Mar 2017 14:02:30 +0100
+Subject: [PATCH] {PRINTF} fixup! x86, relocs: add printf attribute to die()
+
+I am not sure of what the developers want on u64 casts.
+---
+ arch/x86/tools/relocs.c | 18 ++++++++----------
+ 1 file changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/arch/x86/tools/relocs.c b/arch/x86/tools/relocs.c
+index 3cc02065c677..471f9ed8705e 100644
+--- a/arch/x86/tools/relocs.c
++++ b/arch/x86/tools/relocs.c
+@@ -1,4 +1,5 @@
+ /* This is included from relocs_32/64.c */
++#include <linux/types.h>
+ 
+ #define ElfW(type)		_ElfW(ELF_BITS, type)
+ #define _ElfW(bits, type)	__ElfW(bits, type)
+@@ -398,7 +399,7 @@ static void read_shdrs(FILE *fp)
+ 	}
+ 	if (fseek(fp, ehdr.e_shoff, SEEK_SET) < 0) {
+ 		die("Seek to %llu failed: %s\n",
+-			(unsigned long long)ehdr.e_shoff, strerror(errno));
++			(__u64)ehdr.e_shoff, strerror(errno));
+ 	}
+ 	for (i = 0; i < ehdr.e_shnum; i++) {
+ 		struct section *sec = &secs[i];
+@@ -432,12 +433,11 @@ static void read_strtabs(FILE *fp)
+ 		sec->strtab = malloc(sec->shdr.sh_size);
+ 		if (!sec->strtab) {
+ 			die("malloc of %llu bytes for strtab failed\n",
+-				(unsigned long long)sec->shdr.sh_size);
++				(__u64)sec->shdr.sh_size);
+ 		}
+ 		if (fseek(fp, sec->shdr.sh_offset, SEEK_SET) < 0) {
+ 			die("Seek to %llu failed: %s\n",
+-				(unsigned long long)sec->shdr.sh_offset,
+-				strerror(errno));
++				(__u64)sec->shdr.sh_offset, strerror(errno));
+ 		}
+ 		if (fread(sec->strtab, 1, sec->shdr.sh_size, fp)
+ 		    != sec->shdr.sh_size) {
+@@ -458,12 +458,11 @@ static void read_symtabs(FILE *fp)
+ 		sec->symtab = malloc(sec->shdr.sh_size);
+ 		if (!sec->symtab) {
+ 			die("malloc of %llu bytes for symtab failed\n",
+-				(unsigned long long)sec->shdr.sh_size);
++				(__u64)sec->shdr.sh_size);
+ 		}
+ 		if (fseek(fp, sec->shdr.sh_offset, SEEK_SET) < 0) {
+ 			die("Seek to %llu failed: %s\n",
+-				(unsigned long long)sec->shdr.sh_offset,
+-				strerror(errno));
++				(__u64)sec->shdr.sh_offset, strerror(errno));
+ 		}
+ 		if (fread(sec->symtab, 1, sec->shdr.sh_size, fp)
+ 		    != sec->shdr.sh_size) {
+@@ -492,12 +491,11 @@ static void read_relocs(FILE *fp)
+ 		sec->reltab = malloc(sec->shdr.sh_size);
+ 		if (!sec->reltab) {
+ 			die("malloc of %llu bytes for relocs failed\n",
+-				(unsigned long long)sec->shdr.sh_size);
++				(__u64)sec->shdr.sh_size);
+ 		}
+ 		if (fseek(fp, sec->shdr.sh_offset, SEEK_SET) < 0) {
+ 			die("Seek to %llu failed: %s\n",
+-				(unsigned long long)sec->shdr.sh_offset,
+-				strerror(errno));
++				(__u64)sec->shdr.sh_offset, strerror(errno));
+ 		}
+ 		if (fread(sec->reltab, 1, sec->shdr.sh_size, fp)
+ 		    != sec->shdr.sh_size) {
+-- 
