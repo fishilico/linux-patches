@@ -9,13 +9,31 @@ This plugin helped to detect the following bugs:
 - 4c171636bc2b ("[media] v4l: rcar_fdp1: use %4.4s to format a 4-byte
   string")
 ---
- arch/Kconfig                               |   7 +
- drivers/block/rbd.c                        |   7 +-
- fs/nfsd/nfsctl.c                           |   9 +-
- fs/reiserfs/Makefile                       |  16 +
- scripts/Makefile.gcc-plugins               |   5 +
- scripts/gcc-plugins/printk_format_plugin.c | 750 +++++++++++++++++++++++++++++
- 6 files changed, 791 insertions(+), 3 deletions(-)
+ arch/Kconfig                                       |   7 +
+ drivers/block/cciss.c                              |   2 +-
+ drivers/block/rbd.c                                |   7 +-
+ drivers/misc/ioc4.c                                |   4 +-
+ drivers/net/ethernet/ti/netcp_ethss.c              |   4 +-
+ drivers/net/irda/vlsi_ir.c                         |   6 +-
+ drivers/net/wireless/ath/ath10k/wmi.c              |   2 +-
+ .../net/wireless/realtek/rtlwifi/rtl8192de/fw.c    |   2 +-
+ drivers/platform/x86/asus-laptop.c                 |   4 +-
+ drivers/scsi/bnx2fc/bnx2fc_fcoe.c                  |   2 +-
+ drivers/scsi/fcoe/fcoe.c                           |   2 +-
+ drivers/scsi/fcoe/fcoe_transport.c                 |   4 +-
+ drivers/scsi/hpsa.c                                |   2 +-
+ drivers/scsi/qedf/qedf_main.c                      |   2 +-
+ drivers/scsi/smartpqi/smartpqi_init.c              |   2 +-
+ drivers/target/iscsi/iscsi_target_auth.c           |   8 +-
+ drivers/target/target_core_pr.c                    |   2 +-
+ fs/nfsd/nfsctl.c                                   |   9 +-
+ fs/reiserfs/Makefile                               |  16 +
+ net/ipv4/sysctl_net_ipv4.c                         |   2 +-
+ scripts/Makefile.gcc-plugins                       |   5 +
+ scripts/gcc-plugins/printk_format_plugin.c         | 774 +++++++++++++++++++++
+ sound/soc/intel/haswell/sst-haswell-dsp.c          |   4 +-
+ sound/soc/sh/dma-sh7760.c                          |   2 +-
+ 24 files changed, 843 insertions(+), 31 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -36,6 +54,19 @@ index e43383a1249f..2a970be9d53e 100644
  config HAVE_CC_STACKPROTECTOR
  	bool
  	help
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 8e1a4554951c..f0c7baf3b9ae 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -2637,7 +2637,7 @@ static int fill_cmd(ctlr_info_t *h, CommandList_struct *c, __u8 cmd, void *buff,
+ 			c->Request.Timeout = 0;
+ 			break;
+ 		default:
+-			dev_warn(&h->pdev->dev, "Unknown Command 0x%c\n", cmd);
++			dev_warn(&h->pdev->dev, "Unknown Command 0x%02x\n" /* BUG with 0x%c? */, cmd);
+ 			return IO_ERROR;
+ 		}
+ 	} else if (cmd_type == TYPE_MSG) {
 diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
 index 517838b65964..e05439f74c01 100644
 --- a/drivers/block/rbd.c
@@ -57,6 +88,241 @@ index 517838b65964..e05439f74c01 100644
  	if (ceph_osdc_alloc_messages(req, GFP_NOIO))
  		goto err_req;
  
+diff --git a/drivers/misc/ioc4.c b/drivers/misc/ioc4.c
+index 8758d033db23..5b410db8d28a 100644
+--- a/drivers/misc/ioc4.c
++++ b/drivers/misc/ioc4.c
+@@ -377,7 +377,7 @@ ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
+ 	list_for_each_entry(is, &ioc4_submodules, is_list) {
+ 		if (is->is_probe && is->is_probe(idd)) {
+ 			printk(KERN_WARNING
+-			       "%s: IOC4 submodule 0x%s probe failed "
++			       "%s: IOC4 submodule %s probe failed " /* BUG? */
+ 			       "for pci_dev %s.\n",
+ 			       __func__, module_name(is->is_owner),
+ 			       pci_name(idd->idd_pdev));
+@@ -426,7 +426,7 @@ ioc4_remove(struct pci_dev *pdev)
+ 	list_for_each_entry(is, &ioc4_submodules, is_list) {
+ 		if (is->is_remove && is->is_remove(idd)) {
+ 			printk(KERN_WARNING
+-			       "%s: IOC4 submodule 0x%s remove failed "
++			       "%s: IOC4 submodule %s remove failed " /* BUG? */
+ 			       "for pci_dev %s.\n",
+ 			       __func__, module_name(is->is_owner),
+ 			       pci_name(idd->idd_pdev));
+diff --git a/drivers/net/ethernet/ti/netcp_ethss.c b/drivers/net/ethernet/ti/netcp_ethss.c
+index eece3e2eec14..f3409750a3e5 100644
+--- a/drivers/net/ethernet/ti/netcp_ethss.c
++++ b/drivers/net/ethernet/ti/netcp_ethss.c
+@@ -2310,7 +2310,7 @@ static int gbe_slave_open(struct gbe_intf *gbe_intf)
+ 				slave->slave_num);
+ 			return -ENODEV;
+ 		}
+-		dev_dbg(priv->dev, "phy found: id is: 0x%s\n",
++		dev_dbg(priv->dev, "phy found: id is: %s\n", /* BUG? */
+ 			phydev_name(slave->phy));
+ 		phy_start(slave->phy);
+ 	}
+@@ -3115,7 +3115,7 @@ static void init_secondary_ports(struct gbe_priv *gbe_dev,
+ 				slave->slave_num);
+ 			slave->phy = NULL;
+ 		} else {
+-			dev_dbg(dev, "phy found: id is: 0x%s\n",
++			dev_dbg(dev, "phy found: id is: %s\n", /* BUG? */
+ 				phydev_name(slave->phy));
+ 			phy_start(slave->phy);
+ 		}
+diff --git a/drivers/net/irda/vlsi_ir.c b/drivers/net/irda/vlsi_ir.c
+index ffedad2a360a..bf29f86b8182 100644
+--- a/drivers/net/irda/vlsi_ir.c
++++ b/drivers/net/irda/vlsi_ir.c
+@@ -201,9 +201,9 @@ static void vlsi_proc_ndev(struct seq_file *seq, struct net_device *ndev)
+ 		(byte&IRMISC_UARTTST) ? " uarttest" : "",
+ 		(byte&IRMISC_UARTEN) ? "@" : " disabled\n");
+ 	if (byte&IRMISC_UARTEN) {
+-		seq_printf(seq, "0x%s\n",
+-			(byte&2) ? ((byte&1) ? "3e8" : "2e8")
+-				 : ((byte&1) ? "3f8" : "2f8"));
++		seq_printf(seq, "%s\n", /* False positive report of "0x%s" */
++			(byte&2) ? ((byte&1) ? "0x3e8" : "0x2e8")
++				 : ((byte&1) ? "0x3f8" : "0x2f8"));
+ 	}
+ 	pci_read_config_byte(idev->pdev, VLSI_PCI_CLKCTL, &byte);
+ 	seq_printf(seq, "CLKCTL: PLL %s%s%s / clock %s / wakeup %s\n",
+diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
+index 2f1743e60fa1..646ce1f395bc 100644
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -6552,7 +6552,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
+ 	ether_addr_copy(cmd->peer_macaddr.addr, peer_addr);
+ 
+ 	ath10k_dbg(ar, ATH10K_DBG_WMI,
+-		   "wmi vdev %d peer 0x%pM set param %d value %d\n",
++		   "wmi vdev %d peer %pM set param %d value %d\n", /* BUG? Only place with 0x%pM */
+ 		   vdev_id, peer_addr, param_id, param_value);
+ 	return skb;
+ }
+diff --git a/drivers/net/wireless/realtek/rtlwifi/rtl8192de/fw.c b/drivers/net/wireless/realtek/rtlwifi/rtl8192de/fw.c
+index 88faeab2574f..aa8e3af69e2a 100644
+--- a/drivers/net/wireless/realtek/rtlwifi/rtl8192de/fw.c
++++ b/drivers/net/wireless/realtek/rtlwifi/rtl8192de/fw.c
+@@ -173,7 +173,7 @@ static int _rtl92d_fw_init(struct ieee80211_hw *hw)
+ 			 rtl_read_byte(rtlpriv, FW_MAC1_READY));
+ 	}
+ 	RT_TRACE(rtlpriv, COMP_FW, DBG_DMESG,
+-		 "Polling FW ready fail!! REG_MCUFWDL:0x%08ul\n",
++		 "Polling FW ready fail!! REG_MCUFWDL:0x%08x\n", /* BUG */
+ 		 rtl_read_dword(rtlpriv, REG_MCUFWDL));
+ 	return -1;
+ }
+diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
+index 28551f5a2e07..3a473f04a126 100644
+--- a/drivers/platform/x86/asus-laptop.c
++++ b/drivers/platform/x86/asus-laptop.c
+@@ -921,11 +921,11 @@ static ssize_t infos_show(struct device *dev, struct device_attribute *attr,
+ 		snprintf(buf, 9, "%s", asus->dsdt_info->oem_table_id);
+ 		len += sprintf(page + len, "OEM table id       : %s\n", buf);
+ 		snprintf(buf, 16, "%x", asus->dsdt_info->oem_revision);
+-		len += sprintf(page + len, "OEM revision       : 0x%s\n", buf);
++		len += sprintf(page + len, "OEM revision       : 0x %s\n", buf); /* Silence false positive "0x%s" warning */
+ 		snprintf(buf, 5, "%s", asus->dsdt_info->asl_compiler_id);
+ 		len += sprintf(page + len, "ASL comp vendor id : %s\n", buf);
+ 		snprintf(buf, 16, "%x", asus->dsdt_info->asl_compiler_revision);
+-		len += sprintf(page + len, "ASL comp revision  : 0x%s\n", buf);
++		len += sprintf(page + len, "ASL comp revision  : 0x %s\n", buf); /* Silence false positive "0x%s" warning */
+ 	}
+ 
+ 	return len;
+diff --git a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
+index 93b5a0012417..041887cc7ea6 100644
+--- a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
++++ b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
+@@ -1106,7 +1106,7 @@ static int bnx2fc_vport_create(struct fc_vport *vport, bool disabled)
+ 	if (rc) {
+ 		fcoe_wwn_to_str(vport->port_name, buf, sizeof(buf));
+ 		printk(KERN_ERR PFX "Failed to create vport, "
+-		       "WWPN (0x%s) already exists\n",
++		       "WWPN (0x %s) already exists\n", /* Silence false positive "0x%s" warning */
+ 		       buf);
+ 		return rc;
+ 	}
+diff --git a/drivers/scsi/fcoe/fcoe.c b/drivers/scsi/fcoe/fcoe.c
+index ab7bc1505e0b..f4209f9eb312 100644
+--- a/drivers/scsi/fcoe/fcoe.c
++++ b/drivers/scsi/fcoe/fcoe.c
+@@ -2694,7 +2694,7 @@ static int fcoe_vport_create(struct fc_vport *vport, bool disabled)
+ 	if (rc) {
+ 		fcoe_wwn_to_str(vport->port_name, buf, sizeof(buf));
+ 		printk(KERN_ERR "fcoe: Failed to create vport, "
+-			"WWPN (0x%s) already exists\n",
++			"WWPN (0x %s) already exists\n", /* Silence false positive "0x%s" warning */
+ 			buf);
+ 		return rc;
+ 	}
+diff --git a/drivers/scsi/fcoe/fcoe_transport.c b/drivers/scsi/fcoe/fcoe_transport.c
+index 375c536cbc68..393dac714c4e 100644
+--- a/drivers/scsi/fcoe/fcoe_transport.c
++++ b/drivers/scsi/fcoe/fcoe_transport.c
+@@ -270,7 +270,7 @@ int fcoe_validate_vport_create(struct fc_vport *vport)
+ 	fcoe_wwn_to_str(vport->port_name, buf, sizeof(buf));
+ 	/* Check if the wwpn is not same as that of the lport */
+ 	if (!memcmp(&n_port->wwpn, &vport->port_name, sizeof(u64))) {
+-		LIBFCOE_TRANSPORT_DBG("vport WWPN 0x%s is same as that of the "
++		LIBFCOE_TRANSPORT_DBG("vport WWPN 0x %s is same as that of the " /* Silence false positive "0x%s" warning */
+ 				      "base port WWPN\n", buf);
+ 		rc = -EINVAL;
+ 		goto out;
+@@ -279,7 +279,7 @@ int fcoe_validate_vport_create(struct fc_vport *vport)
+ 	/* Check if there is any existing vport with same wwpn */
+ 	list_for_each_entry(vn_port, &n_port->vports, list) {
+ 		if (!memcmp(&vn_port->wwpn, &vport->port_name, sizeof(u64))) {
+-			LIBFCOE_TRANSPORT_DBG("vport with given WWPN 0x%s "
++			LIBFCOE_TRANSPORT_DBG("vport with given WWPN 0x %s " /* Silence false positive "0x%s" warning */
+ 					      "already exists\n", buf);
+ 			rc = -EINVAL;
+ 			break;
+diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
+index 0d0be7754a65..8ed33f56b1e5 100644
+--- a/drivers/scsi/hpsa.c
++++ b/drivers/scsi/hpsa.c
+@@ -7048,7 +7048,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
+ 			c->Request.CDB[9] = 0;
+ 			break;
+ 		default:
+-			dev_warn(&h->pdev->dev, "unknown command 0x%c\n", cmd);
++			dev_warn(&h->pdev->dev, "unknown command 0x%02x\n", cmd);
+ 			BUG();
+ 			return -1;
+ 		}
+diff --git a/drivers/scsi/qedf/qedf_main.c b/drivers/scsi/qedf/qedf_main.c
+index 8e2a160490e6..49f98d3e4d63 100644
+--- a/drivers/scsi/qedf/qedf_main.c
++++ b/drivers/scsi/qedf/qedf_main.c
+@@ -1430,7 +1430,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
+ 	if (rc) {
+ 		fcoe_wwn_to_str(vport->port_name, buf, sizeof(buf));
+ 		QEDF_WARN(&(base_qedf->dbg_ctx), "Failed to create vport, "
+-			   "WWPN (0x%s) already exists.\n", buf);
++			   "WWPN (0x %s) already exists.\n", buf); /* Silence false positive "0x%s" warning */
+ 		goto err1;
+ 	}
+ 
+diff --git a/drivers/scsi/smartpqi/smartpqi_init.c b/drivers/scsi/smartpqi/smartpqi_init.c
+index 9394a0bd54b2..a07e709cdb88 100644
+--- a/drivers/scsi/smartpqi/smartpqi_init.c
++++ b/drivers/scsi/smartpqi/smartpqi_init.c
+@@ -278,7 +278,7 @@ static int pqi_build_raid_path_request(struct pqi_ctrl_info *ctrl_info,
+ 		put_unaligned_be16(buffer_length, &cdb[7]);
+ 		break;
+ 	default:
+-		dev_err(&ctrl_info->pci_dev->dev, "unknown command 0x%c\n",
++		dev_err(&ctrl_info->pci_dev->dev, "unknown command 0x%02x\n",
+ 			cmd);
+ 		WARN_ON(cmd);
+ 		break;
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index 903b667f8e01..86a4d215bcbd 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -64,10 +64,10 @@ static void chap_gen_challenge(
+ 	/*
+ 	 * Set CHAP_C, and copy the generated challenge into c_str.
+ 	 */
+-	*c_len += sprintf(c_str + *c_len, "CHAP_C=0x%s", challenge_asciihex);
++	*c_len += sprintf(c_str + *c_len, "CHAP_C=0x %s", challenge_asciihex); /* False positives of "0x%s" */
+ 	*c_len += 1;
+ 
+-	pr_debug("[%s] Sending CHAP_C=0x%s\n\n", (caller) ? "server" : "client",
++	pr_debug("[%s] Sending CHAP_C=0x %s\n\n", (caller) ? "server" : "client",
+ 			challenge_asciihex);
+ }
+ 
+@@ -406,10 +406,10 @@ static int chap_server_compute_md5(
+ 	 * Convert response from binary hex to ascii hext.
+ 	 */
+ 	chap_binaryhex_to_asciihex(response, digest, MD5_SIGNATURE_SIZE);
+-	*nr_out_len += sprintf(nr_out_ptr + *nr_out_len, "CHAP_R=0x%s",
++	*nr_out_len += sprintf(nr_out_ptr + *nr_out_len, "CHAP_R=0x %s", /* Silence false positive "0x%s" warning, but this introduces a bug */
+ 			response);
+ 	*nr_out_len += 1;
+-	pr_debug("[server] Sending CHAP_R=0x%s\n", response);
++	pr_debug("[server] Sending CHAP_R=0x %s\n", response); /* Silence false positive "0x%s" warning */
+ 	auth_ret = 0;
+ out:
+ 	kzfree(desc);
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index f7bb7036f599..bbec946bddd8 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -61,7 +61,7 @@ void core_pr_dump_initiator_port(
+ 	if (!pr_reg->isid_present_at_reg)
+ 		buf[0] = '\0';
+ 
+-	snprintf(buf, size, ",i,0x%s", pr_reg->pr_reg_isid);
++	snprintf(buf, size, ",i,0x %s", pr_reg->pr_reg_isid); /* Silence false positive "0x%s" warning */
+ }
+ 
+ enum register_type {
 diff --git a/fs/nfsd/nfsctl.c b/fs/nfsd/nfsctl.c
 index 73e75ac90525..f9e3c8d00d37 100644
 --- a/fs/nfsd/nfsctl.c
@@ -108,6 +374,19 @@ index 3c3b00165114..90da3ca592c6 100644
  ifeq ($(CONFIG_REISERFS_PROC_INFO),y)
  reiserfs-objs += procfs.o
  endif
+diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
+index d6880a6149ee..c8247d52a275 100644
+--- a/net/ipv4/sysctl_net_ipv4.c
++++ b/net/ipv4/sysctl_net_ipv4.c
+@@ -287,7 +287,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *ctl, int write,
+ 	}
+ 
+ bad_key:
+-	pr_debug("proc FO key set 0x%x-%x-%x-%x <- 0x%s: %u\n",
++	pr_debug("proc FO key set 0x%x-%x-%x-%x <- 0x %s: %u\n", /* Silence false positive "0x%s" warning */
+ 	       user_key[0], user_key[1], user_key[2], user_key[3],
+ 	       (char *)tbl.data, ret);
+ 	kfree(tbl.data);
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
 index 82335533620e..3962ec603972 100644
 --- a/scripts/Makefile.gcc-plugins
@@ -126,10 +405,10 @@ index 82335533620e..3962ec603972 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..4cb27dae873f
+index 000000000000..6498e177d5f1
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,750 @@
+@@ -0,0 +1,774 @@
 +/*
 + * Copyright 2016-2017 by Nicolas Iooss
 + *
@@ -141,7 +420,7 @@ index 000000000000..4cb27dae873f
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info printk_format_plugin_info = {
-+	.version	= "20170122",
++	.version	= "20170321",
 +	.help		= "Printk format checker\n",
 +};
 +
@@ -703,9 +982,16 @@ index 000000000000..4cb27dae873f
 +	}
 +
 +	while (*format) {
-+		bool found;
++		bool found, has_hex_prefix = false;
 +		const char *subs_start = format;
 +		unsigned int star_count = 0;
++
++		/* Found errors such as "0x%d" */
++		if (format[0] == '0' && format[1] == 'x' && format[2] == '%') {
++			/* go to the % sign and skip over format modifiers */
++			format += 2;
++			has_hex_prefix = true;
++		}
 +
 +		/* Skip normal characters */
 +		if (*format != '%') {
@@ -771,6 +1057,23 @@ index 000000000000..4cb27dae873f
 +			arg_tree = gimple_call_arg(call_stmt, arg_idx - 1);
 +			arg_idx++;
 +			star_count--;
++		}
++
++		/* Check the format for hexadecimal. Allow:
++		 * - 0x%x, 0x%lx, 0x%X...
++		 * - 0x%p without any pointer modifier
++		 * - 0x%pK, 0x%pad, 0x*phN...
++		 */
++#define ALLOW_0xPTR_CHARS "ahK:-.;,'/ )]\t\n"
++		if (has_hex_prefix && !(strchr("xX", *format) ||
++		    (*format == 'p' && memchr(ALLOW_0xPTR_CHARS, format[1], sizeof(ALLOW_0xPTR_CHARS))))) {
++			warning_at(gimple_location(call_stmt),
++				   OPT_Wformat_,
++				   G_("Bad format with 0x prefix: %.*s\n"),
++				   format + 1 - subs_start, subs_start);
++			/* Do not continue nor return in order to check the
++			 * consistency of the argument type too/
++			 */
 +		}
 +
 +		/* Check the format */
@@ -880,4 +1183,32 @@ index 000000000000..4cb27dae873f
 +
 +	return 0;
 +}
+diff --git a/sound/soc/intel/haswell/sst-haswell-dsp.c b/sound/soc/intel/haswell/sst-haswell-dsp.c
+index b2bec36d074c..5d13923d82f1 100644
+--- a/sound/soc/intel/haswell/sst-haswell-dsp.c
++++ b/sound/soc/intel/haswell/sst-haswell-dsp.c
+@@ -104,8 +104,8 @@ static int hsw_parse_module(struct sst_dsp *dsp, struct sst_fw *fw,
+ 		&& module->type != SST_HSW_MODULE_LPAL)
+ 		return 0;
+ 
+-	dev_dbg(dsp->dev, "new module sign 0x%s size 0x%x blocks 0x%x type 0x%x\n",
+-		module->signature, module->mod_size,
++	dev_dbg(dsp->dev, "new module sign %.*s size 0x%x blocks 0x%x type 0x%x\n",
++		SST_HSW_FW_SIGNATURE_SIZE, module->signature, module->mod_size, /* BUG? */
+ 		module->blocks, module->type);
+ 	dev_dbg(dsp->dev, " entrypoint 0x%x\n", module->entry_point);
+ 	dev_dbg(dsp->dev, " persistent 0x%x scratch 0x%x\n",
+diff --git a/sound/soc/sh/dma-sh7760.c b/sound/soc/sh/dma-sh7760.c
+index 8fad4441c87d..850c8f84e4e5 100644
+--- a/sound/soc/sh/dma-sh7760.c
++++ b/sound/soc/sh/dma-sh7760.c
+@@ -204,7 +204,7 @@ static int camelot_prepare(struct snd_pcm_substream *substream)
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct camelot_pcm *cam = &cam_pcm_data[rtd->cpu_dai->id];
+ 
+-	pr_debug("PCM data: addr 0x%08ulx len %d\n",
++	pr_debug("PCM data: addr 0x%08x len %d\n", /* BUG! Why is there an (u32) cast? */
+ 		 (u32)runtime->dma_addr, runtime->dma_bytes);
+  
+ 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 -- 
