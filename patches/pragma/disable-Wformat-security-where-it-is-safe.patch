@@ -117,11 +117,6 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  drivers/gpu/drm/rockchip/inno_hdmi.c               |  4 ++++
  drivers/gpu/drm/rockchip/rockchip_drm_vop.c        |  9 ++++++++
  drivers/gpu/drm/shmobile/shmob_drm_crtc.c          |  4 ++++
- drivers/gpu/drm/sti/sti_crtc.c                     |  3 +++
- drivers/gpu/drm/sti/sti_cursor.c                   |  3 +++
- drivers/gpu/drm/sti/sti_gdp.c                      |  3 +++
- drivers/gpu/drm/sti/sti_hqvdp.c                    |  3 +++
- drivers/gpu/drm/sti/sti_tvout.c                    | 12 +++++++++++
  drivers/gpu/drm/sun4i/sun4i_crtc.c                 |  3 +++
  drivers/gpu/drm/sun4i/sun4i_layer.c                |  3 +++
  drivers/gpu/drm/sun4i/sun4i_rgb.c                  |  4 ++++
@@ -146,9 +141,6 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  drivers/gpu/drm/vmwgfx/vmwgfx_ldu.c                |  4 ++++
  drivers/gpu/drm/vmwgfx/vmwgfx_scrn.c               |  4 ++++
  drivers/gpu/drm/vmwgfx/vmwgfx_stdu.c               |  4 ++++
- drivers/gpu/drm/zte/zx_hdmi.c                      |  4 ++++
- drivers/gpu/drm/zte/zx_plane.c                     |  3 +++
- drivers/gpu/drm/zte/zx_vou.c                       |  3 +++
  drivers/hid/hid-sony.c                             |  6 ++++++
  drivers/hwmon/abituguru.c                          |  9 ++++++++
  drivers/hwmon/abituguru3.c                         |  3 +++
@@ -312,7 +304,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  sound/soc/omap/mcbsp.c                             |  3 +++
  sound/usb/midi.c                                   |  3 +++
  sound/usb/mixer_quirks.c                           |  3 +++
- 308 files changed, 1403 insertions(+), 18 deletions(-)
+ 300 files changed, 1369 insertions(+), 18 deletions(-)
 
 diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
 index 948c648fea00..1b524c576c4b 100644
@@ -365,7 +357,7 @@ index 8e9725c607ea..eddb80a28b2a 100644
  		pr_emerg(HW_ERR "Fake kernel panic: %s\n", msg);
  }
 diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd.c b/arch/x86/kernel/cpu/mcheck/mce_amd.c
-index 524cc5780a77..1ce55f90f28f 100644
+index 6e4a047e4b68..f7817c777b5a 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce_amd.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce_amd.c
 @@ -1127,9 +1127,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
@@ -2662,125 +2654,6 @@ index 445476551695..088872d2ce13 100644
  	if (ret < 0)
  		return ret;
  
-diff --git a/drivers/gpu/drm/sti/sti_crtc.c b/drivers/gpu/drm/sti/sti_crtc.c
-index d45a4335df5d..b6323f1023de 100644
---- a/drivers/gpu/drm/sti/sti_crtc.c
-+++ b/drivers/gpu/drm/sti/sti_crtc.c
-@@ -352,8 +352,11 @@ int sti_crtc_init(struct drm_device *drm_dev, struct sti_mixer *mixer,
- 	struct drm_crtc *crtc = &mixer->drm_crtc;
- 	int res;
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	res = drm_crtc_init_with_planes(drm_dev, crtc, primary, cursor,
- 					&sti_crtc_funcs, NULL);
-+#pragma GCC diagnostic pop
- 	if (res) {
- 		DRM_ERROR("Can't initialze CRTC\n");
- 		return -EINVAL;
-diff --git a/drivers/gpu/drm/sti/sti_cursor.c b/drivers/gpu/drm/sti/sti_cursor.c
-index cca75bddb9ad..6d61a6fcd5ac 100644
---- a/drivers/gpu/drm/sti/sti_cursor.c
-+++ b/drivers/gpu/drm/sti/sti_cursor.c
-@@ -388,12 +388,15 @@ struct drm_plane *sti_cursor_create(struct drm_device *drm_dev,
- 
- 	sti_cursor_init(cursor);
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	res = drm_universal_plane_init(drm_dev, &cursor->plane.drm_plane,
- 				       possible_crtcs,
- 				       &sti_cursor_plane_helpers_funcs,
- 				       cursor_supported_formats,
- 				       ARRAY_SIZE(cursor_supported_formats),
- 				       DRM_PLANE_TYPE_CURSOR, NULL);
-+#pragma GCC diagnostic pop
- 	if (res) {
- 		DRM_ERROR("Failed to initialize universal plane\n");
- 		goto err_plane;
-diff --git a/drivers/gpu/drm/sti/sti_gdp.c b/drivers/gpu/drm/sti/sti_gdp.c
-index 86279f5022c2..1370c1937474 100644
---- a/drivers/gpu/drm/sti/sti_gdp.c
-+++ b/drivers/gpu/drm/sti/sti_gdp.c
-@@ -925,12 +925,15 @@ struct drm_plane *sti_gdp_create(struct drm_device *drm_dev,
- 
- 	sti_gdp_init(gdp);
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	res = drm_universal_plane_init(drm_dev, &gdp->plane.drm_plane,
- 				       possible_crtcs,
- 				       &sti_gdp_plane_helpers_funcs,
- 				       gdp_supported_formats,
- 				       ARRAY_SIZE(gdp_supported_formats),
- 				       type, NULL);
-+#pragma GCC diagnostic pop
- 	if (res) {
- 		DRM_ERROR("Failed to initialize universal plane\n");
- 		goto err;
-diff --git a/drivers/gpu/drm/sti/sti_hqvdp.c b/drivers/gpu/drm/sti/sti_hqvdp.c
-index 66f843148ef7..4f025e1daa72 100644
---- a/drivers/gpu/drm/sti/sti_hqvdp.c
-+++ b/drivers/gpu/drm/sti/sti_hqvdp.c
-@@ -1292,11 +1292,14 @@ static struct drm_plane *sti_hqvdp_create(struct drm_device *drm_dev,
- 
- 	sti_hqvdp_init(hqvdp);
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	res = drm_universal_plane_init(drm_dev, &hqvdp->plane.drm_plane, 1,
- 				       &sti_hqvdp_plane_helpers_funcs,
- 				       hqvdp_supported_formats,
- 				       ARRAY_SIZE(hqvdp_supported_formats),
- 				       DRM_PLANE_TYPE_OVERLAY, NULL);
-+#pragma GCC diagnostic pop
- 	if (res) {
- 		DRM_ERROR("Failed to initialize universal plane\n");
- 		return NULL;
-diff --git a/drivers/gpu/drm/sti/sti_tvout.c b/drivers/gpu/drm/sti/sti_tvout.c
-index 8b8ea717c121..dde44863244d 100644
---- a/drivers/gpu/drm/sti/sti_tvout.c
-+++ b/drivers/gpu/drm/sti/sti_tvout.c
-@@ -671,9 +671,13 @@ sti_tvout_create_dvo_encoder(struct drm_device *dev,
- 	drm_encoder->possible_crtcs = ENCODER_CRTC_MASK;
- 	drm_encoder->possible_clones = 1 << 0;
- 
-+/* gcc does not like calling drm_encoder_init() with NULL */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	drm_encoder_init(dev, drm_encoder,
- 			 &sti_tvout_encoder_funcs, DRM_MODE_ENCODER_LVDS,
- 			 NULL);
-+#pragma GCC diagnostic pop
- 
- 	drm_encoder_helper_add(drm_encoder, &sti_dvo_encoder_helper_funcs);
- 
-@@ -724,8 +728,12 @@ static struct drm_encoder *sti_tvout_create_hda_encoder(struct drm_device *dev,
- 	drm_encoder->possible_crtcs = ENCODER_CRTC_MASK;
- 	drm_encoder->possible_clones = 1 << 0;
- 
-+/* gcc does not like calling drm_encoder_init() with NULL */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	drm_encoder_init(dev, drm_encoder,
- 			&sti_tvout_encoder_funcs, DRM_MODE_ENCODER_DAC, NULL);
-+#pragma GCC diagnostic pop
- 
- 	drm_encoder_helper_add(drm_encoder, &sti_hda_encoder_helper_funcs);
- 
-@@ -773,8 +781,12 @@ static struct drm_encoder *sti_tvout_create_hdmi_encoder(struct drm_device *dev,
- 	drm_encoder->possible_crtcs = ENCODER_CRTC_MASK;
- 	drm_encoder->possible_clones = 1 << 1;
- 
-+/* gcc does not like calling drm_encoder_init() with NULL */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	drm_encoder_init(dev, drm_encoder,
- 			&sti_tvout_encoder_funcs, DRM_MODE_ENCODER_TMDS, NULL);
-+#pragma GCC diagnostic pop
- 
- 	drm_encoder_helper_add(drm_encoder, &sti_hdmi_encoder_helper_funcs);
- 
 diff --git a/drivers/gpu/drm/sun4i/sun4i_crtc.c b/drivers/gpu/drm/sun4i/sun4i_crtc.c
 index 4a192210574f..ff64e0c5ce2b 100644
 --- a/drivers/gpu/drm/sun4i/sun4i_crtc.c
@@ -3085,10 +2958,10 @@ index 59a4b34e87ed..068c6c508d92 100644
  	encoder->possible_crtcs = 1;
  	return encoder;
 diff --git a/drivers/gpu/drm/vc4/vc4_crtc.c b/drivers/gpu/drm/vc4/vc4_crtc.c
-index 0c06844af445..6797e4a3ebb5 100644
+index 9fcf05ca492b..4ee32950c345 100644
 --- a/drivers/gpu/drm/vc4/vc4_crtc.c
 +++ b/drivers/gpu/drm/vc4/vc4_crtc.c
-@@ -974,8 +974,12 @@ static int vc4_crtc_bind(struct device *dev, struct device *master, void *data)
+@@ -985,8 +985,12 @@ static int vc4_crtc_bind(struct device *dev, struct device *master, void *data)
  		goto err;
  	}
  
@@ -3263,56 +3136,6 @@ index b27cd18ee66a..aea18a976a32 100644
  	drm_mode_connector_attach_encoder(connector, encoder);
  	encoder->possible_crtcs = (1 << unit);
  	encoder->possible_clones = 0;
-diff --git a/drivers/gpu/drm/zte/zx_hdmi.c b/drivers/gpu/drm/zte/zx_hdmi.c
-index c47b9cbfe270..0bb01b651d95 100644
---- a/drivers/gpu/drm/zte/zx_hdmi.c
-+++ b/drivers/gpu/drm/zte/zx_hdmi.c
-@@ -316,8 +316,12 @@ static int zx_hdmi_register(struct drm_device *drm, struct zx_hdmi *hdmi)
- 
- 	encoder->possible_crtcs = VOU_CRTC_MASK;
- 
-+/* gcc does not like calling drm_encoder_init() with NULL */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	drm_encoder_init(drm, encoder, &zx_hdmi_encoder_funcs,
- 			 DRM_MODE_ENCODER_TMDS, NULL);
-+#pragma GCC diagnostic pop
- 	drm_encoder_helper_add(encoder, &zx_hdmi_encoder_helper_funcs);
- 
- 	hdmi->connector.polled = DRM_CONNECTOR_POLL_HPD;
-diff --git a/drivers/gpu/drm/zte/zx_plane.c b/drivers/gpu/drm/zte/zx_plane.c
-index d646ac931663..1d76eb09e506 100644
---- a/drivers/gpu/drm/zte/zx_plane.c
-+++ b/drivers/gpu/drm/zte/zx_plane.c
-@@ -537,9 +537,12 @@ int zx_plane_init(struct drm_device *drm, struct zx_plane *zplane,
- 		return -ENODEV;
- 	}
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	ret = drm_universal_plane_init(drm, plane, VOU_CRTC_MASK,
- 				       &zx_plane_funcs, formats, format_count,
- 				       type, NULL);
-+#pragma GCC diagnostic pop
- 	if (ret) {
- 		DRM_DEV_ERROR(dev, "failed to init universal plane: %d\n", ret);
- 		return ret;
-diff --git a/drivers/gpu/drm/zte/zx_vou.c b/drivers/gpu/drm/zte/zx_vou.c
-index cf92d675feaa..32c86a556e90 100644
---- a/drivers/gpu/drm/zte/zx_vou.c
-+++ b/drivers/gpu/drm/zte/zx_vou.c
-@@ -536,8 +536,11 @@ static int zx_crtc_init(struct drm_device *drm, struct zx_vou_hw *vou,
- 
- 	zcrtc->primary = &zplane->plane;
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	ret = drm_crtc_init_with_planes(drm, &zcrtc->crtc, zcrtc->primary, NULL,
- 					&zx_crtc_funcs, NULL);
-+#pragma GCC diagnostic pop
- 	if (ret) {
- 		DRM_DEV_ERROR(dev, "failed to init drm crtc: %d\n", ret);
- 		return ret;
 diff --git a/drivers/hid/hid-sony.c b/drivers/hid/hid-sony.c
 index 740996f9bdd4..ac040e316da7 100644
 --- a/drivers/hid/hid-sony.c
@@ -6390,10 +6213,10 @@ index fe7087bdeb54..6d87504c6acc 100644
  	test("xxx%yyy", "xxx%cyyy", '%');
  	__test("xxx\0yyy", 7, "xxx%cyyy", '\0');
 diff --git a/mm/kasan/report.c b/mm/kasan/report.c
-index f479365530b6..5ecb3795f8fb 100644
+index ab42a0803f16..281d9a07d8b9 100644
 --- a/mm/kasan/report.c
 +++ b/mm/kasan/report.c
-@@ -241,8 +241,11 @@ static void print_shadow_for_address(const void *addr)
+@@ -243,8 +243,11 @@ static void print_shadow_for_address(const void *addr)
  		char buffer[4 + (BITS_PER_LONG/8)*2];
  		char shadow_buf[SHADOW_BYTES_PER_ROW];
  

@@ -242,10 +242,10 @@ index 375c536cbc68..393dac714c4e 100644
  			rc = -EINVAL;
  			break;
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index 0d0be7754a65..8ed33f56b1e5 100644
+index 9d659aaace15..d8c77d98efc7 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
-@@ -7048,7 +7048,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
+@@ -7049,7 +7049,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
  			c->Request.CDB[9] = 0;
  			break;
  		default:
@@ -324,23 +324,26 @@ index f7bb7036f599..bbec946bddd8 100644
  
  enum register_type {
 diff --git a/fs/nfsd/nfsctl.c b/fs/nfsd/nfsctl.c
-index 73e75ac90525..f9e3c8d00d37 100644
+index 8bf8f667a8cf..cfa82a1b017b 100644
 --- a/fs/nfsd/nfsctl.c
 +++ b/fs/nfsd/nfsctl.c
-@@ -540,12 +540,17 @@ static ssize_t
+@@ -540,7 +540,6 @@ static ssize_t
  nfsd_print_version_support(char *buf, int remaining, const char *sep,
- 		unsigned vers, unsigned minor)
+ 		unsigned vers, int minor)
  {
--	const char *format = (minor == 0) ? "%s%c%u" : "%s%c%u.%u";
+-	const char *format = minor < 0 ? "%s%c%u" : "%s%c%u.%u";
  	bool supported = !!nfsd_vers(vers, NFSD_TEST);
  
- 	if (vers == 4 && !nfsd_minorversion(minor, NFSD_TEST))
- 		supported = false;
+ 	if (vers == 4 && minor >= 0 &&
+@@ -553,7 +552,13 @@ nfsd_print_version_support(char *buf, int remaining, const char *sep,
+ 		 * +4, unless -4.0 is present.
+ 		 */
+ 		return 0;
 -	return snprintf(buf, remaining, format, sep,
 +	/* FIXME this change should not be mandatory with the printk checker plugin
 +	 * (need to find the formats of a conditional)
 +	 */
-+	if (minor == 0)
++	if (minor < 0)
 +		return snprintf(buf, remaining, "%s%c%u", sep,
 +				supported ? '+' : '-', vers);
 +	return snprintf(buf, remaining, "%s%c%u.%u", sep,

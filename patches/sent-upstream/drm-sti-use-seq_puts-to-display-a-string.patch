@@ -1,25 +1,29 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
-Date: Wed, 1 Feb 2017 23:49:03 +0100
-Subject: [PATCH] {PRINTF} gpu/drm/sti: use seq_puts to display a string
+Date: Fri, 31 Mar 2017 21:12:31 +0200
+Subject: [PATCH] drm/sti: use seq_puts to display a string
 
-arm-gcc with -Wformat-security warns:
+gdp_dbg_ctl() uses seq_printf() to display a color format name even
+though there is no format string. When using -Wformat-string, gcc
+reports the following warning:
 
     drivers/gpu/drm/sti/sti_gdp.c: In function 'gdp_dbg_ctl':
-    drivers/gpu/drm/sti/sti_gdp.c:150:18: error: format not a string
-    literal and no format arguments [-Werror=format-security]
+    drivers/gpu/drm/sti/sti_gdp.c:150:18: warning: format not a string
+    literal and no format arguments [-Wformat-security]
         seq_printf(s, gdp_format_to_str[i].name);
                       ^~~~~~~~~~~~~~~~~
-    drivers/gpu/drm/sti/sti_gdp.c:150:4: error: Call with a non-constant
-    string [-Werror=format-security]
-        seq_printf(s, gdp_format_to_str[i].name);
-        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Silence this warning by using seq_puts() instead.
+
+Signed-off-by: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+
+Sent-upstream: https://patchwork.kernel.org/patch/9657183/
 ---
  drivers/gpu/drm/sti/sti_gdp.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/sti/sti_gdp.c b/drivers/gpu/drm/sti/sti_gdp.c
-index 1370c1937474..c5083251398e 100644
+index 86279f5022c2..1bbfcf01d401 100644
 --- a/drivers/gpu/drm/sti/sti_gdp.c
 +++ b/drivers/gpu/drm/sti/sti_gdp.c
 @@ -147,7 +147,7 @@ static void gdp_dbg_ctl(struct seq_file *s, int val)
