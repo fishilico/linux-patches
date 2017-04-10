@@ -1377,10 +1377,10 @@ index ff54faa75631..f9a3f7b9e403 100644
  		}
  
 diff --git a/net/l2tp/l2tp_core.c b/net/l2tp/l2tp_core.c
-index 8adab6335ced..eb91bd2ed252 100644
+index e37d9554da7b..492d05dcb184 100644
 --- a/net/l2tp/l2tp_core.c
 +++ b/net/l2tp/l2tp_core.c
-@@ -383,7 +383,7 @@ static void l2tp_recv_queue_skb(struct l2tp_session *session, struct sk_buff *sk
+@@ -483,7 +483,7 @@ static void l2tp_recv_queue_skb(struct l2tp_session *session, struct sk_buff *sk
  		if (L2TP_SKB_CB(skbp)->ns > ns) {
  			__skb_queue_before(&session->reorder_q, skbp, skb);
  			l2tp_dbg(session, L2TP_MSG_SEQ,
@@ -1389,7 +1389,7 @@ index 8adab6335ced..eb91bd2ed252 100644
  				 session->name, ns, L2TP_SKB_CB(skbp)->ns,
  				 skb_queue_len(&session->reorder_q));
  			atomic_long_inc(&session->stats.rx_oos_packets);
-@@ -419,7 +419,7 @@ static void l2tp_recv_dequeue_skb(struct l2tp_session *session, struct sk_buff *
+@@ -519,7 +519,7 @@ static void l2tp_recv_dequeue_skb(struct l2tp_session *session, struct sk_buff *
  		session->nr++;
  		session->nr &= session->nr_max;
  
@@ -1398,7 +1398,7 @@ index 8adab6335ced..eb91bd2ed252 100644
  			 session->name, session->nr);
  	}
  
-@@ -1518,7 +1518,7 @@ int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32
+@@ -1616,7 +1616,7 @@ int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32
  	case L2TP_ENCAPTYPE_UDP:
  		err = -EPROTONOSUPPORT;
  		if (sk->sk_protocol != IPPROTO_UDP) {
@@ -1407,7 +1407,7 @@ index 8adab6335ced..eb91bd2ed252 100644
  			       tunnel_id, fd, sk->sk_protocol, IPPROTO_UDP);
  			goto err;
  		}
-@@ -1526,7 +1526,7 @@ int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32
+@@ -1624,7 +1624,7 @@ int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32
  	case L2TP_ENCAPTYPE_IP:
  		err = -EPROTONOSUPPORT;
  		if (sk->sk_protocol != IPPROTO_L2TP) {
@@ -1417,7 +1417,7 @@ index 8adab6335ced..eb91bd2ed252 100644
  			goto err;
  		}
 diff --git a/net/l2tp/l2tp_debugfs.c b/net/l2tp/l2tp_debugfs.c
-index 2d6760a2ae34..d28dd3bfb31b 100644
+index d100aed3d06f..b4f5f4390870 100644
 --- a/net/l2tp/l2tp_debugfs.c
 +++ b/net/l2tp/l2tp_debugfs.c
 @@ -170,7 +170,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
@@ -1439,10 +1439,10 @@ index 2d6760a2ae34..d28dd3bfb31b 100644
  		   atomic_long_read(&session->stats.tx_packets),
  		   atomic_long_read(&session->stats.tx_bytes),
 diff --git a/net/l2tp/l2tp_ppp.c b/net/l2tp/l2tp_ppp.c
-index 36cc56fd0418..fdcdd69a82d8 100644
+index 861b255a2d51..f4cf35b8d611 100644
 --- a/net/l2tp/l2tp_ppp.c
 +++ b/net/l2tp/l2tp_ppp.c
-@@ -1650,7 +1650,7 @@ static void pppol2tp_seq_session_show(struct seq_file *m, void *v)
+@@ -1656,7 +1656,7 @@ static void pppol2tp_seq_session_show(struct seq_file *m, void *v)
  		   session->lns_mode ? "LNS" : "LAC",
  		   session->debug,
  		   jiffies_to_msecs(session->reorder_timeout));
