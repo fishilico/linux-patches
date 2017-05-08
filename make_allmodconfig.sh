@@ -130,6 +130,7 @@ KCFLAGS="$KCFLAGS -Wno-error=write-strings" # TODO, type acpi_string complicates
 if $CC -v 2>&1 | grep -q clang
 then
     KCFLAGS="$KCFLAGS -Weverything"
+    KCFLAGS="$KCFLAGS -Wno-address-of-packed-member" # Linux takes references to unaligned members of packed structs
     KCFLAGS="$KCFLAGS -Wno-bad-function-cast" # (unsigned long *)kernel_stack_pointer(...)
     KCFLAGS="$KCFLAGS -Wno-c11-extensions" # Use C11 features
     KCFLAGS="$KCFLAGS -Wno-c99-extensions" # Use C99 features
