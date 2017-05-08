@@ -7,26 +7,13 @@ Subject: [PATCH] {LLVMLinux} Use cc-option to filter out GCC-specific options
 TODO: find clang-equivalent options? Also the kernel needs to boot
 before sending this upstream!
 ---
- arch/x86/Makefile | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index bdf04bb96514..8524232385a0 100644
+index bdf04bb96514..f85d6f773519 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
-@@ -88,10 +88,10 @@ else
-         KBUILD_CFLAGS += -m64
- 
-         # Align jump targets to 1 byte, not the default 16 bytes:
--        KBUILD_CFLAGS += -falign-jumps=1
-+        KBUILD_CFLAGS += $(call cc-option,-falign-jumps=1)
- 
-         # Pack loops tightly as well:
--        KBUILD_CFLAGS += -falign-loops=1
-+        KBUILD_CFLAGS += $(call cc-option,-falign-loops=1)
- 
-         # Don't autogenerate traditional x87 instructions
-         KBUILD_CFLAGS += $(call cc-option,-mno-80387)
 @@ -179,7 +179,7 @@ ifdef CONFIG_JUMP_LABEL
  endif
  

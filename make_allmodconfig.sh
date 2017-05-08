@@ -150,6 +150,7 @@ then
     KCFLAGS="$KCFLAGS -Wno-gnu-variable-sized-type-not-at-end" # Some structures defines "payload" fields in sub-structs
     KCFLAGS="$KCFLAGS -Wno-keyword-macro" # "inline" macro hides a keyword
     KCFLAGS="$KCFLAGS -Wno-ignored-attributes" # "aligned" attribute ignored sometimes
+    KCFLAGS="$KCFLAGS -Wno-ignored-optimization-argument" # Ignore unsupported -falign-jumps=1 and -falign-loops=1
     KCFLAGS="$KCFLAGS -Wno-initializer-overrides" # Syscall tables
     KCFLAGS="$KCFLAGS -Wno-language-extension-token" # Allow "inline"
     KCFLAGS="$KCFLAGS -Wno-long-long" # Use "long long" type
