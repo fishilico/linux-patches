@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 3 May 2017 19:10:32 +0200
+Subject: [PATCH] {BUG in 4.11-rc1} pcmcia: remove left-over %Z format
+
+Commit 5b5e0928f742 ("lib/vsprintf.c: remove %Z support") removed some
+%Z usages but forgot %.2Zx. This makes clang 4.0 reports an
+%-Wformat-extra-args warning because it does not know about %Z
+---
+ drivers/char/pcmcia/cm4040_cs.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/char/pcmcia/cm4040_cs.c b/drivers/char/pcmcia/cm4040_cs.c
+index d4dbd8d8e524..382c864814d9 100644
+--- a/drivers/char/pcmcia/cm4040_cs.c
++++ b/drivers/char/pcmcia/cm4040_cs.c
+@@ -374,7 +374,7 @@ static ssize_t cm4040_write(struct file *filp, const char __user *buf,
+ 
+ 	rc = write_sync_reg(SCR_HOST_TO_READER_START, dev);
+ 	if (rc <= 0) {
+-		DEBUGP(5, dev, "write_sync_reg c=%.2Zx\n", rc);
++		DEBUGP(5, dev, "write_sync_reg c=%.2zx\n", rc);
+ 		DEBUGP(2, dev, "<- cm4040_write (failed)\n");
+ 		if (rc == -ERESTARTSYS)
+ 			return rc;
+@@ -387,7 +387,7 @@ static ssize_t cm4040_write(struct file *filp, const char __user *buf,
+ 	for (i = 0; i < bytes_to_write; i++) {
+ 		rc = wait_for_bulk_out_ready(dev);
+ 		if (rc <= 0) {
+-			DEBUGP(5, dev, "wait_for_bulk_out_ready rc=%.2Zx\n",
++			DEBUGP(5, dev, "wait_for_bulk_out_ready rc=%.2zx\n",
+ 			       rc);
+ 			DEBUGP(2, dev, "<- cm4040_write (failed)\n");
+ 			if (rc == -ERESTARTSYS)
+@@ -403,7 +403,7 @@ static ssize_t cm4040_write(struct file *filp, const char __user *buf,
+ 	rc = write_sync_reg(SCR_HOST_TO_READER_DONE, dev);
+ 
+ 	if (rc <= 0) {
+-		DEBUGP(5, dev, "write_sync_reg c=%.2Zx\n", rc);
++		DEBUGP(5, dev, "write_sync_reg c=%.2zx\n", rc);
+ 		DEBUGP(2, dev, "<- cm4040_write (failed)\n");
+ 		if (rc == -ERESTARTSYS)
+ 			return rc;
+-- 
