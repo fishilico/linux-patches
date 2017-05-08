@@ -47,7 +47,11 @@ do_build_test() {
     export BUILDCONF="$1"
     if ! ./make_allmodconfig.sh "-j$JOBS" -k
     then
-        msg_red "Compiling with $1 failed."
+        msg_red "Compiling with BUILDCONF=$1 failed."
+        set_title "Linux:$1 - failing rebuild"
+        ./make_allmodconfig.sh "-j$JOBS" -k
+        msg_red "Here are the errors for BUILDCONF=$1"
+        set_title "Linux:$1 - failing build"
         ./make_allmodconfig.sh -k || exit $?
         # fall-through if the second compilation succeeded
     fi
