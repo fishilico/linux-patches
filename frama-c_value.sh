@@ -6,11 +6,12 @@ KBUILD_OUTPUT="${KBUILD_OUTPUT:-/tmp/makepkg-$(id -nu)/gitlinux-patched}"
 
 set -o pipefail
 
-# Do not run if the system does not have enough free memory (at least 9 GB)
-MEMFREE="$(sed -n 's/^MemFree: *\([0-9]\+\) kB$/\1/p' /proc/meminfo)"
-if [ -n "$MEMFREE" ] && [ "$MEMFREE" -lt 9000000 ]
+# Do not run if the system does not have enough available memory (at least 9 GB)
+MEMAVAIL="$(sed -n 's/^MemAvailable: *\([0-9]\+\) kB$/\1/p' /proc/meminfo)"
+MEMNEEDED=9000000
+if [ -n "$MEMAVAIL" ] && [ "$MEMAVAIL" -lt "$MEMNEEDED" ]
 then
-    echo >&2 "Not enough free memory ($MEMFREE kB). Avoiding system freeze now!"
+    echo >&2 "Not enough available memory ($MEMAVAIL KB/$MEMNEEDED KB). Avoiding system freeze now!"
     exit
 fi
 
