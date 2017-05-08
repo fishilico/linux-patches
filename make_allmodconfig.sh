@@ -263,6 +263,7 @@ then
     HOSTCFLAGS="$HOSTCFLAGS -Wno-unreachable-code-break"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-unused-macros"
     HOSTCFLAGS="$HOSTCFLAGS -Wno-variadic-macros"
+    HOSTCFLAGS="$HOSTCFLAGS -Wno-vla" # Variable-length arrays are used in some host programs
     HOSTCFLAGS="$HOSTCFLAGS -Wno-zero-length-array" # Some structures has zero-length arrays
     # Too many occurences to have these in -Werror:
     HOSTCFLAGS="$HOSTCFLAGS -Wno-error=conditional-uninitialized"
