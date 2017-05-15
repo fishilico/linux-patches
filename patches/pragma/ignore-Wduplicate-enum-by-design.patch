@@ -18,13 +18,13 @@ Subject: [PATCH] {PRAGMA} ignore -Wduplicate-enum by design
  11 files changed, 83 insertions(+)
 
 diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
-index 8554f960e21b..82ab882af58e 100644
+index b65155cc3760..a2eb7b2b32d7 100644
 --- a/arch/x86/include/asm/fixmap.h
 +++ b/arch/x86/include/asm/fixmap.h
-@@ -100,6 +100,10 @@ enum fixed_addresses {
- #ifdef	CONFIG_X86_INTEL_MID
- 	FIX_LNW_VRTC,
- #endif
+@@ -104,6 +104,10 @@ enum fixed_addresses {
+ 	FIX_GDT_REMAP_BEGIN,
+ 	FIX_GDT_REMAP_END = FIX_GDT_REMAP_BEGIN + NR_CPUS - 1,
+ 
 +#ifdef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wduplicate-enum"
@@ -32,7 +32,7 @@ index 8554f960e21b..82ab882af58e 100644
  	__end_of_permanent_fixed_addresses,
  
  	/*
-@@ -119,6 +123,9 @@ enum fixed_addresses {
+@@ -123,6 +127,9 @@ enum fixed_addresses {
  	 ? __end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS -
  	   (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1))
  	 : __end_of_permanent_fixed_addresses,
@@ -92,10 +92,10 @@ index d9792ea4bbc6..a8e8f9006215 100644
  /* cx231xx has two audio inputs: tuner and line in */
  enum cx231xx_amux {
 diff --git a/drivers/net/wireless/ath/ath10k/htt.h b/drivers/net/wireless/ath/ath10k/htt.h
-index 90c2f72666b8..98722772e1b7 100644
+index 6305308422c4..2d63dab6797c 100644
 --- a/drivers/net/wireless/ath/ath10k/htt.h
 +++ b/drivers/net/wireless/ath/ath10k/htt.h
-@@ -526,6 +526,10 @@ struct htt_rx_indication_hdr {
+@@ -527,6 +527,10 @@ struct htt_rx_indication_hdr {
  #define HTT_RX_INDICATION_INFO2_SERVICE_MASK    0xFF000000
  #define HTT_RX_INDICATION_INFO2_SERVICE_LSB     24
  
@@ -106,7 +106,7 @@ index 90c2f72666b8..98722772e1b7 100644
  enum htt_rx_legacy_rate {
  	HTT_RX_OFDM_48 = 0,
  	HTT_RX_OFDM_24 = 1,
-@@ -546,6 +550,9 @@ enum htt_rx_legacy_rate {
+@@ -547,6 +551,9 @@ enum htt_rx_legacy_rate {
  	HTT_RX_CCK_5_5_SP,
  	HTT_RX_CCK_2_SP
  };
@@ -169,7 +169,7 @@ index 77c25a976233..37d6cb128450 100644
  void rtl8723ae_firmware_selfreset(struct ieee80211_hw *hw);
  void rtl8723be_firmware_selfreset(struct ieee80211_hw *hw);
 diff --git a/drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h b/drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h
-index 90a98ed879f7..c010da3e2a46 100644
+index 98d871afd92a..81d24161deec 100644
 --- a/drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h
 +++ b/drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h
 @@ -151,6 +151,10 @@ enum rtl8812_c2h_evt {
@@ -219,7 +219,7 @@ index a1c1081906c5..2fbc35f813d7 100644
  /*
   * Values for setting a clock source with INSN_CONFIG_SET_CLOCK_SRC for
 diff --git a/include/uapi/linux/netfilter/nf_conntrack_common.h b/include/uapi/linux/netfilter/nf_conntrack_common.h
-index 6a8e33dd4ecb..f6b386c7b14d 100644
+index dc947e59d03a..ec500dbab00a 100644
 --- a/include/uapi/linux/netfilter/nf_conntrack_common.h
 +++ b/include/uapi/linux/netfilter/nf_conntrack_common.h
 @@ -3,6 +3,13 @@
@@ -236,8 +236,8 @@ index 6a8e33dd4ecb..f6b386c7b14d 100644
  enum ip_conntrack_info {
  	/* Part of an established connection (either direction). */
  	IP_CT_ESTABLISHED,
-@@ -30,6 +37,9 @@ enum ip_conntrack_info {
- 	IP_CT_NEW_REPLY = IP_CT_NUMBER,
+@@ -32,6 +39,9 @@ enum ip_conntrack_info {
+ 	IP_CT_UNTRACKED = 7,
  #endif
  };
 +#ifdef __clang__
@@ -247,10 +247,10 @@ index 6a8e33dd4ecb..f6b386c7b14d 100644
  #define NF_CT_STATE_INVALID_BIT			(1 << 0)
  #define NF_CT_STATE_BIT(ctinfo)			(1 << ((ctinfo) % IP_CT_IS_REPLY + 1))
 diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
-index 5ed257c4cd4e..92d36397d7dc 100644
+index b8c44b98f12d..73f7bf740fe3 100644
 --- a/include/uapi/linux/nl80211.h
 +++ b/include/uapi/linux/nl80211.h
-@@ -3766,6 +3766,10 @@ enum nl80211_bss_status {
+@@ -3857,6 +3857,10 @@ enum nl80211_bss_status {
   *	trying multiple times); this is invalid in netlink -- leave out
   *	the attribute for this on CONNECT commands.
   */
@@ -261,7 +261,7 @@ index 5ed257c4cd4e..92d36397d7dc 100644
  enum nl80211_auth_type {
  	NL80211_AUTHTYPE_OPEN_SYSTEM,
  	NL80211_AUTHTYPE_SHARED_KEY,
-@@ -3781,6 +3785,9 @@ enum nl80211_auth_type {
+@@ -3872,6 +3876,9 @@ enum nl80211_auth_type {
  	NL80211_AUTHTYPE_MAX = __NL80211_AUTHTYPE_NUM - 1,
  	NL80211_AUTHTYPE_AUTOMATIC
  };

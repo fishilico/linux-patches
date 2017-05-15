@@ -10,16 +10,17 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/extra/gen_lds_vars.sh      |  27 ++++++++
  arch/framac/extra/lds_vars.c           | 120 +++++++++++++++++++++++++++++++++
  arch/framac/include/abstract_structs.h |  72 ++++++++++++++++++++
- arch/framac/include/asm/Kbuild         |  84 +++++++++++++++++++++++
+ arch/framac/include/asm/Kbuild         |  85 +++++++++++++++++++++++
  arch/framac/include/asm/byteorder.h    |   6 ++
  arch/framac/include/asm/dma-mapping.h  |  11 +++
  arch/framac/include/asm/elf.h          |  30 +++++++++
  arch/framac/include/asm/irqflags.h     |  15 +++++
- arch/framac/include/asm/pgtable.h      |  68 +++++++++++++++++++
+ arch/framac/include/asm/pgtable.h      |  69 +++++++++++++++++++
  arch/framac/include/asm/processor.h    |  40 +++++++++++
  arch/framac/include/asm/ptrace.h       |  23 +++++++
  arch/framac/include/asm/sigcontext.h   |  10 +++
  arch/framac/include/asm/thread_info.h  |  64 ++++++++++++++++++
+ arch/framac/include/asm/uaccess.h      |  22 ++++++
  arch/framac/kernel/Makefile            |  11 +++
  arch/framac/kernel/asm-offsets.c       |  13 ++++
  arch/framac/kernel/dma.c               |  57 ++++++++++++++++
@@ -36,7 +37,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/delay.c                |  27 ++++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 ++++
- 32 files changed, 976 insertions(+)
+ 33 files changed, 1000 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Makefile
  create mode 100644 arch/framac/extra/Makefile
@@ -53,6 +54,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  create mode 100644 arch/framac/include/asm/ptrace.h
  create mode 100644 arch/framac/include/asm/sigcontext.h
  create mode 100644 arch/framac/include/asm/thread_info.h
+ create mode 100644 arch/framac/include/asm/uaccess.h
  create mode 100644 arch/framac/kernel/Makefile
  create mode 100644 arch/framac/kernel/asm-offsets.c
  create mode 100644 arch/framac/kernel/dma.c
@@ -442,10 +444,10 @@ index 000000000000..75a3f3a8512b
 +#endif /* _ASM_FRAMA_C_ABSTRACT_STRUCT_H */
 diff --git a/arch/framac/include/asm/Kbuild b/arch/framac/include/asm/Kbuild
 new file mode 100644
-index 000000000000..722665cda0b5
+index 000000000000..fa9f4754947a
 --- /dev/null
 +++ b/arch/framac/include/asm/Kbuild
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,85 @@
 +generic-y += atomic.h
 +generic-y += auxvec.h
 +generic-y += barrier.h
@@ -466,6 +468,7 @@ index 000000000000..722665cda0b5
 +generic-y += emergency-restart.h
 +generic-y += errno.h
 +generic-y += exec.h
++generic-y += extable.h
 +generic-y += fcntl.h
 +generic-y += ftrace.h
 +generic-y += futex.h
@@ -618,13 +621,14 @@ index 000000000000..2cf4035657f4
 +#endif /* _ASM_FRAMA_C_IRQFLAGS_H */
 diff --git a/arch/framac/include/asm/pgtable.h b/arch/framac/include/asm/pgtable.h
 new file mode 100644
-index 000000000000..0f2c4c197f87
+index 000000000000..79877209b681
 --- /dev/null
 +++ b/arch/framac/include/asm/pgtable.h
-@@ -0,0 +1,68 @@
+@@ -0,0 +1,69 @@
 +#ifndef _ASM_FRAMA_C_PGTABLE_H
 +#define _ASM_FRAMA_C_PGTABLE_H
 +
++#include <linux/mm_types.h>
 +#include <asm-generic/pgtable-nopud.h>
 +#include <asm-generic/pgtable.h>
 +
@@ -851,6 +855,34 @@ index 000000000000..026466edfa4f
 +#endif /* __KERNEL__ */
 +
 +#endif /* _ASM_FRAMA_C_THREAD_INFO_H */
+diff --git a/arch/framac/include/asm/uaccess.h b/arch/framac/include/asm/uaccess.h
+new file mode 100644
+index 000000000000..3d2ed0e0dd34
+--- /dev/null
++++ b/arch/framac/include/asm/uaccess.h
+@@ -0,0 +1,22 @@
++#ifndef _ASM_FRAMA_C_UACCESS_H
++#define _ASM_FRAMA_C_UACCESS_H
++
++#include <linux/compiler.h>
++
++static inline unsigned long raw_copy_from_user(void *to, const void __user *from, unsigned long n)
++{
++	memcpy(to, (__force void*)from, n);
++	return 0;
++}
++static inline unsigned long raw_copy_to_user(void __user *to, const void *from, unsigned long n)
++{
++	memcpy((__force void *) to, from, n);
++	return 0;
++}
++
++#define INLINE_COPY_FROM_USER
++#define INLINE_COPY_TO_USER
++
++#include <asm-generic/uaccess.h>
++
++#endif
 diff --git a/arch/framac/kernel/Makefile b/arch/framac/kernel/Makefile
 new file mode 100644
 index 000000000000..894ba89f93de

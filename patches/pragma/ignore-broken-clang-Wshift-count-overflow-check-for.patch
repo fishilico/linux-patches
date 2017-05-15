@@ -5,32 +5,11 @@ Subject: [PATCH] {PRAGMA} ignore broken clang -Wshift-count-overflow check for
  ternary
 
 ---
- include/linux/clocksource.h | 8 ++++++++
  include/linux/dma-mapping.h | 8 ++++++++
- 2 files changed, 16 insertions(+)
+ 1 file changed, 8 insertions(+)
 
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index cfc75848a35d..9d2e0a28e718 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -120,7 +120,15 @@ struct clocksource {
- #define CLOCK_SOURCE_RESELECT			0x100
- 
- /* simplify initialization of mask field */
-+#ifdef __clang__
-+#define CLOCKSOURCE_MASK(bits) \
-+_Pragma("GCC diagnostic push") \
-+_Pragma("GCC diagnostic ignored \"-Wshift-count-overflow\"") \
-+    (u64)((bits) < 64 ? ((1ULL<<(bits))-1) : -1) \
-+_Pragma("GCC diagnostic pop")
-+#else
- #define CLOCKSOURCE_MASK(bits) (u64)((bits) < 64 ? ((1ULL<<(bits))-1) : -1)
-+#endif
- 
- static inline u32 clocksource_freq2mult(u32 freq, u32 shift_constant, u64 from)
- {
 diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 447f1fb83326..3b1605ff2821 100644
+index 4f9435ed4c32..28e444b798e0 100644
 --- a/include/linux/dma-mapping.h
 +++ b/include/linux/dma-mapping.h
 @@ -137,7 +137,15 @@ struct dma_map_ops {

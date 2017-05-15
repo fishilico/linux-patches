@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 15 May 2017 21:39:12 +0200
+Subject: [PATCH] {BUG in 4.12-rc1} x86/xen: fix xen_init_time_ops section in
+ header
+
+Since commit d162809f85b4 ("xen/x86: Do not call xen_init_time_ops()
+until shared_info is initialized").
+---
+ arch/x86/xen/xen-ops.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index 9a440a42c618..610e6d1adb03 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -69,7 +69,7 @@ void xen_setup_runstate_info(int cpu);
+ void xen_teardown_timer(int cpu);
+ u64 xen_clocksource_read(void);
+ void xen_setup_cpu_clockevents(void);
+-void __init xen_init_time_ops(void);
++void __ref xen_init_time_ops(void);
+ void __init xen_hvm_init_time_ops(void);
+ 
+ irqreturn_t xen_debug_interrupt(int irq, void *dev_id);
+-- 

@@ -1,0 +1,363 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 8 May 2017 12:22:50 +0200
+Subject: [PATCH] {PRINTF} drivers/staging: atomisp2: add __printf attributes
+
+---
+ .../atomisp/pci/atomisp2/atomisp_compat_css20.c      |  6 +++---
+ .../css2400/hive_isp_css_include/print_support.h     |  4 ++--
+ .../media/atomisp/pci/atomisp2/css2400/ia_css_env.h  |  4 ++--
+ .../isp/kernels/sdis/sdis_1.0/ia_css_sdis.host.c     |  2 +-
+ .../isp/kernels/sdis/sdis_2/ia_css_sdis2.host.c      |  2 +-
+ .../isp/kernels/tnr/tnr_1.0/ia_css_tnr.host.c        |  2 +-
+ .../css2400/runtime/debug/interface/ia_css_debug.h   |  4 ++--
+ .../css2400/runtime/debug/src/ia_css_debug.c         | 10 +++++-----
+ .../media/atomisp/pci/atomisp2/css2400/sh_css.c      | 20 ++++++++++----------
+ .../atomisp/pci/atomisp2/css2400/sh_css_internal.h   |  6 +++---
+ .../media/atomisp/pci/atomisp2/css2400/sh_css_mipi.c |  2 +-
+ .../atomisp/pci/atomisp2/css2400/sh_css_params.c     | 10 +++++-----
+ 12 files changed, 36 insertions(+), 36 deletions(-)
+
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/atomisp_compat_css20.c b/drivers/staging/media/atomisp/pci/atomisp2/atomisp_compat_css20.c
+index b830b241e2e6..157554de4ea6 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/atomisp_compat_css20.c
++++ b/drivers/staging/media/atomisp/pci/atomisp2/atomisp_compat_css20.c
+@@ -178,19 +178,19 @@ static void atomisp_css2_hw_load(hrt_address addr, void *to, uint32_t n)
+ 	spin_unlock_irqrestore(&mmio_lock, flags);
+ }
+ 
+-static int atomisp_css2_dbg_print(const char *fmt, va_list args)
++static __printf(1, 0) int atomisp_css2_dbg_print(const char *fmt, va_list args)
+ {
+ 	vprintk(fmt, args);
+ 	return 0;
+ }
+ 
+-static int atomisp_css2_dbg_ftrace_print(const char *fmt, va_list args)
++static __printf(1, 0) int atomisp_css2_dbg_ftrace_print(const char *fmt, va_list args)
+ {
+ 	ftrace_vprintk(fmt, args);
+ 	return 0;
+ }
+ 
+-static int atomisp_css2_err_print(const char *fmt, va_list args)
++static __printf(1, 0) int atomisp_css2_err_print(const char *fmt, va_list args)
+ {
+ 	vprintk(fmt, args);
+ 	return 0;
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/print_support.h b/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/print_support.h
+index cfbc222ea0c1..ab8bfd0cad8e 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/print_support.h
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/print_support.h
+@@ -22,9 +22,9 @@
+ #include <stdio.h>
+ #endif
+ 
+-extern int (*sh_css_printf) (const char *fmt, va_list args);
++extern __printf(1, 0) int (*sh_css_printf) (const char *fmt, va_list args);
+ /* depends on host supplied print function in ia_css_init() */
+-STORAGE_CLASS_INLINE void ia_css_print(const char *fmt, ...)
++STORAGE_CLASS_INLINE __printf(1, 2) void ia_css_print(const char *fmt, ...)
+ {
+ 	va_list ap;
+ 	if (sh_css_printf) {
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/ia_css_env.h b/drivers/staging/media/atomisp/pci/atomisp2/css2400/ia_css_env.h
+index 1ae9daf0be76..64f365c58e87 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/ia_css_env.h
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/ia_css_env.h
+@@ -74,9 +74,9 @@ struct ia_css_hw_access_env {
+ /** Environment with function pointers to print error and debug messages.
+  */
+ struct ia_css_print_env {
+-	int (*debug_print)(const char *fmt, va_list args);
++	__printf(1, 0) int (*debug_print)(const char *fmt, va_list args);
+ 	/**< Print a debug message. */
+-	int (*error_print)(const char *fmt, va_list args);
++	__printf(1, 0) int (*error_print)(const char *fmt, va_list args);
+ 	/**< Print an error message.*/
+ };
+ 
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/sdis/sdis_1.0/ia_css_sdis.host.c b/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/sdis/sdis_1.0/ia_css_sdis.host.c
+index 0daab1176865..870eeef48957 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/sdis/sdis_1.0/ia_css_sdis.host.c
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/sdis/sdis_1.0/ia_css_sdis.host.c
+@@ -265,7 +265,7 @@ ia_css_translate_dvs_statistics(
+ 	assert(isp_stats->hor_proj != NULL);
+ 	assert(isp_stats->ver_proj != NULL);
+ 
+-	IA_CSS_ENTER("hproj=%p, vproj=%p, haddr=%x, vaddr=%x",
++	IA_CSS_ENTER("hproj=%p, vproj=%p, haddr=%p, vaddr=%p",
+ 			host_stats->hor_proj, host_stats->ver_proj,
+ 			isp_stats->hor_proj, isp_stats->ver_proj);
+ 
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/sdis/sdis_2/ia_css_sdis2.host.c b/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/sdis/sdis_2/ia_css_sdis2.host.c
+index 5a0c103e9eb7..9bccb6473154 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/sdis/sdis_2/ia_css_sdis2.host.c
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/sdis/sdis_2/ia_css_sdis2.host.c
+@@ -213,7 +213,7 @@ ia_css_translate_dvs2_statistics(
+ 		     "hor_coefs.even_real=%p, hor_coefs.even_imag=%p, "
+ 		     "ver_coefs.odd_real=%p, ver_coefs.odd_imag=%p, "
+ 		     "ver_coefs.even_real=%p, ver_coefs.even_imag=%p, "
+-		     "haddr=%x, vaddr=%x",
++		     "haddr=%p, vaddr=%p",
+ 		host_stats->hor_prod.odd_real, host_stats->hor_prod.odd_imag,
+ 		host_stats->hor_prod.even_real, host_stats->hor_prod.even_imag,
+ 		host_stats->ver_prod.odd_real, host_stats->ver_prod.odd_imag,
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/tnr/tnr_1.0/ia_css_tnr.host.c b/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/tnr/tnr_1.0/ia_css_tnr.host.c
+index 804c19ab4485..1fb3a46e0797 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/tnr/tnr_1.0/ia_css_tnr.host.c
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/isp/kernels/tnr/tnr_1.0/ia_css_tnr.host.c
+@@ -55,7 +55,7 @@ ia_css_tnr_dump(
+ 			"tnr_coef", tnr->coef);
+ 	ia_css_debug_dtrace(level, "\t%-32s = %d\n",
+ 			"tnr_threshold_Y", tnr->threshold_Y);
+-	ia_css_debug_dtrace(level, "\t%-32s = %d\n"
++	ia_css_debug_dtrace(level, "\t%-32s = %d\n", /* BUG! */
+ 			"tnr_threshold_C", tnr->threshold_C);
+ }
+ 
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/interface/ia_css_debug.h b/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/interface/ia_css_debug.h
+index be7df3a30c21..e892b39cc208 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/interface/ia_css_debug.h
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/interface/ia_css_debug.h
+@@ -130,14 +130,14 @@ enum ia_css_debug_enable_param_dump {
+  * @param[in]	fmt		printf like format string
+  * @param[in]	args		arguments for the format string
+  */
+-STORAGE_CLASS_INLINE void
++STORAGE_CLASS_INLINE __printf(2, 0) void
+ ia_css_debug_vdtrace(unsigned int level, const char *fmt, va_list args)
+ {
+ 	if (ia_css_debug_trace_level >= level)
+ 		sh_css_vprint(fmt, args);
+ }
+ 
+-extern void ia_css_debug_dtrace(unsigned int level, const char *fmt, ...);
++extern __printf(2, 3) void ia_css_debug_dtrace(unsigned int level, const char *fmt, ...);
+ 
+ /*! @brief Dump sp thread's stack contents
+  * SP thread's stack contents are set to 0xcafecafe. This function dumps the
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/src/ia_css_debug.c b/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/src/ia_css_debug.c
+index 030810bd0878..4a529ae3a96b 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/src/ia_css_debug.c
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/src/ia_css_debug.c
+@@ -2574,7 +2574,7 @@ ia_css_debug_mode_enable_dma_channel(int dma_id,
+ 	return rc;
+ }
+ 
+-void dtrace_dot(const char *fmt, ...)
++static __printf(1, 2) void dtrace_dot(const char *fmt, ...)
+ {
+ 	va_list ap;
+ 
+@@ -2732,7 +2732,7 @@ void ia_css_debug_pipe_graph_dump_epilogue(void)
+ {
+ 
+ 	if (strlen(ring_buffer) > 0) {
+-		dtrace_dot(ring_buffer);
++		dtrace_dot("%s", ring_buffer);
+ 	}
+ 
+ 
+@@ -3031,7 +3031,7 @@ ia_css_debug_pipe_graph_dump_sp_raw_copy(
+ 		out_frame->info.padded_width,
+ 		out_frame->info.res.height);
+ 
+-	dtrace_dot(ring_buffer);
++	dtrace_dot("%s", ring_buffer);
+ 
+ 	dtrace_dot(
+ 		"\"%s(pipe%d)\"->\"0x%08lx\" "
+@@ -3148,7 +3148,7 @@ ia_css_debug_dump_pipe_config(
+ 		ia_css_debug_dump_frame_info(&config->vf_output_info[i],
+ 				"vf_output_info");
+ 	}
+-	ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "acc_extension: 0x%x\n",
++	ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "acc_extension: %p\n",
+ 			config->acc_extension);
+ 	ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "num_acc_stages: %d\n",
+ 			config->num_acc_stages);
+@@ -3179,7 +3179,7 @@ ia_css_debug_dump_stream_config_source(
+ 		ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "timeout: %d\n",
+ 				config->source.port.timeout);
+ 		ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "compression: %d\n",
+-				config->source.port.compression);
++				config->source.port.compression.type);
+ 		break;
+ 	case IA_CSS_INPUT_MODE_TPG:
+ 		ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "source.tpg\n");
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css.c b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css.c
+index 73c76583610a..4bfebca56420 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css.c
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css.c
+@@ -126,7 +126,7 @@ static int thread_alive;
+ 
+ struct sh_css my_css;
+ 
+-int (*sh_css_printf) (const char *fmt, va_list args) = NULL;
++__printf(1, 0) int (*sh_css_printf) (const char *fmt, va_list args) = NULL;
+ 
+ /* modes of work: stream_create and stream_destroy will update the save/restore data
+    only when in working mode, not suspend/resume
+@@ -2003,7 +2003,7 @@ ia_css_enable_isys_event_queue(bool enable)
+ 
+ void *sh_css_malloc(size_t size)
+ {
+-	ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "sh_css_malloc() enter: size=%d\n",size);
++	ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "sh_css_malloc() enter: size=%zu\n",size);
+ 	/* FIXME: This first test can probably go away */
+ 	if (size == 0)
+ 		return NULL;
+@@ -2016,7 +2016,7 @@ void *sh_css_calloc(size_t N, size_t size)
+ {
+ 	void *p;
+ 
+-	ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "sh_css_calloc() enter: N=%d, size=%d\n",N,size);
++	ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "sh_css_calloc() enter: N=%zu, size=%zu\n",N,size);
+ 
+ 	/* FIXME: this test can probably go away */
+ 	if (size > 0) {
+@@ -2059,7 +2059,7 @@ map_sp_threads(struct ia_css_stream *stream, bool map)
+ 	enum ia_css_pipe_id pipe_id;
+ 
+ 	assert(stream != NULL);
+-	IA_CSS_ENTER_PRIVATE("stream = %p, map = %p", stream, map);
++	IA_CSS_ENTER_PRIVATE("stream = %p, map = %d", stream, map);
+ 
+ 	if (stream == NULL) {
+ 		IA_CSS_LEAVE_ERR_PRIVATE(IA_CSS_ERR_INVALID_ARGUMENTS);
+@@ -2766,7 +2766,7 @@ enum ia_css_err ia_css_irq_translate(
+ 		*irq_infos = infos;
+ 
+ 	ia_css_debug_dtrace(IA_CSS_DEBUG_TRACE, "ia_css_irq_translate() "
+-		"leave: irq_infos=%p\n", infos);
++		"leave: irq_infos=%#x\n", infos);
+ 
+ 	return IA_CSS_SUCCESS;
+ }
+@@ -4514,7 +4514,7 @@ ia_css_pipe_enqueue_buffer(struct ia_css_pipe *pipe,
+ #else
+ 		if (hmm_buffer_record) {
+ #endif
+-			IA_CSS_LOG("send vbuf=0x%x", h_vbuf);
++			IA_CSS_LOG("send vbuf=%p", h_vbuf);
+ 		} else {
+ 			return_err = IA_CSS_ERR_INTERNAL_ERROR;
+ 			IA_CSS_ERROR("hmm_buffer_record[]: no available slots\n");
+@@ -4624,7 +4624,7 @@ ia_css_pipe_dequeue_buffer(struct ia_css_pipe *pipe,
+ 			ia_css_rmgr_rel_vbuf(hmm_buffer_pool, &hmm_buffer_record->h_vbuf);
+ 			sh_css_hmm_buffer_record_reset(hmm_buffer_record);
+ 		} else {
+-			IA_CSS_ERROR("hmm_buffer_record not found (0x%p) buf_type(%d)",
++			IA_CSS_ERROR("hmm_buffer_record not found (0x%x) buf_type(%d)",
+ 				 ddr_buffer_addr, buf_type);
+ 			IA_CSS_LEAVE_ERR(IA_CSS_ERR_INTERNAL_ERROR);
+ 			return IA_CSS_ERR_INTERNAL_ERROR;
+@@ -4640,8 +4640,8 @@ ia_css_pipe_dequeue_buffer(struct ia_css_pipe *pipe,
+ 		if ((ddr_buffer.kernel_ptr == 0) ||
+ 		    (kernel_ptr != HOST_ADDRESS(ddr_buffer.kernel_ptr))) {
+ 			IA_CSS_ERROR("kernel_ptr invalid");
+-			IA_CSS_ERROR("expected: (0x%p)", kernel_ptr);
+-			IA_CSS_ERROR("actual: (0x%p)", HOST_ADDRESS(ddr_buffer.kernel_ptr));
++			IA_CSS_ERROR("expected: (0x%#llx)", kernel_ptr);
++			IA_CSS_ERROR("actual: (0x%#lx)", HOST_ADDRESS(ddr_buffer.kernel_ptr));
+ 			IA_CSS_ERROR("buf_type: %d\n", buf_type);
+ 			IA_CSS_LEAVE_ERR(IA_CSS_ERR_INTERNAL_ERROR);
+ 			return IA_CSS_ERR_INTERNAL_ERROR;
+@@ -6621,7 +6621,7 @@ allocate_delay_frames(struct ia_css_pipe *pipe)
+ 	IA_CSS_ENTER_PRIVATE("");
+ 
+ 	if (pipe == NULL) {
+-		IA_CSS_ERROR("Invalid args - pipe %x", pipe);
++		IA_CSS_ERROR("Invalid args - pipe %p", pipe);
+ 		return IA_CSS_ERR_INVALID_ARGUMENTS;
+ 	}
+ 
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_internal.h b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_internal.h
+index e2b6f06ed099..c2c5587f1108 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_internal.h
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_internal.h
+@@ -966,9 +966,9 @@ struct host_sp_queues {
+ #define SIZE_OF_HOST_SP_QUEUES_STRUCT		\
+ 	(SIZE_OF_QUEUES_ELEMS + SIZE_OF_QUEUES_DESC)
+ 
+-extern int (*sh_css_printf)(const char *fmt, va_list args);
++extern __printf(1, 0) int (*sh_css_printf)(const char *fmt, va_list args);
+ 
+-STORAGE_CLASS_INLINE void
++STORAGE_CLASS_INLINE __printf(1, 2) void
+ sh_css_print(const char *fmt, ...)
+ {
+ 	va_list ap;
+@@ -980,7 +980,7 @@ sh_css_print(const char *fmt, ...)
+ 	}
+ }
+ 
+-STORAGE_CLASS_INLINE void
++STORAGE_CLASS_INLINE __printf(1, 0) void
+ sh_css_vprint(const char *fmt, va_list args)
+ {
+ 	if (sh_css_printf)
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_mipi.c b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_mipi.c
+index 7e3893c6c08a..36aaa3019a15 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_mipi.c
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_mipi.c
+@@ -681,7 +681,7 @@ send_mipi_frames(struct ia_css_pipe *pipe)
+ 	unsigned int port = 0;
+ #endif
+ 
+-	IA_CSS_ENTER_PRIVATE("pipe=%d", pipe);
++	IA_CSS_ENTER_PRIVATE("pipe=%p", pipe);
+ 
+ 	assert(pipe != NULL);
+ 	assert(pipe->stream != NULL);
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_params.c b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_params.c
+index 561f4a7236f7..e92670a36ce8 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_params.c
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_params.c
+@@ -3375,7 +3375,7 @@ enum ia_css_err ia_css_pipe_set_bci_scaler_lut(struct ia_css_pipe *pipe,
+ #endif
+ 		if (pipe->scaler_pp_lut == mmgr_NULL) {
+ #ifndef ISP2401
+-			IA_CSS_LEAVE("lut(%p) err=%d", pipe->scaler_pp_lut, err);
++			IA_CSS_LEAVE("lut(%#x) err=%d", pipe->scaler_pp_lut, err);
+ 			return IA_CSS_ERR_CANNOT_ALLOCATE_MEMORY;
+ #else
+ 			ia_css_debug_dtrace(IA_CSS_DEBUG_ERROR,
+@@ -3397,7 +3397,7 @@ enum ia_css_err ia_css_pipe_set_bci_scaler_lut(struct ia_css_pipe *pipe,
+ #endif
+ 	}
+ 
+-	IA_CSS_LEAVE("lut(%p) err=%d", pipe->scaler_pp_lut, err);
++	IA_CSS_LEAVE("lut(%#x) err=%d", pipe->scaler_pp_lut, err);
+ 	return err;
+ }
+ 
+@@ -3437,7 +3437,7 @@ enum ia_css_err sh_css_params_map_and_store_default_gdc_lut(void)
+ 	mmgr_store(default_gdc_lut, (int *)interleaved_lut_temp,
+ 		sizeof(zoom_table));
+ 
+-	IA_CSS_LEAVE_PRIVATE("lut(%p) err=%d", default_gdc_lut, err);
++	IA_CSS_LEAVE_PRIVATE("lut(%#x) err=%d", default_gdc_lut, err);
+ 	return err;
+ }
+ 
+@@ -3859,7 +3859,7 @@ sh_css_param_update_isp_params(struct ia_css_pipe *curr_pipe,
+ 		/* When API change is implemented making good distinction between
+ 		* stream config and pipe config this skipping code can be moved out of the #ifdef */
+ 		if (pipe_in && (pipe != pipe_in)) {
+-			IA_CSS_LOG("skipping pipe %x", pipe);
++			IA_CSS_LOG("skipping pipe %p", pipe);
+ 			continue;
+ 		}
+ 
+@@ -4590,7 +4590,7 @@ free_ia_css_isp_parameter_set_info(
+ 	unsigned int i;
+ 	hrt_vaddress *addrs = (hrt_vaddress *)&isp_params_info.mem_map;
+ 
+-	IA_CSS_ENTER_PRIVATE("ptr = %p", ptr);
++	IA_CSS_ENTER_PRIVATE("ptr = %#x", ptr);
+ 
+ 	/* sanity check - ptr must be valid */
+ 	if (!ia_css_refcount_is_valid(ptr)) {
+-- 

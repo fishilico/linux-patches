@@ -15,23 +15,23 @@ clang does not like the way the code is written:
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/mm/vmscan.c b/mm/vmscan.c
-index bc8031ef994d..2ae7144f5522 100644
+index 8ad39bbc79e6..344423d30361 100644
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -2950,8 +2950,6 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+@@ -2967,8 +2967,6 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
  	unsigned long nr_reclaimed;
  	struct scan_control sc = {
  		.nr_to_reclaim = SWAP_CLUSTER_MAX,
--		.gfp_mask = (gfp_mask = memalloc_noio_flags(gfp_mask)),
+-		.gfp_mask = (gfp_mask = current_gfp_context(gfp_mask)),
 -		.reclaim_idx = gfp_zone(gfp_mask),
  		.order = order,
  		.nodemask = nodemask,
  		.priority = DEF_PRIORITY,
-@@ -2959,6 +2957,8 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+@@ -2976,6 +2974,8 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
  		.may_unmap = 1,
  		.may_swap = 1,
  	};
-+	sc.gfp_mask = (gfp_mask = memalloc_noio_flags(gfp_mask));
++	sc.gfp_mask = (gfp_mask = current_gfp_context(gfp_mask));
 +	sc.reclaim_idx = gfp_zone(gfp_mask);
  
  	/*

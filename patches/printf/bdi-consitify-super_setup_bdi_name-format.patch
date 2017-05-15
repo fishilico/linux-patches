@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 8 May 2017 11:36:42 +0200
+Subject: [PATCH] {PRINTF} bdi: consitify super_setup_bdi_name format
+
+---
+ fs/super.c         | 2 +-
+ include/linux/fs.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/super.c b/fs/super.c
+index adb0c0de428c..c50392d4d859 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -1259,7 +1259,7 @@ mount_fs(struct file_system_type *type, int flags, const char *name, void *data)
+  * Setup private BDI for given superblock. It gets automatically cleaned up
+  * in generic_shutdown_super().
+  */
+-int super_setup_bdi_name(struct super_block *sb, char *fmt, ...)
++int super_setup_bdi_name(struct super_block *sb, const char *fmt, ...)
+ {
+ 	struct backing_dev_info *bdi;
+ 	int err;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 803e5a9b2654..e331d7b2d156 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2123,7 +2123,7 @@ extern int freeze_super(struct super_block *super);
+ extern int thaw_super(struct super_block *super);
+ extern bool our_mnt(struct vfsmount *mnt);
+ extern __printf(2, 3)
+-int super_setup_bdi_name(struct super_block *sb, char *fmt, ...);
++int super_setup_bdi_name(struct super_block *sb, const char *fmt, ...);
+ extern int super_setup_bdi(struct super_block *sb);
+ 
+ extern int current_umask(void);
+-- 

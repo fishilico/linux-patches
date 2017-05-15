@@ -40,7 +40,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  25 files changed, 146 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 724d1c50fc52..dc4068df08b8 100644
+index d5da45bb03a6..6715f6217ceb 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -51,7 +51,7 @@
@@ -70,10 +70,10 @@ index 3d8ff09eba57..452f247b57ef 100644
  #include <linux/i8253.h>
  
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
-index cc6bb319e464..3ef54f44a519 100644
+index bbe4bb438e39..717675c58629 100644
 --- a/include/asm-generic/uaccess.h
 +++ b/include/asm-generic/uaccess.h
-@@ -158,6 +158,21 @@ static inline __must_check long __copy_to_user(void __user *to,
+@@ -73,6 +73,21 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
  	__pu_err;						\
  })
  
@@ -95,7 +95,7 @@ index cc6bb319e464..3ef54f44a519 100644
  #define put_user(x, ptr)					\
  ({								\
  	void *__p = (ptr);					\
-@@ -166,6 +181,7 @@ static inline __must_check long __copy_to_user(void __user *to,
+@@ -81,6 +96,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
  		__put_user((x), ((__typeof__(*(ptr)) *)__p)) :	\
  		-EFAULT;					\
  })
@@ -104,7 +104,7 @@ index cc6bb319e464..3ef54f44a519 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/bug.h b/include/linux/bug.h
-index 5828489309bb..f4c8a7683c5c 100644
+index 687b557fc5eb..16f3d601ceff 100644
 --- a/include/linux/bug.h
 +++ b/include/linux/bug.h
 @@ -13,6 +13,17 @@ enum bug_trap_type {
@@ -175,10 +175,10 @@ index a4281104a923..ed78f23e7287 100644
   * Generic compiler-dependent macros required for kernel
   * build go below this comment. Actual compiler/compiler version
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 96f1e88b767c..0499872261fe 100644
+index 2404ad238c0b..b603025be7c1 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -779,9 +779,14 @@ set_cpu_active(unsigned int cpu, bool active)
+@@ -789,9 +789,14 @@ set_cpu_active(unsigned int cpu, bool active)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -194,7 +194,7 @@ index 96f1e88b767c..0499872261fe 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 8d14460e0123..02055493f6a9 100644
+index 8a8985b362bd..a5b3c12cf0a9 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
 @@ -173,7 +173,9 @@ struct ablkcipher_request {
@@ -249,7 +249,7 @@ index 2ecb3c46b20a..cb101cbf5e39 100644
  
  #ifndef ndelay
 diff --git a/include/linux/flex_array.h b/include/linux/flex_array.h
-index b6efb0c64408..688bf9a11131 100644
+index 11366b3ff0b4..eb6e863039a6 100644
 --- a/include/linux/flex_array.h
 +++ b/include/linux/flex_array.h
 @@ -24,7 +24,10 @@ struct flex_array {
@@ -265,7 +265,7 @@ index b6efb0c64408..688bf9a11131 100644
  		/*
  		 * This little trick makes sure that
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index fe1b027eb20e..5bc1f97b6abd 100644
+index 516b98ac1c0d..d1f636855b06 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -14,6 +14,9 @@
@@ -286,7 +286,7 @@ index fe1b027eb20e..5bc1f97b6abd 100644
  #define SIZE_MAX	(~(size_t)0)
  
  #define U8_MAX		((u8)~0U)
-@@ -221,6 +225,10 @@ extern int _cond_resched(void);
+@@ -222,6 +226,10 @@ extern int _cond_resched(void);
   *
   * Return: an absolute value of x.
   */
@@ -297,7 +297,7 @@ index fe1b027eb20e..5bc1f97b6abd 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -235,6 +243,7 @@ extern int _cond_resched(void);
+@@ -236,6 +244,7 @@ extern int _cond_resched(void);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -337,10 +337,10 @@ index db2f3f454a1b..5124ce3698dc 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index eb3da1a04e6c..adca37e3e64e 100644
+index 33c2b0b77429..b1b7c55499a2 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -115,6 +115,8 @@ typedef int __bitwise pci_power_t;
+@@ -116,6 +116,8 @@ typedef int __bitwise pci_power_t;
  #define PCI_UNKNOWN	((pci_power_t __force) 5)
  #define PCI_POWER_ERROR	((pci_power_t __force) -1)
  
@@ -349,7 +349,7 @@ index eb3da1a04e6c..adca37e3e64e 100644
  /* Remember to update this when the list above changes! */
  extern const char *pci_power_names[];
  
-@@ -122,6 +124,7 @@ static inline const char *pci_power_name(pci_power_t state)
+@@ -123,6 +125,7 @@ static inline const char *pci_power_name(pci_power_t state)
  {
  	return pci_power_names[1 + (__force int) state];
  }
@@ -464,7 +464,7 @@ index dd4104c9aa12..5c8fb9193110 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/init/initramfs.c b/init/initramfs.c
-index 981f286c1d16..1538755cfef7 100644
+index 8a532050043f..10720bab7e4b 100644
 --- a/init/initramfs.c
 +++ b/init/initramfs.c
 @@ -3,7 +3,7 @@
@@ -477,7 +477,7 @@ index 981f286c1d16..1538755cfef7 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 7e59ebc2c25e..18ee2837e0ec 100644
+index ca92bcfeb322..2e6ad3747018 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1102,7 +1102,7 @@ static void print_fatal_signal(int signr)
@@ -490,10 +490,10 @@ index 7e59ebc2c25e..18ee2837e0ec 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index 25bdd2504571..faa19b4c1816 100644
+index 49c73c6ed648..c7d099c58753 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
-@@ -368,17 +368,21 @@ EXPORT_SYMBOL(mktime64);
+@@ -354,17 +354,21 @@ EXPORT_SYMBOL(mktime64);
  void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
@@ -515,7 +515,7 @@ index 25bdd2504571..faa19b4c1816 100644
  		nsec += NSEC_PER_SEC;
  		--sec;
  	}
-@@ -448,17 +452,21 @@ EXPORT_SYMBOL(ns_to_timeval);
+@@ -434,17 +438,21 @@ EXPORT_SYMBOL(ns_to_timeval);
  void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
@@ -583,10 +583,10 @@ index 992457b1284c..2751063061b2 100644
  			if (linebuflen < lx + 2)
  				goto overflow2;
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index d08d6db0010f..abaa12ea6716 100644
+index 31fcd629441f..0a09732e9ec9 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -795,8 +795,10 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+@@ -788,8 +788,10 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
  	bool rhlist = ht->rhlist;
  
  /* Variable "skip" is not initialized but not used when the goto is taken */
@@ -597,7 +597,7 @@ index d08d6db0010f..abaa12ea6716 100644
  	if (p) {
  		if (!rhlist || !(list = rcu_dereference(list->next))) {
  			p = rcu_dereference(p->next);
-@@ -827,7 +829,12 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+@@ -820,7 +822,12 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
  		}
  
  next:

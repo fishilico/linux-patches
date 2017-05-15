@@ -9,13 +9,13 @@ Subject: [PATCH] {PRINTF} drivers/staging/rdma/hfi1/device: silent
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/infiniband/hw/hfi1/device.c b/drivers/infiniband/hw/hfi1/device.c
-index bf64b5a7bfd7..abce7f1bb129 100644
+index bbb6069dec2a..03eda7238246 100644
 --- a/drivers/infiniband/hw/hfi1/device.c
 +++ b/drivers/infiniband/hw/hfi1/device.c
 @@ -70,7 +70,7 @@ int hfi1_cdev_init(int minor, const char *name,
  	cdev_init(cdev, fops);
  	cdev->owner = THIS_MODULE;
- 	cdev->kobj.parent = parent;
+ 	cdev_set_parent(cdev, parent);
 -	kobject_set_name(&cdev->kobj, name);
 +	kobject_set_name(&cdev->kobj, "%s", name); /* not a vulnerability because derivated from class_name() (const string) and a number */
  

@@ -25,19 +25,20 @@ This silents a -Wformat-security warning found by clang:
             kthread_create_on_node(threadfn, data, NUMA_NO_NODE, namefmt, ##arg)
                                                                  ^
 ---
- .../vc04_services/interface/vchiq_arm/vchiq_arm.c     | 10 ++++------
+ .../vc04_services/interface/vchiq_arm/vchiq_arm.c     | 11 ++++-------
  .../vc04_services/interface/vchiq_arm/vchiq_core.c    | 19 +++++++++----------
- 2 files changed, 13 insertions(+), 16 deletions(-)
+ 2 files changed, 13 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
-index 8a0d214f6e9b..26fc858bf6cc 100644
+index e823f1d5d177..7048737fc1bb 100644
 --- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
 +++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
-@@ -2837,19 +2837,17 @@ void vchiq_platform_conn_state_changed(VCHIQ_STATE_T *state,
+@@ -3364,20 +3364,17 @@ void vchiq_platform_conn_state_changed(VCHIQ_STATE_T *state,
  	if (state->conn_state == VCHIQ_CONNSTATE_CONNECTED) {
  		write_lock_bh(&arm_state->susp_res_lock);
  		if (!arm_state->first_connect) {
 -			char threadname[16];
+-
  			arm_state->first_connect = 1;
  			write_unlock_bh(&arm_state->susp_res_lock);
 -			snprintf(threadname, sizeof(threadname), "vchiq-keep/%d",
@@ -58,10 +59,10 @@ index 8a0d214f6e9b..26fc858bf6cc 100644
  				wake_up_process(arm_state->ka_thread);
  			}
 diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
-index d587097b261c..19187f182e3c 100644
+index 4f9e738abddf..78a6856df1c5 100644
 --- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
 +++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
-@@ -2329,7 +2329,6 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+@@ -2350,7 +2350,6 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
  	VCHIQ_SHARED_STATE_T *local;
  	VCHIQ_SHARED_STATE_T *remote;
  	VCHIQ_STATUS_T status;
@@ -69,7 +70,7 @@ index d587097b261c..19187f182e3c 100644
  	static int id;
  	int i;
  
-@@ -2497,40 +2496,40 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+@@ -2518,40 +2517,40 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
  	/*
  		bring up slot handler thread
  	 */

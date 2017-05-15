@@ -91,7 +91,7 @@ index 6470eb8088f4..ff3343f6d5dd 100644
  	if (ktype == &bus_ktype)
  		return 1;
 diff --git a/drivers/base/core.c b/drivers/base/core.c
-index db6f05e79f93..b378210fbf20 100644
+index 19a291279834..c73e75969a2f 100644
 --- a/drivers/base/core.c
 +++ b/drivers/base/core.c
 @@ -839,7 +839,7 @@ static struct kobj_type device_ktype = {
@@ -104,7 +104,7 @@ index db6f05e79f93..b378210fbf20 100644
  	if (ktype == &device_ktype) {
  		struct device *dev = kobj_to_dev(kobj);
 diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index e6284591599e..d4f2f96b9dfe 100644
+index ca85cb80e99a..491eaa6a01bd 100644
 --- a/include/linux/kobject.h
 +++ b/include/linux/kobject.h
 @@ -65,7 +65,7 @@ struct kobject {
@@ -132,7 +132,7 @@ index e6284591599e..d4f2f96b9dfe 100644
  			 const char *fmt, ...);
  
  extern void kobject_del(struct kobject *kobj);
-@@ -194,7 +194,7 @@ static inline void kset_put(struct kset *k)
+@@ -196,7 +196,7 @@ static inline void kset_put(struct kset *k)
  	kobject_put(&k->kobj);
  }
  
@@ -142,10 +142,10 @@ index e6284591599e..d4f2f96b9dfe 100644
  	return kobj->ktype;
  }
 diff --git a/include/linux/module.h b/include/linux/module.h
-index 0297c5cd7cdf..2cd6c2533fd1 100644
+index 21f56393602f..5ae01728ed8e 100644
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
-@@ -751,7 +751,7 @@ static inline bool module_requested_async_probing(struct module *module)
+@@ -757,7 +757,7 @@ static inline bool module_requested_async_probing(struct module *module)
  
  #ifdef CONFIG_SYSFS
  extern struct kset *module_kset;
@@ -155,10 +155,10 @@ index 0297c5cd7cdf..2cd6c2533fd1 100644
  #endif /* CONFIG_SYSFS */
  
 diff --git a/kernel/params.c b/kernel/params.c
-index a6d6149c0fe6..acab23bc3ccd 100644
+index 60b2d8101355..fd9f75abd163 100644
 --- a/kernel/params.c
 +++ b/kernel/params.c
-@@ -967,7 +967,7 @@ static const struct sysfs_ops module_sysfs_ops = {
+@@ -915,7 +915,7 @@ static const struct sysfs_ops module_sysfs_ops = {
  
  static int uevent_filter(struct kset *kset, struct kobject *kobj)
  {
@@ -167,7 +167,7 @@ index a6d6149c0fe6..acab23bc3ccd 100644
  
  	if (ktype == &module_ktype)
  		return 1;
-@@ -987,7 +987,7 @@ static void module_kobj_release(struct kobject *kobj)
+@@ -935,7 +935,7 @@ static void module_kobj_release(struct kobject *kobj)
  	complete(mk->kobj_completion);
  }
  
@@ -177,7 +177,7 @@ index a6d6149c0fe6..acab23bc3ccd 100644
  	.sysfs_ops =	&module_sysfs_ops,
  };
 diff --git a/lib/kobject.c b/lib/kobject.c
-index 445dcaeb0f56..3de041822daf 100644
+index 763d70a18941..61976e0718f7 100644
 --- a/lib/kobject.c
 +++ b/lib/kobject.c
 @@ -48,7 +48,7 @@ const void *kobject_namespace(struct kobject *kobj)
@@ -207,7 +207,7 @@ index 445dcaeb0f56..3de041822daf 100644
  			 struct kobject *parent, const char *fmt, ...)
  {
  	va_list args;
-@@ -614,7 +614,7 @@ static struct kobject * __must_check kobject_get_unless_zero(struct kobject *kob
+@@ -617,7 +617,7 @@ EXPORT_SYMBOL(kobject_get_unless_zero);
   */
  static void kobject_cleanup(struct kobject *kobj)
  {
@@ -216,7 +216,7 @@ index 445dcaeb0f56..3de041822daf 100644
  	const char *name = kobj->name;
  
  	pr_debug("kobject: '%s' (%p): %s, parent %p\n",
-@@ -699,7 +699,7 @@ static void dynamic_kobj_release(struct kobject *kobj)
+@@ -702,7 +702,7 @@ static void dynamic_kobj_release(struct kobject *kobj)
  	kfree(kobj);
  }
  
@@ -225,7 +225,7 @@ index 445dcaeb0f56..3de041822daf 100644
  	.release	= dynamic_kobj_release,
  	.sysfs_ops	= &kobj_sysfs_ops,
  };
-@@ -871,7 +871,7 @@ static void kset_release(struct kobject *kobj)
+@@ -874,7 +874,7 @@ static void kset_release(struct kobject *kobj)
  	kfree(kset);
  }
  
@@ -235,7 +235,7 @@ index 445dcaeb0f56..3de041822daf 100644
  	.release = kset_release,
  };
 diff --git a/mm/slub.c b/mm/slub.c
-index ea3915515a79..98ca2253223f 100644
+index c5e95f676b52..e746e82ec406 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
 @@ -5568,7 +5568,7 @@ static struct kobj_type slab_ktype = {

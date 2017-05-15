@@ -35,8 +35,6 @@ This fixes errors like:
  drivers/misc/pti.c                           |   3 +-
  drivers/mtd/maps/gpio-addr-flash.c           |   3 +-
  drivers/net/appletalk/ipddp.c                |   4 +-
- drivers/net/ethernet/mellanox/mlxsw/core.c   |   4 +-
- drivers/net/ethernet/mellanox/mlxsw/pci.c    |  16 +--
  drivers/net/hamradio/6pack.c                 |  14 +--
  drivers/net/hamradio/baycom_epp.c            |   5 +-
  drivers/net/hamradio/mkiss.c                 |  14 +--
@@ -45,27 +43,27 @@ This fixes errors like:
  drivers/scsi/fnic/fnic_trace.c               |   5 +-
  drivers/tty/n_hdlc.c                         |  22 +---
  drivers/tty/serial/st-asc.c                  |   4 +-
- fs/ext4/super.c                              |   7 +-
+ fs/ext4/super.c                              |   8 +-
  fs/nilfs2/sysfs.c                            | 168 ++++++++++++---------------
  fs/ntfs/super.c                              |   7 +-
  kernel/power/suspend_test.c                  |  33 ++----
  net/802/psnap.c                              |   5 +-
  net/appletalk/ddp.c                          |   5 +-
  net/core/net-sysfs.c                         |  45 ++++---
- net/decnet/af_decnet.c                       |   4 +-
+ net/decnet/af_decnet.c                       |   5 +-
  net/ipx/af_ipx.c                             |  16 +--
  net/llc/af_llc.c                             |  13 +--
- 29 files changed, 171 insertions(+), 300 deletions(-)
+ 27 files changed, 166 insertions(+), 287 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
-index 6b6fda65fb3b..4a5ec626604f 100644
+index 91272db09fa3..4a5ec626604f 100644
 --- a/arch/arm/mach-omap2/board-n8x0.c
 +++ b/arch/arm/mach-omap2/board-n8x0.c
 @@ -117,7 +117,6 @@ static struct musb_hdrc_platform_data tusb_data = {
  static void __init n8x0_usb_init(void)
  {
  	int ret = 0;
--	static char	announce[] __initdata = KERN_INFO "TUSB 6010\n";
+-	static const char announce[] __initconst = KERN_INFO "TUSB 6010\n";
  
  	/* PM companion chip power control pin */
  	ret = gpio_request_one(TUSB6010_GPIO_ENABLE, GPIOF_OUT_INIT_LOW,
@@ -173,10 +171,10 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 428e31763cb9..4ab01e25a6bf 100644
+index 8ad91a01cbc8..1382e0d3e850 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
-@@ -497,15 +497,6 @@ static noinline int vmalloc_fault(unsigned long address)
+@@ -528,15 +528,6 @@ static noinline int vmalloc_fault(unsigned long address)
  }
  NOKPROBE_SYMBOL(vmalloc_fault);
  
@@ -192,7 +190,7 @@ index 428e31763cb9..4ab01e25a6bf 100644
  /*
   * No vm86 mode in 64-bit mode:
   */
-@@ -598,7 +589,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+@@ -638,7 +629,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  	address |= 0xffffffffUL << 32;
  	if ((address >= (u64)_stext && address <= (u64)_etext) ||
  	    (address >= MODULES_VADDR && address <= MODULES_END)) {
@@ -206,7 +204,7 @@ index 428e31763cb9..4ab01e25a6bf 100644
  		regs->ip = address;
  		return 1;
  	}
-@@ -643,11 +639,6 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
+@@ -683,11 +679,6 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
  	return 0;
  }
  
@@ -218,7 +216,7 @@ index 428e31763cb9..4ab01e25a6bf 100644
  static void
  show_fault_oops(struct pt_regs *regs, unsigned long error_code,
  		unsigned long address)
-@@ -666,11 +657,11 @@ show_fault_oops(struct pt_regs *regs, unsigned long error_code,
+@@ -706,11 +697,11 @@ show_fault_oops(struct pt_regs *regs, unsigned long error_code,
  		pte = lookup_address_in_pgd(pgd, address, &level);
  
  		if (pte && pte_present(*pte) && !pte_exec(*pte))
@@ -356,74 +354,6 @@ index a306de4318d7..b6aac3c24d18 100644
  
  	/* Initialize the device structure. */
  	dev->netdev_ops = &ipddp_netdev_ops;
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/core.c b/drivers/net/ethernet/mellanox/mlxsw/core.c
-index a4c07841aaf6..afb34b02e461 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/core.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/core.c
-@@ -713,10 +713,8 @@ static int mlxsw_core_rx_stats_dbg_read(struct seq_file *file, void *data)
- 	unsigned int start;
- 	int i;
- 	int j;
--	static const char hdr[] =
--		"     NUM   RX_PACKETS     RX_BYTES RX_DROPPED\n";
- 
--	seq_printf(file, hdr);
-+	seq_printf(file, "     NUM   RX_PACKETS     RX_BYTES RX_DROPPED\n");
- 	for (i = 0; i < MLXSW_TRAP_ID_MAX; i++) {
- 		rx_packets = 0;
- 		rx_bytes = 0;
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/pci.c b/drivers/net/ethernet/mellanox/mlxsw/pci.c
-index a223c85dfde0..74f14f7b0df7 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/pci.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/pci.c
-@@ -395,10 +395,8 @@ static int mlxsw_pci_sdq_dbg_read(struct seq_file *file, void *data)
- 	struct mlxsw_pci *mlxsw_pci = dev_get_drvdata(file->private);
- 	struct mlxsw_pci_queue *q;
- 	int i;
--	static const char hdr[] =
--		"NUM PROD_COUNT CONS_COUNT COUNT\n";
- 
--	seq_printf(file, hdr);
-+	seq_printf(file, "NUM PROD_COUNT CONS_COUNT COUNT\n");
- 	for (i = 0; i < mlxsw_pci_sdq_count(mlxsw_pci); i++) {
- 		q = mlxsw_pci_sdq_get(mlxsw_pci, i);
- 		spin_lock_bh(&q->lock);
-@@ -549,10 +547,8 @@ static int mlxsw_pci_rdq_dbg_read(struct seq_file *file, void *data)
- 	struct mlxsw_pci *mlxsw_pci = dev_get_drvdata(file->private);
- 	struct mlxsw_pci_queue *q;
- 	int i;
--	static const char hdr[] =
--		"NUM PROD_COUNT CONS_COUNT COUNT\n";
- 
--	seq_printf(file, hdr);
-+	seq_printf(file, "NUM PROD_COUNT CONS_COUNT COUNT\n");
- 	for (i = 0; i < mlxsw_pci_rdq_count(mlxsw_pci); i++) {
- 		q = mlxsw_pci_rdq_get(mlxsw_pci, i);
- 		spin_lock_bh(&q->lock);
-@@ -608,10 +604,8 @@ static int mlxsw_pci_cq_dbg_read(struct seq_file *file, void *data)
- 
- 	struct mlxsw_pci_queue *q;
- 	int i;
--	static const char hdr[] =
--		"NUM CONS_INDEX  SDQ_COUNT  RDQ_COUNT COUNT\n";
- 
--	seq_printf(file, hdr);
-+	seq_printf(file, "NUM CONS_INDEX  SDQ_COUNT  RDQ_COUNT COUNT\n");
- 	for (i = 0; i < mlxsw_pci_cq_count(mlxsw_pci); i++) {
- 		q = mlxsw_pci_cq_get(mlxsw_pci, i);
- 		spin_lock_bh(&q->lock);
-@@ -782,10 +776,8 @@ static int mlxsw_pci_eq_dbg_read(struct seq_file *file, void *data)
- 	struct mlxsw_pci *mlxsw_pci = dev_get_drvdata(file->private);
- 	struct mlxsw_pci_queue *q;
- 	int i;
--	static const char hdr[] =
--		"NUM CONS_COUNT     EV_CMD    EV_COMP   EV_OTHER COUNT\n";
- 
--	seq_printf(file, hdr);
-+	seq_printf(file, "NUM CONS_COUNT     EV_CMD    EV_COMP   EV_OTHER COUNT\n");
- 	for (i = 0; i < mlxsw_pci_eq_count(mlxsw_pci); i++) {
- 		q = mlxsw_pci_eq_get(mlxsw_pci, i);
- 		spin_lock_bh(&q->lock);
 diff --git a/drivers/net/hamradio/6pack.c b/drivers/net/hamradio/6pack.c
 index 922bf440e9f1..014999259e26 100644
 --- a/drivers/net/hamradio/6pack.c
@@ -466,7 +396,7 @@ index 922bf440e9f1..014999259e26 100644
  
  /* encode an AX.25 packet into 6pack */
 diff --git a/drivers/net/hamradio/baycom_epp.c b/drivers/net/hamradio/baycom_epp.c
-index 1500bd9baa71..e5a83ab5d419 100644
+index 41762db057f6..699a2f290cd3 100644
 --- a/drivers/net/hamradio/baycom_epp.c
 +++ b/drivers/net/hamradio/baycom_epp.c
 @@ -64,9 +64,6 @@
@@ -548,7 +478,7 @@ index 2f0bd6955f33..f97887d41f81 100644
  }
  module_init(z85230_init_driver);
 diff --git a/drivers/scsi/esas2r/esas2r_log.c b/drivers/scsi/esas2r/esas2r_log.c
-index 20689a48ad17..1edef7e1e76c 100644
+index 3349670b09de..99a61ba3b070 100644
 --- a/drivers/scsi/esas2r/esas2r_log.c
 +++ b/drivers/scsi/esas2r/esas2r_log.c
 @@ -123,8 +123,6 @@ static __printf(3, 0) int esas2r_log_master(const long level,
@@ -560,7 +490,7 @@ index 20689a48ad17..1edef7e1e76c 100644
  		const char *slevel =
  			translate_esas2r_event_level_to_kernel(level);
  
-@@ -144,10 +142,10 @@ static __printf(3, 0) int esas2r_log_master(const long level,
+@@ -139,10 +137,10 @@ static __printf(3, 0) int esas2r_log_master(const long level,
  		 */
  
  		if (dev == NULL) {
@@ -574,10 +504,10 @@ index 20689a48ad17..1edef7e1e76c 100644
  				 (dev->driver ? dev->driver->name : "unknown"),
  				 (dev->bus ? dev->bus->name : "unknown"),
 diff --git a/drivers/scsi/fnic/fnic_trace.c b/drivers/scsi/fnic/fnic_trace.c
-index 5a5fa01576b7..5cdc0cf349fc 100644
+index b5ac5381a0d7..be1f58734c86 100644
 --- a/drivers/scsi/fnic/fnic_trace.c
 +++ b/drivers/scsi/fnic/fnic_trace.c
-@@ -730,7 +730,7 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
+@@ -771,7 +771,7 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
  {
  	struct tm tm;
  	int j, i = 1, len;
@@ -586,7 +516,7 @@ index 5a5fa01576b7..5cdc0cf349fc 100644
  	int ethhdr_len = sizeof(struct ethhdr) - 1;
  	int fcoehdr_len = sizeof(struct fcoe_hdr);
  	int fchdr_len = sizeof(struct fc_frame_header);
-@@ -742,10 +742,9 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
+@@ -783,10 +783,9 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
  
  	time64_to_tm(tdata->time_stamp.tv_sec, 0, &tm);
  
@@ -655,10 +585,10 @@ index 7b2a466616d6..ebafd8df8ada 100644
  
  module_init(n_hdlc_init);
 diff --git a/drivers/tty/serial/st-asc.c b/drivers/tty/serial/st-asc.c
-index a93a3167a9c6..8e04c7a4d082 100644
+index f5335be344f6..7633253f07c6 100644
 --- a/drivers/tty/serial/st-asc.c
 +++ b/drivers/tty/serial/st-asc.c
-@@ -986,10 +986,8 @@ static struct platform_driver asc_serial_driver = {
+@@ -984,10 +984,8 @@ static struct platform_driver asc_serial_driver = {
  static int __init asc_init(void)
  {
  	int ret;
@@ -671,19 +601,20 @@ index a93a3167a9c6..8e04c7a4d082 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index a9448db1cf7e..c873b540874a 100644
+index 0b177da9ea82..d59ff43e2cff 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1422,8 +1422,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1445,9 +1445,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  }
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
--static char deprecated_msg[] = "Mount option \"%s\" will be removed by %s\n"
+-static const char deprecated_msg[] =
+-	"Mount option \"%s\" will be removed by %s\n"
 -	"Contact linux-ext4@vger.kernel.org if you think we should keep it.\n";
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -1622,7 +1620,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -1646,7 +1643,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -1300,14 +1231,15 @@ index 65ea0ff4017c..c25451b6eefb 100644
  	read_unlock(&dev_base_lock);
  	return ret;
 diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
-index bcb881abeb37..ac67d17b5184 100644
+index 405483a07efc..ba1d7fb2d1e8 100644
 --- a/net/decnet/af_decnet.c
 +++ b/net/decnet/af_decnet.c
-@@ -2360,13 +2360,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");
+@@ -2361,14 +2361,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");
  MODULE_LICENSE("GPL");
  MODULE_ALIAS_NETPROTO(PF_DECnet);
  
--static const char banner[] __initconst = KERN_INFO "NET4: DECnet for Linux: V.2.5.68s (C) 1995-2003 Linux DECnet Project Team\n";
+-static const char banner[] __initconst = KERN_INFO
+-"NET4: DECnet for Linux: V.2.5.68s (C) 1995-2003 Linux DECnet Project Team\n";
 -
  static int __init decnet_init(void)
  {
@@ -1319,10 +1251,10 @@ index bcb881abeb37..ac67d17b5184 100644
  	rc = proto_register(&dn_proto, 1);
  	if (rc != 0)
 diff --git a/net/ipx/af_ipx.c b/net/ipx/af_ipx.c
-index 8a9219ff2e77..57954d3f0ce7 100644
+index fa31ef29e3fa..ebd08a734479 100644
 --- a/net/ipx/af_ipx.c
 +++ b/net/ipx/af_ipx.c
-@@ -1998,14 +1998,6 @@ static struct notifier_block ipx_dev_notifier = {
+@@ -1997,14 +1997,6 @@ static struct notifier_block ipx_dev_notifier = {
  
  static const unsigned char ipx_8022_type = 0xE0;
  static const unsigned char ipx_snap_id[5] = { 0x0, 0x0, 0x0, 0x81, 0x37 };
@@ -1337,7 +1269,7 @@ index 8a9219ff2e77..57954d3f0ce7 100644
  
  static int __init ipx_init(void)
  {
-@@ -2020,21 +2012,21 @@ static int __init ipx_init(void)
+@@ -2019,21 +2011,21 @@ static int __init ipx_init(void)
  	if (pEII_datalink)
  		dev_add_pack(&ipx_dix_packet_type);
  	else
@@ -1364,7 +1296,7 @@ index 8a9219ff2e77..57954d3f0ce7 100644
  	register_netdevice_notifier(&ipx_dev_notifier);
  	ipx_register_sysctl();
 diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
-index cb4fff785cbf..27447db67405 100644
+index 8364fe5b59e4..90d739fc457b 100644
 --- a/net/llc/af_llc.c
 +++ b/net/llc/af_llc.c
 @@ -1189,13 +1189,6 @@ static const struct proto_ops llc_ui_ops = {

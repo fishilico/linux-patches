@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 13 May 2017 20:50:52 +0200
+Subject: [PATCH] {BUG in 4.12-rc1} arch/arm/mach-at91: use new sed regexp
+
+Since commit cf0c3e68aa81 ("kbuild: fix asm-offset generation to work
+with clang") the generated offset generated changed to be compatible
+with clang.
+---
+ arch/arm/mach-at91/Makefile | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-at91/Makefile b/arch/arm/mach-at91/Makefile
+index cfd8f60a9268..ba67a1e4b1e5 100644
+--- a/arch/arm/mach-at91/Makefile
++++ b/arch/arm/mach-at91/Makefile
+@@ -20,7 +20,8 @@ endif
+ 
+ # Default sed regexp - multiline due to syntax constraints
+ define sed-y
+-	"/^->/{s:->#\(.*\):/* \1 */:; \
++	"s:[[:space:]]*\.ascii[[:space:]]*\"\(.*\)\":\1:; \
++	/^->/{s:->#\(.*\):/* \1 */:; \
+ 	s:^->\([^ ]*\) [\$$#]*\([-0-9]*\) \(.*\):#define \1 \2 /* \3 */:; \
+ 	s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; \
+ 	s:->::; p;}"
+-- 

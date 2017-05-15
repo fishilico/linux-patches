@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 8 May 2017 16:20:01 +0200
+Subject: [PATCH] {BUG in 4.12-rc1} drivers/staging/media/atomisp: fix header
+ guard
+
+clang reports:
+
+    drivers/staging/media/atomisp/pci/atomisp2/css2400/css_2400_system/hrt/input_formatter_subsystem_defs.h:15:9:
+    error: '_if_subsystem_defs_h' is used as a header guard here,
+    followed by #define of a different macro [-Werror,-Wheader-guard]
+    #ifndef _if_subsystem_defs_h
+            ^~~~~~~~~~~~~~~~~~~~
+    drivers/staging/media/atomisp/pci/atomisp2/css2400/css_2400_system/hrt/input_formatter_subsystem_defs.h:16:9:
+    note: '_if_subsystem_defs_h__' is defined here; did you mean
+    '_if_subsystem_defs_h'?
+    #define _if_subsystem_defs_h__
+            ^~~~~~~~~~~~~~~~~~~~~~
+            _if_subsystem_defs_h
+---
+ .../css2400/css_2400_system/hrt/input_formatter_subsystem_defs.h      | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/css_2400_system/hrt/input_formatter_subsystem_defs.h b/drivers/staging/media/atomisp/pci/atomisp2/css2400/css_2400_system/hrt/input_formatter_subsystem_defs.h
+index 16bfe1d80bc9..f465ce113e67 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/css_2400_system/hrt/input_formatter_subsystem_defs.h
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/css_2400_system/hrt/input_formatter_subsystem_defs.h
+@@ -13,7 +13,7 @@
+  */
+ 
+ #ifndef _if_subsystem_defs_h
+-#define _if_subsystem_defs_h__
++#define _if_subsystem_defs_h
+ 
+ #define HIVE_IFMT_GP_REGS_INPUT_SWITCH_LUT_REG_0            0
+ #define HIVE_IFMT_GP_REGS_INPUT_SWITCH_LUT_REG_1            1
+@@ -50,4 +50,4 @@
+ #define HIVE_IFMT_GP_REGS_SLV_REG_SRST_IFT_SEC_BIT_IDX      2
+ #define HIVE_IFMT_GP_REGS_SLV_REG_SRST_MEM_CPY_BIT_IDX      3
+ 
+-#endif /* _if_subsystem_defs_h__ */
++#endif /* _if_subsystem_defs_h */
+-- 

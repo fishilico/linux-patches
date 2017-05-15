@@ -30,17 +30,17 @@ This plugin helped to detect the following bugs:
  fs/reiserfs/Makefile                               |  16 +
  net/ipv4/sysctl_net_ipv4.c                         |   2 +-
  scripts/Makefile.gcc-plugins                       |   5 +
- scripts/gcc-plugins/printk_format_plugin.c         | 774 +++++++++++++++++++++
+ scripts/gcc-plugins/printk_format_plugin.c         | 776 +++++++++++++++++++++
  sound/soc/intel/haswell/sst-haswell-dsp.c          |   4 +-
  sound/soc/sh/dma-sh7760.c                          |   2 +-
- 24 files changed, 843 insertions(+), 31 deletions(-)
+ 24 files changed, 845 insertions(+), 31 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index e43383a1249f..2a970be9d53e 100644
+index 125606a27b7e..1c435047e2e3 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -435,6 +435,13 @@ config GCC_PLUGIN_STRUCTLEAK_VERBOSE
+@@ -442,6 +442,13 @@ config GCC_PLUGIN_STRUCTLEAK_VERBOSE
  	  initialized. Since not all existing initializers are detected
  	  by the plugin, this can produce false positive warnings.
  
@@ -55,10 +55,10 @@ index e43383a1249f..2a970be9d53e 100644
  	bool
  	help
 diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 8e1a4554951c..f0c7baf3b9ae 100644
+index cd375503f7b0..c4662c39c205 100644
 --- a/drivers/block/cciss.c
 +++ b/drivers/block/cciss.c
-@@ -2637,7 +2637,7 @@ static int fill_cmd(ctlr_info_t *h, CommandList_struct *c, __u8 cmd, void *buff,
+@@ -2636,7 +2636,7 @@ static int fill_cmd(ctlr_info_t *h, CommandList_struct *c, __u8 cmd, void *buff,
  			c->Request.Timeout = 0;
  			break;
  		default:
@@ -68,10 +68,10 @@ index 8e1a4554951c..f0c7baf3b9ae 100644
  		}
  	} else if (cmd_type == TYPE_MSG) {
 diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index 517838b65964..e05439f74c01 100644
+index 454bf9c34882..b945d19a3c60 100644
 --- a/drivers/block/rbd.c
 +++ b/drivers/block/rbd.c
-@@ -1946,10 +1946,15 @@ __rbd_osd_req_create(struct rbd_device *rbd_dev,
+@@ -1947,10 +1947,15 @@ __rbd_osd_req_create(struct rbd_device *rbd_dev,
  	req->r_priv = obj_request;
  
  	req->r_base_oloc.pool = rbd_dev->layout.pool_id;
@@ -111,7 +111,7 @@ index 8758d033db23..5b410db8d28a 100644
  			       __func__, module_name(is->is_owner),
  			       pci_name(idd->idd_pdev));
 diff --git a/drivers/net/ethernet/ti/netcp_ethss.c b/drivers/net/ethernet/ti/netcp_ethss.c
-index eece3e2eec14..f3409750a3e5 100644
+index 897176fc5043..e0b70ac88e80 100644
 --- a/drivers/net/ethernet/ti/netcp_ethss.c
 +++ b/drivers/net/ethernet/ti/netcp_ethss.c
 @@ -2310,7 +2310,7 @@ static int gbe_slave_open(struct gbe_intf *gbe_intf)
@@ -123,7 +123,7 @@ index eece3e2eec14..f3409750a3e5 100644
  			phydev_name(slave->phy));
  		phy_start(slave->phy);
  	}
-@@ -3115,7 +3115,7 @@ static void init_secondary_ports(struct gbe_priv *gbe_dev,
+@@ -3114,7 +3114,7 @@ static void init_secondary_ports(struct gbe_priv *gbe_dev,
  				slave->slave_num);
  			slave->phy = NULL;
  		} else {
@@ -150,10 +150,10 @@ index 15b920086251..f5ea2076682a 100644
  	pci_read_config_byte(idev->pdev, VLSI_PCI_CLKCTL, &byte);
  	seq_printf(seq, "CLKCTL: PLL %s%s%s / clock %s / wakeup %s\n",
 diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
-index 2f1743e60fa1..646ce1f395bc 100644
+index 6afc8d27f0d5..3de815e14e7f 100644
 --- a/drivers/net/wireless/ath/ath10k/wmi.c
 +++ b/drivers/net/wireless/ath/ath10k/wmi.c
-@@ -6552,7 +6552,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
+@@ -6567,7 +6567,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
  	ether_addr_copy(cmd->peer_macaddr.addr, peer_addr);
  
  	ath10k_dbg(ar, ATH10K_DBG_WMI,
@@ -176,7 +176,7 @@ index 88faeab2574f..aa8e3af69e2a 100644
  	return -1;
  }
 diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
-index 28551f5a2e07..3a473f04a126 100644
+index c4768be24ba9..62eda5ae9264 100644
 --- a/drivers/platform/x86/asus-laptop.c
 +++ b/drivers/platform/x86/asus-laptop.c
 @@ -921,11 +921,11 @@ static ssize_t infos_show(struct device *dev, struct device_attribute *attr,
@@ -207,7 +207,7 @@ index 93b5a0012417..041887cc7ea6 100644
  		return rc;
  	}
 diff --git a/drivers/scsi/fcoe/fcoe.c b/drivers/scsi/fcoe/fcoe.c
-index ab7bc1505e0b..f4209f9eb312 100644
+index 90939f66bc0d..44ed43488d64 100644
 --- a/drivers/scsi/fcoe/fcoe.c
 +++ b/drivers/scsi/fcoe/fcoe.c
 @@ -2694,7 +2694,7 @@ static int fcoe_vport_create(struct fc_vport *vport, bool disabled)
@@ -242,10 +242,10 @@ index 375c536cbc68..393dac714c4e 100644
  			rc = -EINVAL;
  			break;
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index 9d659aaace15..d8c77d98efc7 100644
+index 73daace478cb..7bed0848c731 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
-@@ -7049,7 +7049,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
+@@ -7053,7 +7053,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
  			c->Request.CDB[9] = 0;
  			break;
  		default:
@@ -311,7 +311,7 @@ index 903b667f8e01..86a4d215bcbd 100644
  out:
  	kzfree(desc);
 diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index f7bb7036f599..bbec946bddd8 100644
+index 85ea82ae03fc..1e43444c6a19 100644
 --- a/drivers/target/target_core_pr.c
 +++ b/drivers/target/target_core_pr.c
 @@ -61,7 +61,7 @@ void core_pr_dump_initiator_port(
@@ -324,7 +324,7 @@ index f7bb7036f599..bbec946bddd8 100644
  
  enum register_type {
 diff --git a/fs/nfsd/nfsctl.c b/fs/nfsd/nfsctl.c
-index 8bf8f667a8cf..cfa82a1b017b 100644
+index 6493df6b1bd5..3b50527d8973 100644
 --- a/fs/nfsd/nfsctl.c
 +++ b/fs/nfsd/nfsctl.c
 @@ -540,7 +540,6 @@ static ssize_t
@@ -378,10 +378,10 @@ index 3c3b00165114..90da3ca592c6 100644
  reiserfs-objs += procfs.o
  endif
 diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-index d6880a6149ee..c8247d52a275 100644
+index 86957e9cd6c6..2c6b6b7b8653 100644
 --- a/net/ipv4/sysctl_net_ipv4.c
 +++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -287,7 +287,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *ctl, int write,
+@@ -288,7 +288,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *ctl, int write,
  	}
  
  bad_key:
@@ -408,10 +408,10 @@ index 82335533620e..3962ec603972 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..6498e177d5f1
+index 000000000000..4458a729b8c2
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,774 @@
+@@ -0,0 +1,776 @@
 +/*
 + * Copyright 2016-2017 by Nicolas Iooss
 + *
@@ -603,6 +603,8 @@ index 000000000000..6498e177d5f1
 +			return true;
 +		if (TREE_CODE(subtype) == RECORD_TYPE && (
 +		    identifier_is(TYPE_IDENTIFIER(subtype), "atio_from_isp") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "nvme_feat_auto_pst") ||
++		    identifier_is(TYPE_IDENTIFIER(subtype), "ovl_fh") ||
 +		    identifier_is(TYPE_IDENTIFIER(subtype), "uwb_rceb") ||
 +		    identifier_is(TYPE_IDENTIFIER(subtype), "vnt_mac_set_key")))
 +			return true;

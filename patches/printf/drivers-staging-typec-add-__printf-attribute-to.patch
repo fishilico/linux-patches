@@ -1,0 +1,85 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 8 May 2017 11:36:56 +0200
+Subject: [PATCH] {PRINTF} drivers/staging/typec: add __printf attribute to
+ logging function
+
+---
+ drivers/staging/typec/fusb302/fusb302.c |  6 +++---
+ drivers/staging/typec/tcpm.c            | 10 +++++-----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/typec/fusb302/fusb302.c b/drivers/staging/typec/fusb302/fusb302.c
+index 2cee9a952c9b..0e12286438f6 100644
+--- a/drivers/staging/typec/fusb302/fusb302.c
++++ b/drivers/staging/typec/fusb302/fusb302.c
+@@ -144,7 +144,7 @@ static bool fusb302_log_full(struct fusb302_chip *chip)
+ 		(chip->logbuffer_head + 1) % LOG_BUFFER_ENTRIES;
+ }
+ 
+-static void _fusb302_log(struct fusb302_chip *chip, const char *fmt,
++static __printf(2, 0) void _fusb302_log(struct fusb302_chip *chip, const char *fmt,
+ 			 va_list args)
+ {
+ 	char tmpbuffer[LOG_BUFFER_ENTRY_SIZE];
+@@ -191,7 +191,7 @@ static void _fusb302_log(struct fusb302_chip *chip, const char *fmt,
+ 	mutex_unlock(&chip->logbuffer_lock);
+ }
+ 
+-static void fusb302_log(struct fusb302_chip *chip, const char *fmt, ...)
++static __printf(2, 3) void fusb302_log(struct fusb302_chip *chip, const char *fmt, ...)
+ {
+ 	va_list args;
+ 
+@@ -255,7 +255,7 @@ static void fusb302_debugfs_exit(struct fusb302_chip *chip)
+ 
+ #else
+ 
+-static void fusb302_log(const struct fusb302_chip *chip,
++static __printf(2, 3) void fusb302_log(const struct fusb302_chip *chip,
+ 			const char *fmt, ...) { }
+ static int fusb302_debugfs_init(const struct fusb302_chip *chip) { return 0; }
+ static void fusb302_debugfs_exit(const struct fusb302_chip *chip) { }
+diff --git a/drivers/staging/typec/tcpm.c b/drivers/staging/typec/tcpm.c
+index abba655ba00a..09c530b76cdb 100644
+--- a/drivers/staging/typec/tcpm.c
++++ b/drivers/staging/typec/tcpm.c
+@@ -366,7 +366,7 @@ static bool tcpm_log_full(struct tcpm_port *port)
+ 		(port->logbuffer_head + 1) % LOG_BUFFER_ENTRIES;
+ }
+ 
+-static void _tcpm_log(struct tcpm_port *port, const char *fmt, va_list args)
++static __printf(2, 0) void _tcpm_log(struct tcpm_port *port, const char *fmt, va_list args)
+ {
+ 	char tmpbuffer[LOG_BUFFER_ENTRY_SIZE];
+ 	u64 ts_nsec = local_clock();
+@@ -412,7 +412,7 @@ static void _tcpm_log(struct tcpm_port *port, const char *fmt, va_list args)
+ 	mutex_unlock(&port->logbuffer_lock);
+ }
+ 
+-static void tcpm_log(struct tcpm_port *port, const char *fmt, ...)
++static __printf(2, 3) void tcpm_log(struct tcpm_port *port, const char *fmt, ...)
+ {
+ 	va_list args;
+ 
+@@ -427,7 +427,7 @@ static void tcpm_log(struct tcpm_port *port, const char *fmt, ...)
+ 	va_end(args);
+ }
+ 
+-static void tcpm_log_force(struct tcpm_port *port, const char *fmt, ...)
++static __printf(2, 3) void tcpm_log_force(struct tcpm_port *port, const char *fmt, ...)
+ {
+ 	va_list args;
+ 
+@@ -543,8 +543,8 @@ static void tcpm_debugfs_exit(struct tcpm_port *port)
+ 
+ #else
+ 
+-static void tcpm_log(const struct tcpm_port *port, const char *fmt, ...) { }
+-static void tcpm_log_force(struct tcpm_port *port, const char *fmt, ...) { }
++static __printf(2, 3) void tcpm_log(const struct tcpm_port *port, const char *fmt, ...) { }
++static __printf(2, 3) void tcpm_log_force(struct tcpm_port *port, const char *fmt, ...) { }
+ static void tcpm_log_source_caps(struct tcpm_port *port) { }
+ static int tcpm_debugfs_init(const struct tcpm_port *port) { return 0; }
+ static void tcpm_debugfs_exit(const struct tcpm_port *port) { }
+-- 

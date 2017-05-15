@@ -26,10 +26,10 @@ index e58e577117b6..5bdd4426b910 100644
  		struct file *file;
  	} u;
 diff --git a/include/linux/lsm_hooks.h b/include/linux/lsm_hooks.h
-index e29d4c62a3c8..1042cceb4ae9 100644
+index 080f34e66017..ba3ef0673685 100644
 --- a/include/linux/lsm_hooks.h
 +++ b/include/linux/lsm_hooks.h
-@@ -1481,7 +1481,7 @@ union security_list_options {
+@@ -1496,7 +1496,7 @@ union security_list_options {
  	void (*cred_transfer)(struct cred *new, const struct cred *old);
  	int (*kernel_act_as)(struct cred *new, u32 secid);
  	int (*kernel_create_files_as)(struct cred *new, struct inode *inode);
@@ -39,10 +39,10 @@ index e29d4c62a3c8..1042cceb4ae9 100644
  	int (*kernel_post_read_file)(struct file *file, char *buf, loff_t size,
  				     enum kernel_read_file_id id);
 diff --git a/include/linux/security.h b/include/linux/security.h
-index 96899fad7016..22d2c31a5a04 100644
+index af675b576645..417d6cc2ff4a 100644
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -311,7 +311,7 @@ int security_prepare_creds(struct cred *new, const struct cred *old, gfp_t gfp);
+@@ -316,7 +316,7 @@ int security_prepare_creds(struct cred *new, const struct cred *old, gfp_t gfp);
  void security_transfer_creds(struct cred *new, const struct cred *old);
  int security_kernel_act_as(struct cred *new, u32 secid);
  int security_kernel_create_files_as(struct cred *new, struct inode *inode);
@@ -51,7 +51,7 @@ index 96899fad7016..22d2c31a5a04 100644
  int security_kernel_read_file(struct file *file, enum kernel_read_file_id id);
  int security_kernel_post_read_file(struct file *file, char *buf, loff_t size,
  				   enum kernel_read_file_id id);
-@@ -889,7 +889,7 @@ static inline int security_kernel_create_files_as(struct cred *cred,
+@@ -902,7 +902,7 @@ static inline int security_kernel_create_files_as(struct cred *cred,
  	return 0;
  }
  
@@ -61,10 +61,10 @@ index 96899fad7016..22d2c31a5a04 100644
  	return 0;
  }
 diff --git a/security/security.c b/security/security.c
-index d0e07f269b2d..d8dd7c639745 100644
+index b9fea3999cf8..c5725e4a4adc 100644
 --- a/security/security.c
 +++ b/security/security.c
-@@ -965,7 +965,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
+@@ -981,7 +981,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
  	return call_int_hook(kernel_create_files_as, 0, new, inode);
  }
  
@@ -74,7 +74,7 @@ index d0e07f269b2d..d8dd7c639745 100644
  	return call_int_hook(kernel_module_request, 0, kmod_name);
  }
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 18205520b7a1..fc07706d64e9 100644
+index 217b90a80514..34cd0489ba99 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
 @@ -3822,7 +3822,7 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)

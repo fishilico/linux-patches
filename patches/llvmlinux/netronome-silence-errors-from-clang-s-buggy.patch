@@ -1,0 +1,73 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 8 May 2017 16:49:34 +0200
+Subject: [PATCH] {For LLVMLinux} netronome: silence errors from clang's buggy
+ __builtin_constant_p
+
+clang build fails:
+
+    Kernel: arch/x86/boot/bzImage is ready  (#1)
+    ERROR: "__compiletime_assert_474" [drivers/net/ethernet/netronome/nfp/nfp.ko] undefined!
+    ERROR: "__compiletime_assert_478" [drivers/net/ethernet/netronome/nfp/nfp.ko] undefined!
+---
+ .../ethernet/netronome/nfp/nfpcore/nfp_nsp_eth.c   | 36 ++++++++++++++++++++--
+ 1 file changed, 34 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/netronome/nfp/nfpcore/nfp_nsp_eth.c b/drivers/net/ethernet/netronome/nfp/nfpcore/nfp_nsp_eth.c
+index 639438d8313a..ec75e16bbbbe 100644
+--- a/drivers/net/ethernet/netronome/nfp/nfpcore/nfp_nsp_eth.c
++++ b/drivers/net/ethernet/netronome/nfp/nfpcore/nfp_nsp_eth.c
+@@ -451,6 +451,38 @@ int nfp_eth_set_configured(struct nfp_cpp *cpp, unsigned int idx, bool configed)
+ 	return nfp_eth_config_commit_end(nsp);
+ }
+ 
++#ifdef __clang__
++/* clang's __builtin_constant_p has some issues with propagated values into an always-inline call.
++ * work around this.
++ */
++#define __BF_FIELD_CHECK_clang(_mask, _reg, _val, _pfx)			\
++	({								\
++		/*BUILD_BUG_ON_MSG(!__builtin_constant_p(_mask),		\
++				 _pfx "mask is not constant");*/		\
++		BUILD_BUG_ON_MSG(!(_mask), _pfx "mask is zero");	\
++		BUILD_BUG_ON_MSG(__builtin_constant_p(_val) ?		\
++				 ~((_mask) >> __bf_shf(_mask)) & (_val) : 0, \
++				 _pfx "value too large for the field"); \
++		BUILD_BUG_ON_MSG((_mask) > (typeof(_reg))~0ull,		\
++				 _pfx "type of reg too small for mask"); \
++		__BUILD_BUG_ON_NOT_POWER_OF_2((_mask) +			\
++					      (1ULL << __bf_shf(_mask))); \
++	})
++#define FIELD_PREP_clang(_mask, _val)						\
++	({								\
++		__BF_FIELD_CHECK_clang(_mask, 0ULL, _val, "FIELD_PREP: ");	\
++		((typeof(_mask))(_val) << __bf_shf(_mask)) & (_mask);	\
++	})
++#define FIELD_GET_clang(_mask, _reg)						\
++	({								\
++		__BF_FIELD_CHECK_clang(_mask, _reg, 0U, "FIELD_GET: ");	\
++		(typeof(_mask))(((_reg) & (_mask)) >> __bf_shf(_mask));	\
++	})
++#else
++#define FIELD_PREP_clang FIELD_PREP
++#define FIELD_GET_clang FIELD_GET
++#endif
++
+ /* Force inline, FIELD_* macroes require masks to be compilation-time known */
+ static __always_inline int
+ nfp_eth_set_bit_config(struct nfp_nsp *nsp, unsigned int raw_idx,
+@@ -471,11 +503,11 @@ nfp_eth_set_bit_config(struct nfp_nsp *nsp, unsigned int raw_idx,
+ 
+ 	/* Check if we are already in requested state */
+ 	reg = le64_to_cpu(entries[idx].raw[raw_idx]);
+-	if (val == FIELD_GET(mask, reg))
++	if (val == FIELD_GET_clang(mask, reg))
+ 		return 0;
+ 
+ 	reg &= ~mask;
+-	reg |= FIELD_PREP(mask, val);
++	reg |= FIELD_PREP_clang(mask, val);
+ 	entries[idx].raw[raw_idx] = cpu_to_le64(reg);
+ 
+ 	entries[idx].control |= cpu_to_le64(ctrl_bit);
+-- 

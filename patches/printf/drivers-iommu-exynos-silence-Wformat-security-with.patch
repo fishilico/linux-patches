@@ -6,14 +6,17 @@ Subject: [PATCH] {PRINTF} drivers/iommu/exynos: silence -Wformat-security with
 
 FIXME: does it come from the plugin?
 ---
- drivers/iommu/exynos-iommu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/iommu/exynos-iommu.c   | 2 +-
+ drivers/iommu/mtk_iommu_v1.c   | 2 +-
+ drivers/iommu/omap-iommu.c     | 2 +-
+ drivers/iommu/rockchip-iommu.c | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
-index c01bfcdb2383..60baea55e88e 100644
+index 2395478dde75..375396fe8db9 100644
 --- a/drivers/iommu/exynos-iommu.c
 +++ b/drivers/iommu/exynos-iommu.c
-@@ -621,7 +621,7 @@ static int __init exynos_sysmmu_probe(struct platform_device *pdev)
+@@ -633,7 +633,7 @@ static int __init exynos_sysmmu_probe(struct platform_device *pdev)
  	spin_lock_init(&data->lock);
  
  	ret = iommu_device_sysfs_add(&data->iommu, &pdev->dev, NULL,
@@ -21,5 +24,44 @@ index c01bfcdb2383..60baea55e88e 100644
 +				     "%s", dev_name(data->sysmmu));
  	if (ret)
  		return ret;
+ 
+diff --git a/drivers/iommu/mtk_iommu_v1.c b/drivers/iommu/mtk_iommu_v1.c
+index a27ef570c328..d62b321ccdd7 100644
+--- a/drivers/iommu/mtk_iommu_v1.c
++++ b/drivers/iommu/mtk_iommu_v1.c
+@@ -637,7 +637,7 @@ static int mtk_iommu_probe(struct platform_device *pdev)
+ 		return ret;
+ 
+ 	ret = iommu_device_sysfs_add(&data->iommu, &pdev->dev, NULL,
+-				     dev_name(&pdev->dev));
++				     "%s", dev_name(&pdev->dev));
+ 	if (ret)
+ 		return ret;
+ 
+diff --git a/drivers/iommu/omap-iommu.c b/drivers/iommu/omap-iommu.c
+index 95dfca36ccb9..1c9a4cba1bbc 100644
+--- a/drivers/iommu/omap-iommu.c
++++ b/drivers/iommu/omap-iommu.c
+@@ -947,7 +947,7 @@ static int omap_iommu_probe(struct platform_device *pdev)
+ 	if (IS_ERR(obj->group))
+ 		return PTR_ERR(obj->group);
+ 
+-	err = iommu_device_sysfs_add(&obj->iommu, obj->dev, NULL, obj->name);
++	err = iommu_device_sysfs_add(&obj->iommu, obj->dev, NULL, "%s", obj->name);
+ 	if (err)
+ 		goto out_group;
+ 
+diff --git a/drivers/iommu/rockchip-iommu.c b/drivers/iommu/rockchip-iommu.c
+index 4ba48a26b389..1f3c27639257 100644
+--- a/drivers/iommu/rockchip-iommu.c
++++ b/drivers/iommu/rockchip-iommu.c
+@@ -1163,7 +1163,7 @@ static int rk_iommu_probe(struct platform_device *pdev)
+ 		return -ENXIO;
+ 	}
+ 
+-	err = iommu_device_sysfs_add(&iommu->iommu, dev, NULL, dev_name(dev));
++	err = iommu_device_sysfs_add(&iommu->iommu, dev, NULL, "%s", dev_name(dev));
+ 	if (err)
+ 		return err;
  
 -- 

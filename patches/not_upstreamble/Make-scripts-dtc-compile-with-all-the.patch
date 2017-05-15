@@ -8,24 +8,21 @@ TODO: send fixes to dtc upstream:
     https://git.kernel.org/cgit/utils/dtc/dtc.git/
     https://github.com/dgibson/dtc
 ---
- scripts/dtc/checks.c                |  26 ++++-----
- scripts/dtc/data.c                  |  32 +++++------
- scripts/dtc/dtc-lexer.l             |   2 +-
- scripts/dtc/dtc-lexer.lex.c_shipped |   2 +-
- scripts/dtc/dtc.c                   |  16 +++---
- scripts/dtc/dtc.h                   |  40 +++++++-------
- scripts/dtc/flattree.c              | 102 ++++++++++++++++--------------------
- scripts/dtc/fstree.c                |   2 +-
- scripts/dtc/libfdt/libfdt.h         |  15 +++---
- scripts/dtc/livetree.c              |  22 ++++----
- scripts/dtc/srcpos.c                |   2 +-
- scripts/dtc/treesource.c            |  16 +++---
- scripts/dtc/util.c                  |  57 ++++++++++----------
- scripts/dtc/util.h                  |  12 ++---
- 14 files changed, 170 insertions(+), 176 deletions(-)
+ scripts/dtc/checks.c                | 20 ++++++++++----------
+ scripts/dtc/data.c                  |  8 ++++----
+ scripts/dtc/dtc-lexer.l             |  2 +-
+ scripts/dtc/dtc-lexer.lex.c_shipped |  2 +-
+ scripts/dtc/dtc.c                   | 14 +++++++-------
+ scripts/dtc/dtc.h                   | 16 ++++++++--------
+ scripts/dtc/fstree.c                |  2 +-
+ scripts/dtc/libfdt/libfdt.h         | 13 ++++++++-----
+ scripts/dtc/livetree.c              | 20 ++++++++++----------
+ scripts/dtc/srcpos.c                |  2 +-
+ scripts/dtc/treesource.c            | 16 ++++++++--------
+ 11 files changed, 59 insertions(+), 56 deletions(-)
 
 diff --git a/scripts/dtc/checks.c b/scripts/dtc/checks.c
-index 3d18e45374c8..876805d6e9ee 100644
+index 5adfc8f52b4f..8453db2e50e3 100644
 --- a/scripts/dtc/checks.c
 +++ b/scripts/dtc/checks.c
 @@ -45,7 +45,7 @@ typedef void (*check_fn)(struct check *c, struct dt_info *dti, struct node *node
@@ -37,7 +34,7 @@ index 3d18e45374c8..876805d6e9ee 100644
  	bool warn, error;
  	enum checkstatus status;
  	bool inprogress;
-@@ -165,7 +165,7 @@ static void check_is_string(struct check *c, struct dt_info *dti,
+@@ -164,7 +164,7 @@ static void check_is_string(struct check *c, struct dt_info *dti,
  			    struct node *node)
  {
  	struct property *prop;
@@ -46,7 +43,7 @@ index 3d18e45374c8..876805d6e9ee 100644
  
  	prop = get_property(node, propname);
  	if (!prop)
-@@ -184,7 +184,7 @@ static void check_is_cell(struct check *c, struct dt_info *dti,
+@@ -183,7 +183,7 @@ static void check_is_cell(struct check *c, struct dt_info *dti,
  			  struct node *node)
  {
  	struct property *prop;
@@ -63,8 +60,8 @@ index 3d18e45374c8..876805d6e9ee 100644
 +	size_t n = strspn(node->name, c->data);
  
  	if (n < strlen(node->name))
- 		FAIL(c, "Bad character '%c' in node %s",
-@@ -290,7 +290,7 @@ static void check_property_name_chars(struct check *c, struct dt_info *dti,
+ 		FAIL(c, dti, "Bad character '%c' in node %s",
+@@ -301,7 +301,7 @@ static void check_property_name_chars(struct check *c, struct dt_info *dti,
  	struct property *prop;
  
  	for_each_property(node, prop) {
@@ -72,26 +69,8 @@ index 3d18e45374c8..876805d6e9ee 100644
 +		size_t n = strspn(prop->name, c->data);
  
  		if (n < strlen(prop->name))
- 			FAIL(c, "Bad character '%c' in property name \"%s\", node %s",
-@@ -367,7 +367,7 @@ static cell_t check_phandle_prop(struct check *c, struct dt_info *dti,
- 		return 0;
- 
- 	if (prop->val.len != sizeof(cell_t)) {
--		FAIL(c, "%s has bad length (%d) %s property",
-+		FAIL(c, "%s has bad length (%zu) %s property",
- 		     node->fullpath, prop->val.len, prop->name);
- 		return 0;
- 	}
-@@ -392,7 +392,7 @@ static cell_t check_phandle_prop(struct check *c, struct dt_info *dti,
- 
- 	phandle = propval_cell(prop);
- 
--	if ((phandle == 0) || (phandle == -1)) {
-+	if ((phandle == 0) || (phandle == (cell_t)-1)) {
- 		FAIL(c, "%s has bad value (0x%x) in %s property",
- 		     node->fullpath, phandle, prop->name);
- 		return 0;
-@@ -459,7 +459,7 @@ static void check_name_properties(struct check *c, struct dt_info *dti,
+ 			FAIL(c, dti, "Bad character '%c' in property name \"%s\", node %s",
+@@ -502,7 +502,7 @@ static void check_name_properties(struct check *c, struct dt_info *dti,
  		/* The name property is correct, and therefore redundant.
  		 * Delete it */
  		*pp = prop->next;
@@ -100,25 +79,16 @@ index 3d18e45374c8..876805d6e9ee 100644
  		data_free(prop->val);
  		free(prop);
  	}
-@@ -591,7 +591,7 @@ static void check_reg_format(struct check *c, struct dt_info *dti,
- 	entrylen = (addr_cells + size_cells) * sizeof(cell_t);
+@@ -873,7 +873,7 @@ static void check_simple_bus_reg(struct check *c, struct dt_info *dti, struct no
+ 	while (size--)
+ 		reg = (reg << 32) | fdt32_to_cpu(*(cells++));
  
- 	if (!entrylen || (prop->val.len % entrylen) != 0)
--		FAIL(c, "\"reg\" property in %s has invalid length (%d bytes) "
-+		FAIL(c, "\"reg\" property in %s has invalid length (%zu bytes) "
- 		     "(#address-cells == %d, #size-cells == %d)",
- 		     node->fullpath, prop->val.len, addr_cells, size_cells);
- }
-@@ -630,7 +630,7 @@ static void check_ranges_format(struct check *c, struct dt_info *dti,
- 			     node->fullpath, c_size_cells, node->parent->fullpath,
- 			     p_size_cells);
- 	} else if ((prop->val.len % entrylen) != 0) {
--		FAIL(c, "\"ranges\" property in %s has invalid length (%d bytes) "
-+		FAIL(c, "\"ranges\" property in %s has invalid length (%zu bytes) "
- 		     "(parent #address-cells == %d, child #address-cells == %d, "
- 		     "#size-cells == %d)", node->fullpath, prop->val.len,
- 		     p_addr_cells, c_addr_cells, c_size_cells);
-@@ -728,7 +728,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
+-	snprintf(unit_addr, sizeof(unit_addr), "%lx", reg);
++	snprintf(unit_addr, sizeof(unit_addr), "%llx", (unsigned long long)reg);
+ 	if (!streq(unitname, unit_addr))
+ 		FAIL(c, dti, "Node %s simple-bus unit address format error, expected \"%s\"",
+ 		     node->fullpath, unit_addr);
+@@ -1005,7 +1005,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
  
  static void disable_warning_error(struct check *c, bool warn, bool error)
  {
@@ -127,7 +97,7 @@ index 3d18e45374c8..876805d6e9ee 100644
  
  	/* Lowering level, also lower it for things this is the prereq
  	 * for */
-@@ -749,7 +749,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
+@@ -1026,7 +1026,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
  
  void parse_checks_option(bool warn, bool error, const char *arg)
  {
@@ -136,7 +106,7 @@ index 3d18e45374c8..876805d6e9ee 100644
  	const char *name = arg;
  	bool enable = true;
  
-@@ -776,7 +776,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
+@@ -1053,7 +1053,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
  
  void process_checks(bool force, struct dt_info *dti)
  {
@@ -146,43 +116,9 @@ index 3d18e45374c8..876805d6e9ee 100644
  
  	for (i = 0; i < ARRAY_SIZE(check_table); i++) {
 diff --git a/scripts/dtc/data.c b/scripts/dtc/data.c
-index 8cae23746882..e0085619b5c8 100644
+index aa37a16c8891..033f12aca9c8 100644
 --- a/scripts/dtc/data.c
 +++ b/scripts/dtc/data.c
-@@ -36,10 +36,10 @@ void data_free(struct data d)
- 		free(d.val);
- }
- 
--struct data data_grow_for(struct data d, int xlen)
-+struct data data_grow_for(struct data d, size_t xlen)
- {
- 	struct data nd;
--	int newsize;
-+	size_t newsize;
- 
- 	if (xlen == 0)
- 		return d;
-@@ -56,7 +56,7 @@ struct data data_grow_for(struct data d, int xlen)
- 	return nd;
- }
- 
--struct data data_copy_mem(const char *mem, int len)
-+struct data data_copy_mem(const char *mem, size_t len)
- {
- 	struct data d;
- 
-@@ -68,9 +68,9 @@ struct data data_copy_mem(const char *mem, int len)
- 	return d;
- }
- 
--struct data data_copy_escape_string(const char *s, int len)
-+struct data data_copy_escape_string(const char *s, size_t len)
- {
--	int i = 0;
-+	size_t i = 0;
- 	struct data d;
- 	char *q;
- 
 @@ -97,7 +97,7 @@ struct data data_copy_file(FILE *f, size_t maxlen)
  	while (!feof(f) && (d.len < maxlen)) {
  		size_t chunksize, ret;
@@ -192,24 +128,6 @@ index 8cae23746882..e0085619b5c8 100644
  			chunksize = 4096;
  		else
  			chunksize = maxlen - d.len;
-@@ -117,7 +117,7 @@ struct data data_copy_file(FILE *f, size_t maxlen)
- 	return d;
- }
- 
--struct data data_append_data(struct data d, const void *p, int len)
-+struct data data_append_data(struct data d, const void *p, size_t len)
- {
- 	d = data_grow_for(d, len);
- 	memcpy(d.val + d.len, p, len);
-@@ -126,7 +126,7 @@ struct data data_append_data(struct data d, const void *p, int len)
- }
- 
- struct data data_insert_at_marker(struct data d, struct marker *m,
--				  const void *p, int len)
-+				  const void *p, size_t len)
- {
- 	d = data_grow_for(d, len);
- 	memmove(d.val + m->offset + len, d.val + m->offset, d.len - m->offset);
 @@ -177,15 +177,15 @@ struct data data_append_integer(struct data d, uint64_t value, int bits)
  
  	switch (bits) {
@@ -229,43 +147,11 @@ index 8cae23746882..e0085619b5c8 100644
  		return data_append_data(d, &value_32, 4);
  
  	case 64:
-@@ -222,7 +222,7 @@ struct data data_append_byte(struct data d, uint8_t byte)
- 	return data_append_data(d, &byte, 1);
- }
- 
--struct data data_append_zeroes(struct data d, int len)
-+struct data data_append_zeroes(struct data d, size_t len)
- {
- 	d = data_grow_for(d, len);
- 
-@@ -231,9 +231,9 @@ struct data data_append_zeroes(struct data d, int len)
- 	return d;
- }
- 
--struct data data_append_align(struct data d, int align)
-+struct data data_append_align(struct data d, unsigned int align)
- {
--	int newlen = ALIGN(d.len, align);
-+	size_t newlen = ALIGN(d.len, (size_t)align);
- 	return data_append_zeroes(d, newlen - d.len);
- }
- 
-@@ -252,8 +252,8 @@ struct data data_add_marker(struct data d, enum markertype type, char *ref)
- 
- bool data_is_one_string(struct data d)
- {
--	int i;
--	int len = d.len;
-+	size_t i;
-+	size_t len = d.len;
- 
- 	if (len == 0)
- 		return false;
 diff --git a/scripts/dtc/dtc-lexer.l b/scripts/dtc/dtc-lexer.l
-index c600603044f3..86844eddc992 100644
+index fd825ebba69c..529b8feddebd 100644
 --- a/scripts/dtc/dtc-lexer.l
 +++ b/scripts/dtc/dtc-lexer.l
-@@ -293,7 +293,7 @@ static bool pop_input_file(void)
+@@ -294,7 +294,7 @@ static bool pop_input_file(void)
  	return true;
  }
  
@@ -275,10 +161,10 @@ index c600603044f3..86844eddc992 100644
  	va_list ap;
  
 diff --git a/scripts/dtc/dtc-lexer.lex.c_shipped b/scripts/dtc/dtc-lexer.lex.c_shipped
-index 2c862bc86ad0..86bf647b9f48 100644
+index 64c243772398..71631d52f70c 100644
 --- a/scripts/dtc/dtc-lexer.lex.c_shipped
 +++ b/scripts/dtc/dtc-lexer.lex.c_shipped
-@@ -2245,7 +2245,7 @@ static bool pop_input_file(void)
+@@ -2246,7 +2246,7 @@ static bool pop_input_file(void)
  	return true;
  }
  
@@ -288,7 +174,7 @@ index 2c862bc86ad0..86bf647b9f48 100644
  	va_list ap;
  
 diff --git a/scripts/dtc/dtc.c b/scripts/dtc/dtc.c
-index a4edf4c7aebf..463495ceaed0 100644
+index f5eed9d72c02..a1891559e5e3 100644
 --- a/scripts/dtc/dtc.c
 +++ b/scripts/dtc/dtc.c
 @@ -50,7 +50,7 @@ static void fill_fullpaths(struct node *tree, const char *prefix)
@@ -300,7 +186,7 @@ index a4edf4c7aebf..463495ceaed0 100644
  	else
  		tree->basenamelen = strlen(tree->name);
  
-@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
+@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
  	const char *arg;
  	int opt;
  	FILE *outf = NULL;
@@ -309,7 +195,7 @@ index a4edf4c7aebf..463495ceaed0 100644
  	long long cmdline_boot_cpuid = -1;
  
  	quiet      = 0;
-@@ -198,24 +198,24 @@ int main(int argc, char *argv[])
+@@ -197,19 +197,19 @@ int main(int argc, char *argv[])
  			outname = optarg;
  			break;
  		case 'V':
@@ -333,13 +219,7 @@ index a4edf4c7aebf..463495ceaed0 100644
  			break;
  		case 'a':
  			alignsize = strtol(optarg, NULL, 0);
- 			if (!is_power_of_2(alignsize))
--				die("Invalid argument \"%d\" to -a option\n",
-+				die("Invalid argument \"%s\" to -a option\n",
- 				    optarg);
- 			break;
- 		case 'f':
-@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
+@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
  	}
  
  	if (cmdline_boot_cpuid != -1)
@@ -349,60 +229,19 @@ index a4edf4c7aebf..463495ceaed0 100644
  	fill_fullpaths(dti->dt, "");
  	process_checks(force, dti);
 diff --git a/scripts/dtc/dtc.h b/scripts/dtc/dtc.h
-index c6f125c68ba8..85b22e405de9 100644
+index fc24e17510fd..e5208c57577f 100644
 --- a/scripts/dtc/dtc.h
 +++ b/scripts/dtc/dtc.h
-@@ -78,15 +78,15 @@ enum markertype {
+@@ -77,7 +77,7 @@ enum markertype {
  	LABEL,
  };
  
 -struct  marker {
 +struct marker {
  	enum markertype type;
--	int offset;
-+	size_t offset;
+ 	int offset;
  	char *ref;
- 	struct marker *next;
- };
- 
- struct data {
--	int len;
-+	size_t len;
- 	char *val;
- 	struct marker *markers;
- };
-@@ -102,23 +102,23 @@ struct data {
- 
- void data_free(struct data d);
- 
--struct data data_grow_for(struct data d, int xlen);
-+struct data data_grow_for(struct data d, size_t xlen);
- 
--struct data data_copy_mem(const char *mem, int len);
--struct data data_copy_escape_string(const char *s, int len);
-+struct data data_copy_mem(const char *mem, size_t len);
-+struct data data_copy_escape_string(const char *s, size_t len);
- struct data data_copy_file(FILE *f, size_t len);
- 
--struct data data_append_data(struct data d, const void *p, int len);
-+struct data data_append_data(struct data d, const void *p, size_t len);
- struct data data_insert_at_marker(struct data d, struct marker *m,
--				  const void *p, int len);
-+				  const void *p, size_t len);
- struct data data_merge(struct data d1, struct data d2);
- struct data data_append_cell(struct data d, cell_t word);
- struct data data_append_integer(struct data d, uint64_t word, int bits);
- struct data data_append_re(struct data d, const struct fdt_reserve_entry *re);
- struct data data_append_addr(struct data d, uint64_t addr);
- struct data data_append_byte(struct data d, uint8_t byte);
--struct data data_append_zeroes(struct data d, int len);
--struct data data_append_align(struct data d, int align);
-+struct data data_append_zeroes(struct data d, size_t len);
-+struct data data_append_align(struct data d, unsigned int align);
- 
- struct data data_add_marker(struct data d, enum markertype type, char *ref);
- 
-@@ -138,7 +138,7 @@ struct label {
+@@ -141,7 +141,7 @@ struct bus_type {
  
  struct property {
  	bool deleted;
@@ -411,7 +250,7 @@ index c6f125c68ba8..85b22e405de9 100644
  	struct data val;
  
  	struct property *next;
-@@ -148,7 +148,7 @@ struct property {
+@@ -151,7 +151,7 @@ struct property {
  
  struct node {
  	bool deleted;
@@ -420,16 +259,7 @@ index c6f125c68ba8..85b22e405de9 100644
  	struct property *proplist;
  	struct node *children;
  
-@@ -156,7 +156,7 @@ struct node {
- 	struct node *next_sibling;
- 
- 	char *fullpath;
--	int basenamelen;
-+	size_t basenamelen;
- 
- 	cell_t phandle;
- 	int addr_cells, size_cells;
-@@ -188,22 +188,22 @@ struct node {
+@@ -192,22 +192,22 @@ struct node {
  void add_label(struct label **labels, char *label);
  void delete_labels(struct label **labels);
  
@@ -457,344 +287,6 @@ index c6f125c68ba8..85b22e405de9 100644
  void delete_node(struct node *node);
  void append_to_property(struct node *node,
  			char *name, const void *data, int len);
-@@ -267,8 +267,8 @@ void process_checks(bool force, struct dt_info *dti);
- 
- /* Flattened trees */
- 
--void dt_to_blob(FILE *f, struct dt_info *dti, int version);
--void dt_to_asm(FILE *f, struct dt_info *dti, int version);
-+void dt_to_blob(FILE *f, struct dt_info *dti, unsigned int version);
-+void dt_to_asm(FILE *f, struct dt_info *dti, unsigned int version);
- 
- struct dt_info *dt_from_blob(const char *fname);
- 
-diff --git a/scripts/dtc/flattree.c b/scripts/dtc/flattree.c
-index ebac548b3fa8..be5b9cff92cc 100644
---- a/scripts/dtc/flattree.c
-+++ b/scripts/dtc/flattree.c
-@@ -30,10 +30,10 @@
- #define FTF_NOPS	0x40
- 
- static struct version_info {
--	int version;
--	int last_comp_version;
--	int hdr_size;
--	int flags;
-+	unsigned int version;
-+	unsigned int last_comp_version;
-+	unsigned int hdr_size;
-+	unsigned int flags;
- } version_table[] = {
- 	{1, 1, FDT_V1_SIZE,
- 	 FTF_FULLPATH|FTF_VARALIGN|FTF_NAMEPROPS},
-@@ -49,8 +49,8 @@ static struct version_info {
- 
- struct emitter {
- 	void (*cell)(void *, cell_t);
--	void (*string)(void *, char *, int);
--	void (*align)(void *, int);
-+	void (*string)(void *, const char *, size_t);
-+	void (*align)(void *, unsigned int);
- 	void (*data)(void *, struct data);
- 	void (*beginnode)(void *, struct label *labels);
- 	void (*endnode)(void *, struct label *labels);
-@@ -64,7 +64,7 @@ static void bin_emit_cell(void *e, cell_t val)
- 	*dtbuf = data_append_cell(*dtbuf, val);
- }
- 
--static void bin_emit_string(void *e, char *str, int len)
-+static void bin_emit_string(void *e, const char *str, size_t len)
- {
- 	struct data *dtbuf = e;
- 
-@@ -75,7 +75,7 @@ static void bin_emit_string(void *e, char *str, int len)
- 	*dtbuf = data_append_byte(*dtbuf, '\0');
- }
- 
--static void bin_emit_align(void *e, int a)
-+static void bin_emit_align(void *e, unsigned int a)
- {
- 	struct data *dtbuf = e;
- 
-@@ -144,39 +144,28 @@ static void asm_emit_cell(void *e, cell_t val)
- 		(val >> 8) & 0xff, val & 0xff);
- }
- 
--static void asm_emit_string(void *e, char *str, int len)
-+static void asm_emit_string(void *e, const char *str, size_t len)
- {
- 	FILE *f = e;
--	char c = 0;
- 
--	if (len != 0) {
--		/* XXX: ewww */
--		c = str[len];
--		str[len] = '\0';
--	}
--
--	fprintf(f, "\t.string\t\"%s\"\n", str);
--
--	if (len != 0) {
--		str[len] = c;
--	}
-+	fprintf(f, "\t.string\t\"%.*s\"\n", (int)len, str);
- }
- 
--static void asm_emit_align(void *e, int a)
-+static void asm_emit_align(void *e, unsigned int a)
- {
- 	FILE *f = e;
- 
--	fprintf(f, "\t.balign\t%d, 0\n", a);
-+	fprintf(f, "\t.balign\t%u, 0\n", a);
- }
- 
- static void asm_emit_data(void *e, struct data d)
- {
- 	FILE *f = e;
--	int off = 0;
-+	size_t off = 0;
- 	struct marker *m = d.markers;
- 
- 	for_each_marker_of_type(m, LABEL)
--		emit_offset_label(f, m->ref, m->offset);
-+		emit_offset_label(f, m->ref, (int)m->offset);
- 
- 	while ((d.len - off) >= sizeof(uint32_t)) {
- 		asm_emit_cell(e, fdt32_to_cpu(*((uint32_t *)(d.val+off))));
-@@ -240,19 +229,19 @@ static struct emitter asm_emitter = {
- 	.property = asm_emit_property,
- };
- 
--static int stringtable_insert(struct data *d, const char *str)
-+static unsigned int stringtable_insert(struct data *d, const char *str)
- {
--	int i;
-+	size_t i;
- 
- 	/* FIXME: do this more efficiently? */
- 
- 	for (i = 0; i < d->len; i++) {
- 		if (streq(str, d->val + i))
--			return i;
-+			return (unsigned int)i;
- 	}
- 
- 	*d = data_append_data(*d, str, strlen(str)+1);
--	return i;
-+	return (unsigned int)i;
- }
- 
- static void flatten_tree(struct node *tree, struct emitter *emit,
-@@ -276,7 +265,7 @@ static void flatten_tree(struct node *tree, struct emitter *emit,
- 	emit->align(etarget, sizeof(cell_t));
- 
- 	for_each_property(tree, prop) {
--		int nameoff;
-+		unsigned int nameoff;
- 
- 		if (streq(prop->name, "name"))
- 			seen_name_prop = true;
-@@ -284,7 +273,7 @@ static void flatten_tree(struct node *tree, struct emitter *emit,
- 		nameoff = stringtable_insert(strbuf, prop->name);
- 
- 		emit->property(etarget, prop->labels);
--		emit->cell(etarget, prop->val.len);
-+		emit->cell(etarget, (cell_t)prop->val.len);
- 		emit->cell(etarget, nameoff);
- 
- 		if ((vi->flags & FTF_VARALIGN) && (prop->val.len >= 8))
-@@ -296,7 +285,7 @@ static void flatten_tree(struct node *tree, struct emitter *emit,
- 
- 	if ((vi->flags & FTF_NAMEPROPS) && !seen_name_prop) {
- 		emit->property(etarget, NULL);
--		emit->cell(etarget, tree->basenamelen+1);
-+		emit->cell(etarget, (cell_t)tree->basenamelen+1);
- 		emit->cell(etarget, stringtable_insert(strbuf, "name"));
- 
- 		if ((vi->flags & FTF_VARALIGN) && ((tree->basenamelen+1) >= 8))
-@@ -336,10 +325,10 @@ static struct data flatten_reserve_list(struct reserve_info *reservelist,
- 
- static void make_fdt_header(struct fdt_header *fdt,
- 			    struct version_info *vi,
--			    int reservesize, int dtsize, int strsize,
--			    int boot_cpuid_phys)
-+			    uint32_t reservesize, uint32_t dtsize, uint32_t strsize,
-+			    unsigned int boot_cpuid_phys)
- {
--	int reserve_off;
-+	uint32_t reserve_off;
- 
- 	reservesize += sizeof(struct fdt_reserve_entry);
- 
-@@ -350,7 +339,7 @@ static void make_fdt_header(struct fdt_header *fdt,
- 	fdt->last_comp_version = cpu_to_fdt32(vi->last_comp_version);
- 
- 	/* Reserve map should be doubleword aligned */
--	reserve_off = ALIGN(vi->hdr_size, 8);
-+	reserve_off = ALIGN(vi->hdr_size, 8U);
- 
- 	fdt->off_mem_rsvmap = cpu_to_fdt32(reserve_off);
- 	fdt->off_dt_struct = cpu_to_fdt32(reserve_off + reservesize);
-@@ -366,10 +355,10 @@ static void make_fdt_header(struct fdt_header *fdt,
- 		fdt->size_dt_struct = cpu_to_fdt32(dtsize);
- }
- 
--void dt_to_blob(FILE *f, struct dt_info *dti, int version)
-+void dt_to_blob(FILE *f, struct dt_info *dti, unsigned int version)
- {
- 	struct version_info *vi = NULL;
--	int i;
-+	size_t i;
- 	struct data blob       = empty_data;
- 	struct data reservebuf = empty_data;
- 	struct data dtbuf      = empty_data;
-@@ -390,14 +379,14 @@ void dt_to_blob(FILE *f, struct dt_info *dti, int version)
- 	reservebuf = flatten_reserve_list(dti->reservelist, vi);
- 
- 	/* Make header */
--	make_fdt_header(&fdt, vi, reservebuf.len, dtbuf.len, strbuf.len,
-+	make_fdt_header(&fdt, vi, (uint32_t)reservebuf.len, (uint32_t)dtbuf.len, (uint32_t)strbuf.len,
- 			dti->boot_cpuid_phys);
- 
- 	/*
- 	 * If the user asked for more space than is used, adjust the totalsize.
- 	 */
- 	if (minsize > 0) {
--		padlen = minsize - fdt32_to_cpu(fdt.totalsize);
-+		padlen = minsize - (int)fdt32_to_cpu(fdt.totalsize);
- 		if (padlen < 0) {
- 			padlen = 0;
- 			if (quiet < 1)
-@@ -415,8 +404,8 @@ void dt_to_blob(FILE *f, struct dt_info *dti, int version)
- 			- fdt32_to_cpu(fdt.totalsize);
- 
- 	if (padlen > 0) {
--		int tsize = fdt32_to_cpu(fdt.totalsize);
--		tsize += padlen;
-+		unsigned int tsize = fdt32_to_cpu(fdt.totalsize);
-+		tsize += (unsigned int)padlen;
- 		fdt.totalsize = cpu_to_fdt32(tsize);
- 	}
- 
-@@ -436,7 +425,7 @@ void dt_to_blob(FILE *f, struct dt_info *dti, int version)
- 	 * If the user asked for more space than is used, pad out the blob.
- 	 */
- 	if (padlen > 0)
--		blob = data_append_zeroes(blob, padlen);
-+		blob = data_append_zeroes(blob, (size_t)padlen);
- 
- 	if (fwrite(blob.val, blob.len, 1, f) != 1) {
- 		if (ferror(f))
-@@ -456,7 +445,7 @@ void dt_to_blob(FILE *f, struct dt_info *dti, int version)
- static void dump_stringtable_asm(FILE *f, struct data strbuf)
- {
- 	const char *p;
--	int len;
-+	size_t len;
- 
- 	p = strbuf.val;
- 
-@@ -467,7 +456,7 @@ static void dump_stringtable_asm(FILE *f, struct data strbuf)
- 	}
- }
- 
--void dt_to_asm(FILE *f, struct dt_info *dti, int version)
-+void dt_to_asm(FILE *f, struct dt_info *dti, unsigned int version)
- {
- 	struct version_info *vi = NULL;
- 	int i;
-@@ -475,7 +464,7 @@ void dt_to_asm(FILE *f, struct dt_info *dti, int version)
- 	struct reserve_info *re;
- 	const char *symprefix = "dt";
- 
--	for (i = 0; i < ARRAY_SIZE(version_table); i++) {
-+	for (i = 0; i < (int)ARRAY_SIZE(version_table); i++) {
- 		if (version_table[i].version == version)
- 			vi = &version_table[i];
- 	}
-@@ -597,7 +586,7 @@ static void inbuf_init(struct inbuf *inb, void *base, void *limit)
- 	inb->ptr = inb->base;
- }
- 
--static void flat_read_chunk(struct inbuf *inb, void *p, int len)
-+static void flat_read_chunk(struct inbuf *inb, void *p, size_t len)
- {
- 	if ((inb->ptr + len) > inb->limit)
- 		die("Premature end of data parsing flat device tree\n");
-@@ -611,16 +600,16 @@ static uint32_t flat_read_word(struct inbuf *inb)
- {
- 	uint32_t val;
- 
--	assert(((inb->ptr - inb->base) % sizeof(val)) == 0);
-+	assert(((size_t)(inb->ptr - inb->base) % sizeof(val)) == 0);
- 
- 	flat_read_chunk(inb, &val, sizeof(val));
- 
- 	return fdt32_to_cpu(val);
- }
- 
--static void flat_realign(struct inbuf *inb, int align)
-+static void flat_realign(struct inbuf *inb, unsigned int align)
- {
--	int off = inb->ptr - inb->base;
-+	off_t off = inb->ptr - inb->base;
- 
- 	inb->ptr = inb->base + ALIGN(off, align);
- 	if (inb->ptr > inb->limit)
-@@ -648,7 +637,7 @@ static char *flat_read_string(struct inbuf *inb)
- 	return str;
- }
- 
--static struct data flat_read_data(struct inbuf *inb, int len)
-+static struct data flat_read_data(struct inbuf *inb, size_t len)
- {
- 	struct data d = empty_data;
- 
-@@ -665,7 +654,7 @@ static struct data flat_read_data(struct inbuf *inb, int len)
- 	return d;
- }
- 
--static char *flat_read_stringtable(struct inbuf *inb, int offset)
-+static char *flat_read_stringtable(struct inbuf *inb, uint32_t offset)
- {
- 	const char *p;
- 
-@@ -687,7 +676,8 @@ static char *flat_read_stringtable(struct inbuf *inb, int offset)
- static struct property *flat_read_property(struct inbuf *dtbuf,
- 					   struct inbuf *strbuf, int flags)
- {
--	uint32_t proplen, stroff;
-+	uint32_t stroff;
-+	size_t proplen;
- 	char *name;
- 	struct data val;
- 
-@@ -734,7 +724,7 @@ static struct reserve_info *flat_read_mem_reserve(struct inbuf *inb)
- 
- static char *nodename_from_path(const char *ppath, const char *cpath)
- {
--	int plen;
-+	size_t plen;
- 
- 	plen = strlen(ppath);
- 
-@@ -819,13 +809,13 @@ struct dt_info *dt_from_blob(const char *fname)
- 	FILE *f;
- 	uint32_t magic, totalsize, version, size_dt, boot_cpuid_phys;
- 	uint32_t off_dt, off_str, off_mem_rsvmap;
--	int rc;
-+	size_t rc;
- 	char *blob;
- 	struct fdt_header *fdt;
- 	char *p;
- 	struct inbuf dtbuf, strbuf;
- 	struct inbuf memresvbuf;
--	int sizeleft;
-+	size_t sizeleft;
- 	struct reserve_info *reservelist;
- 	struct node *tree;
- 	uint32_t val;
 diff --git a/scripts/dtc/fstree.c b/scripts/dtc/fstree.c
 index ae7d06c3c492..5c3a76f57516 100644
 --- a/scripts/dtc/fstree.c
@@ -809,15 +301,12 @@ index ae7d06c3c492..5c3a76f57516 100644
  				fclose(pfile);
  			}
 diff --git a/scripts/dtc/libfdt/libfdt.h b/scripts/dtc/libfdt/libfdt.h
-index b842b156fa17..0793f7e7e285 100644
+index ba86caa73d01..650470a0f956 100644
 --- a/scripts/dtc/libfdt/libfdt.h
 +++ b/scripts/dtc/libfdt/libfdt.h
-@@ -144,9 +144,10 @@
- /**********************************************************************/
- 
- const void *fdt_offset_ptr(const void *fdt, int offset, unsigned int checklen);
--static inline void *fdt_offset_ptr_w(void *fdt, int offset, int checklen)
-+static inline void *fdt_offset_ptr_w(void *fdt, int offset, unsigned int checklen)
+@@ -148,7 +148,8 @@ const void *fdt_offset_ptr(const void *fdt, int offset, unsigned int checklen);
+ #endif
+ static inline void *fdt_offset_ptr_w(void *fdt, int offset, int checklen)
  {
 -	return (void *)(uintptr_t)fdt_offset_ptr(fdt, offset, checklen);
 +	const void *p = fdt_offset_ptr(fdt, offset, checklen);
@@ -825,7 +314,7 @@ index b842b156fa17..0793f7e7e285 100644
  }
  
  uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
-@@ -589,8 +590,8 @@ static inline struct fdt_property *fdt_get_property_w(void *fdt, int nodeoffset,
+@@ -596,8 +597,8 @@ static inline struct fdt_property *fdt_get_property_w(void *fdt, int nodeoffset,
  						      const char *name,
  						      int *lenp)
  {
@@ -836,7 +325,7 @@ index b842b156fa17..0793f7e7e285 100644
  }
  
  /**
-@@ -644,8 +645,9 @@ static inline void *fdt_getprop_namelen_w(void *fdt, int nodeoffset,
+@@ -654,8 +655,9 @@ static inline void *fdt_getprop_namelen_w(void *fdt, int nodeoffset,
  					  const char *name, int namelen,
  					  int *lenp)
  {
@@ -845,9 +334,9 @@ index b842b156fa17..0793f7e7e285 100644
  						      namelen, lenp);
 +	return (void *)(uintptr_t)p;
  }
+ #endif
  
- /**
-@@ -681,7 +683,8 @@ const void *fdt_getprop(const void *fdt, int nodeoffset,
+@@ -692,7 +694,8 @@ const void *fdt_getprop(const void *fdt, int nodeoffset,
  static inline void *fdt_getprop_w(void *fdt, int nodeoffset,
  				  const char *name, int *lenp)
  {
@@ -858,7 +347,7 @@ index b842b156fa17..0793f7e7e285 100644
  
  /**
 diff --git a/scripts/dtc/livetree.c b/scripts/dtc/livetree.c
-index afa2f67b142a..15860ed025a8 100644
+index 3673de07e4e5..dfe64cbe6ad6 100644
 --- a/scripts/dtc/livetree.c
 +++ b/scripts/dtc/livetree.c
 @@ -50,7 +50,7 @@ void delete_labels(struct label **labels)
@@ -951,17 +440,8 @@ index afa2f67b142a..15860ed025a8 100644
  	struct node *subnode, **tbl;
  
  	for_each_child_withdel(node, subnode)
-@@ -844,7 +844,7 @@ static void add_fixup_entry(struct dt_info *dti, struct node *fn,
- 	if (strchr(node->fullpath, ':') || strchr(prop->name, ':'))
- 		die("arguments should not contain ':'\n");
- 
--	xasprintf(&entry, "%s:%s:%u",
-+	xasprintf(&entry, "%s:%s:%zu",
- 			node->fullpath, prop->name, m->offset);
- 	append_to_property(fn, m->ref, entry, strlen(entry) + 1);
- }
 diff --git a/scripts/dtc/srcpos.c b/scripts/dtc/srcpos.c
-index aa3aad04cec4..9cf799b29f42 100644
+index 9d38459902f3..949630145db2 100644
 --- a/scripts/dtc/srcpos.c
 +++ b/scripts/dtc/srcpos.c
 @@ -39,7 +39,7 @@ static char *get_dirname(const char *path)
@@ -974,7 +454,7 @@ index aa3aad04cec4..9cf799b29f42 100644
  
  		memcpy(dir, path, len);
 diff --git a/scripts/dtc/treesource.c b/scripts/dtc/treesource.c
-index c9d8967969f9..8663e405bb8e 100644
+index 2461a3d068a0..dc243878eb40 100644
 --- a/scripts/dtc/treesource.c
 +++ b/scripts/dtc/treesource.c
 @@ -64,7 +64,7 @@ static bool isstring(char c)
@@ -1024,243 +504,4 @@ index c9d8967969f9..8663e405bb8e 100644
  
  	if (len == 0) {
  		fprintf(f, ";\n");
-diff --git a/scripts/dtc/util.c b/scripts/dtc/util.c
-index 3550f86bd6df..8a0c57e9aa80 100644
---- a/scripts/dtc/util.c
-+++ b/scripts/dtc/util.c
-@@ -38,7 +38,7 @@
- 
- char *xstrdup(const char *s)
- {
--	int len = strlen(s) + 1;
-+	size_t len = strlen(s) + 1;
- 	char *d = xmalloc(len);
- 
- 	memcpy(d, s, len);
-@@ -78,9 +78,9 @@ int xasprintf(char **strp, const char *fmt, ...)
- 
- char *join_path(const char *path, const char *name)
- {
--	int lenp = strlen(path);
--	int lenn = strlen(name);
--	int len;
-+	size_t lenp = strlen(path);
-+	size_t lenn = strlen(name);
-+	size_t len;
- 	int needslash = 1;
- 	char *str;
- 
-@@ -136,7 +136,7 @@ bool util_is_printable_string(const void *data, int len)
-  * point at the character directly after the end of the encoding, this may be
-  * the '\0' terminator of the string.
-  */
--static char get_oct_char(const char *s, int *i)
-+static char get_oct_char(const char *s, size_t *i)
- {
- 	char x[4];
- 	char *endx;
-@@ -149,8 +149,8 @@ static char get_oct_char(const char *s, int *i)
- 
- 	assert(endx > x);
- 
--	(*i) += endx - x;
--	return val;
-+	(*i) += (size_t)(endx - x);
-+	return (char)val;
- }
- 
- /*
-@@ -159,7 +159,7 @@ static char get_oct_char(const char *s, int *i)
-  * point at the character directly after the end of the encoding, this may be
-  * the '\0' terminator of the string.
-  */
--static char get_hex_char(const char *s, int *i)
-+static char get_hex_char(const char *s, size_t *i)
- {
- 	char x[3];
- 	char *endx;
-@@ -172,14 +172,14 @@ static char get_hex_char(const char *s, int *i)
- 	if (!(endx  > x))
- 		die("\\x used with no following hex digits\n");
- 
--	(*i) += endx - x;
--	return val;
-+	(*i) += (size_t)(endx - x);
-+	return (char)val;
- }
- 
--char get_escape_char(const char *s, int *i)
-+char get_escape_char(const char *s, size_t *i)
- {
- 	char	c = s[*i];
--	int	j = *i + 1;
-+	size_t	j = *i + 1;
- 	char	val;
- 
- 	switch (c) {
-@@ -227,12 +227,13 @@ char get_escape_char(const char *s, int *i)
- 	return val;
- }
- 
--int utilfdt_read_err_len(const char *filename, char **buffp, off_t *len)
-+int utilfdt_read_err_len(const char *filename, char **buffp, size_t *len)
- {
- 	int fd = 0;	/* assume stdin */
- 	char *buf = NULL;
--	off_t bufsize = 1024, offset = 0;
-+	size_t bufsize = 1024, offset = 0;
- 	int ret = 0;
-+	ssize_t rret;
- 
- 	*buffp = NULL;
- 	if (strcmp(filename, "-") != 0) {
-@@ -250,13 +251,13 @@ int utilfdt_read_err_len(const char *filename, char **buffp, off_t *len)
- 			buf = xrealloc(buf, bufsize);
- 		}
- 
--		ret = read(fd, &buf[offset], bufsize - offset);
--		if (ret < 0) {
-+		rret = read(fd, &buf[offset], (size_t)(bufsize - offset));
-+		if (rret < 0) {
- 			ret = errno;
- 			break;
- 		}
--		offset += ret;
--	} while (ret != 0);
-+		offset += (size_t)rret;
-+	} while (rret != 0);
- 
- 	/* Clean up, including closing stdin; return errno on error */
- 	close(fd);
-@@ -270,11 +271,11 @@ int utilfdt_read_err_len(const char *filename, char **buffp, off_t *len)
- 
- int utilfdt_read_err(const char *filename, char **buffp)
- {
--	off_t len;
-+	size_t len;
- 	return utilfdt_read_err_len(filename, buffp, &len);
- }
- 
--char *utilfdt_read_len(const char *filename, off_t *len)
-+char *utilfdt_read_len(const char *filename, size_t *len)
- {
- 	char *buff;
- 	int ret = utilfdt_read_err_len(filename, &buff, len);
-@@ -290,15 +291,15 @@ char *utilfdt_read_len(const char *filename, off_t *len)
- 
- char *utilfdt_read(const char *filename)
- {
--	off_t len;
-+	size_t len;
- 	return utilfdt_read_len(filename, &len);
- }
- 
- int utilfdt_write_err(const char *filename, const void *blob)
- {
- 	int fd = 1;	/* assume stdout */
--	int totalsize;
--	int offset;
-+	unsigned int totalsize;
-+	unsigned int offset;
- 	int ret = 0;
- 	const char *ptr = blob;
- 
-@@ -312,12 +313,12 @@ int utilfdt_write_err(const char *filename, const void *blob)
- 	offset = 0;
- 
- 	while (offset < totalsize) {
--		ret = write(fd, ptr + offset, totalsize - offset);
-+		ret = (int)write(fd, ptr + offset, totalsize - offset);
- 		if (ret < 0) {
- 			ret = -errno;
- 			break;
- 		}
--		offset += ret;
-+		offset += (unsigned int)ret;
- 	}
- 	/* Close the file/stdin; return errno on error */
- 	if (fd != 1)
-@@ -426,7 +427,7 @@ void util_usage(const char *errmsg, const char *synopsis,
- 	const char a_arg[] = "<arg>";
- 	size_t a_arg_len = strlen(a_arg) + 1;
- 	size_t i;
--	int optlen;
-+	size_t optlen;
- 
- 	fprintf(fp,
- 		"Usage: %s\n"
-@@ -437,7 +438,7 @@ void util_usage(const char *errmsg, const char *synopsis,
- 	optlen = 0;
- 	for (i = 0; long_opts[i].name; ++i) {
- 		/* +1 is for space between --opt and help text */
--		int l = strlen(long_opts[i].name) + 1;
-+		size_t l = strlen(long_opts[i].name) + 1;
- 		if (long_opts[i].has_arg == a_argument)
- 			l += a_arg_len;
- 		if (optlen < l)
-@@ -456,7 +457,7 @@ void util_usage(const char *errmsg, const char *synopsis,
- 
- 		/* then the long flag */
- 		if (long_opts[i].has_arg == no_argument)
--			fprintf(fp, "--%-*s", optlen, long_opts[i].name);
-+			fprintf(fp, "--%-*s", (int)optlen, long_opts[i].name);
- 		else
- 			fprintf(fp, "--%s %s%*s", long_opts[i].name, a_arg,
- 				(int)(optlen - strlen(long_opts[i].name) - a_arg_len), "");
-diff --git a/scripts/dtc/util.h b/scripts/dtc/util.h
-index f5c4f1b50d30..5babcf5a0a04 100644
---- a/scripts/dtc/util.h
-+++ b/scripts/dtc/util.h
-@@ -27,7 +27,7 @@
- 
- #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
- 
--static inline void __attribute__((noreturn)) die(const char *str, ...)
-+static inline void __attribute__((noreturn)) __attribute__ ((format(printf, 1, 2))) die(const char *str, ...)
- {
- 	va_list ap;
- 
-@@ -53,13 +53,13 @@ static inline void *xrealloc(void *p, size_t len)
- 	void *new = realloc(p, len);
- 
- 	if (!new)
--		die("realloc() failed (len=%d)\n", len);
-+		die("realloc() failed (len=%zu)\n", len);
- 
- 	return new;
- }
- 
- extern char *xstrdup(const char *s);
--extern int xasprintf(char **strp, const char *fmt, ...);
-+extern int xasprintf(char **strp, const char *fmt, ...) __attribute__ ((format(printf, 2, 3)));
- extern char *join_path(const char *path, const char *name);
- 
- /**
-@@ -79,7 +79,7 @@ bool util_is_printable_string(const void *data, int len);
-  * character directly after the end of the encoding, this may be the '\0'
-  * terminator of the string.
-  */
--char get_escape_char(const char *s, int *i);
-+char get_escape_char(const char *s, size_t *i);
- 
- /**
-  * Read a device tree file into a buffer. This will report any errors on
-@@ -95,7 +95,7 @@ char *utilfdt_read(const char *filename);
-  *
-  * @param len		If non-NULL, the amount of data we managed to read
-  */
--char *utilfdt_read_len(const char *filename, off_t *len);
-+char *utilfdt_read_len(const char *filename, size_t *len);
- 
- /**
-  * Read a device tree file into a buffer. Does not report errors, but only
-@@ -113,7 +113,7 @@ int utilfdt_read_err(const char *filename, char **buffp);
-  *
-  * @param len		If non-NULL, the amount of data we managed to read
-  */
--int utilfdt_read_err_len(const char *filename, char **buffp, off_t *len);
-+int utilfdt_read_err_len(const char *filename, char **buffp, size_t *len);
- 
- /**
-  * Write a device tree buffer to a file. This will report any errors on
 -- 

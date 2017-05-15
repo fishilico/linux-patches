@@ -6,14 +6,14 @@ Subject: [PATCH] {NOT UPSTREAMABLE} kasan: implement __asan_alloca_poison and
 
 clang 3.8.0 needs these functions
 ---
- mm/kasan/kasan.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ mm/kasan/kasan.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
 diff --git a/mm/kasan/kasan.c b/mm/kasan/kasan.c
-index 98b27195e38b..9be7efe7de90 100644
+index c81549d5c833..774ddafea9f8 100644
 --- a/mm/kasan/kasan.c
 +++ b/mm/kasan/kasan.c
-@@ -801,6 +801,18 @@ void __asan_unpoison_stack_memory(const void *addr, size_t size)
+@@ -802,6 +802,23 @@ void __asan_unpoison_stack_memory(const void *addr, size_t size)
  }
  EXPORT_SYMBOL(__asan_unpoison_stack_memory);
  
@@ -28,6 +28,11 @@ index 98b27195e38b..9be7efe7de90 100644
 +	kasan_unpoison_shadow((void *)top, bottom - top);
 +}
 +EXPORT_SYMBOL(__asan_allocas_unpoison);
++
++void __asan_set_shadow_00(unsigned long addr, unsigned long size) {
++	/* TODO */
++}
++EXPORT_SYMBOL(__asan_set_shadow_00);
 +
  #ifdef CONFIG_MEMORY_HOTPLUG
  static int kasan_mem_notifier(struct notifier_block *nb,

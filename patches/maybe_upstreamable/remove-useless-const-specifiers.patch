@@ -8,7 +8,7 @@ This fixes -Wignored-qualifiers warnings
  drivers/block/rsxx/core.c     | 2 +-
  drivers/gpu/drm/imx/imx-tve.c | 2 +-
  drivers/iio/dac/ad5064.c      | 2 +-
- drivers/perf/arm_pmu.c        | 2 +-
+ include/linux/of_irq.h        | 2 +-
  4 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/block/rsxx/core.c b/drivers/block/rsxx/core.c
@@ -50,17 +50,17 @@ index 6803e4a137cd..877afa10d786 100644
  	unsigned int vref)
  {
  	return st->chip_info->shared_vref ? "vref" : ad5064_vref_names[vref];
-diff --git a/drivers/perf/arm_pmu.c b/drivers/perf/arm_pmu.c
-index 9612b84bc3e0..2546f46365e9 100644
---- a/drivers/perf/arm_pmu.c
-+++ b/drivers/perf/arm_pmu.c
-@@ -1013,7 +1013,7 @@ int arm_pmu_device_probe(struct platform_device *pdev,
- 			 const struct pmu_probe_info *probe_table)
- {
- 	const struct of_device_id *of_id;
--	const int (*init_fn)(struct arm_pmu *);
-+	int (*init_fn)(struct arm_pmu *);
- 	struct device_node *node = pdev->dev.of_node;
- 	struct arm_pmu *pmu;
- 	int ret = -ENODEV;
+diff --git a/include/linux/of_irq.h b/include/linux/of_irq.h
+index ec6b11deb773..1e0deb8e8494 100644
+--- a/include/linux/of_irq.h
++++ b/include/linux/of_irq.h
+@@ -8,7 +8,7 @@
+ #include <linux/ioport.h>
+ #include <linux/of.h>
+ 
+-typedef int const (*of_irq_init_cb_t)(struct device_node *, struct device_node *);
++typedef int (*of_irq_init_cb_t)(struct device_node *, struct device_node *);
+ 
+ /*
+  * Workarounds only applied to 32bit powermac machines
 -- 

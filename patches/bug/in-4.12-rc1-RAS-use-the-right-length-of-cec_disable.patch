@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 8 May 2017 11:37:36 +0200
+Subject: [PATCH] {BUG in 4.12-rc1} RAS: use the right length of "cec_disable"
+
+The length of "cec_disable" is 11, not 7.
+
+Found with string ncmp function checker plugin
+---
+ drivers/ras/cec.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/ras/cec.c b/drivers/ras/cec.c
+index 6aab46d91d33..dd06e236cf96 100644
+--- a/drivers/ras/cec.c
++++ b/drivers/ras/cec.c
+@@ -523,7 +523,7 @@ int __init parse_cec_param(char *str)
+ 	if (*str == '=')
+ 		str++;
+ 
+-	if (!strncmp(str, "cec_disable", 7))
++	if (!strncmp(str, "cec_disable", 11))
+ 		ce_arr.disabled = 1;
+ 	else
+ 		return 0;
+-- 
