@@ -29,6 +29,41 @@ VERSION="$(git -C linux describe "$(cat patches/upstream-commit.hash)")"
 # Remove leading "v"
 VERSION="${VERSION#v}"
 
+# Compute the expected RC version in tracked-patches.txt
+case "$VERSION" in
+    *.*-rc*)
+        # 4.2-rc10-... => 4.2
+        EXPECTED_RCVER="${VERSION%%-rc*}"
+        ;;
+    *.*-*)
+        # 4.2-... => 4.3
+        FULLVER="${VERSION%%-*}"
+        MAJVER="${FULLVER%.*}"
+        MINVER="${FULLVER##*.}"
+        EXPECTED_RCVER="$MAJVER.$((MINVER + 1))"
+        ;;
+    *)
+        # 4.2, no RC
+        EXPECTED_RCVER=''
+        ;;
+esac
+# Sanity check: no "For current rc" in tracked-patches.txt when committing releases
+CURRENT_RCVER="$(sed -n 's/^For current rc (Linux \(.*\))$/\1/p' tracked-patches.txt)"
+if [ "$CURRENT_RCVER" != "$EXPECTED_RCVER" ] ; then
+    if [ -z "$EXPECTED_RCVER" ] ; then
+        echo >&2 'Error: tracked-patches.txt uses current-rc patches for a full release!'
+    else
+        echo >&2 'Error: tracked-patches.txt does not define a current RC'
+    fi
+    exit 1
+fi
+
+if [ -z "$CURRENT_RCVER" ] ; then
+    echo "Commit from full version $VERSION"
+else
+    echo "Commit for RC version $CURRENT_RCVER with base $VERSION"
+fi
+
 # Force GPG signing
 if [ "$(git config commit.gpgsign)" != true ] ; then
     git config commit.gpgsign true
