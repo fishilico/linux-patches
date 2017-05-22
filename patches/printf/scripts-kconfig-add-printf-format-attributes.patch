@@ -1,0 +1,238 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 20 May 2017 11:32:17 +0200
+Subject: [PATCH] {PRINTF} scripts/kconfig: add printf format attributes
+
+When building with -Wformat-security and -Wsuggest-attribute=format in
+HOSTCFLAGS, gcc complains about several functions misssing a printf
+format attribute. Add them.
+---
+ scripts/kconfig/confdata.c          | 13 ++++++++-----
+ scripts/kconfig/lkc.h               |  6 ++++--
+ scripts/kconfig/lkc_proto.h         |  2 +-
+ scripts/kconfig/lxdialog/dialog.h   |  4 ++--
+ scripts/kconfig/mconf.c             |  3 ++-
+ scripts/kconfig/menu.c              |  3 ++-
+ scripts/kconfig/nconf.c             |  9 ++++++---
+ scripts/kconfig/zconf.tab.c_shipped |  6 ++++--
+ scripts/kconfig/zconf.y             | 12 ++++++++----
+ 9 files changed, 37 insertions(+), 21 deletions(-)
+
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index 297b079ae4d9..716c59977992 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -32,7 +32,8 @@ static int conf_lineno, conf_warnings, conf_unsaved;
+ 
+ const char conf_defname[] = "arch/$ARCH/defconfig";
+ 
+-static void conf_warning(const char *fmt, ...)
++static __attribute__ ((format(printf, 1, 2)))
++void conf_warning(const char *fmt, ...)
+ {
+ 	va_list ap;
+ 	va_start(ap, fmt);
+@@ -43,21 +44,23 @@ static void conf_warning(const char *fmt, ...)
+ 	conf_warnings++;
+ }
+ 
+-static void conf_default_message_callback(const char *fmt, va_list ap)
++static __attribute__ ((format(printf, 1, 0)))
++void conf_default_message_callback(const char *fmt, va_list ap)
+ {
+ 	printf("#\n# ");
+ 	vprintf(fmt, ap);
+ 	printf("\n#\n");
+ }
+ 
+-static void (*conf_message_callback) (const char *fmt, va_list ap) =
++static void (*__attribute__ ((format(printf, 1, 0))) conf_message_callback) (const char *fmt, va_list ap) =
+ 	conf_default_message_callback;
+-void conf_set_message_callback(void (*fn) (const char *fmt, va_list ap))
++void conf_set_message_callback(__attribute__ ((format(printf, 1, 0))) void (*fn) (const char *fmt, va_list ap))
+ {
+ 	conf_message_callback = fn;
+ }
+ 
+-static void conf_message(const char *fmt, ...)
++static void __attribute__ ((format(printf, 1, 2)))
++conf_message(const char *fmt, ...)
+ {
+ 	va_list ap;
+ 
+diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
+index 2741cb1a03c6..2cf4dae54a4c 100644
+--- a/scripts/kconfig/lkc.h
++++ b/scripts/kconfig/lkc.h
+@@ -97,7 +97,8 @@ static inline void xfwrite(const void *str, size_t len, size_t count, FILE *out)
+ 
+ /* menu.c */
+ void _menu_init(void);
+-void menu_warn(struct menu *menu, const char *fmt, ...);
++void menu_warn(struct menu *menu, const char *fmt, ...)
++	__attribute__ ((format(printf, 2, 3)));
+ struct menu *menu_add_menu(void);
+ void menu_end_menu(void);
+ void menu_add_entry(struct symbol *sym);
+@@ -129,7 +130,8 @@ struct gstr {
+ struct gstr str_new(void);
+ void str_free(struct gstr *gs);
+ void str_append(struct gstr *gs, const char *s);
+-void str_printf(struct gstr *gs, const char *fmt, ...);
++void str_printf(struct gstr *gs, const char *fmt, ...)
++	__attribute__ ((format(printf, 2, 3)));
+ const char *str_get(struct gstr *gs);
+ 
+ /* symbol.c */
+diff --git a/scripts/kconfig/lkc_proto.h b/scripts/kconfig/lkc_proto.h
+index d5398718ec2a..4cd4bb722068 100644
+--- a/scripts/kconfig/lkc_proto.h
++++ b/scripts/kconfig/lkc_proto.h
+@@ -9,7 +9,7 @@ int conf_write(const char *name);
+ int conf_write_autoconf(void);
+ bool conf_get_changed(void);
+ void conf_set_changed_callback(void (*fn)(void));
+-void conf_set_message_callback(void (*fn)(const char *fmt, va_list ap));
++void conf_set_message_callback(__attribute__ ((format(printf, 1, 0))) void (*fn)(const char *fmt, va_list ap));
+ 
+ /* menu.c */
+ extern struct menu rootmenu;
+diff --git a/scripts/kconfig/lxdialog/dialog.h b/scripts/kconfig/lxdialog/dialog.h
+index fcffd5b41fb0..c74c1368323f 100644
+--- a/scripts/kconfig/lxdialog/dialog.h
++++ b/scripts/kconfig/lxdialog/dialog.h
+@@ -158,8 +158,8 @@ extern int saved_x, saved_y;		/* Needed in signal handler in mconf.c */
+ 
+ /* item list as used by checklist and menubox */
+ void item_reset(void);
+-void item_make(const char *fmt, ...);
+-void item_add_str(const char *fmt, ...);
++__attribute__ ((format(printf, 1, 2))) void item_make(const char *fmt, ...);
++__attribute__ ((format(printf, 1, 2))) void item_add_str(const char *fmt, ...);
+ void item_set_tag(char tag);
+ void item_set_data(void *p);
+ void item_set_selected(int val);
+diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
+index 315ce2c7cb9d..5d39f6bed46a 100644
+--- a/scripts/kconfig/mconf.c
++++ b/scripts/kconfig/mconf.c
+@@ -773,7 +773,8 @@ static void show_helptext(const char *title, const char *text)
+ 	show_textbox(title, text, 0, 0);
+ }
+ 
+-static void conf_message_callback(const char *fmt, va_list ap)
++static __attribute__ ((format(printf, 1, 0)))
++void conf_message_callback(const char *fmt, va_list ap)
+ {
+ 	char buf[PATH_MAX+1];
+ 
+diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
+index e9357931b47d..74cba1d354ab 100644
+--- a/scripts/kconfig/menu.c
++++ b/scripts/kconfig/menu.c
+@@ -28,7 +28,8 @@ void menu_warn(struct menu *menu, const char *fmt, ...)
+ 	va_end(ap);
+ }
+ 
+-static void prop_warn(struct property *prop, const char *fmt, ...)
++static __attribute__ ((format(printf, 2, 3)))
++void prop_warn(struct property *prop, const char *fmt, ...)
+ {
+ 	va_list ap;
+ 	va_start(ap, fmt);
+diff --git a/scripts/kconfig/nconf.c b/scripts/kconfig/nconf.c
+index a9bc5334a478..600da35e779e 100644
+--- a/scripts/kconfig/nconf.c
++++ b/scripts/kconfig/nconf.c
+@@ -522,7 +522,8 @@ static int get_mext_match(const char *match_str, match_f flag)
+ }
+ 
+ /* Make a new item. */
+-static void item_make(struct menu *menu, char tag, const char *fmt, ...)
++static __attribute__ ((format(printf, 3, 4)))
++void item_make(struct menu *menu, char tag, const char *fmt, ...)
+ {
+ 	va_list ap;
+ 
+@@ -562,7 +563,8 @@ static void item_make(struct menu *menu, char tag, const char *fmt, ...)
+ }
+ 
+ /* very hackish. adds a string to the last item added */
+-static void item_add_str(const char *fmt, ...)
++static __attribute__ ((format(printf, 1, 2)))
++void item_add_str(const char *fmt, ...)
+ {
+ 	va_list ap;
+ 	int index = items_num-1;
+@@ -1210,7 +1212,8 @@ static void conf(struct menu *menu)
+ 	}
+ }
+ 
+-static void conf_message_callback(const char *fmt, va_list ap)
++static __attribute__ ((format(printf, 1, 0)))
++void conf_message_callback(const char *fmt, va_list ap)
+ {
+ 	char buf[1024];
+ 
+diff --git a/scripts/kconfig/zconf.tab.c_shipped b/scripts/kconfig/zconf.tab.c_shipped
+index 65b7515a577c..d4a29ff9a4c1 100644
+--- a/scripts/kconfig/zconf.tab.c_shipped
++++ b/scripts/kconfig/zconf.tab.c_shipped
+@@ -2284,7 +2284,8 @@ static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtok
+ 	return true;
+ }
+ 
+-static void zconfprint(const char *err, ...)
++static __attribute__ ((format(printf, 1, 2)))
++void zconfprint(const char *err, ...)
+ {
+ 	va_list ap;
+ 
+@@ -2295,7 +2296,8 @@ static void zconfprint(const char *err, ...)
+ 	fprintf(stderr, "\n");
+ }
+ 
+-static void zconf_error(const char *err, ...)
++static __attribute__ ((format(printf, 1, 2)))
++void zconf_error(const char *err, ...)
+ {
+ 	va_list ap;
+ 
+diff --git a/scripts/kconfig/zconf.y b/scripts/kconfig/zconf.y
+index 001305fa080b..ca7d56b0ce23 100644
+--- a/scripts/kconfig/zconf.y
++++ b/scripts/kconfig/zconf.y
+@@ -21,8 +21,10 @@
+ int cdebug = PRINTD;
+ 
+ extern int zconflex(void);
+-static void zconfprint(const char *err, ...);
+-static void zconf_error(const char *err, ...);
++static void zconfprint(const char *err, ...)
++	__attribute__ ((format(printf, 1, 2)));
++static void zconf_error(const char *err, ...)
++	__attribute__ ((format(printf, 1, 2)));
+ static void zconferror(const char *err);
+ static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtoken);
+ 
+@@ -567,7 +569,8 @@ static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtok
+ 	return true;
+ }
+ 
+-static void zconfprint(const char *err, ...)
++static __attribute__ ((format(printf, 1, 2)))
++void zconfprint(const char *err, ...)
+ {
+ 	va_list ap;
+ 
+@@ -578,7 +581,8 @@ static void zconfprint(const char *err, ...)
+ 	fprintf(stderr, "\n");
+ }
+ 
+-static void zconf_error(const char *err, ...)
++static __attribute__ ((format(printf, 1, 2)))
++void zconf_error(const char *err, ...)
+ {
+ 	va_list ap;
+ 
+-- 

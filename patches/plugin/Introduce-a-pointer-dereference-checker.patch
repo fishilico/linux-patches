@@ -788,7 +788,7 @@ index 8e90b3151a42..93840a11f6ff 100644
  };
  
 diff --git a/drivers/usb/core/devio.c b/drivers/usb/core/devio.c
-index cfc3cff6e8d5..d9aeda537479 100644
+index 8e6ef671be9b..4f29c7238750 100644
 --- a/drivers/usb/core/devio.c
 +++ b/drivers/usb/core/devio.c
 @@ -1891,12 +1891,13 @@ static struct async *reap_as(struct usb_dev_state *ps)
@@ -800,7 +800,7 @@ index cfc3cff6e8d5..d9aeda537479 100644
  	if (as) {
  		int retval;
  
- 		snoop(&ps->dev->dev, "reap %p\n", as->userurb);
+ 		snoop(&ps->dev->dev, "reap %pK\n", as->userurb);
 -		retval = processcompl(as, (void __user * __user *)arg);
 +		retval = processcompl(as, parg);
  		free_async(as);
@@ -814,7 +814,7 @@ index cfc3cff6e8d5..d9aeda537479 100644
  
  	as = async_getcompleted(ps);
  	if (as) {
- 		snoop(&ps->dev->dev, "reap %p\n", as->userurb);
+ 		snoop(&ps->dev->dev, "reap %pK\n", as->userurb);
 -		retval = processcompl(as, (void __user * __user *)arg);
 +		retval = processcompl(as, parg);
  		free_async(as);
@@ -829,7 +829,7 @@ index cfc3cff6e8d5..d9aeda537479 100644
  	if (as) {
  		int retval;
  
- 		snoop(&ps->dev->dev, "reap %p\n", as->userurb);
+ 		snoop(&ps->dev->dev, "reap %pK\n", as->userurb);
 -		retval = processcompl_compat(as, (void __user * __user *)arg);
 +		retval = processcompl_compat(as, parg);
  		free_async(as);
@@ -843,7 +843,7 @@ index cfc3cff6e8d5..d9aeda537479 100644
  
  	as = async_getcompleted(ps);
  	if (as) {
- 		snoop(&ps->dev->dev, "reap %p\n", as->userurb);
+ 		snoop(&ps->dev->dev, "reap %pK\n", as->userurb);
 -		retval = processcompl_compat(as, (void __user * __user *)arg);
 +		retval = processcompl_compat(as, parg);
  		free_async(as);
@@ -865,7 +865,7 @@ index e46080214955..abde0fe24f9c 100644
  
  	strings = (char *)&ret[*num];
 diff --git a/fs/cifs/cifsacl.c b/fs/cifs/cifsacl.c
-index 15bac390dff9..92f8aee68730 100644
+index b98436f5c7c7..86ac27daa6c5 100644
 --- a/fs/cifs/cifsacl.c
 +++ b/fs/cifs/cifsacl.c
 @@ -426,16 +426,20 @@ sid_to_id(struct cifs_sb_info *cifs_sb, struct cifs_sid *psid,
@@ -996,10 +996,10 @@ index d35cc2d3a4cc..0b45978c2f2b 100644
  			debug_kfree(knt1);
  			knt1 = kdb_name_table[i];
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 7958121d916a..4225e4629aa0 100644
+index 519b19dd3c32..1bafa4e8c984 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -6873,7 +6873,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
+@@ -6902,7 +6902,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
  	 * We use the callback data field (which is a pointer)
  	 * as our counter.
  	 */
@@ -1042,7 +1042,7 @@ index a3bddbfd0874..04623a110aa3 100644
  	return ret < 0 ? ret : 0;
  }
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 8485f6738a87..b7154863d7de 100644
+index c129fca6ec99..1f9aec2c807b 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
 @@ -709,10 +709,15 @@ static int create_trace_kprobe(int argc, char **argv)

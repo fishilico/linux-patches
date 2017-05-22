@@ -4,26 +4,26 @@ Date: Tue, 27 Dec 2016 19:09:50 +0100
 Subject: [PATCH] {FRAMA-C} Add arch/framac
 
 ---
- arch/framac/Kconfig                    |  75 +++++++++++++++++++++
- arch/framac/Makefile                   |  27 ++++++++
+ arch/framac/Kconfig                    |  75 ++++++++++++++++++++
+ arch/framac/Makefile                   |  27 +++++++
  arch/framac/extra/Makefile             |  13 ++++
- arch/framac/extra/gen_lds_vars.sh      |  27 ++++++++
- arch/framac/extra/lds_vars.c           | 120 +++++++++++++++++++++++++++++++++
- arch/framac/include/abstract_structs.h |  72 ++++++++++++++++++++
- arch/framac/include/asm/Kbuild         |  85 +++++++++++++++++++++++
+ arch/framac/extra/gen_lds_vars.sh      |  27 +++++++
+ arch/framac/extra/lds_vars.c           | 126 +++++++++++++++++++++++++++++++++
+ arch/framac/include/abstract_structs.h |  73 +++++++++++++++++++
+ arch/framac/include/asm/Kbuild         |  86 ++++++++++++++++++++++
  arch/framac/include/asm/byteorder.h    |   6 ++
  arch/framac/include/asm/dma-mapping.h  |  11 +++
- arch/framac/include/asm/elf.h          |  30 +++++++++
- arch/framac/include/asm/irqflags.h     |  15 +++++
- arch/framac/include/asm/pgtable.h      |  69 +++++++++++++++++++
+ arch/framac/include/asm/elf.h          |  33 +++++++++
+ arch/framac/include/asm/irqflags.h     |  15 ++++
+ arch/framac/include/asm/pgtable.h      |  72 +++++++++++++++++++
  arch/framac/include/asm/processor.h    |  40 +++++++++++
- arch/framac/include/asm/ptrace.h       |  23 +++++++
+ arch/framac/include/asm/ptrace.h       |  23 ++++++
  arch/framac/include/asm/sigcontext.h   |  10 +++
- arch/framac/include/asm/thread_info.h  |  64 ++++++++++++++++++
+ arch/framac/include/asm/thread_info.h  |  64 +++++++++++++++++
  arch/framac/include/asm/uaccess.h      |  22 ++++++
  arch/framac/kernel/Makefile            |  11 +++
  arch/framac/kernel/asm-offsets.c       |  13 ++++
- arch/framac/kernel/dma.c               |  57 ++++++++++++++++
+ arch/framac/kernel/dma.c               |  57 +++++++++++++++
  arch/framac/kernel/head.c              |   6 ++
  arch/framac/kernel/irq.c               |   5 ++
  arch/framac/kernel/process.c           |  40 +++++++++++
@@ -34,10 +34,10 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/kernel/traps.c             |  10 +++
  arch/framac/kernel/vmlinux.lds.S       |  56 +++++++++++++++
  arch/framac/lib/Makefile               |   1 +
- arch/framac/lib/delay.c                |  27 ++++++++
+ arch/framac/lib/delay.c                |  27 +++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 ++++
- 33 files changed, 1000 insertions(+)
+ 33 files changed, 1014 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Makefile
  create mode 100644 arch/framac/extra/Makefile
@@ -188,7 +188,7 @@ index 000000000000..399e1b3ab6ce
 +libs-y += arch/framac/lib/
 diff --git a/arch/framac/extra/Makefile b/arch/framac/extra/Makefile
 new file mode 100644
-index 000000000000..43f6c53b32b9
+index 000000000000..727f1c8cea64
 --- /dev/null
 +++ b/arch/framac/extra/Makefile
 @@ -0,0 +1,13 @@
@@ -196,7 +196,7 @@ index 000000000000..43f6c53b32b9
 +
 +extra-$(CONFIG_FRAMAC_GEN_LDS_VARIABLES) += lds_vars.tpl.c
 +
-+$(obj)/lds_vars.tpl.c: $(src)/gen_lds_vars.sh $(objtree)/arch/framac/kernel/vmlinux.lds
++$(obj)/lds_vars.tpl.c: $(src)/gen_lds_vars.sh $(objtree)/arch/framac/kernel/
 +	$(call if_changed,gen_lds_vars)
 +
 +# Build a built-in.o object by not linking lds_vars.o
@@ -240,10 +240,10 @@ index 000000000000..6259dfb9a576
 +done
 diff --git a/arch/framac/extra/lds_vars.c b/arch/framac/extra/lds_vars.c
 new file mode 100644
-index 000000000000..4f5785cdf697
+index 000000000000..9c89f608a765
 --- /dev/null
 +++ b/arch/framac/extra/lds_vars.c
-@@ -0,0 +1,120 @@
+@@ -0,0 +1,126 @@
 +/**
 + * Define references to unsized arrays used in the code which come from the
 + * linker script.
@@ -256,6 +256,7 @@ index 000000000000..4f5785cdf697
 +#include <linux/jump_label.h>
 +#include <linux/moduleparam.h>
 +#include <linux/pci.h>
++#include <linux/serial_core.h>
 +#include <linux/tracepoint.h>
 +#include <linux/uaccess.h>
 +#include <linux/dynamic_debug.h>
@@ -278,8 +279,12 @@ index 000000000000..4f5785cdf697
 +char __kprobes_text_start[1];
 +char __kprobes_text_end[1];
 +char _etext[1];
++struct of_device_id __clksrc_of_table[1];
 +char __dtb_start[1];
 +char __dtb_end[1];
++struct of_device_id __irqchip_of_table[1];
++const struct earlycon_id __earlycon_table[1];
++const struct earlycon_id __earlycon_table_end[1];
 +const struct obs_kernel_param __setup_start[1];
 +const struct obs_kernel_param __setup_end[1];
 +initcall_t __initcall_start[1];
@@ -297,14 +302,13 @@ index 000000000000..4f5785cdf697
 +initcall_t __con_initcall_end[1];
 +initcall_t __security_initcall_start[1];
 +initcall_t __security_initcall_end[1];
++char __initramfs_start[1];
 +char _sdata[1];
 +char __start_rodata[1];
-+char __start_data_ro_after_init[1];
-+char __end_data_ro_after_init[1];
++char __start_ro_after_init[1];
++char __end_ro_after_init[1];
 +struct tracepoint __start___tracepoints_ptrs[1];
 +struct tracepoint __stop___tracepoints_ptrs[1];
-+const struct bug_entry __start___bug_table[1];
-+const struct bug_entry __stop___bug_table[1];
 +struct pci_fixup __start_pci_fixups_early[1];
 +struct pci_fixup __end_pci_fixups_early[1];
 +struct pci_fixup __start_pci_fixups_header[1];
@@ -333,15 +337,15 @@ index 000000000000..4f5785cdf697
 +const struct kernel_symbol __stop___ksymtab_unused_gpl[1];
 +const struct kernel_symbol __start___ksymtab_gpl_future[1];
 +const struct kernel_symbol __stop___ksymtab_gpl_future[1];
-+const unsigned long __start___kcrctab[1];
++const s32 __start___kcrctab[1];
 +/* __stop___kcrctab not found */
-+const unsigned long __start___kcrctab_gpl[1];
++const s32 __start___kcrctab_gpl[1];
 +/* __stop___kcrctab_gpl not found */
-+const unsigned long __start___kcrctab_unused[1];
++const s32 __start___kcrctab_unused[1];
 +/* __stop___kcrctab_unused not found */
-+const unsigned long __start___kcrctab_unused_gpl[1];
++const s32 __start___kcrctab_unused_gpl[1];
 +/* __stop___kcrctab_unused_gpl not found */
-+const unsigned long __start___kcrctab_gpl_future[1];
++const s32 __start___kcrctab_gpl_future[1];
 +/* __stop___kcrctab_gpl_future not found */
 +const struct kernel_param __start___param[1];
 +const struct kernel_param __stop___param[1];
@@ -356,6 +360,8 @@ index 000000000000..4f5785cdf697
 +char __stop___jump_table[1];
 +struct _ddebug __start___verbose[1];
 +struct _ddebug __stop___verbose[1];
++struct bug_entry __start___bug_table[1];
++struct bug_entry __stop___bug_table[1];
 +char _edata[1];
 +struct exception_table_entry __start___ex_table[1];
 +struct exception_table_entry __stop___ex_table[1];
@@ -366,10 +372,10 @@ index 000000000000..4f5785cdf697
 +char _end[1];
 diff --git a/arch/framac/include/abstract_structs.h b/arch/framac/include/abstract_structs.h
 new file mode 100644
-index 000000000000..75a3f3a8512b
+index 000000000000..73c6bb86722a
 --- /dev/null
 +++ b/arch/framac/include/abstract_structs.h
-@@ -0,0 +1,72 @@
+@@ -0,0 +1,73 @@
 +#ifndef _ASM_FRAMA_C_ABSTRACT_STRUCT_H
 +#define _ASM_FRAMA_C_ABSTRACT_STRUCT_H
 +
@@ -381,7 +387,7 @@ index 000000000000..75a3f3a8512b
 + */
 +struct dma_coherent_mem { char dummy; };
 +
-+#ifndef CONFIG_DECNET
++#if !defined(CONFIG_DECNET) && !defined(CONFIG_DECNET_MODULE)
 +struct dn_dev { char dummy; };
 +#endif
 +
@@ -392,7 +398,8 @@ index 000000000000..75a3f3a8512b
 +struct in_device { char dummy; };
 +#endif
 +
-+#ifndef CONFIG_IOMMU_HELPER
++#if !defined(CONFIG_IOMMU_HELPER) && \
++    !defined(CONFIG_VIDEO_MEDIATEK_VPU) && !defined(CONFIG_VIDEO_MEDIATEK_VPU_MODULE)
 +struct iommu_group { char dummy; };
 +struct iommu_ops { char dummy; };
 +#endif
@@ -444,10 +451,10 @@ index 000000000000..75a3f3a8512b
 +#endif /* _ASM_FRAMA_C_ABSTRACT_STRUCT_H */
 diff --git a/arch/framac/include/asm/Kbuild b/arch/framac/include/asm/Kbuild
 new file mode 100644
-index 000000000000..fa9f4754947a
+index 000000000000..ff93b3389ba2
 --- /dev/null
 +++ b/arch/framac/include/asm/Kbuild
-@@ -0,0 +1,85 @@
+@@ -0,0 +1,86 @@
 +generic-y += atomic.h
 +generic-y += auxvec.h
 +generic-y += barrier.h
@@ -507,6 +514,7 @@ index 000000000000..fa9f4754947a
 +generic-y += sections.h
 +generic-y += segment.h
 +generic-y += sembuf.h
++generic-y += serial.h
 +generic-y += setup.h
 +generic-y += shmbuf.h
 +generic-y += shmparam.h
@@ -564,14 +572,17 @@ index 000000000000..7ca7032fce66
 +#endif /* _ASM_FRAMA_C_DMA_MAPPING_H */
 diff --git a/arch/framac/include/asm/elf.h b/arch/framac/include/asm/elf.h
 new file mode 100644
-index 000000000000..43d61e706128
+index 000000000000..9d7ea895c701
 --- /dev/null
 +++ b/arch/framac/include/asm/elf.h
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,33 @@
 +#ifndef _ASM_FRAMA_C_ELF_H
 +#define _ASM_FRAMA_C_ELF_H
 +
 +#include <asm/ptrace.h>
++
++/* We do not have an ELF architecture. Let's accept every one! */
++#define elf_check_arch(x) true
 +
 +typedef unsigned long elf_greg_t;
 +
@@ -621,16 +632,19 @@ index 000000000000..2cf4035657f4
 +#endif /* _ASM_FRAMA_C_IRQFLAGS_H */
 diff --git a/arch/framac/include/asm/pgtable.h b/arch/framac/include/asm/pgtable.h
 new file mode 100644
-index 000000000000..79877209b681
+index 000000000000..d166994b33a5
 --- /dev/null
 +++ b/arch/framac/include/asm/pgtable.h
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,72 @@
 +#ifndef _ASM_FRAMA_C_PGTABLE_H
 +#define _ASM_FRAMA_C_PGTABLE_H
 +
 +#include <linux/mm_types.h>
 +#include <asm-generic/pgtable-nopud.h>
 +#include <asm-generic/pgtable.h>
++
++/* This definition usually lie in page.h, which we do not use (for NOMMU architecture) */
++#define VM_DATA_DEFAULT_FLAGS (VM_READ | VM_WRITE | VM_EXEC | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
 +
 +#define pgtable_cache_init() do { } while (0)
 +#define arch_start_context_switch(prev) do {} while (0)
