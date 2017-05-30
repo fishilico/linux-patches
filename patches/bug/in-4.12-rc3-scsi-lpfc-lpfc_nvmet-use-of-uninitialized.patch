@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 30 May 2017 22:16:17 +0200
+Subject: [PATCH] {BUG in 4.12-rc3} scsi/lpfc/lpfc_nvmet: use of uninitialized
+ variable
+
+clang reports:
+
+    drivers/scsi/lpfc/lpfc_nvmet.c:180:12: error: variable 'nvmebuf' is
+    uninitialized when used here [-Werror,-Wuninitialized]
+                hbufp = &nvmebuf->hbuf;
+                         ^~~~~~~
+    drivers/scsi/lpfc/lpfc_nvmet.c:164:28: note: initialize the variable
+    'nvmebuf' to silence this warning
+            struct rqb_dmabuf *nvmebuf;
+                                      ^
+                                       = NULL
+---
+ drivers/scsi/lpfc/lpfc_nvmet.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/scsi/lpfc/lpfc_nvmet.c b/drivers/scsi/lpfc/lpfc_nvmet.c
+index 074a6b5e7763..48f0164a7559 100644
+--- a/drivers/scsi/lpfc/lpfc_nvmet.c
++++ b/drivers/scsi/lpfc/lpfc_nvmet.c
+@@ -161,7 +161,7 @@ lpfc_nvmet_ctxbuf_post(struct lpfc_hba *phba, struct lpfc_nvmet_ctxbuf *ctx_buf)
+ 	struct lpfc_nvmet_rcv_ctx *ctxp = ctx_buf->context;
+ 	struct lpfc_nvmet_tgtport *tgtp;
+ 	struct fc_frame_header *fc_hdr;
+-	struct rqb_dmabuf *nvmebuf;
++	struct rqb_dmabuf *nvmebuf = ctxp->rqb_buffer; /* BUG? */
+ 	struct lpfc_dmabuf *hbufp;
+ 	uint32_t *payload;
+ 	uint32_t size, oxid, sid, rc;
+-- 

@@ -30,10 +30,10 @@ This plugin helped to detect the following bugs:
  fs/reiserfs/Makefile                               |  16 +
  net/ipv4/sysctl_net_ipv4.c                         |   2 +-
  scripts/Makefile.gcc-plugins                       |   5 +
- scripts/gcc-plugins/printk_format_plugin.c         | 776 +++++++++++++++++++++
+ scripts/gcc-plugins/printk_format_plugin.c         | 782 +++++++++++++++++++++
  sound/soc/intel/haswell/sst-haswell-dsp.c          |   4 +-
  sound/soc/sh/dma-sh7760.c                          |   2 +-
- 24 files changed, 845 insertions(+), 31 deletions(-)
+ 24 files changed, 851 insertions(+), 31 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -408,10 +408,10 @@ index 82335533620e..3962ec603972 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..4458a729b8c2
+index 000000000000..6ee8367ce754
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,776 @@
+@@ -0,0 +1,782 @@
 +/*
 + * Copyright 2016-2017 by Nicolas Iooss
 + *
@@ -915,8 +915,14 @@ index 000000000000..4458a729b8c2
 +		    gimple_call_internal_fn(call_stmt) == IFN_VA_ARG) {
 +			return;
 +		}
++		/* Multiplication overflow */
++		if (gimple_call_internal_p(call_stmt) &&
++		    gimple_call_internal_fn(call_stmt) == IFN_MUL_OVERFLOW) {
++			return;
++		}
 +		warning_at(gimple_location(stmt), 0,
 +			   G_("Unable to get the function type\n"));
++		/* debug_gimple_stmt(stmt); */
 +		return;
 +	}
 +
@@ -1023,7 +1029,7 @@ index 000000000000..4458a729b8c2
 +			case '0': case '1': case '2': case '3': case '4':
 +			case '5': case '6': case '7': case '8': case '9':
 +			case 'h': case 'l': case 'L': case 't':
-+			case 'z': case 'Z':
++			case 'z':
 +				break;
 +			case '*':
 +				/* There may be several stars, like "%*.*s" */

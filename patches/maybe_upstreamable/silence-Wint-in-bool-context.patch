@@ -1,0 +1,197 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 30 May 2017 22:16:31 +0200
+Subject: [PATCH] {MAYBE UPS} silence -Wint-in-bool-context
+
+gcc 7 complains on "EZ(t->setup * 1000,  T);":
+
+    drivers/ata/libata-core.c:3164:30: error: '*' in boolean context,
+    suggest '&&' instead [-Werror=int-in-bool-context]
+---
+ drivers/ata/libata-core.c                       | 2 +-
+ drivers/gpu/drm/msm/hdmi/hdmi_audio.c           | 6 +++---
+ drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c | 2 +-
+ drivers/ide/ide-timings.c                       | 2 +-
+ drivers/infiniband/core/uverbs.h                | 4 ++--
+ drivers/input/misc/adxl34x.c                    | 2 +-
+ drivers/media/rc/imon.c                         | 2 +-
+ drivers/staging/iio/resolver/ad2s1210.c         | 2 +-
+ drivers/video/fbdev/core/fbmon.c                | 2 +-
+ fs/xfs/xfs_bmap_util.c                          | 4 ++--
+ include/linux/iopoll.h                          | 2 +-
+ include/linux/regmap.h                          | 2 +-
+ 12 files changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 2d83b8c75965..8ccc635ced62 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3157,7 +3157,7 @@ static const struct ata_timing ata_timing[] = {
+ };
+ 
+ #define ENOUGH(v, unit)		(((v)-1)/(unit)+1)
+-#define EZ(v, unit)		((v)?ENOUGH(v, unit):0)
++#define EZ(v, unit)		(((v) != 0)?ENOUGH(v, unit):0)
+ 
+ static void ata_timing_quantize(const struct ata_timing *t, struct ata_timing *q, int T, int UT)
+ {
+diff --git a/drivers/gpu/drm/msm/hdmi/hdmi_audio.c b/drivers/gpu/drm/msm/hdmi/hdmi_audio.c
+index 8177e8511afd..9a558d402602 100644
+--- a/drivers/gpu/drm/msm/hdmi/hdmi_audio.c
++++ b/drivers/gpu/drm/msm/hdmi/hdmi_audio.c
+@@ -175,10 +175,10 @@ int msm_hdmi_audio_update(struct hdmi *hdmi)
+ 		/* configure infoframe: */
+ 		hdmi_audio_infoframe_pack(info, buf, sizeof(buf));
+ 		hdmi_write(hdmi, REG_HDMI_AUDIO_INFO0,
+-				(buf[3] <<  0) || (buf[4] <<  8) ||
+-				(buf[5] << 16) || (buf[6] << 24));
++				((buf[3] <<  0) != 0) || ((buf[4] <<  8) != 0) ||
++				((buf[5] << 16) != 0) || ((buf[6] << 24) != 0));
+ 		hdmi_write(hdmi, REG_HDMI_AUDIO_INFO1,
+-				(buf[7] <<  0) || (buf[8] << 8));
++				((buf[7] <<  0) != 0) || ((buf[8] << 8) != 0));
+ 
+ 		hdmi_write(hdmi, REG_HDMI_GC, 0);
+ 
+diff --git a/drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c b/drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c
+index 96e0941c8edd..e3c104728847 100644
+--- a/drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c
++++ b/drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c
+@@ -130,7 +130,7 @@ read_pll(struct gt215_clk *clk, int idx, u32 pll)
+ 		sclk = read_clk(clk, 0x10 + idx, false);
+ 	}
+ 
+-	if (M * P)
++	if (M * P != 0)
+ 		return sclk * N / (M * P);
+ 
+ 	return 0;
+diff --git a/drivers/ide/ide-timings.c b/drivers/ide/ide-timings.c
+index 0e05f75934c9..45b7701d2263 100644
+--- a/drivers/ide/ide-timings.c
++++ b/drivers/ide/ide-timings.c
+@@ -104,7 +104,7 @@ u16 ide_pio_cycle_time(ide_drive_t *drive, u8 pio)
+ EXPORT_SYMBOL_GPL(ide_pio_cycle_time);
+ 
+ #define ENOUGH(v, unit)		(((v) - 1) / (unit) + 1)
+-#define EZ(v, unit)		((v) ? ENOUGH(v, unit) : 0)
++#define EZ(v, unit)		(((v) != 0) ? ENOUGH(v, unit) : 0)
+ 
+ static void ide_timing_quantize(struct ide_timing *t, struct ide_timing *q,
+ 				int T, int UT)
+diff --git a/drivers/infiniband/core/uverbs.h b/drivers/infiniband/core/uverbs.h
+index 64d494a64daf..9fb40484d10a 100644
+--- a/drivers/infiniband/core/uverbs.h
++++ b/drivers/infiniband/core/uverbs.h
+@@ -57,8 +57,8 @@
+ 
+ #define INIT_UDATA_BUF_OR_NULL(udata, ibuf, obuf, ilen, olen)			\
+ 	do {									\
+-		(udata)->inbuf  = (ilen) ? (const void __user *) (ibuf) : NULL;	\
+-		(udata)->outbuf = (olen) ? (void __user *) (obuf) : NULL;	\
++		(udata)->inbuf  = (ilen) != 0 ? (const void __user *) (ibuf) : NULL;	\
++		(udata)->outbuf = (olen) != 0 ? (void __user *) (obuf) : NULL;	\
+ 		(udata)->inlen  = (ilen);					\
+ 		(udata)->outlen = (olen);					\
+ 	} while (0)
+diff --git a/drivers/input/misc/adxl34x.c b/drivers/input/misc/adxl34x.c
+index 2b2d02f408bb..0e991398409a 100644
+--- a/drivers/input/misc/adxl34x.c
++++ b/drivers/input/misc/adxl34x.c
+@@ -796,7 +796,7 @@ struct adxl34x *adxl34x_probe(struct device *dev, int irq,
+ 
+ 	if (pdata->watermark) {
+ 		ac->int_mask |= WATERMARK;
+-		if (!FIFO_MODE(pdata->fifo_mode))
++		if (0 != FIFO_MODE(pdata->fifo_mode))
+ 			ac->pdata.fifo_mode |= FIFO_STREAM;
+ 	} else {
+ 		ac->int_mask |= DATA_READY;
+diff --git a/drivers/media/rc/imon.c b/drivers/media/rc/imon.c
+index 3489010601b5..62b1c3a53782 100644
+--- a/drivers/media/rc/imon.c
++++ b/drivers/media/rc/imon.c
+@@ -1722,7 +1722,7 @@ static void imon_incoming_scancode(struct imon_context *ictx,
+ 	if (kc == KEY_KEYBOARD && !ictx->release_code) {
+ 		ictx->last_keycode = kc;
+ 		if (!nomouse) {
+-			ictx->pad_mouse = ~(ictx->pad_mouse) & 0x1;
++			ictx->pad_mouse = !ictx->pad_mouse; /* gcc 7 -Wbool-operation warning */
+ 			dev_dbg(dev, "toggling to %s mode\n",
+ 				ictx->pad_mouse ? "mouse" : "keyboard");
+ 			spin_unlock_irqrestore(&ictx->kc_lock, flags);
+diff --git a/drivers/staging/iio/resolver/ad2s1210.c b/drivers/staging/iio/resolver/ad2s1210.c
+index a6a8393d6664..6610f3d776aa 100644
+--- a/drivers/staging/iio/resolver/ad2s1210.c
++++ b/drivers/staging/iio/resolver/ad2s1210.c
+@@ -472,7 +472,7 @@ static int ad2s1210_read_raw(struct iio_dev *indio_dev,
+ 			     long m)
+ {
+ 	struct ad2s1210_state *st = iio_priv(indio_dev);
+-	bool negative;
++	unsigned int negative; /* BUG? with gcc 7 -Wint-in-bool-context */
+ 	int ret = 0;
+ 	u16 pos;
+ 	s16 vel;
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index 687ebb053438..41d7979d81c5 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -1048,7 +1048,7 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ 
+ 	for (i = 0; i < (128 - edid[2]) / DETAILED_TIMING_DESCRIPTION_SIZE;
+ 	     i++, block += DETAILED_TIMING_DESCRIPTION_SIZE)
+-		if (PIXEL_CLOCK)
++		if (PIXEL_CLOCK != 0)
+ 			edt[num++] = block - edid;
+ 
+ 	/* Yikes, EDID data is totally useless */
+diff --git a/fs/xfs/xfs_bmap_util.c b/fs/xfs/xfs_bmap_util.c
+index 9e3cc2146d5b..86b2eb725e46 100644
+--- a/fs/xfs/xfs_bmap_util.c
++++ b/fs/xfs/xfs_bmap_util.c
+@@ -1617,7 +1617,7 @@ xfs_swap_extents_check_format(
+ 	 * extent format...
+ 	 */
+ 	if (tip->i_d.di_format == XFS_DINODE_FMT_BTREE) {
+-		if (XFS_IFORK_BOFF(ip) &&
++		if (XFS_IFORK_BOFF(ip) != 0 &&
+ 		    XFS_BMAP_BMDR_SPACE(tip->i_df.if_broot) > XFS_IFORK_BOFF(ip))
+ 			return -EINVAL;
+ 		if (XFS_IFORK_NEXTENTS(tip, XFS_DATA_FORK) <=
+@@ -1627,7 +1627,7 @@ xfs_swap_extents_check_format(
+ 
+ 	/* Reciprocal target->temp btree format checks */
+ 	if (ip->i_d.di_format == XFS_DINODE_FMT_BTREE) {
+-		if (XFS_IFORK_BOFF(tip) &&
++		if (XFS_IFORK_BOFF(tip) != 0 &&
+ 		    XFS_BMAP_BMDR_SPACE(ip->i_df.if_broot) > XFS_IFORK_BOFF(tip))
+ 			return -EINVAL;
+ 		if (XFS_IFORK_NEXTENTS(ip, XFS_DATA_FORK) <=
+diff --git a/include/linux/iopoll.h b/include/linux/iopoll.h
+index d29e1e21bf3f..c76e45d269f8 100644
+--- a/include/linux/iopoll.h
++++ b/include/linux/iopoll.h
+@@ -48,7 +48,7 @@
+ 		(val) = op(addr); \
+ 		if (cond) \
+ 			break; \
+-		if (timeout_us && ktime_compare(ktime_get(), timeout) > 0) { \
++		if ((timeout_us) != 0 && ktime_compare(ktime_get(), timeout) > 0) { \
+ 			(val) = op(addr); \
+ 			break; \
+ 		} \
+diff --git a/include/linux/regmap.h b/include/linux/regmap.h
+index e88649225a60..05315bcf016f 100644
+--- a/include/linux/regmap.h
++++ b/include/linux/regmap.h
+@@ -129,7 +129,7 @@ struct reg_sequence {
+ 			break; \
+ 		if (cond) \
+ 			break; \
+-		if (timeout_us && ktime_compare(ktime_get(), timeout) > 0) { \
++		if ((timeout_us) != 0 && ktime_compare(ktime_get(), timeout) > 0) { \
+ 			pollret = regmap_read((map), (addr), &(val)); \
+ 			break; \
+ 		} \
+-- 
