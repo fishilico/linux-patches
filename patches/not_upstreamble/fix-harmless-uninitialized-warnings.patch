@@ -18,6 +18,7 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  drivers/misc/qcom-coincell.c                              | 4 ++++
  drivers/misc/sgi-xp/xpc_partition.c                       | 2 +-
  drivers/net/ethernet/sun/niu.c                            | 1 +
+ drivers/net/sb1000.c                                      | 2 +-
  drivers/net/wireless/broadcom/b43/phy_lp.c                | 2 +-
  drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c | 4 +++-
  drivers/pwm/pwm-img.c                                     | 2 +-
@@ -34,7 +35,7 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  net/mac80211/mlme.c                                       | 2 +-
  net/mac80211/tx.c                                         | 2 +-
  net/tipc/socket.c                                         | 3 ++-
- 29 files changed, 49 insertions(+), 22 deletions(-)
+ 30 files changed, 50 insertions(+), 23 deletions(-)
 
 diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
 index 8771766d46b6..df760ec0e44e 100644
@@ -49,10 +50,10 @@ index 8771766d46b6..df760ec0e44e 100644
  
  	/*
 diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
-index 1b5ee1e0e5a3..7e59874b46fe 100644
+index e414fabf7315..544a0a1df0b1 100644
 --- a/drivers/acpi/sysfs.c
 +++ b/drivers/acpi/sysfs.c
-@@ -574,6 +574,8 @@ static int get_status(u32 index, acpi_event_status *status,
+@@ -577,6 +577,8 @@ static int get_status(u32 index, acpi_event_status *status,
  		result = acpi_get_gpe_status(*handle, index, status);
  	} else if (index < (num_gpes + ACPI_NUM_FIXED_EVENTS))
  		result = acpi_get_event_status(index - num_gpes, status);
@@ -218,6 +219,19 @@ index 2dcca249eb9c..7e837281e8e6 100644
  					break;
  				}
  				ret = tcam_user_ip_class_set(np, class, 0,
+diff --git a/drivers/net/sb1000.c b/drivers/net/sb1000.c
+index 7820fced33f6..c99c06a9f9ec 100644
+--- a/drivers/net/sb1000.c
++++ b/drivers/net/sb1000.c
+@@ -742,7 +742,7 @@ sb1000_rx(struct net_device *dev)
+ {
+ 
+ #define FRAMESIZE 184
+-	unsigned char st[2], buffer[FRAMESIZE], session_id, frame_id;
++	unsigned char st[2] = {0, 0}, buffer[FRAMESIZE], session_id, frame_id;
+ 	short dlen;
+ 	int ioaddr, ns;
+ 	unsigned int skbsize;
 diff --git a/drivers/net/wireless/broadcom/b43/phy_lp.c b/drivers/net/wireless/broadcom/b43/phy_lp.c
 index 6922cbb99a04..7f71ede46738 100644
 --- a/drivers/net/wireless/broadcom/b43/phy_lp.c

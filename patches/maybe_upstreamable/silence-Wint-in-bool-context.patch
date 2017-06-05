@@ -8,20 +8,37 @@ gcc 7 complains on "EZ(t->setup * 1000,  T);":
     drivers/ata/libata-core.c:3164:30: error: '*' in boolean context,
     suggest '&&' instead [-Werror=int-in-bool-context]
 ---
- drivers/ata/libata-core.c                       | 2 +-
- drivers/gpu/drm/msm/hdmi/hdmi_audio.c           | 6 +++---
- drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c | 2 +-
- drivers/ide/ide-timings.c                       | 2 +-
- drivers/infiniband/core/uverbs.h                | 4 ++--
- drivers/input/misc/adxl34x.c                    | 2 +-
- drivers/media/rc/imon.c                         | 2 +-
- drivers/staging/iio/resolver/ad2s1210.c         | 2 +-
- drivers/video/fbdev/core/fbmon.c                | 2 +-
- fs/xfs/xfs_bmap_util.c                          | 4 ++--
- include/linux/iopoll.h                          | 2 +-
- include/linux/regmap.h                          | 2 +-
- 12 files changed, 16 insertions(+), 16 deletions(-)
+ arch/x86/math-emu/fpu_emu.h                                         | 4 ++--
+ drivers/ata/libata-core.c                                           | 2 +-
+ drivers/gpu/drm/msm/hdmi/hdmi_audio.c                               | 6 +++---
+ drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c                     | 2 +-
+ drivers/ide/ide-timings.c                                           | 2 +-
+ drivers/infiniband/core/uverbs.h                                    | 4 ++--
+ drivers/input/misc/adxl34x.c                                        | 2 +-
+ drivers/media/rc/imon.c                                             | 2 +-
+ drivers/staging/iio/resolver/ad2s1210.c                             | 2 +-
+ .../pci/atomisp2/css2400/hive_isp_css_include/math_support.h        | 4 ++--
+ drivers/video/fbdev/core/fbmon.c                                    | 2 +-
+ fs/xfs/xfs_bmap_util.c                                              | 4 ++--
+ include/linux/iopoll.h                                              | 2 +-
+ include/linux/regmap.h                                              | 2 +-
+ 14 files changed, 20 insertions(+), 20 deletions(-)
 
+diff --git a/arch/x86/math-emu/fpu_emu.h b/arch/x86/math-emu/fpu_emu.h
+index afbc4d805d66..50c70df04d45 100644
+--- a/arch/x86/math-emu/fpu_emu.h
++++ b/arch/x86/math-emu/fpu_emu.h
+@@ -157,8 +157,8 @@ extern u_char const data_sizes_16[32];
+ 
+ #define signbyte(a) (((u_char *)(a))[9])
+ #define getsign(a) (signbyte(a) & 0x80)
+-#define setsign(a,b) { if (b) signbyte(a) |= 0x80; else signbyte(a) &= 0x7f; }
+-#define copysign(a,b) { if (getsign(a)) signbyte(b) |= 0x80; \
++#define setsign(a,b) { if ((b) != 0) signbyte(a) |= 0x80; else signbyte(a) &= 0x7f; }
++#define copysign(a,b) { if (getsign(a) != 0) signbyte(b) |= 0x80; \
+                         else signbyte(b) &= 0x7f; }
+ #define changesign(a) { signbyte(a) ^= 0x80; }
+ #define setpositive(a) { signbyte(a) &= 0x7f; }
 diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
 index 2d83b8c75965..8ccc635ced62 100644
 --- a/drivers/ata/libata-core.c
@@ -133,6 +150,22 @@ index a6a8393d6664..6610f3d776aa 100644
  	int ret = 0;
  	u16 pos;
  	s16 vel;
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/math_support.h b/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/math_support.h
+index 48d84bc0ad9e..8fd6c3aa9e68 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/math_support.h
++++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/math_support.h
+@@ -62,9 +62,9 @@
+ #define MAX(a, b)            (((a) > (b)) ? (a) : (b))
+ #define MIN(a, b)            (((a) < (b)) ? (a) : (b))
+ #ifdef ISP2401
+-#define ROUND_DIV(a, b)      ((b) ? ((a) + ((b) >> 1)) / (b) : 0)
++#define ROUND_DIV(a, b)      ((b) != 0 ? ((a) + ((b) >> 1)) / (b) : 0)
+ #endif
+-#define CEIL_DIV(a, b)       ((b) ? ((a) + (b) - 1) / (b) : 0)
++#define CEIL_DIV(a, b)       ((b) != 0 ? ((a) + (b) - 1) / (b) : 0)
+ #define CEIL_MUL(a, b)       (CEIL_DIV(a, b) * (b))
+ #define CEIL_MUL2(a, b)      (((a) + (b) - 1) & ~((b) - 1))
+ #define CEIL_SHIFT(a, b)     (((a) + (1 << (b)) - 1)>>(b))
 diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
 index 687ebb053438..41d7979d81c5 100644
 --- a/drivers/video/fbdev/core/fbmon.c

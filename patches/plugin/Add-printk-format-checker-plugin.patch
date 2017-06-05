@@ -30,10 +30,10 @@ This plugin helped to detect the following bugs:
  fs/reiserfs/Makefile                               |  16 +
  net/ipv4/sysctl_net_ipv4.c                         |   2 +-
  scripts/Makefile.gcc-plugins                       |   5 +
- scripts/gcc-plugins/printk_format_plugin.c         | 782 +++++++++++++++++++++
+ scripts/gcc-plugins/printk_format_plugin.c         | 778 +++++++++++++++++++++
  sound/soc/intel/haswell/sst-haswell-dsp.c          |   4 +-
  sound/soc/sh/dma-sh7760.c                          |   2 +-
- 24 files changed, 851 insertions(+), 31 deletions(-)
+ 24 files changed, 847 insertions(+), 31 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -68,7 +68,7 @@ index cd375503f7b0..c4662c39c205 100644
  		}
  	} else if (cmd_type == TYPE_MSG) {
 diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index 454bf9c34882..b945d19a3c60 100644
+index c16f74547804..61a56cb64562 100644
 --- a/drivers/block/rbd.c
 +++ b/drivers/block/rbd.c
 @@ -1947,10 +1947,15 @@ __rbd_osd_req_create(struct rbd_device *rbd_dev,
@@ -408,10 +408,10 @@ index 82335533620e..3962ec603972 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..6ee8367ce754
+index 000000000000..de3ad59a3622
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,782 @@
+@@ -0,0 +1,778 @@
 +/*
 + * Copyright 2016-2017 by Nicolas Iooss
 + *
@@ -910,19 +910,15 @@ index 000000000000..6ee8367ce754
 +	call_stmt = as_a_gcall(stmt);
 +	fntype = gimple_call_fntype(call_stmt);
 +	if (fntype == NULL_TREE) {
-+		/* This happens when calling var_arg() */
-+		if (gimple_call_internal_p(call_stmt) &&
-+		    gimple_call_internal_fn(call_stmt) == IFN_VA_ARG) {
-+			return;
-+		}
-+		/* Multiplication overflow */
-+		if (gimple_call_internal_p(call_stmt) &&
-+		    gimple_call_internal_fn(call_stmt) == IFN_MUL_OVERFLOW) {
++		/* This happens when calling var_arg(), multiplication
++		 * overflow, ASAN...
++		 */
++		if (gimple_call_internal_p(call_stmt)) {
 +			return;
 +		}
 +		warning_at(gimple_location(stmt), 0,
 +			   G_("Unable to get the function type\n"));
-+		/* debug_gimple_stmt(stmt); */
++		debug_gimple_stmt(stmt); /* TODO remove? */
 +		return;
 +	}
 +
