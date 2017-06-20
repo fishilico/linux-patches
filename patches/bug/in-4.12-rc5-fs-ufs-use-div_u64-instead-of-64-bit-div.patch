@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 17 Jun 2017 18:44:12 +0200
+Subject: [PATCH] {BUG in 4.12-rc5} fs/ufs: use div_u64 instead of 64-bit div
+
+x86-32 build has been broken since commit c596961d1b4c ("ufs: fix
+s_size/s_dsize users"):
+
+    Kernel: arch/x86/boot/bzImage is ready  (#1)
+      Building modules, stage 2.
+      MODPOST 6397 modules
+    ERROR: "__udivdi3" [fs/ufs/ufs.ko] undefined!
+---
+ fs/ufs/balloc.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/ufs/balloc.c b/fs/ufs/balloc.c
+index 0315fea1d589..023c61b92e90 100644
+--- a/fs/ufs/balloc.c
++++ b/fs/ufs/balloc.c
+@@ -459,7 +459,7 @@ u64 ufs_new_fragments(struct inode *inode, void *p, u64 fragment,
+ 	    case UFS_OPTSPACE:
+ 		request = newcount;
+ 		if (uspi->s_minfree < 5 || uspi->cs_total.cs_nffree
+-		    > uspi->s_dsize * uspi->s_minfree / (2 * 100))
++		    > div_u64(uspi->s_dsize * uspi->s_minfree, 2 * 100))
+ 			break;
+ 		usb1->fs_optim = cpu_to_fs32(sb, UFS_OPTTIME);
+ 		break;
+@@ -468,8 +468,8 @@ u64 ufs_new_fragments(struct inode *inode, void *p, u64 fragment,
+ 	
+ 	    case UFS_OPTTIME:
+ 		request = uspi->s_fpb;
+-		if (uspi->cs_total.cs_nffree < uspi->s_dsize *
+-		    (uspi->s_minfree - 2) / 100)
++		if (uspi->cs_total.cs_nffree < div_u64(uspi->s_dsize *
++		    (uspi->s_minfree - 2), 100))
+ 			break;
+ 		usb1->fs_optim = cpu_to_fs32(sb, UFS_OPTTIME);
+ 		break;
+-- 
