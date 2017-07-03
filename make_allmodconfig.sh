@@ -94,6 +94,28 @@ then
     CONFIG_TARGET=allyesconfig
 fi
 
+# Disable the specified warning in $KCFLAGS if it is supported by the compiler
+disable_in_kcflags() {
+    # shellcheck disable=SC2086
+    if $CC -Werror $KCFLAGS "-W$1" -E - < /dev/null >/dev/null 2>&1
+    then
+        KCFLAGS="$KCFLAGS -Wno-$1"
+    else
+        echo >&2 "Warning: unsupported CC ($CC) flag -W$1"
+    fi
+}
+
+# Disable the specified warning in $HOSTCFLAGS if it is supported by the compiler
+disable_in_hostcflags() {
+    # shellcheck disable=SC2086
+    if $HOSTCC -Werror $HOSTCFLAGS "-W$1" -E - < /dev/null >/dev/null 2>&1
+    then
+        HOSTCFLAGS="$HOSTCFLAGS -Wno-$1"
+    else
+        echo >&2 "Warning: unsupported HOSTCC ($HOSTCC) flag -W$1"
+    fi
+}
+
 # See also scripts/Makefile.extrawarn for extra warnings enabled with "make W=1, 2 or 3"
 
 export KCFLAGS='-Wall -Wextra -Werror'
@@ -104,108 +126,108 @@ KCFLAGS="$KCFLAGS -Wmissing-include-dirs"
 KCFLAGS="$KCFLAGS -Wmissing-prototypes"
 KCFLAGS="$KCFLAGS -Wstrict-prototypes"
 KCFLAGS="$KCFLAGS -Wunknown-pragmas"
-KCFLAGS="$KCFLAGS -Wno-aggregate-return" # Linux ktime_get returns a structure
-KCFLAGS="$KCFLAGS -Wno-cast-align" # Many struct casts change the alignment
-KCFLAGS="$KCFLAGS -Wno-deprecated-declarations"
-KCFLAGS="$KCFLAGS -Wno-empty-body" # if (conf) print_debug(...); with empty print_debug
-KCFLAGS="$KCFLAGS -Wno-format-nonliteral"
-KCFLAGS="$KCFLAGS -Wno-inline" # inline functions can make unlikely code bigger
-KCFLAGS="$KCFLAGS -Wno-missing-declarations" # Some drivers love inline without static
-KCFLAGS="$KCFLAGS -Wno-missing-field-initializers"
-KCFLAGS="$KCFLAGS -Wno-missing-include-dirs" # -Idir/only/in/src is expanded to include both directories in $(srcdir) and output
-KCFLAGS="$KCFLAGS -Wno-missing-prototypes" # There are way too many missing #include or static in the code to make this useful
-KCFLAGS="$KCFLAGS -Wno-nested-externs" # Linux uses nested externs
-KCFLAGS="$KCFLAGS -Wno-pointer-arith" # Linux does arithmetic on void pointers
-KCFLAGS="$KCFLAGS -Wno-pointer-sign" # Many functions implicitly cast pointers of different signedness
-KCFLAGS="$KCFLAGS -Wno-redundant-decls" # Some headers redefine things
-KCFLAGS="$KCFLAGS -Wno-shadow" # The kernel redefines built-in functions like ffs
-KCFLAGS="$KCFLAGS -Wno-sign-compare" # There are many comparaisons between signed and unsigned integers
-KCFLAGS="$KCFLAGS -Wno-trigraphs" # Ignore trigraphs like "??)"
-KCFLAGS="$KCFLAGS -Wno-type-limits" # Unsigned integers >= 0
-KCFLAGS="$KCFLAGS -Wno-unused-const-variable"
-KCFLAGS="$KCFLAGS -Wno-unused-function" # Make the build succeed when some static functions are not used
-KCFLAGS="$KCFLAGS -Wno-unused-parameter" # There is no __unused macro, and __maybe_unused is not the common headers
-KCFLAGS="$KCFLAGS -Wno-error=write-strings" # TODO, type acpi_string complicates things
+disable_in_kcflags 'aggregate-return' # Linux ktime_get returns a structure
+disable_in_kcflags 'cast-align' # Many struct casts change the alignment
+disable_in_kcflags 'deprecated-declarations'
+disable_in_kcflags 'empty-body' # if (conf) print_debug(...); with empty print_debug
+disable_in_kcflags 'format-nonliteral'
+disable_in_kcflags 'inline' # inline functions can make unlikely code bigger
+disable_in_kcflags 'missing-declarations' # Some drivers love inline without static
+disable_in_kcflags 'missing-field-initializers'
+disable_in_kcflags 'missing-include-dirs' # -Idir/only/in/src is expanded to include both directories in $(srcdir) and output
+disable_in_kcflags 'missing-prototypes' # There are way too many missing #include or static in the code to make this useful
+disable_in_kcflags 'nested-externs' # Linux uses nested externs
+disable_in_kcflags 'pointer-arith' # Linux does arithmetic on void pointers
+disable_in_kcflags 'pointer-sign' # Many functions implicitly cast pointers of different signedness
+disable_in_kcflags 'redundant-decls' # Some headers redefine things
+disable_in_kcflags 'shadow' # The kernel redefines built-in functions like ffs
+disable_in_kcflags 'sign-compare' # There are many comparaisons between signed and unsigned integers
+disable_in_kcflags 'trigraphs' # Ignore trigraphs like "??)"
+disable_in_kcflags 'type-limits' # Unsigned integers >= 0
+disable_in_kcflags 'unused-const-variable'
+disable_in_kcflags 'unused-function' # Make the build succeed when some static functions are not used
+disable_in_kcflags 'unused-parameter' # There is no __unused macro, and __maybe_unused is not the common headers
+disable_in_kcflags 'error=write-strings' # TODO, type acpi_string complicates things
 
 if $CC -v 2>&1 | grep -q clang
 then
     KCFLAGS="$KCFLAGS -Weverything"
-    KCFLAGS="$KCFLAGS -Wno-address-of-packed-member" # Linux takes references to unaligned members of packed structs
-    KCFLAGS="$KCFLAGS -Wno-bad-function-cast" # (unsigned long *)kernel_stack_pointer(...)
-    KCFLAGS="$KCFLAGS -Wno-c11-extensions" # Use C11 features
-    KCFLAGS="$KCFLAGS -Wno-c99-extensions" # Use C99 features
-    KCFLAGS="$KCFLAGS -Wno-c++-compat" # Empty structs exist
-    KCFLAGS="$KCFLAGS -Wno-class-varargs" # net/9p passes kuid_t/kgid_t in varargs
-    KCFLAGS="$KCFLAGS -Wno-comma" # There are legimitate uses like "while ((n = read(...)), n > 0)"
-    KCFLAGS="$KCFLAGS -Wno-constant-logical-operand" # Allow using CONFIG_... in logical expressions
-    KCFLAGS="$KCFLAGS -Wno-covered-switch-default" # Covered switch may use "default:BUG();"
-    KCFLAGS="$KCFLAGS -Wno-disabled-macro-expansion" # "inline" macro is recursive
-    KCFLAGS="$KCFLAGS -Wno-documentation" # don't check documentation strings
-    KCFLAGS="$KCFLAGS -Wno-documentation-unknown-command" # don't check documentation strings
-    KCFLAGS="$KCFLAGS -Wno-duplicate-decl-specifier" # "const typeof(var)" creates false positives in many places
-    KCFLAGS="$KCFLAGS -Wno-empty-translation-unit" # scripts/mod/empty.c is empty
-    KCFLAGS="$KCFLAGS -Wno-extended-offsetof" # Use offsetof(type, field.subfield)
-    KCFLAGS="$KCFLAGS -Wno-format-invalid-specifier" # clang doesn't know about %Zu
-    KCFLAGS="$KCFLAGS -Wno-format-zero-length" # The kernel uses "" format string
-    KCFLAGS="$KCFLAGS -Wno-format-non-iso" # "%Lx" is not ISO C
-    KCFLAGS="$KCFLAGS -Wno-gnu-variable-sized-type-not-at-end" # Some structures defines "payload" fields in sub-structs
-    KCFLAGS="$KCFLAGS -Wno-keyword-macro" # "inline" macro hides a keyword
-    KCFLAGS="$KCFLAGS -Wno-ignored-attributes" # "aligned" attribute ignored sometimes
-    KCFLAGS="$KCFLAGS -Wno-ignored-optimization-argument" # Ignore unsupported -falign-jumps=1 and -falign-loops=1
-    KCFLAGS="$KCFLAGS -Wno-initializer-overrides" # Syscall tables
-    KCFLAGS="$KCFLAGS -Wno-language-extension-token" # Allow "inline"
-    KCFLAGS="$KCFLAGS -Wno-long-long" # Use "long long" type
-    KCFLAGS="$KCFLAGS -Wno-missing-noreturn" # It does not make sense to have boot functions (rest_init, cpu_idle_loop...) marked __noreturn
-    KCFLAGS="$KCFLAGS -Wno-missing-variable-declarations" # Global variables can miss a declaration
-    KCFLAGS="$KCFLAGS -Wno-overlength-strings" # Support loooooong strings
-    KCFLAGS="$KCFLAGS -Wno-packed" # Packing is much too implicit to be reported
-    KCFLAGS="$KCFLAGS -Wno-padded" # Some structures get padded
-    KCFLAGS="$KCFLAGS -Wno-pedantic" # Use modern C
-    KCFLAGS="$KCFLAGS -Wno-pointer-bool-conversion" # Some vectors are tested as null pointers
-    KCFLAGS="$KCFLAGS -Wno-reserved-id-macro" # Linux uses macros begining with underscore
-    KCFLAGS="$KCFLAGS -Wno-shift-negative-value" # Shifted negative numbers are like unsigned for Linux
-    KCFLAGS="$KCFLAGS -Wno-switch-bool" # It happens that bool are used in switch statements
-    KCFLAGS="$KCFLAGS -Wno-switch-enum" # Show values in switch on enum can be skipped
-    KCFLAGS="$KCFLAGS -Wno-tautological-compare" # Many unsigned variables are compared with 0
-    KCFLAGS="$KCFLAGS -Wno-unknown-pragmas" # Ignore GCC-specific #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
-    KCFLAGS="$KCFLAGS -Wno-unreachable-code" # Code can be unreachable depending on the config
-    KCFLAGS="$KCFLAGS -Wno-unreachable-code-break"
-    KCFLAGS="$KCFLAGS -Wno-unreachable-code-return"
-    KCFLAGS="$KCFLAGS -Wno-used-but-marked-unused" # inline functions are used
-    KCFLAGS="$KCFLAGS -Wno-varargs" # There are functions with u8 args before "...", which leads to undefined behavior
-    KCFLAGS="$KCFLAGS -Wno-variadic-macros" # Macros with ... in arguments
-    KCFLAGS="$KCFLAGS -Wno-vla" # Variable-length arrays are used in compile-time asserts
+    disable_in_kcflags 'address-of-packed-member' # Linux takes references to unaligned members of packed structs
+    disable_in_kcflags 'bad-function-cast' # (unsigned long *)kernel_stack_pointer(...)
+    disable_in_kcflags 'c11-extensions' # Use C11 features
+    disable_in_kcflags 'c99-extensions' # Use C99 features
+    disable_in_kcflags 'c++-compat' # Empty structs exist
+    disable_in_kcflags 'class-varargs' # net/9p passes kuid_t/kgid_t in varargs
+    disable_in_kcflags 'comma' # There are legimitate uses like "while ((n = read(...)), n > 0)"
+    disable_in_kcflags 'constant-logical-operand' # Allow using CONFIG_... in logical expressions
+    disable_in_kcflags 'covered-switch-default' # Covered switch may use "default:BUG();"
+    disable_in_kcflags 'disabled-macro-expansion' # "inline" macro is recursive
+    disable_in_kcflags 'documentation' # don't check documentation strings
+    disable_in_kcflags 'documentation-unknown-command' # don't check documentation strings
+    disable_in_kcflags 'duplicate-decl-specifier' # "const typeof(var)" creates false positives in many places
+    disable_in_kcflags 'empty-translation-unit' # scripts/mod/empty.c is empty
+    disable_in_kcflags 'extended-offsetof' # Use offsetof(type, field.subfield)
+    disable_in_kcflags 'format-invalid-specifier' # clang doesn't know about %Zu
+    disable_in_kcflags 'format-zero-length' # The kernel uses "" format string
+    disable_in_kcflags 'format-non-iso' # "%Lx" is not ISO C
+    disable_in_kcflags 'gnu-variable-sized-type-not-at-end' # Some structures defines "payload" fields in sub-structs
+    disable_in_kcflags 'keyword-macro' # "inline" macro hides a keyword
+    disable_in_kcflags 'ignored-attributes' # "aligned" attribute ignored sometimes
+    disable_in_kcflags 'ignored-optimization-argument' # Ignore unsupported -falign-jumps=1 and -falign-loops=1
+    disable_in_kcflags 'initializer-overrides' # Syscall tables
+    disable_in_kcflags 'language-extension-token' # Allow "inline"
+    disable_in_kcflags 'long-long' # Use "long long" type
+    disable_in_kcflags 'missing-noreturn' # It does not make sense to have boot functions (rest_init, cpu_idle_loop...) marked __noreturn
+    disable_in_kcflags 'missing-variable-declarations' # Global variables can miss a declaration
+    disable_in_kcflags 'overlength-strings' # Support loooooong strings
+    disable_in_kcflags 'packed' # Packing is much too implicit to be reported
+    disable_in_kcflags 'padded' # Some structures get padded
+    disable_in_kcflags 'pedantic' # Use modern C
+    disable_in_kcflags 'pointer-bool-conversion' # Some vectors are tested as null pointers
+    disable_in_kcflags 'reserved-id-macro' # Linux uses macros begining with underscore
+    disable_in_kcflags 'shift-negative-value' # Shifted negative numbers are like unsigned for Linux
+    disable_in_kcflags 'switch-bool' # It happens that bool are used in switch statements
+    disable_in_kcflags 'switch-enum' # Show values in switch on enum can be skipped
+    disable_in_kcflags 'tautological-compare' # Many unsigned variables are compared with 0
+    disable_in_kcflags 'unknown-pragmas' # Ignore GCC-specific #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+    disable_in_kcflags 'unreachable-code' # Code can be unreachable depending on the config
+    disable_in_kcflags 'unreachable-code-break'
+    disable_in_kcflags 'unreachable-code-return'
+    disable_in_kcflags 'used-but-marked-unused' # inline functions are used
+    disable_in_kcflags 'varargs' # There are functions with u8 args before "...", which leads to undefined behavior
+    disable_in_kcflags 'variadic-macros' # Macros with ... in arguments
+    disable_in_kcflags 'vla' # Variable-length arrays are used in compile-time asserts
 
     # Some things which maybe buggy but whose overhead would be too big to be patches
-    KCFLAGS="$KCFLAGS -Wno-assign-enum"
-    KCFLAGS="$KCFLAGS -Wno-cast-qual"
-    KCFLAGS="$KCFLAGS -Wno-conversion"
-    KCFLAGS="$KCFLAGS -Wno-conditional-uninitialized"
-    KCFLAGS="$KCFLAGS -Wno-parentheses-equality"
-    KCFLAGS="$KCFLAGS -Wno-shorten-64-to-32"
-    KCFLAGS="$KCFLAGS -Wno-sign-conversion"
-    KCFLAGS="$KCFLAGS -Wno-unneeded-internal-declaration"
-    KCFLAGS="$KCFLAGS -Wno-unused-macros" # TODO, macros defined in C files but not used
-    KCFLAGS="$KCFLAGS -Wno-shift-sign-overflow" # (1 << 31) is used a lot, but may be replaced by (1U << 31) globally to make this warning more useful
+    disable_in_kcflags 'assign-enum'
+    disable_in_kcflags 'cast-qual'
+    disable_in_kcflags 'conversion'
+    disable_in_kcflags 'conditional-uninitialized'
+    disable_in_kcflags 'parentheses-equality'
+    disable_in_kcflags 'shorten-64-to-32'
+    disable_in_kcflags 'sign-conversion'
+    disable_in_kcflags 'unneeded-internal-declaration'
+    disable_in_kcflags 'unused-macros' # TODO, macros defined in C files but not used
+    disable_in_kcflags 'shift-sign-overflow' # (1 << 31) is used a lot, but may be replaced by (1U << 31) globally to make this warning more useful
 
-    KCFLAGS="$KCFLAGS -Wno-error=constant-conversion" # TODO ?!? (~0UL in unsigned int)
-    KCFLAGS="$KCFLAGS -Wno-error=duplicate-enum" # TODO
-    KCFLAGS="$KCFLAGS -Wno-error=enum-conversion" # TODO ?!? (maybe not that important)
-    KCFLAGS="$KCFLAGS -Wno-error=gcc-compat" # TODO
-    KCFLAGS="$KCFLAGS -Wno-error=switch" # TODO, "overflow converting case value to switch condition type"
+    disable_in_kcflags 'error=constant-conversion' # TODO ?!? (~0UL in unsigned int)
+    disable_in_kcflags 'error=duplicate-enum' # TODO
+    disable_in_kcflags 'error=enum-conversion' # TODO ?!? (maybe not that important)
+    disable_in_kcflags 'error=gcc-compat' # TODO
+    disable_in_kcflags 'error=switch' # TODO, "overflow converting case value to switch condition type"
 elif $CC -v 2>&1 | grep -q 'gcc version'
 then
     KCFLAGS="$KCFLAGS -Wtrampolines"
     KCFLAGS="$KCFLAGS -Wjump-misses-init"
     KCFLAGS="$KCFLAGS -Wlogical-op"
-    KCFLAGS="$KCFLAGS -Wno-frame-address" # __builtin_return_address is called with a nonzero argument
-    KCFLAGS="$KCFLAGS -Wno-old-style-declaration" # inline does not have to be at the beginning of declarations
-    KCFLAGS="$KCFLAGS -Wno-override-init" # When defining syscall tables, overriding default value is mandatory
-    KCFLAGS="$KCFLAGS -Wno-maybe-uninitialized" # There are too many false positives with gcc 5.2
-    KCFLAGS="$KCFLAGS -Wno-unused-but-set-variable" # Many variables are never used
+    disable_in_kcflags 'frame-address' # __builtin_return_address is called with a nonzero argument
+    disable_in_kcflags 'old-style-declaration' # inline does not have to be at the beginning of declarations
+    disable_in_kcflags 'override-init' # When defining syscall tables, overriding default value is mandatory
+    disable_in_kcflags 'maybe-uninitialized' # There are too many false positives with gcc 5.2
+    disable_in_kcflags 'unused-but-set-variable' # Many variables are never used
 
-    KCFLAGS="$KCFLAGS -Wno-error=jump-misses-init" # The compiler is not smart enough in many cases
-    KCFLAGS="$KCFLAGS -Wno-error=logical-op"
+    disable_in_kcflags 'error=jump-misses-init' # The compiler is not smart enough in many cases
+    disable_in_kcflags 'error=logical-op'
 else
     echo >&2 "Unknown compiler $CC"
     exit 1
@@ -230,61 +252,61 @@ HOSTCFLAGS="$HOSTCFLAGS -Wredundant-decls"
 HOSTCFLAGS="$HOSTCFLAGS -Wstrict-prototypes"
 HOSTCFLAGS="$HOSTCFLAGS -Wunknown-pragmas"
 HOSTCFLAGS="$HOSTCFLAGS -Wwrite-strings"
-HOSTCFLAGS="$HOSTCFLAGS -Wno-aggregate-return" # str_new() returns struct gstr
-HOSTCFLAGS="$HOSTCFLAGS -Wno-cast-align"
-HOSTCFLAGS="$HOSTCFLAGS -Wno-format-nonliteral"
-HOSTCFLAGS="$HOSTCFLAGS -Wno-missing-field-initializers"
-HOSTCFLAGS="$HOSTCFLAGS -Wno-missing-include-dirs" # same as KCFLAGS
-HOSTCFLAGS="$HOSTCFLAGS -Wno-shadow"
-HOSTCFLAGS="$HOSTCFLAGS -Wno-sign-compare" # There are many comparaisons between signed and unsigned integers
-HOSTCFLAGS="$HOSTCFLAGS -Wno-unused-function" # Ignore missing code clean-up
-HOSTCFLAGS="$HOSTCFLAGS -Wno-unused-parameter"
+disable_in_hostcflags 'aggregate-return' # str_new() returns struct gstr
+disable_in_hostcflags 'cast-align'
+disable_in_hostcflags 'format-nonliteral'
+disable_in_hostcflags 'missing-field-initializers'
+disable_in_hostcflags 'missing-include-dirs' # same as KCFLAGS
+disable_in_hostcflags 'shadow'
+disable_in_hostcflags 'sign-compare' # There are many comparaisons between signed and unsigned integers
+disable_in_hostcflags 'unused-function' # Ignore missing code clean-up
+disable_in_hostcflags 'unused-parameter'
 
 if $HOSTCC -v 2>&1 | grep -q clang
 then
     HOSTCFLAGS="$HOSTCFLAGS -Weverything"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-c99-extensions"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-cast-qual" # Some pointer casts don't specify const
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-comma" # There are legimitate uses like "while ((n = read(...)), n > 0)"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-covered-switch-default" # Some switch one enums cover all values
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-disabled-macro-expansion" # Linux has recursive macros
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-documentation"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-documentation-unknown-command"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-gnu-conditional-omitted-operand" # "value ? : default" construction
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-gnu-empty-initializer"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-gnu-statement-expression"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-gnu-zero-variadic-macro-arguments"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-incompatible-pointer-types-discards-qualifiers" # constant strings get assigned to char* variables
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-language-extension-token" # "inline"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-long-long"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-overlength-strings" # Some string literals have more that 509 characters
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-padded"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-pedantic"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-reserved-id-macro" # Some macros begins with underscore
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-switch-enum" # Show values in switch on enum can be skipped
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-unreachable-code-break"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-unused-macros"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-variadic-macros"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-vla" # Variable-length arrays are used in some host programs
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-zero-length-array" # Some structures has zero-length arrays
+    disable_in_hostcflags 'c99-extensions'
+    disable_in_hostcflags 'cast-qual' # Some pointer casts don't specify const
+    disable_in_hostcflags 'comma' # There are legimitate uses like "while ((n = read(...)), n > 0)"
+    disable_in_hostcflags 'covered-switch-default' # Some switch one enums cover all values
+    disable_in_hostcflags 'disabled-macro-expansion' # Linux has recursive macros
+    disable_in_hostcflags 'documentation'
+    disable_in_hostcflags 'documentation-unknown-command'
+    disable_in_hostcflags 'gnu-conditional-omitted-operand' # "value ? : default" construction
+    disable_in_hostcflags 'gnu-empty-initializer'
+    disable_in_hostcflags 'gnu-statement-expression'
+    disable_in_hostcflags 'gnu-zero-variadic-macro-arguments'
+    disable_in_hostcflags 'incompatible-pointer-types-discards-qualifiers' # constant strings get assigned to char* variables
+    disable_in_hostcflags 'language-extension-token' # "inline"
+    disable_in_hostcflags 'long-long'
+    disable_in_hostcflags 'overlength-strings' # Some string literals have more that 509 characters
+    disable_in_hostcflags 'padded'
+    disable_in_hostcflags 'pedantic'
+    disable_in_hostcflags 'reserved-id-macro' # Some macros begins with underscore
+    disable_in_hostcflags 'switch-enum' # Show values in switch on enum can be skipped
+    disable_in_hostcflags 'unreachable-code-break'
+    disable_in_hostcflags 'unused-macros'
+    disable_in_hostcflags 'variadic-macros'
+    disable_in_hostcflags 'vla' # Variable-length arrays are used in some host programs
+    disable_in_hostcflags 'zero-length-array' # Some structures has zero-length arrays
     # Too many occurences to have these in -Werror:
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-error=conditional-uninitialized"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-error=conversion"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-error=declaration-after-statement"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-error=missing-noreturn"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-error=missing-variable-declarations"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-error=sign-conversion"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-error=shorten-64-to-32"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-error=unreachable-code"
+    disable_in_hostcflags 'error=conditional-uninitialized'
+    disable_in_hostcflags 'error=conversion'
+    disable_in_hostcflags 'error=declaration-after-statement'
+    disable_in_hostcflags 'error=missing-noreturn'
+    disable_in_hostcflags 'error=missing-variable-declarations'
+    disable_in_hostcflags 'error=sign-conversion'
+    disable_in_hostcflags 'error=shorten-64-to-32'
+    disable_in_hostcflags 'error=unreachable-code'
 elif $HOSTCC -v 2>&1 | grep -q 'gcc version'
 then
     HOSTCC="${HOSTCC:-gcc}"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-clobbered" # Flase positives of clobbered variables
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-discarded-qualifiers" # Many helper programs mix const char* in char* variables
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-inline" # Remove funny GCC warnings
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-pointer-arith" # Linux does arithmetic on void pointers
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-error=nested-externs"
-    HOSTCFLAGS="$HOSTCFLAGS -Wno-error=redundant-decls"
+    disable_in_hostcflags 'clobbered' # Flase positives of clobbered variables
+    disable_in_hostcflags 'discarded-qualifiers' # Many helper programs mix const char* in char* variables
+    disable_in_hostcflags 'inline' # Remove funny GCC warnings
+    disable_in_hostcflags 'pointer-arith' # Linux does arithmetic on void pointers
+    disable_in_hostcflags 'error=nested-externs'
+    disable_in_hostcflags 'error=redundant-decls'
 else
     echo >&2 "Unknown compiler $HOSTCC"
     exit 1
