@@ -220,7 +220,10 @@ then
     KCFLAGS="$KCFLAGS -Wtrampolines"
     KCFLAGS="$KCFLAGS -Wjump-misses-init"
     KCFLAGS="$KCFLAGS -Wlogical-op"
+    disable_in_kcflags 'format-overflow' # Many calls to snprintf may overflow
+    disable_in_kcflags 'format-truncation' # Many calls to snprintf may be truncated
     disable_in_kcflags 'frame-address' # __builtin_return_address is called with a nonzero argument
+    disable_in_kcflags 'implicit-fallthrough' # Many switch statements use fall-though cases
     disable_in_kcflags 'old-style-declaration' # inline does not have to be at the beginning of declarations
     disable_in_kcflags 'override-init' # When defining syscall tables, overriding default value is mandatory
     disable_in_kcflags 'maybe-uninitialized' # There are too many false positives with gcc 5.2
@@ -303,6 +306,7 @@ then
     HOSTCC="${HOSTCC:-gcc}"
     disable_in_hostcflags 'clobbered' # Flase positives of clobbered variables
     disable_in_hostcflags 'discarded-qualifiers' # Many helper programs mix const char* in char* variables
+    disable_in_hostcflags 'implicit-fallthrough' # Many switch statements use fall-though cases
     disable_in_hostcflags 'inline' # Remove funny GCC warnings
     disable_in_hostcflags 'pointer-arith' # Linux does arithmetic on void pointers
     disable_in_hostcflags 'error=nested-externs'
