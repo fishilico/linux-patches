@@ -48,21 +48,21 @@ grsecurity kernels warns:
  8 files changed, 19 insertions(+), 19 deletions(-)
 
 diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
-index 1be59a3a521c..7fa8f2bec626 100644
+index fc9485d79061..643ca3fca3d1 100644
 --- a/Documentation/kobject.txt
 +++ b/Documentation/kobject.txt
-@@ -116,7 +116,7 @@ Initialization of kobjects
+@@ -118,7 +118,7 @@ Initialization of kobjects
  Code which creates a kobject must, of course, initialize that object. Some
- of the internal fields are setup with a (mandatory) call to kobject_init():
+ of the internal fields are setup with a (mandatory) call to kobject_init()::
  
 -    void kobject_init(struct kobject *kobj, struct kobj_type *ktype);
 +    void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
  
  The ktype is required for a kobject to be created properly, as every kobject
  must have an associated kobj_type.  After calling kobject_init(), to
-@@ -153,7 +153,7 @@ kobject_name():
+@@ -156,7 +156,7 @@ kobject_name()::
  There is a helper function to both initialize and add the kobject to the
- kernel at the same time, called surprisingly enough kobject_init_and_add():
+ kernel at the same time, called surprisingly enough kobject_init_and_add()::
  
 -    int kobject_init_and_add(struct kobject *kobj, struct kobj_type *ktype,
 +    int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
@@ -70,7 +70,7 @@ index 1be59a3a521c..7fa8f2bec626 100644
  
  The arguments are the same as the individual kobject_init() and
 diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 6470eb8088f4..ff3343f6d5dd 100644
+index e162c9a789ba..0434218109ce 100644
 --- a/drivers/base/bus.c
 +++ b/drivers/base/bus.c
 @@ -156,14 +156,14 @@ static void bus_release(struct kobject *kobj)
@@ -91,7 +91,7 @@ index 6470eb8088f4..ff3343f6d5dd 100644
  	if (ktype == &bus_ktype)
  		return 1;
 diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 19a291279834..c73e75969a2f 100644
+index 3a9f2e97ffb9..b64defdea575 100644
 --- a/drivers/base/core.c
 +++ b/drivers/base/core.c
 @@ -839,7 +839,7 @@ static struct kobj_type device_ktype = {
@@ -104,7 +104,7 @@ index 19a291279834..c73e75969a2f 100644
  	if (ktype == &device_ktype) {
  		struct device *dev = kobj_to_dev(kobj);
 diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index ca85cb80e99a..491eaa6a01bd 100644
+index eeab34b0f589..1abb1e9bb023 100644
 --- a/include/linux/kobject.h
 +++ b/include/linux/kobject.h
 @@ -65,7 +65,7 @@ struct kobject {
@@ -142,7 +142,7 @@ index ca85cb80e99a..491eaa6a01bd 100644
  	return kobj->ktype;
  }
 diff --git a/include/linux/module.h b/include/linux/module.h
-index 21f56393602f..5ae01728ed8e 100644
+index 8eb9a1e693e5..88df192b3a04 100644
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
 @@ -757,7 +757,7 @@ static inline bool module_requested_async_probing(struct module *module)
@@ -235,10 +235,10 @@ index 763d70a18941..61976e0718f7 100644
  	.release = kset_release,
  };
 diff --git a/mm/slub.c b/mm/slub.c
-index 5feac88a3578..934961c637e1 100644
+index c3a71e02798f..b29e77dc23dd 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -5570,7 +5570,7 @@ static struct kobj_type slab_ktype = {
+@@ -5575,7 +5575,7 @@ static struct kobj_type slab_ktype = {
  
  static int uevent_filter(struct kset *kset, struct kobject *kobj)
  {

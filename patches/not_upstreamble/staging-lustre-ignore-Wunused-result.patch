@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 9 Jul 2017 15:54:41 +0200
+Subject: [PATCH] {NOT UPSTREAMABLE} staging/lustre: ignore -Wunused-result
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc for x86-64 complains:
+
+    drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c: In function
+    ‘kiblnd_send’:
+    drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c:1643:2:
+    error: ignoring return value of ‘copy_from_iter’, declared with
+    attribute warn_unused_result [-Werror=unused-result]
+      copy_from_iter(&ibmsg->ibm_u.immediate.ibim_payload, IBLND_MSG_SIZE,
+      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              &from);
+              ~~~~~~
+    drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c: In function
+    ‘kiblnd_recv’:
+    drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c:1744:3:
+    error: ignoring return value of ‘copy_to_iter’, declared with
+    attribute warn_unused_result [-Werror=unused-result]
+       copy_to_iter(&rxmsg->ibm_u.immediate.ibim_payload,
+       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+             IBLND_MSG_SIZE, to);
+             ~~~~~~~~~~~~~~~~~~~
+---
+ drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c b/drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c
+index 85b242ec5f9b..d5d5159eea00 100644
+--- a/drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c
++++ b/drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c
+@@ -1640,8 +1640,8 @@ kiblnd_send(struct lnet_ni *ni, void *private, struct lnet_msg *lntmsg)
+ 	ibmsg = tx->tx_msg;
+ 	ibmsg->ibm_u.immediate.ibim_hdr = *hdr;
+ 
+-	copy_from_iter(&ibmsg->ibm_u.immediate.ibim_payload, IBLND_MSG_SIZE,
+-		       &from);
++	if (copy_from_iter(&ibmsg->ibm_u.immediate.ibim_payload, IBLND_MSG_SIZE,
++		       &from)) {}
+ 	nob = offsetof(struct kib_immediate_msg, ibim_payload[payload_nob]);
+ 	kiblnd_init_tx_msg(ni, tx, IBLND_MSG_IMMEDIATE, nob);
+ 
+@@ -1741,8 +1741,8 @@ kiblnd_recv(struct lnet_ni *ni, void *private, struct lnet_msg *lntmsg,
+ 			break;
+ 		}
+ 
+-		copy_to_iter(&rxmsg->ibm_u.immediate.ibim_payload,
+-			     IBLND_MSG_SIZE, to);
++		if (copy_to_iter(&rxmsg->ibm_u.immediate.ibim_payload,
++			     IBLND_MSG_SIZE, to)) {}
+ 		lnet_finalize(ni, lntmsg, 0);
+ 		break;
+ 
+-- 

@@ -15,7 +15,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  drivers/block/drbd/drbd_int.h   |  2 +-
  drivers/input/joystick/analog.c |  6 +++++-
  include/asm-generic/uaccess.h   | 16 ++++++++++++++++
- include/linux/bug.h             | 12 ++++++++++++
+ include/linux/build_bug.h       | 14 ++++++++++++++
  include/linux/compiler.h        | 23 ++++++++++++++++++++++-
  include/linux/cpumask.h         |  5 +++++
  include/linux/crypto.h          | 11 +++++++++--
@@ -37,10 +37,10 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  kernel/time/time.c              |  8 ++++++++
  lib/hexdump.c                   | 13 +++++++++++--
  lib/rhashtable.c                |  7 +++++++
- 25 files changed, 146 insertions(+), 18 deletions(-)
+ 25 files changed, 148 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index d5da45bb03a6..6715f6217ceb 100644
+index d17b6e6393c7..98d06fa8b25c 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -51,7 +51,7 @@
@@ -70,7 +70,7 @@ index 3d8ff09eba57..452f247b57ef 100644
  #include <linux/i8253.h>
  
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
-index bbe4bb438e39..717675c58629 100644
+index 723e81a6c162..b914b1f52ae5 100644
 --- a/include/asm-generic/uaccess.h
 +++ b/include/asm-generic/uaccess.h
 @@ -73,6 +73,21 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
@@ -103,20 +103,22 @@ index bbe4bb438e39..717675c58629 100644
  
  #ifndef __put_user_fn
  
-diff --git a/include/linux/bug.h b/include/linux/bug.h
-index 687b557fc5eb..16f3d601ceff 100644
---- a/include/linux/bug.h
-+++ b/include/linux/bug.h
-@@ -13,6 +13,17 @@ enum bug_trap_type {
- struct pt_regs;
+diff --git a/include/linux/build_bug.h b/include/linux/build_bug.h
+index b7d22d60008a..01c07346e5b9 100644
+--- a/include/linux/build_bug.h
++++ b/include/linux/build_bug.h
+@@ -4,6 +4,19 @@
+ #include <linux/compiler.h>
  
  #ifdef __CHECKER__
 +#ifdef __FRAMAC__
++/* Use normal BUG_ON instead of BUILD_BUG_ON when analyzing code with Frama-C */
++#include <asm/bug.h>
 +#define __BUILD_BUG_ON_NOT_POWER_OF_2(n)	\
 +	BUILD_BUG_ON(((n) & ((n) - 1)) != 0)
 +#define BUILD_BUG_ON_NOT_POWER_OF_2(n) BUILD_BUG_ON((n) == 0 || (((n) & ((n) - 1)) != 0))
 +#define BUILD_BUG_ON_ZERO(e) (0)
-+#define BUILD_BUG_ON_NULL(e) (NULL)
++#define BUILD_BUG_ON_NULL(e) ((void *)0)
 +#define BUILD_BUG_ON_INVALID(e) ((void)0)
 +#define BUILD_BUG_ON_MSG(cond, msg) BUG_ON(cond)
 +#define BUILD_BUG_ON(condition) BUG_ON(condition)
@@ -125,16 +127,16 @@ index 687b557fc5eb..16f3d601ceff 100644
  #define __BUILD_BUG_ON_NOT_POWER_OF_2(n) (0)
  #define BUILD_BUG_ON_NOT_POWER_OF_2(n) (0)
  #define BUILD_BUG_ON_ZERO(e) (0)
-@@ -22,6 +33,7 @@ struct pt_regs;
+@@ -12,6 +25,7 @@
+ #define BUILD_BUG_ON_MSG(cond, msg) (0)
  #define BUILD_BUG_ON(condition) (0)
  #define BUILD_BUG() (0)
- #define MAYBE_BUILD_BUG_ON(cond) (0)
 +#endif /* __FRAMAC__ */
  #else /* __CHECKER__ */
  
  /* Force a compilation error if a constant expression is not a power of 2 */
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index a4281104a923..ed78f23e7287 100644
+index 8b1ce8f3ea23..4a3517236d82 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -3,7 +3,7 @@
@@ -146,7 +148,7 @@ index a4281104a923..ed78f23e7287 100644
  # define __user		__attribute__((noderef, address_space(1)))
  # define __kernel	__attribute__((address_space(0)))
  # define __safe		__attribute__((safe))
-@@ -103,6 +103,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
+@@ -99,6 +99,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
  #define __same_pointer_depths_with_volatile2_chk(p1, p2) do { } while (0)
  #endif
  
@@ -175,10 +177,10 @@ index a4281104a923..ed78f23e7287 100644
   * Generic compiler-dependent macros required for kernel
   * build go below this comment. Actual compiler/compiler version
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 2404ad238c0b..b603025be7c1 100644
+index 4bf4479a3a80..c85d37fc6ccf 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -789,9 +789,14 @@ set_cpu_active(unsigned int cpu, bool active)
+@@ -817,9 +817,14 @@ set_cpu_active(unsigned int cpu, bool active)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -265,10 +267,10 @@ index 11366b3ff0b4..eb6e863039a6 100644
  		/*
  		 * This little trick makes sure that
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 516b98ac1c0d..d1f636855b06 100644
+index 413262161a91..6f32ee54acbf 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
-@@ -14,6 +14,9 @@
+@@ -15,6 +15,9 @@
  #include <asm/byteorder.h>
  #include <uapi/linux/kernel.h>
  
@@ -278,7 +280,7 @@ index 516b98ac1c0d..d1f636855b06 100644
  #define USHRT_MAX	((u16)(~0U))
  #define SHRT_MAX	((s16)(USHRT_MAX>>1))
  #define SHRT_MIN	((s16)(-SHRT_MAX - 1))
-@@ -26,6 +29,7 @@
+@@ -27,6 +30,7 @@
  #define LLONG_MAX	((long long)(~0ULL>>1))
  #define LLONG_MIN	(-LLONG_MAX - 1)
  #define ULLONG_MAX	(~0ULL)
@@ -286,7 +288,7 @@ index 516b98ac1c0d..d1f636855b06 100644
  #define SIZE_MAX	(~(size_t)0)
  
  #define U8_MAX		((u8)~0U)
-@@ -222,6 +226,10 @@ extern int _cond_resched(void);
+@@ -223,6 +227,10 @@ extern int _cond_resched(void);
   *
   * Return: an absolute value of x.
   */
@@ -297,7 +299,7 @@ index 516b98ac1c0d..d1f636855b06 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -236,6 +244,7 @@ extern int _cond_resched(void);
+@@ -237,6 +245,7 @@ extern int _cond_resched(void);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -337,7 +339,7 @@ index db2f3f454a1b..5124ce3698dc 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 8039f9f0ca05..b046d5b88538 100644
+index 4869e66dd659..b1ec72cc5572 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -116,6 +116,8 @@ typedef int __bitwise pci_power_t;
@@ -358,7 +360,7 @@ index 8039f9f0ca05..b046d5b88538 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 17282c92b5a6..d7ef0deb94de 100644
+index 169dbabfbb01..bb3d93741e5f 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -192,6 +192,12 @@ extern struct trace_event_functions exit_syscall_print_funcs;
@@ -477,10 +479,10 @@ index 8a532050043f..10720bab7e4b 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 45b4c1ffe14e..d5bb69fb1875 100644
+index caed9133ae52..1ad5c6cd24c2 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1110,7 +1110,7 @@ static void print_fatal_signal(int signr)
+@@ -1111,7 +1111,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  
@@ -490,10 +492,10 @@ index 45b4c1ffe14e..d5bb69fb1875 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index 49c73c6ed648..c7d099c58753 100644
+index 44a8c1402133..bcfb9f05116e 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
-@@ -354,17 +354,21 @@ EXPORT_SYMBOL(mktime64);
+@@ -458,17 +458,21 @@ EXPORT_SYMBOL(mktime64);
  void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
@@ -515,7 +517,7 @@ index 49c73c6ed648..c7d099c58753 100644
  		nsec += NSEC_PER_SEC;
  		--sec;
  	}
-@@ -434,17 +438,21 @@ EXPORT_SYMBOL(ns_to_timeval);
+@@ -538,17 +542,21 @@ EXPORT_SYMBOL(ns_to_timeval);
  void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
@@ -583,10 +585,10 @@ index 992457b1284c..2751063061b2 100644
  			if (linebuflen < lx + 2)
  				goto overflow2;
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index 31fcd629441f..0a09732e9ec9 100644
+index a1fef68f3c1f..5b4772f3609b 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -788,8 +788,10 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+@@ -787,8 +787,10 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
  	bool rhlist = ht->rhlist;
  
  /* Variable "skip" is not initialized but not used when the goto is taken */
@@ -597,7 +599,7 @@ index 31fcd629441f..0a09732e9ec9 100644
  	if (p) {
  		if (!rhlist || !(list = rcu_dereference(list->next))) {
  			p = rcu_dereference(p->next);
-@@ -820,7 +822,12 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+@@ -819,7 +821,12 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
  		}
  
  next:

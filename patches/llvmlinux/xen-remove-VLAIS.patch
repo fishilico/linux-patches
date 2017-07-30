@@ -15,12 +15,12 @@ clang reports:
  1 file changed, 18 insertions(+), 14 deletions(-)
 
 diff --git a/arch/x86/xen/mmu_pv.c b/arch/x86/xen/mmu_pv.c
-index 1f386d7fdf70..e137d24587dc 100644
+index cab28cf2cffb..ef1e2d6f87ef 100644
 --- a/arch/x86/xen/mmu_pv.c
 +++ b/arch/x86/xen/mmu_pv.c
-@@ -1369,14 +1369,8 @@ static void xen_flush_tlb_others(const struct cpumask *cpus,
- 				 struct mm_struct *mm, unsigned long start,
- 				 unsigned long end)
+@@ -1363,14 +1363,8 @@ static void xen_flush_tlb_single(unsigned long addr)
+ static void xen_flush_tlb_others(const struct cpumask *cpus,
+ 				 const struct flush_tlb_info *info)
  {
 -	struct {
 -		struct mmuext_op op;
@@ -34,8 +34,8 @@ index 1f386d7fdf70..e137d24587dc 100644
 +	struct cpumask *mask;
  	struct multicall_space mcs;
  
- 	trace_xen_mmu_flush_tlb_others(cpus, mm, start, end);
-@@ -1384,21 +1378,31 @@ static void xen_flush_tlb_others(const struct cpumask *cpus,
+ 	trace_xen_mmu_flush_tlb_others(cpus, info->mm, info->start, info->end);
+@@ -1378,22 +1372,32 @@ static void xen_flush_tlb_others(const struct cpumask *cpus,
  	if (cpumask_empty(cpus))
  		return;		/* nothing to do */
  
@@ -61,11 +61,12 @@ index 1f386d7fdf70..e137d24587dc 100644
  
 -	args->op.cmd = MMUEXT_TLB_FLUSH_MULTI;
 +	op->cmd = MMUEXT_TLB_FLUSH_MULTI;
- 	if (end != TLB_FLUSH_ALL && (end - start) <= PAGE_SIZE) {
+ 	if (info->end != TLB_FLUSH_ALL &&
+ 	    (info->end - info->start) <= PAGE_SIZE) {
 -		args->op.cmd = MMUEXT_INVLPG_MULTI;
--		args->op.arg1.linear_addr = start;
+-		args->op.arg1.linear_addr = info->start;
 +		op->cmd = MMUEXT_INVLPG_MULTI;
-+		op->arg1.linear_addr = start;
++		op->arg1.linear_addr = info->start;
  	}
  
 -	MULTI_mmuext_op(mcs.mc, &args->op, 1, NULL, DOMID_SELF);

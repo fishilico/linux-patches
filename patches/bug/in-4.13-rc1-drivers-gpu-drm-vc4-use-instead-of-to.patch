@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 11 Jul 2017 19:04:52 +0200
+Subject: [PATCH] {BUG in 4.13-rc1} drivers/gpu/drm/vc4: use | instead of , to
+ do a bitwise or
+
+clang complains:
+
+    drivers/gpu/drm/vc4/vc4_plane.c:554:6: error: expression result
+    unused [-Werror,-Wunused-value]
+          VC4_SET_FIELD(0, SCALER_PITCH0_TILE_WIDTH_L),
+          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/gpu/drm/vc4/vc4_regs.h:20:12: note: expanded from macro
+    'VC4_SET_FIELD'
+        fieldval & field##_MASK;                                \
+        ~~~~~~~~ ^ ~~~~~~~~~~~~
+---
+ drivers/gpu/drm/vc4/vc4_plane.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/vc4/vc4_plane.c b/drivers/gpu/drm/vc4/vc4_plane.c
+index fa6809d8b0fe..c3fd5e33e32e 100644
+--- a/drivers/gpu/drm/vc4/vc4_plane.c
++++ b/drivers/gpu/drm/vc4/vc4_plane.c
+@@ -550,8 +550,8 @@ static int vc4_plane_mode_set(struct drm_plane *plane,
+ 	case DRM_FORMAT_MOD_BROADCOM_VC4_T_TILED:
+ 		tiling = SCALER_CTL0_TILING_256B_OR_T;
+ 
+-		pitch0 = (VC4_SET_FIELD(0, SCALER_PITCH0_TILE_Y_OFFSET),
+-			  VC4_SET_FIELD(0, SCALER_PITCH0_TILE_WIDTH_L),
++		pitch0 = (VC4_SET_FIELD(0, SCALER_PITCH0_TILE_Y_OFFSET) |
++			  VC4_SET_FIELD(0, SCALER_PITCH0_TILE_WIDTH_L) |
+ 			  VC4_SET_FIELD((vc4_state->src_w[0] + 31) >> 5,
+ 					SCALER_PITCH0_TILE_WIDTH_R));
+ 		break;
+-- 

@@ -39,6 +39,7 @@ This fixes errors like:
  drivers/net/hamradio/baycom_epp.c            |   5 +-
  drivers/net/hamradio/mkiss.c                 |  14 +--
  drivers/net/wan/z85230.c                     |   4 +-
+ drivers/remoteproc/keystone_remoteproc.c     |   5 +-
  drivers/scsi/esas2r/esas2r_log.c             |   6 +-
  drivers/scsi/fnic/fnic_trace.c               |   5 +-
  drivers/tty/n_hdlc.c                         |  22 +---
@@ -53,13 +54,14 @@ This fixes errors like:
  net/decnet/af_decnet.c                       |   5 +-
  net/ipx/af_ipx.c                             |  16 +--
  net/llc/af_llc.c                             |  13 +--
- 27 files changed, 166 insertions(+), 287 deletions(-)
+ security/apparmor/lib.c                      |   6 +-
+ 29 files changed, 171 insertions(+), 293 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
-index 91272db09fa3..4a5ec626604f 100644
+index 20f25539d572..00574cc2d16a 100644
 --- a/arch/arm/mach-omap2/board-n8x0.c
 +++ b/arch/arm/mach-omap2/board-n8x0.c
-@@ -117,7 +117,6 @@ static struct musb_hdrc_platform_data tusb_data = {
+@@ -115,7 +115,6 @@ static struct musb_hdrc_platform_data tusb_data = {
  static void __init n8x0_usb_init(void)
  {
  	int ret = 0;
@@ -67,7 +69,7 @@ index 91272db09fa3..4a5ec626604f 100644
  
  	/* PM companion chip power control pin */
  	ret = gpio_request_one(TUSB6010_GPIO_ENABLE, GPIOF_OUT_INIT_LOW,
-@@ -135,7 +134,7 @@ static void __init n8x0_usb_init(void)
+@@ -133,7 +132,7 @@ static void __init n8x0_usb_init(void)
  	if (ret != 0)
  		goto err;
  
@@ -171,7 +173,7 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 8ad91a01cbc8..1382e0d3e850 100644
+index 2a1fa10c6a98..c521a74e8c65 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
 @@ -528,15 +528,6 @@ static noinline int vmalloc_fault(unsigned long address)
@@ -419,7 +421,7 @@ index 41762db057f6..699a2f290cd3 100644
  	}
  }
 diff --git a/drivers/net/hamradio/mkiss.c b/drivers/net/hamradio/mkiss.c
-index 4a40a3d825b4..f5058104b1a1 100644
+index aec6c26563cf..ca690b76b642 100644
 --- a/drivers/net/hamradio/mkiss.c
 +++ b/drivers/net/hamradio/mkiss.c
 @@ -973,33 +973,25 @@ static struct tty_ldisc_ops ax_ldisc = {
@@ -477,6 +479,32 @@ index 2f0bd6955f33..f97887d41f81 100644
  	return 0;
  }
  module_init(z85230_init_driver);
+diff --git a/drivers/remoteproc/keystone_remoteproc.c b/drivers/remoteproc/keystone_remoteproc.c
+index 5f776bfd674a..1766605cbc88 100644
+--- a/drivers/remoteproc/keystone_remoteproc.c
++++ b/drivers/remoteproc/keystone_remoteproc.c
+@@ -374,7 +374,6 @@ static int keystone_rproc_probe(struct platform_device *pdev)
+ 	struct rproc *rproc;
+ 	int dsp_id;
+ 	char *fw_name = NULL;
+-	char *template = "keystone-dsp%d-fw";
+ 	int name_len = 0;
+ 	int ret = 0;
+ 
+@@ -390,11 +389,11 @@ static int keystone_rproc_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* construct a custom default fw name - subject to change in future */
+-	name_len = strlen(template); /* assuming a single digit alias */
++	name_len = strlen("keystone-dsp%d-fw"); /* assuming a single digit alias */
+ 	fw_name = devm_kzalloc(dev, name_len, GFP_KERNEL);
+ 	if (!fw_name)
+ 		return -ENOMEM;
+-	snprintf(fw_name, name_len, template, dsp_id);
++	snprintf(fw_name, name_len, "keystone-dsp%d-fw", dsp_id);
+ 
+ 	rproc = rproc_alloc(dev, dev_name(dev), &keystone_rproc_ops, fw_name,
+ 			    sizeof(*ksproc));
 diff --git a/drivers/scsi/esas2r/esas2r_log.c b/drivers/scsi/esas2r/esas2r_log.c
 index 3349670b09de..99a61ba3b070 100644
 --- a/drivers/scsi/esas2r/esas2r_log.c
@@ -504,10 +532,10 @@ index 3349670b09de..99a61ba3b070 100644
  				 (dev->driver ? dev->driver->name : "unknown"),
  				 (dev->bus ? dev->bus->name : "unknown"),
 diff --git a/drivers/scsi/fnic/fnic_trace.c b/drivers/scsi/fnic/fnic_trace.c
-index b5ac5381a0d7..be1f58734c86 100644
+index 4826f596cb31..223aca735a7d 100644
 --- a/drivers/scsi/fnic/fnic_trace.c
 +++ b/drivers/scsi/fnic/fnic_trace.c
-@@ -771,7 +771,7 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
+@@ -795,7 +795,7 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
  {
  	struct tm tm;
  	int j, i = 1, len;
@@ -516,7 +544,7 @@ index b5ac5381a0d7..be1f58734c86 100644
  	int ethhdr_len = sizeof(struct ethhdr) - 1;
  	int fcoehdr_len = sizeof(struct fcoe_hdr);
  	int fchdr_len = sizeof(struct fc_frame_header);
-@@ -783,10 +783,9 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
+@@ -807,10 +807,9 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
  
  	time64_to_tm(tdata->time_stamp.tv_sec, 0, &tm);
  
@@ -601,10 +629,10 @@ index f5335be344f6..7633253f07c6 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index d37c81f327e7..3d7c01a6247f 100644
+index 0886fe82e9c4..b6eff087b774 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1443,9 +1443,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1466,9 +1466,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  }
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
@@ -614,7 +642,7 @@ index d37c81f327e7..3d7c01a6247f 100644
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -1644,7 +1641,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -1668,7 +1665,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -1057,7 +1085,7 @@ index db6baf7cf6e9..f834c827338e 100644
  	}
  
 diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
-index 465cc24b41e5..7160cd4427bd 100644
+index 5d035c1f1156..a326d0a34f8c 100644
 --- a/net/appletalk/ddp.c
 +++ b/net/appletalk/ddp.c
 @@ -1906,9 +1906,6 @@ static unsigned char ddp_snap_id[] = { 0x08, 0x00, 0x07, 0x80, 0x9B };
@@ -1080,7 +1108,7 @@ index 465cc24b41e5..7160cd4427bd 100644
  	dev_add_pack(&ltalk_packet_type);
  	dev_add_pack(&ppptalk_packet_type);
 diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 65ea0ff4017c..c25451b6eefb 100644
+index b4f9922b6f23..b74bf2eaff35 100644
 --- a/net/core/net-sysfs.c
 +++ b/net/core/net-sysfs.c
 @@ -30,11 +30,6 @@
@@ -1185,16 +1213,16 @@ index 65ea0ff4017c..c25451b6eefb 100644
  
  static int change_tx_queue_len(struct net_device *dev, unsigned long new_len)
  {
-@@ -349,7 +344,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
+@@ -353,7 +348,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, change_tx_queue_len);
  }
--NETDEVICE_SHOW_RW(tx_queue_len, fmt_ulong);
-+NETDEVICE_SHOW_RW(tx_queue_len, "%lu\n");
+-NETDEVICE_SHOW_RW(tx_queue_len, fmt_dec);
++NETDEVICE_SHOW_RW(tx_queue_len, "%d\n");
  
  static int change_gro_flush_timeout(struct net_device *dev, unsigned long val)
  {
-@@ -366,7 +361,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
+@@ -370,7 +365,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, change_gro_flush_timeout);
  }
@@ -1203,7 +1231,7 @@ index 65ea0ff4017c..c25451b6eefb 100644
  
  static ssize_t ifalias_store(struct device *dev, struct device_attribute *attr,
  			     const char *buf, size_t len)
-@@ -417,7 +412,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
+@@ -421,7 +416,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_group);
  }
@@ -1212,7 +1240,7 @@ index 65ea0ff4017c..c25451b6eefb 100644
  static DEVICE_ATTR(netdev_group, S_IRUGO | S_IWUSR, group_show, group_store);
  
  static int change_proto_down(struct net_device *dev, unsigned long proto_down)
-@@ -431,7 +426,7 @@ static ssize_t proto_down_store(struct device *dev,
+@@ -435,7 +430,7 @@ static ssize_t proto_down_store(struct device *dev,
  {
  	return netdev_store(dev, attr, buf, len, change_proto_down);
  }
@@ -1221,7 +1249,7 @@ index 65ea0ff4017c..c25451b6eefb 100644
  
  static ssize_t phys_port_id_show(struct device *dev,
  				 struct device_attribute *attr, char *buf)
-@@ -552,7 +547,7 @@ static ssize_t netstat_show(const struct device *d,
+@@ -556,7 +551,7 @@ static ssize_t netstat_show(const struct device *d,
  		struct rtnl_link_stats64 temp;
  		const struct rtnl_link_stats64 *stats = dev_get_stats(dev, &temp);
  
@@ -1231,7 +1259,7 @@ index 65ea0ff4017c..c25451b6eefb 100644
  	read_unlock(&dev_base_lock);
  	return ret;
 diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
-index 405483a07efc..ba1d7fb2d1e8 100644
+index 73a0399dc7a2..c407ab80973c 100644
 --- a/net/decnet/af_decnet.c
 +++ b/net/decnet/af_decnet.c
 @@ -2361,14 +2361,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");
@@ -1251,7 +1279,7 @@ index 405483a07efc..ba1d7fb2d1e8 100644
  	rc = proto_register(&dn_proto, 1);
  	if (rc != 0)
 diff --git a/net/ipx/af_ipx.c b/net/ipx/af_ipx.c
-index fa31ef29e3fa..ebd08a734479 100644
+index ac598ec90589..cbd43e82520e 100644
 --- a/net/ipx/af_ipx.c
 +++ b/net/ipx/af_ipx.c
 @@ -1997,14 +1997,6 @@ static struct notifier_block ipx_dev_notifier = {
@@ -1334,4 +1362,28 @@ index c38d16f22d2a..02c3fe750292 100644
  		goto out_sysctl;
  	}
  	llc_add_pack(LLC_DEST_SAP, llc_sap_handler);
+diff --git a/security/apparmor/lib.c b/security/apparmor/lib.c
+index 08ca26bcca77..248989dfad08 100644
+--- a/security/apparmor/lib.c
++++ b/security/apparmor/lib.c
+@@ -213,16 +213,16 @@ void aa_perm_mask_to_str(char *str, const char *chrs, u32 mask)
+ 
+ void aa_audit_perm_names(struct audit_buffer *ab, const char **names, u32 mask)
+ {
+-	const char *fmt = "%s";
+ 	unsigned int i, perm = 1;
+ 	bool prev = false;
+ 
+ 	for (i = 0; i < 32; perm <<= 1, i++) {
+ 		if (mask & perm) {
+-			audit_log_format(ab, fmt, names[i]);
+ 			if (!prev) {
++				audit_log_format(ab, "%s", names[i]);
+ 				prev = true;
+-				fmt = " %s";
++			} else {
++				audit_log_format(ab, " %s", names[i]);
+ 			}
+ 		}
+ 	}
 -- 

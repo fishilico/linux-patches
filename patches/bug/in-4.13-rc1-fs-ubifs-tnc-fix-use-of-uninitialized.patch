@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 30 Jul 2017 13:41:59 +0200
+Subject: [PATCH] {BUG in 4.13-rc1} fs/ubifs/tnc: fix use of uninitialized
+ variable
+
+clang complains:
+
+    fs/ubifs/tnc.c:1887:6: error: variable 'err' is used uninitialized
+    whenever function 'search_dh_cookie' is called
+    [-Werror,-Wsometimes-uninitialized]
+            int err;
+            ~~~~^~~
+    fs/ubifs/tnc.c:1893:8: note: uninitialized use occurs here
+                    if (!err) {
+                         ^~~
+    fs/ubifs/tnc.c:1887:9: note: initialize the variable 'err' to
+    silence this warning
+            int err;
+                   ^
+                    = 0
+---
+ fs/ubifs/tnc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/ubifs/tnc.c b/fs/ubifs/tnc.c
+index 0a213dcba2a1..107d4b4a5626 100644
+--- a/fs/ubifs/tnc.c
++++ b/fs/ubifs/tnc.c
+@@ -1884,7 +1884,7 @@ static int search_dh_cookie(struct ubifs_info *c, const union ubifs_key *key,
+ 			    struct ubifs_dent_node *dent, uint32_t cookie,
+ 			    struct ubifs_znode **zn, int *n)
+ {
+-	int err;
++	int err = 0 /* BUG */;
+ 	struct ubifs_znode *znode = *zn;
+ 	struct ubifs_zbranch *zbr;
+ 	union ubifs_key *dkey;
+-- 

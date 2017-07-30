@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 5 Jul 2017 20:10:42 +0200
+Subject: [PATCH] {NOT UPSTREAMABLE} drivers/iio/pressure: silence
+ false-positive -Wsometimes-uninitialized
+
+This is reported by clang
+---
+ drivers/iio/pressure/zpa2326.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/iio/pressure/zpa2326.c b/drivers/iio/pressure/zpa2326.c
+index c92a95f9f52c..e4f7b2289897 100644
+--- a/drivers/iio/pressure/zpa2326.c
++++ b/drivers/iio/pressure/zpa2326.c
+@@ -888,7 +888,7 @@ static int zpa2326_wait_oneshot_completion(const struct iio_dev   *indio_dev,
+ 		zpa2326_warn(indio_dev, "no one shot interrupt occurred (%ld)",
+ 			     timeout);
+ 		ret = -ETIME;
+-	} else if (timeout < 0) {
++	} else /* if (timeout < 0) this is always true because timeout > 0 and !timeout were handled before */ {
+ 		zpa2326_warn(indio_dev,
+ 			     "wait for one shot interrupt cancelled");
+ 		ret = -ERESTARTSYS;
+-- 

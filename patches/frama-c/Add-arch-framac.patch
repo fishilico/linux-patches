@@ -4,7 +4,7 @@ Date: Tue, 27 Dec 2016 19:09:50 +0100
 Subject: [PATCH] {FRAMA-C} Add arch/framac
 
 ---
- arch/framac/Kconfig                    |  75 ++++++++++++++++++++
+ arch/framac/Kconfig                    |  76 ++++++++++++++++++++
  arch/framac/Makefile                   |  27 +++++++
  arch/framac/extra/Makefile             |  13 ++++
  arch/framac/extra/gen_lds_vars.sh      |  27 +++++++
@@ -15,7 +15,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/include/asm/dma-mapping.h  |  11 +++
  arch/framac/include/asm/elf.h          |  33 +++++++++
  arch/framac/include/asm/irqflags.h     |  15 ++++
- arch/framac/include/asm/pgtable.h      |  72 +++++++++++++++++++
+ arch/framac/include/asm/pgtable.h      |  74 +++++++++++++++++++
  arch/framac/include/asm/processor.h    |  40 +++++++++++
  arch/framac/include/asm/ptrace.h       |  23 ++++++
  arch/framac/include/asm/sigcontext.h   |  10 +++
@@ -37,7 +37,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/delay.c                |  27 +++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 ++++
- 33 files changed, 1014 insertions(+)
+ 33 files changed, 1017 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Makefile
  create mode 100644 arch/framac/extra/Makefile
@@ -74,14 +74,15 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
 
 diff --git a/arch/framac/Kconfig b/arch/framac/Kconfig
 new file mode 100644
-index 000000000000..5311df0ea348
+index 000000000000..0dca998fe315
 --- /dev/null
 +++ b/arch/framac/Kconfig
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,76 @@
 +comment "Linux Kernel Configuration for Frama-C"
 +
 +config FRAMA_C
 +	def_bool y
++	select ARCH_NO_COHERENT_DMA_MMAP
 +	select BUG
 +	select GENERIC_ATOMIC64
 +#	select GENERIC_CLOCKEVENTS
@@ -632,16 +633,14 @@ index 000000000000..2cf4035657f4
 +#endif /* _ASM_FRAMA_C_IRQFLAGS_H */
 diff --git a/arch/framac/include/asm/pgtable.h b/arch/framac/include/asm/pgtable.h
 new file mode 100644
-index 000000000000..d166994b33a5
+index 000000000000..27aba4123cd1
 --- /dev/null
 +++ b/arch/framac/include/asm/pgtable.h
-@@ -0,0 +1,72 @@
+@@ -0,0 +1,74 @@
 +#ifndef _ASM_FRAMA_C_PGTABLE_H
 +#define _ASM_FRAMA_C_PGTABLE_H
 +
 +#include <linux/mm_types.h>
-+#include <asm-generic/pgtable-nopud.h>
-+#include <asm-generic/pgtable.h>
 +
 +/* This definition usually lie in page.h, which we do not use (for NOMMU architecture) */
 +#define VM_DATA_DEFAULT_FLAGS (VM_READ | VM_WRITE | VM_EXEC | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
@@ -707,6 +706,10 @@ index 000000000000..d166994b33a5
 +{
 +	return (pte_t) { swp.val };
 +}
++
++#include <asm-generic/pgtable-nopud.h>
++#include <asm-generic/pgtable.h>
++
 +#endif /* _ASM_FRAMA_C_PGTABLE_H */
 diff --git a/arch/framac/include/asm/processor.h b/arch/framac/include/asm/processor.h
 new file mode 100644

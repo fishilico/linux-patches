@@ -7,8 +7,8 @@ Subject: [PATCH] {MAYBE UPS} Make request_module() callable without a format
 This avoid having to use %s when using format strings
 ---
  include/linux/kmod.h | 18 ++++++++++++------
- kernel/kmod.c        | 45 ++++++++++++++++++++++++++++++++++-----------
- 2 files changed, 46 insertions(+), 17 deletions(-)
+ kernel/kmod.c        | 44 +++++++++++++++++++++++++++++++++-----------
+ 2 files changed, 45 insertions(+), 17 deletions(-)
 
 diff --git a/include/linux/kmod.h b/include/linux/kmod.h
 index c4e441e00db5..5dceffff202e 100644
@@ -43,10 +43,10 @@ index c4e441e00db5..5dceffff202e 100644
  #endif
  
 diff --git a/kernel/kmod.c b/kernel/kmod.c
-index ebba5bd6f39e..4adfb0d7aa94 100644
+index 5c776cf5e4b0..e074adf5b076 100644
 --- a/kernel/kmod.c
 +++ b/kernel/kmod.c
-@@ -111,8 +111,7 @@ static int call_modprobe(const char *modname, int wait)
+@@ -124,8 +124,7 @@ static int call_modprobe(const char *modname, int wait)
  /**
   * __request_module - try to load a kernel module
   * @wait: wait (or not) for the operation to complete
@@ -56,7 +56,7 @@ index ebba5bd6f39e..4adfb0d7aa94 100644
   *
   * Load a module using the user mode module loader. The function returns
   * zero on success or a negative errno code or positive exit code from
-@@ -124,10 +123,8 @@ static int call_modprobe(const char *modname, int wait)
+@@ -137,10 +136,8 @@ static int call_modprobe(const char *modname, int wait)
   * If module auto-loading support is disabled then this function
   * becomes a no-operation.
   */
@@ -65,10 +65,10 @@ index ebba5bd6f39e..4adfb0d7aa94 100644
  {
 -	va_list args;
 -	char module_name[MODULE_NAME_LEN];
- 	unsigned int max_modprobes;
  	int ret;
- 	static atomic_t kmod_concurrent = ATOMIC_INIT(0);
-@@ -145,12 +142,6 @@ int __request_module(bool wait, const char *fmt, ...)
+ 
+ 	/*
+@@ -154,12 +151,6 @@ int __request_module(bool wait, const char *fmt, ...)
  	if (!modprobe_path[0])
  		return 0;
  
@@ -81,11 +81,10 @@ index ebba5bd6f39e..4adfb0d7aa94 100644
  	ret = security_kernel_module_request(module_name);
  	if (ret)
  		return ret;
-@@ -189,6 +180,38 @@ int __request_module(bool wait, const char *fmt, ...)
- 	return ret;
+@@ -183,6 +174,37 @@ int __request_module(bool wait, const char *fmt, ...)
  }
  EXPORT_SYMBOL(__request_module);
-+
+ 
 +/**
 + * __request_module_fmt - try to load a kernel module with a format string
 + * @wait: wait (or not) for the operation to complete

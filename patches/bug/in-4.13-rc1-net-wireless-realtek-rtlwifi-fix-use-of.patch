@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 8 Jul 2017 16:05:26 +0200
+Subject: [PATCH] {BUG in 4.13-rc1} net/wireless/realtek/rtlwifi: fix use of
+ uninitialized values
+
+clang complains:
+
+    drivers/net/wireless/realtek/rtlwifi/base.c:1665:6: error: variable
+    'agg_size' is used uninitialized whenever 'if' condition is false
+    [-Werror,-Wsometimes-uninitialized]
+            if (rtlpriv->cfg->ops->get_btc_status())
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/net/wireless/realtek/rtlwifi/base.c:1671:31: note:
+    uninitialized use occurs here
+                     reject_agg, ctrl_agg_size, agg_size);
+                                                ^~~~~~~~
+    drivers/net/wireless/realtek/rtlwifi/debug.h:186:17: note: expanded
+    from macro 'RT_TRACE'
+                           fmt, ##__VA_ARGS__)
+                                  ^~~~~~~~~~~
+    drivers/net/wireless/realtek/rtlwifi/base.c:1665:2: note: remove the
+    'if' if its condition is always true
+            if (rtlpriv->cfg->ops->get_btc_status())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/net/wireless/realtek/rtlwifi/base.c:1663:44: note:
+    initialize the variable 'agg_size' to silence this warning
+            u8 reject_agg, ctrl_agg_size = 0, agg_size;
+                                                      ^
+                                                       = '\0'
+    drivers/net/wireless/realtek/rtlwifi/base.c:1665:6: error: variable
+    'reject_agg' is used uninitialized whenever 'if' condition
+          is false [-Werror,-Wsometimes-uninitialized]
+            if (rtlpriv->cfg->ops->get_btc_status())
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/net/wireless/realtek/rtlwifi/base.c:1671:4: note:
+    uninitialized use occurs here
+                     reject_agg, ctrl_agg_size, agg_size);
+                     ^~~~~~~~~~
+    drivers/net/wireless/realtek/rtlwifi/debug.h:186:17: note: expanded
+    from macro 'RT_TRACE'
+                           fmt, ##__VA_ARGS__)
+                                  ^~~~~~~~~~~
+    drivers/net/wireless/realtek/rtlwifi/base.c:1665:2: note: remove the
+    'if' if its condition is always true
+            if (rtlpriv->cfg->ops->get_btc_status())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/net/wireless/realtek/rtlwifi/base.c:1663:15: note:
+    initialize the variable 'reject_agg' to silence this warning
+            u8 reject_agg, ctrl_agg_size = 0, agg_size;
+                         ^
+                          = '\0'
+---
+ drivers/net/wireless/realtek/rtlwifi/base.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/realtek/rtlwifi/base.c b/drivers/net/wireless/realtek/rtlwifi/base.c
+index e36ee592c660..d37024b5f01a 100644
+--- a/drivers/net/wireless/realtek/rtlwifi/base.c
++++ b/drivers/net/wireless/realtek/rtlwifi/base.c
+@@ -1660,7 +1660,7 @@ int rtl_tx_agg_oper(struct ieee80211_hw *hw,
+ void rtl_rx_ampdu_apply(struct rtl_priv *rtlpriv)
+ {
+ 	struct rtl_btc_ops *btc_ops = rtlpriv->btcoexist.btc_ops;
+-	u8 reject_agg, ctrl_agg_size = 0, agg_size;
++	u8 reject_agg = 0, ctrl_agg_size = 0, agg_size = 0; /* BUG in following RT_TRACE */
+ 
+ 	if (rtlpriv->cfg->ops->get_btc_status())
+ 		btc_ops->btc_get_ampdu_cfg(rtlpriv, &reject_agg,
+-- 

@@ -6,19 +6,22 @@ Subject: [PATCH] {NOT UPSTREAMABLE} Remove disabled warnings
 Remove disabled warnings in Makefile so we have full control of the
 list of disabled warnings.
 ---
- Makefile                          | 32 ++++++++++++++++----------------
- arch/x86/Makefile                 |  2 +-
- drivers/gpu/drm/i915/gvt/Makefile |  2 +-
- drivers/misc/cxl/Makefile         |  2 +-
- scripts/Makefile.extrawarn        | 12 ++++++------
- 5 files changed, 25 insertions(+), 25 deletions(-)
+ Makefile                                           | 40 +++++++++++-----------
+ arch/x86/Makefile                                  |  2 +-
+ drivers/misc/cxl/Makefile                          |  2 +-
+ drivers/staging/media/atomisp/i2c/Makefile         |  8 ++---
+ drivers/staging/media/atomisp/i2c/imx/Makefile     |  8 ++---
+ drivers/staging/media/atomisp/i2c/ov5693/Makefile  |  8 ++---
+ .../staging/media/atomisp/pci/atomisp2/Makefile    |  8 ++---
+ scripts/Makefile.extrawarn                         | 12 +++----
+ 8 files changed, 44 insertions(+), 44 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 283c6236438e..6305901bf84c 100644
+index b4fb9a1d1594..d7195076f124 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -307,8 +307,9 @@ HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-p
- HOSTCXXFLAGS = -O2
+@@ -307,8 +307,9 @@ HOSTLDFLAGS  := $(HOST_LFS_LDFLAGS)
+ HOST_LOADLIBES := $(HOST_LFS_LIBS)
  
  ifeq ($(shell $(HOSTCC) -v 2>&1 | grep -c "clang version"), 1)
 -HOSTCFLAGS  += -Wno-unused-value -Wno-unused-parameter \
@@ -47,7 +50,7 @@ index 283c6236438e..6305901bf84c 100644
  CFLAGS_KCOV	:= $(call cc-option,-fsanitize-coverage=trace-pc,)
  
  
-@@ -397,10 +398,9 @@ LINUXINCLUDE	+= $(filter-out $(LINUXINCLUDE),$(USERINCLUDE))
+@@ -395,10 +396,9 @@ LINUXINCLUDE    := \
  
  KBUILD_CPPFLAGS := -D__KERNEL__
  
@@ -59,12 +62,18 @@ index 283c6236438e..6305901bf84c 100644
  		   -std=gnu89 $(call cc-option,-fno-PIE)
  
  
-@@ -630,14 +630,14 @@ ARCH_CFLAGS :=
+@@ -629,17 +629,17 @@ ARCH_CFLAGS :=
  include arch/$(SRCARCH)/Makefile
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
 -KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
+-KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
+-KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
+-KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
 +#KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
++#KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
++#KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
++#KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
  KBUILD_CFLAGS	+= $(call cc-option,-Oz,-Os)
@@ -77,23 +86,25 @@ index 283c6236438e..6305901bf84c 100644
  else
  KBUILD_CFLAGS   += -O2
  endif
-@@ -704,11 +704,11 @@ endif
+@@ -706,12 +706,12 @@ endif
  KBUILD_CFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC)
  KBUILD_AFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC)
  KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
 -KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
 -KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
 -KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
+-KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
 +#KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
 +#KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
 +#KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
++#KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
  # Quiet clang warning: comparison of unsigned expression < 0 is always false
 -KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
 +#KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
  # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
  # source of a reference will be _MergedGlobals and not on of the whitelisted names.
  # See modpost pattern 2
-@@ -720,8 +720,8 @@ else
+@@ -723,8 +723,8 @@ else
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
@@ -104,7 +115,7 @@ index 283c6236438e..6305901bf84c 100644
  endif
  
  ifdef CONFIG_FRAME_POINTER
-@@ -792,7 +792,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
+@@ -795,7 +795,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
  KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -114,10 +125,10 @@ index 283c6236438e..6305901bf84c 100644
  # disable invalid "can't wrap" optimizations for signed / pointers
  KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index bf240b920473..41e35667c73e 100644
+index 1e902f926be3..dc4a4fc40b06 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
-@@ -211,7 +211,7 @@ LDFLAGS := -m elf_$(UTS_MACHINE)
+@@ -228,7 +228,7 @@ LDFLAGS := -m elf_$(UTS_MACHINE)
  # Speed up the build
  KBUILD_CFLAGS += -pipe
  # Workaround for a gcc prelease that unfortunately was shipped in a suse release
@@ -126,20 +137,8 @@ index bf240b920473..41e35667c73e 100644
  #
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  
-diff --git a/drivers/gpu/drm/i915/gvt/Makefile b/drivers/gpu/drm/i915/gvt/Makefile
-index b123c20e2097..f5486cb94818 100644
---- a/drivers/gpu/drm/i915/gvt/Makefile
-+++ b/drivers/gpu/drm/i915/gvt/Makefile
-@@ -3,6 +3,6 @@ GVT_SOURCE := gvt.o aperture_gm.o handlers.o vgpu.o trace_points.o firmware.o \
- 	interrupt.o gtt.o cfg_space.o opregion.o mmio.o display.o edid.o \
- 	execlist.o scheduler.o sched_policy.o render.o cmd_parser.o
- 
--ccflags-y				+= -I$(src) -I$(src)/$(GVT_DIR) -Wall
-+ccflags-y				+= -I$(src) -I$(src)/$(GVT_DIR)
- i915-y					+= $(addprefix $(GVT_DIR)/, $(GVT_SOURCE))
- obj-$(CONFIG_DRM_I915_GVT_KVMGT)	+= $(GVT_DIR)/kvmgt.o
 diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
-index c14fd6b65b5a..c86aef01bfa3 100644
+index 0b5fd749d96d..730abab70c10 100644
 --- a/drivers/misc/cxl/Makefile
 +++ b/drivers/misc/cxl/Makefile
 @@ -1,4 +1,4 @@
@@ -148,6 +147,70 @@ index c14fd6b65b5a..c86aef01bfa3 100644
  ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
  
  cxl-y				+= main.o file.o irq.o fault.o native.o
+diff --git a/drivers/staging/media/atomisp/i2c/Makefile b/drivers/staging/media/atomisp/i2c/Makefile
+index be13fab92175..149bf99854bf 100644
+--- a/drivers/staging/media/atomisp/i2c/Makefile
++++ b/drivers/staging/media/atomisp/i2c/Makefile
+@@ -21,7 +21,7 @@ obj-$(CONFIG_VIDEO_LM3554) += lm3554.o
+ 
+ # HACK! While this driver is in bad shape, don't enable several warnings
+ #       that would be otherwise enabled with W=1
+-ccflags-y += $(call cc-disable-warning, unused-but-set-variable)
+-ccflags-y += $(call cc-disable-warning, unused-const-variable)
+-ccflags-y += $(call cc-disable-warning, missing-prototypes)
+-ccflags-y += $(call cc-disable-warning, missing-declarations)
++#ccflags-y += $(call cc-disable-warning, unused-but-set-variable)
++#ccflags-y += $(call cc-disable-warning, unused-const-variable)
++#ccflags-y += $(call cc-disable-warning, missing-prototypes)
++#ccflags-y += $(call cc-disable-warning, missing-declarations)
+diff --git a/drivers/staging/media/atomisp/i2c/imx/Makefile b/drivers/staging/media/atomisp/i2c/imx/Makefile
+index b6578f09546e..66b12dc01896 100644
+--- a/drivers/staging/media/atomisp/i2c/imx/Makefile
++++ b/drivers/staging/media/atomisp/i2c/imx/Makefile
+@@ -7,7 +7,7 @@ obj-$(CONFIG_VIDEO_OV8858)     += ov8858_driver.o
+ 
+ # HACK! While this driver is in bad shape, don't enable several warnings
+ #       that would be otherwise enabled with W=1
+-ccflags-y += $(call cc-disable-warning, unused-but-set-variable)
+-ccflags-y += $(call cc-disable-warning, unused-const-variable)
+-ccflags-y += $(call cc-disable-warning, missing-prototypes)
+-ccflags-y += $(call cc-disable-warning, missing-declarations)
++#ccflags-y += $(call cc-disable-warning, unused-but-set-variable)
++#ccflags-y += $(call cc-disable-warning, unused-const-variable)
++#ccflags-y += $(call cc-disable-warning, missing-prototypes)
++#ccflags-y += $(call cc-disable-warning, missing-declarations)
+diff --git a/drivers/staging/media/atomisp/i2c/ov5693/Makefile b/drivers/staging/media/atomisp/i2c/ov5693/Makefile
+index 4e3833aaec05..8142f225bbf9 100644
+--- a/drivers/staging/media/atomisp/i2c/ov5693/Makefile
++++ b/drivers/staging/media/atomisp/i2c/ov5693/Makefile
+@@ -2,7 +2,7 @@ obj-$(CONFIG_VIDEO_OV5693) += ov5693.o
+ 
+ # HACK! While this driver is in bad shape, don't enable several warnings
+ #       that would be otherwise enabled with W=1
+-ccflags-y += $(call cc-disable-warning, unused-but-set-variable)
+-ccflags-y += $(call cc-disable-warning, unused-const-variable)
+-ccflags-y += $(call cc-disable-warning, missing-prototypes)
+-ccflags-y += $(call cc-disable-warning, missing-declarations)
++#ccflags-y += $(call cc-disable-warning, unused-but-set-variable)
++#ccflags-y += $(call cc-disable-warning, unused-const-variable)
++#ccflags-y += $(call cc-disable-warning, missing-prototypes)
++#ccflags-y += $(call cc-disable-warning, missing-declarations)
+diff --git a/drivers/staging/media/atomisp/pci/atomisp2/Makefile b/drivers/staging/media/atomisp/pci/atomisp2/Makefile
+index 726eaa293c55..5039944d5ead 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp2/Makefile
++++ b/drivers/staging/media/atomisp/pci/atomisp2/Makefile
+@@ -354,7 +354,7 @@ ccflags-y += $(INCLUDES) $(DEFINES) -fno-common
+ 
+ # HACK! While this driver is in bad shape, don't enable several warnings
+ #       that would be otherwise enabled with W=1
+-ccflags-y += -Wno-unused-const-variable -Wno-missing-prototypes \
+-	     -Wno-unused-but-set-variable -Wno-missing-declarations \
+-	     -Wno-suggest-attribute=format -Wno-missing-prototypes \
+-	     -Wno-implicit-fallthrough
++#ccflags-y += -Wno-unused-const-variable -Wno-missing-prototypes \
++#	     -Wno-unused-but-set-variable -Wno-missing-declarations \
++#	     -Wno-suggest-attribute=format -Wno-missing-prototypes \
++#	     -Wno-implicit-fallthrough
 diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
 index fb3522fd8702..449bbba2d50c 100644
 --- a/scripts/Makefile.extrawarn
