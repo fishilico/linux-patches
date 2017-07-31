@@ -24,6 +24,7 @@ This plugin helped to detect the following bugs:
  drivers/scsi/fcoe/fcoe_transport.c                 |   4 +-
  drivers/scsi/hpsa.c                                |   2 +-
  drivers/scsi/qedf/qedf_main.c                      |   2 +-
+ drivers/scsi/qedi/qedi_main.c                      |   7 +-
  drivers/scsi/smartpqi/smartpqi_init.c              |   2 +-
  drivers/target/iscsi/iscsi_target_auth.c           |   8 +-
  drivers/target/target_core_pr.c                    |   2 +-
@@ -33,10 +34,10 @@ This plugin helped to detect the following bugs:
  kernel/irq/irqdomain.c                             |   6 +
  net/ipv4/sysctl_net_ipv4.c                         |   2 +-
  scripts/Makefile.gcc-plugins                       |   5 +
- scripts/gcc-plugins/printk_format_plugin.c         | 779 +++++++++++++++++++++
+ scripts/gcc-plugins/printk_format_plugin.c         | 790 +++++++++++++++++++++
  sound/soc/intel/haswell/sst-haswell-dsp.c          |   4 +-
  sound/soc/sh/dma-sh7760.c                          |   2 +-
- 27 files changed, 863 insertions(+), 31 deletions(-)
+ 28 files changed, 880 insertions(+), 32 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -284,7 +285,7 @@ index 8914eab84337..0e004285f196 100644
  			return -1;
  		}
 diff --git a/drivers/scsi/qedf/qedf_main.c b/drivers/scsi/qedf/qedf_main.c
-index b58bba4604e8..55dc6c70482f 100644
+index 7786c97e033f..43499ef815c0 100644
 --- a/drivers/scsi/qedf/qedf_main.c
 +++ b/drivers/scsi/qedf/qedf_main.c
 @@ -1503,7 +1503,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
@@ -296,6 +297,38 @@ index b58bba4604e8..55dc6c70482f 100644
  		goto err1;
  	}
  
+diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
+index 8e197e09d719..fa5157c9ebec 100644
+--- a/drivers/scsi/qedi/qedi_main.c
++++ b/drivers/scsi/qedi/qedi_main.c
+@@ -1736,7 +1736,8 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+ 	int rc = 1;
+ 	u32 ipv6_en, dhcp_en, ip_len;
+ 	struct nvm_iscsi_block *block;
+-	char *fmt, *ip, *sub, *gw;
++	char *ip, *sub, *gw;
++	const char *fmt;
+ 
+ 	block = qedi_get_nvram_block(qedi);
+ 	if (!block)
+@@ -1764,6 +1765,9 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+ 		ip_len = ipv6_en ? 5 : 8;
+ 	}
+ 
++
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	switch (type) {
+ 	case ISCSI_BOOT_ETH_IP_ADDR:
+ 		rc = snprintf(str, ip_len, fmt, ip);
+@@ -1797,6 +1801,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+ 		rc = 0;
+ 		break;
+ 	}
++#pragma GCC diagnostic pop
+ 
+ 	return rc;
+ }
 diff --git a/drivers/scsi/smartpqi/smartpqi_init.c b/drivers/scsi/smartpqi/smartpqi_init.c
 index fd0ff98c4ec0..bcb344dcaf52 100644
 --- a/drivers/scsi/smartpqi/smartpqi_init.c
@@ -380,10 +413,10 @@ index 6493df6b1bd5..3b50527d8973 100644
  }
  
 diff --git a/fs/overlayfs/inode.c b/fs/overlayfs/inode.c
-index 69f4fc26ee39..2a3bb4fa6982 100644
+index 5bc71642b226..5c2aae1722a3 100644
 --- a/fs/overlayfs/inode.c
 +++ b/fs/overlayfs/inode.c
-@@ -493,8 +493,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
+@@ -495,8 +495,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
  	char buf[13];
  	int len;
  
@@ -472,10 +505,10 @@ index 2e0e2eaa397f..1f7ade35c129 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..32a8a23553c2
+index 000000000000..b7d757fd449b
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,779 @@
+@@ -0,0 +1,790 @@
 +/*
 + * Copyright 2016-2017 by Nicolas Iooss
 + *
@@ -487,7 +520,7 @@ index 000000000000..32a8a23553c2
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info printk_format_plugin_info = {
-+	.version	= "20170705",
++	.version	= "20170730",
 +	.help		= "Printk format checker\n",
 +};
 +
@@ -810,12 +843,23 @@ index 000000000000..32a8a23553c2
 +
 +	/* Network device features */
 +	case 'N':
-+		if (TREE_CODE(subtype) == INTEGER_TYPE &&
-+		    identifier_is(TYPE_IDENTIFIER(subtype), "netdev_features_t"))
-+			return true;
-+		if (TREE_CODE(subtype) == INTEGER_TYPE &&
-+		    identifier_is(TYPE_IDENTIFIER(subtype), "long long unsigned int"))
-+			return true;
++		if (ptr_format[1] == 'F') {
++			if (TREE_CODE(subtype) == INTEGER_TYPE &&
++			    identifier_is(TYPE_IDENTIFIER(subtype), "netdev_features_t"))
++				return true;
++			if (TREE_CODE(subtype) == INTEGER_TYPE &&
++			    identifier_is(TYPE_IDENTIFIER(subtype), "long long unsigned int"))
++				return true;
++		}
++		break;
++
++	/* kobject based struct */
++	case 'O':
++		if (ptr_format[1] == 'F') {
++			if (TREE_CODE(subtype) == RECORD_TYPE &&
++			    identifier_is(TYPE_IDENTIFIER(subtype), "device_node"))
++				return true;
++		}
 +		break;
 +
 +	/* Raw pointers (everything else after %p) */

@@ -8,32 +8,15 @@ gcc 7 complains on "EZ(t->setup * 1000,  T);":
     drivers/ata/libata-core.c:3164:30: error: '*' in boolean context,
     suggest '&&' instead [-Werror=int-in-bool-context]
 ---
- arch/x86/math-emu/fpu_emu.h                     | 4 ++--
  drivers/ata/libata-core.c                       | 2 +-
  drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c | 2 +-
- drivers/ide/ide-timings.c                       | 2 +-
  drivers/infiniband/core/uverbs.h                | 4 ++--
  drivers/input/misc/adxl34x.c                    | 2 +-
  drivers/staging/iio/resolver/ad2s1210.c         | 2 +-
  include/linux/iopoll.h                          | 2 +-
  include/linux/regmap.h                          | 2 +-
- 9 files changed, 11 insertions(+), 11 deletions(-)
+ 7 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/math-emu/fpu_emu.h b/arch/x86/math-emu/fpu_emu.h
-index afbc4d805d66..50c70df04d45 100644
---- a/arch/x86/math-emu/fpu_emu.h
-+++ b/arch/x86/math-emu/fpu_emu.h
-@@ -157,8 +157,8 @@ extern u_char const data_sizes_16[32];
- 
- #define signbyte(a) (((u_char *)(a))[9])
- #define getsign(a) (signbyte(a) & 0x80)
--#define setsign(a,b) { if (b) signbyte(a) |= 0x80; else signbyte(a) &= 0x7f; }
--#define copysign(a,b) { if (getsign(a)) signbyte(b) |= 0x80; \
-+#define setsign(a,b) { if ((b) != 0) signbyte(a) |= 0x80; else signbyte(a) &= 0x7f; }
-+#define copysign(a,b) { if (getsign(a) != 0) signbyte(b) |= 0x80; \
-                         else signbyte(b) &= 0x7f; }
- #define changesign(a) { signbyte(a) ^= 0x80; }
- #define setpositive(a) { signbyte(a) &= 0x7f; }
 diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
 index 8453f9a4682f..f7b55d5eccbd 100644
 --- a/drivers/ata/libata-core.c
@@ -60,19 +43,6 @@ index 96e0941c8edd..e3c104728847 100644
  		return sclk * N / (M * P);
  
  	return 0;
-diff --git a/drivers/ide/ide-timings.c b/drivers/ide/ide-timings.c
-index 0e05f75934c9..45b7701d2263 100644
---- a/drivers/ide/ide-timings.c
-+++ b/drivers/ide/ide-timings.c
-@@ -104,7 +104,7 @@ u16 ide_pio_cycle_time(ide_drive_t *drive, u8 pio)
- EXPORT_SYMBOL_GPL(ide_pio_cycle_time);
- 
- #define ENOUGH(v, unit)		(((v) - 1) / (unit) + 1)
--#define EZ(v, unit)		((v) ? ENOUGH(v, unit) : 0)
-+#define EZ(v, unit)		(((v) != 0) ? ENOUGH(v, unit) : 0)
- 
- static void ide_timing_quantize(struct ide_timing *t, struct ide_timing *q,
- 				int T, int UT)
 diff --git a/drivers/infiniband/core/uverbs.h b/drivers/infiniband/core/uverbs.h
 index 64d494a64daf..9fb40484d10a 100644
 --- a/drivers/infiniband/core/uverbs.h

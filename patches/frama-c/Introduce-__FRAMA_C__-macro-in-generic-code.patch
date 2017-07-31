@@ -16,6 +16,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  drivers/input/joystick/analog.c |  6 +++++-
  include/asm-generic/uaccess.h   | 16 ++++++++++++++++
  include/linux/build_bug.h       | 14 ++++++++++++++
+ include/linux/compiler-gcc.h    |  5 +++++
  include/linux/compiler.h        | 23 ++++++++++++++++++++++-
  include/linux/cpumask.h         |  5 +++++
  include/linux/crypto.h          | 11 +++++++++--
@@ -37,7 +38,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  kernel/time/time.c              |  8 ++++++++
  lib/hexdump.c                   | 13 +++++++++++--
  lib/rhashtable.c                |  7 +++++++
- 25 files changed, 148 insertions(+), 18 deletions(-)
+ 26 files changed, 153 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
 index d17b6e6393c7..98d06fa8b25c 100644
@@ -135,8 +136,26 @@ index b7d22d60008a..01c07346e5b9 100644
  #else /* __CHECKER__ */
  
  /* Force a compilation error if a constant expression is not a power of 2 */
+diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+index bdb80c4aef6e..372aa5e02c6a 100644
+--- a/include/linux/compiler-gcc.h
++++ b/include/linux/compiler-gcc.h
+@@ -250,8 +250,13 @@
+  * as possible, this is used for all GCC 4.6+ builds, and not just on
+  * RANDSTRUCT_PLUGIN builds.
+  */
++/* Frama-C does not support such structures:
++ * init/init_task.c:19:[kernel] failure: Cannot find designated field stack
++ */
++#ifndef __FRAMAC__
+ #define randomized_struct_fields_start	struct {
+ #define randomized_struct_fields_end	} __randomize_layout;
++#endif
+ 
+ #endif /* GCC_VERSION >= 40600 */
+ 
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 8b1ce8f3ea23..4a3517236d82 100644
+index b05ec2e8ae1e..3e08841772c3 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -3,7 +3,7 @@

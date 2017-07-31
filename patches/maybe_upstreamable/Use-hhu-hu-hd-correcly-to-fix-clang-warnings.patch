@@ -43,6 +43,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  drivers/ntb/hw/idt/ntb_hw_idt.c                  |  6 +-
  drivers/platform/x86/thinkpad_acpi.c             |  2 +-
  drivers/scsi/libfc/fc_lport.c                    |  2 +-
+ drivers/scsi/qedi/qedi_main.c                    |  4 +-
  drivers/scsi/scsi_sysfs.c                        |  4 +-
  drivers/staging/lustre/lustre/llite/dir.c        |  6 +-
  drivers/target/iscsi/iscsi_target.c              |  2 +-
@@ -53,7 +54,6 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  drivers/target/target_core_pr.c                  |  4 +-
  drivers/vfio/pci/vfio_pci.c                      |  4 +-
  fs/afs/flock.c                                   |  2 +-
- fs/binfmt_flat.c                                 |  2 +-
  fs/cifs/cifs_dfs_ref.c                           |  4 +-
  fs/cifs/smb1ops.c                                |  2 +-
  fs/nfsd/flexfilelayout.c                         |  2 +-
@@ -78,7 +78,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  net/rxrpc/rxkad.c                                |  2 +-
  security/selinux/hooks.c                         |  2 +-
  security/tomoyo/common.c                         |  2 +-
- 74 files changed, 182 insertions(+), 182 deletions(-)
+ 74 files changed, 183 insertions(+), 183 deletions(-)
 
 diff --git a/drivers/acpi/acpica/dbhistry.c b/drivers/acpi/acpica/dbhistry.c
 index 7d08974c64c2..5ba99de565c4 100644
@@ -1052,6 +1052,28 @@ index 2fd0ec651170..17d533e8f1e8 100644
  		fc_lport_error(lport, fp);
  		goto err;
  	}
+diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
+index 2c3783684815..8e197e09d719 100644
+--- a/drivers/scsi/qedi/qedi_main.c
++++ b/drivers/scsi/qedi/qedi_main.c
+@@ -1775,7 +1775,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+ 		rc = snprintf(str, ip_len, fmt, gw);
+ 		break;
+ 	case ISCSI_BOOT_ETH_FLAGS:
+-		rc = snprintf(str, 3, "%hhd\n",
++		rc = snprintf(str, 3, "%d\n",
+ 			      SYSFS_FLAG_FW_SEL_BOOT);
+ 		break;
+ 	case ISCSI_BOOT_ETH_INDEX:
+@@ -1945,7 +1945,7 @@ qedi_show_boot_tgt_info(struct qedi_ctx *qedi, int type,
+ 			      mchap_secret);
+ 		break;
+ 	case ISCSI_BOOT_TGT_FLAGS:
+-		rc = snprintf(str, 3, "%hhd\n", SYSFS_FLAG_FW_SEL_BOOT);
++		rc = snprintf(str, 3, "%d\n", SYSFS_FLAG_FW_SEL_BOOT);
+ 		break;
+ 	case ISCSI_BOOT_TGT_NIC_ASSOC:
+ 		rc = snprintf(str, 3, "0\n");
 diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
 index d6984df71f1c..b1020dddde60 100644
 --- a/drivers/scsi/scsi_sysfs.c
@@ -1239,19 +1261,6 @@ index 3191dff2c156..bc2a7fd7b345 100644
  	return ret;
  }
  
-diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
-index 69ec23daa25e..a1e6860b6f46 100644
---- a/fs/binfmt_flat.c
-+++ b/fs/binfmt_flat.c
-@@ -574,7 +574,7 @@ static int load_flat_file(struct linux_binprm *bprm,
- 				MAX_SHARED_LIBS * sizeof(unsigned long),
- 				FLAT_DATA_ALIGN);
- 
--		pr_debug("Allocated data+bss+stack (%ld bytes): %lx\n",
-+		pr_debug("Allocated data+bss+stack (%u bytes): %lx\n",
- 			 data_len + bss_len + stack_len, datapos);
- 
- 		fpos = ntohl(hdr->data_start);
 diff --git a/fs/cifs/cifs_dfs_ref.c b/fs/cifs/cifs_dfs_ref.c
 index 6b61df117fd4..563e2f6268c3 100644
 --- a/fs/cifs/cifs_dfs_ref.c

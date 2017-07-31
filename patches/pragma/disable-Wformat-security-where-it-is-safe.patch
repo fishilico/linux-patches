@@ -354,10 +354,10 @@ index 532da61d605c..def41994cd1e 100644
  
  static int userdef __initdata;
 diff --git a/arch/x86/xen/smp_pv.c b/arch/x86/xen/smp_pv.c
-index 1ea598e5f030..c4f0eaf48d86 100644
+index 51471408fdd1..0edc97bde0ad 100644
 --- a/arch/x86/xen/smp_pv.c
 +++ b/arch/x86/xen/smp_pv.c
-@@ -227,13 +227,15 @@ static void __init xen_pv_smp_prepare_cpus(unsigned int max_cpus)
+@@ -228,13 +228,15 @@ static void __init xen_pv_smp_prepare_cpus(unsigned int max_cpus)
  	unsigned int i;
  
  	if (skip_ioapic_setup) {
@@ -468,7 +468,7 @@ index b042ec458544..282c31c3682c 100644
  }
  
 diff --git a/drivers/atm/zatm.c b/drivers/atm/zatm.c
-index 292dec18ffb8..6e43c1c94ac5 100644
+index 07bdd51b3b9a..605f09e9ab5a 100644
 --- a/drivers/atm/zatm.c
 +++ b/drivers/atm/zatm.c
 @@ -106,7 +106,10 @@ static void event_dump(void)
@@ -856,39 +856,42 @@ index 3d2a4ae92d1e..9a2414cf9a69 100644
  				abituguru3_sysfs_templ[type][j];
  			data->sysfs_attr[sysfs_attr_i].dev_attr.attr.name =
 diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
-index 0af7fd311979..ebf99a9129ec 100644
+index 76c34f4fde13..3b63e1d83172 100644
 --- a/drivers/hwmon/applesmc.c
 +++ b/drivers/hwmon/applesmc.c
-@@ -811,7 +811,10 @@ static ssize_t applesmc_show_fan_speed(struct device *dev,
+@@ -813,8 +813,11 @@ static ssize_t applesmc_show_fan_speed(struct device *dev,
  	char newkey[5];
  	u8 buffer[2];
  
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
- 	sprintf(newkey, fan_speed_fmt[to_option(attr)], to_index(attr));
+ 	scnprintf(newkey, sizeof(newkey), fan_speed_fmt[to_option(attr)],
+ 		  to_index(attr));
 +#pragma GCC diagnostic pop
  
  	ret = applesmc_read_key(newkey, buffer, 2);
  	speed = ((buffer[0] << 8 | buffer[1]) >> 2);
-@@ -834,7 +837,10 @@ static ssize_t applesmc_store_fan_speed(struct device *dev,
+@@ -837,8 +840,11 @@ static ssize_t applesmc_store_fan_speed(struct device *dev,
  	if (kstrtoul(sysfsbuf, 10, &speed) < 0 || speed >= 0x4000)
  		return -EINVAL;		/* Bigger than a 14-bit value */
  
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
- 	sprintf(newkey, fan_speed_fmt[to_option(attr)], to_index(attr));
+ 	scnprintf(newkey, sizeof(newkey), fan_speed_fmt[to_option(attr)],
+ 		  to_index(attr));
 +#pragma GCC diagnostic pop
  
  	buffer[0] = (speed >> 6) & 0xff;
  	buffer[1] = (speed << 2) & 0xff;
-@@ -1116,7 +1122,11 @@ static int applesmc_create_nodes(struct applesmc_node_group *groups, int num)
+@@ -1120,8 +1126,12 @@ static int applesmc_create_nodes(struct applesmc_node_group *groups, int num)
  		}
  		for (i = 0; i < num; i++) {
  			node = &grp->nodes[i];
 +/* Possible values for format in struct applesmc_node_group are defined above */
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
- 			sprintf(node->name, grp->format, i + 1);
+ 			scnprintf(node->name, sizeof(node->name), grp->format,
+ 				  i + 1);
 +#pragma GCC diagnostic pop
  			node->sda.index = (grp->option << 16) | (i & 0xffff);
  			node->sda.dev_attr.show = grp->show;
@@ -1189,7 +1192,7 @@ index ddec47a911a0..cd7a4bad776d 100644
  		ic.command = ((chanp->chan < 2) ? ISDN_STAT_ICALL : ISDN_STAT_ICALLW);
  
 diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.c
-index c7d68675b028..0edaf8d49a9c 100644
+index 7108bdb8742e..5140fc69618e 100644
 --- a/drivers/isdn/hisax/config.c
 +++ b/drivers/isdn/hisax/config.c
 @@ -1896,7 +1896,10 @@ static void EChannel_proc_rcv(struct hisax_d_if *d_if)
@@ -1645,13 +1648,13 @@ index 12a6a93d221b..7ce7421b7219 100644
  	/* The LANCE-specific entries in the device structure. */
  	dev->netdev_ops = &lance_netdev_ops;
 diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c
-index 43423744fdfa..2d6caa9c833f 100644
+index 1e33abde4a3e..ca82c7fdf31e 100644
 --- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c
 +++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c
-@@ -3163,11 +3163,14 @@ static void bnx2x_get_strings(struct net_device *dev, u32 stringset, u8 *buf)
- 			for_each_eth_queue(bp, i) {
+@@ -3164,11 +3164,14 @@ static void bnx2x_get_strings(struct net_device *dev, u32 stringset, u8 *buf)
  				memset(queue_name, 0, sizeof(queue_name));
- 				sprintf(queue_name, "%d", i);
+ 				snprintf(queue_name, sizeof(queue_name),
+ 					 "%d", i);
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
  				for (j = 0; j < BNX2X_NUM_Q_STATS; j++)
@@ -2054,7 +2057,7 @@ index 40bd88362e3d..0acede8000f5 100644
  
  	return pci_register_driver(&sis900_pci_driver);
 diff --git a/drivers/net/ethernet/sun/niu.c b/drivers/net/ethernet/sun/niu.c
-index cf1eec6216d1..bb61235dc453 100644
+index 215accf69468..2c562ca8aba7 100644
 --- a/drivers/net/ethernet/sun/niu.c
 +++ b/drivers/net/ethernet/sun/niu.c
 @@ -9363,9 +9363,12 @@ static ssize_t show_port_phy(struct device *dev,
@@ -2969,7 +2972,7 @@ index ca85476e3ff7..517f7cb7967d 100644
  }
  
 diff --git a/drivers/staging/speakup/main.c b/drivers/staging/speakup/main.c
-index 82e5de248947..55c6144de0e7 100644
+index 67956e24779c..50b4c7eef5a1 100644
 --- a/drivers/staging/speakup/main.c
 +++ b/drivers/staging/speakup/main.c
 @@ -1043,8 +1043,11 @@ static void say_last_char(struct vc_data *vc)
