@@ -6,18 +6,19 @@ Subject: [PATCH] {NOT UPSTREAMABLE} Remove disabled warnings
 Remove disabled warnings in Makefile so we have full control of the
 list of disabled warnings.
 ---
- Makefile                                           | 40 +++++++++++-----------
+ Makefile                                           | 44 +++++++++++-----------
  arch/x86/Makefile                                  |  2 +-
+ arch/x86/boot/compressed/Makefile                  |  2 +-
  drivers/misc/cxl/Makefile                          |  2 +-
- drivers/staging/media/atomisp/i2c/Makefile         |  8 ++---
- drivers/staging/media/atomisp/i2c/imx/Makefile     |  8 ++---
- drivers/staging/media/atomisp/i2c/ov5693/Makefile  |  8 ++---
- .../staging/media/atomisp/pci/atomisp2/Makefile    |  8 ++---
- scripts/Makefile.extrawarn                         | 12 +++----
- 8 files changed, 44 insertions(+), 44 deletions(-)
+ drivers/staging/media/atomisp/i2c/Makefile         |  8 ++--
+ drivers/staging/media/atomisp/i2c/imx/Makefile     |  8 ++--
+ drivers/staging/media/atomisp/i2c/ov5693/Makefile  |  8 ++--
+ .../staging/media/atomisp/pci/atomisp2/Makefile    |  8 ++--
+ scripts/Makefile.extrawarn                         | 12 +++---
+ 9 files changed, 47 insertions(+), 47 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 0662b5201d3e..30f53e0691be 100644
+index 37087b4657b7..e6c9981d23ab 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -307,8 +307,9 @@ HOSTLDFLAGS  := $(HOST_LFS_LDFLAGS)
@@ -62,7 +63,7 @@ index 0662b5201d3e..30f53e0691be 100644
  		   -std=gnu89 $(call cc-option,-fno-PIE)
  
  
-@@ -629,17 +629,17 @@ ARCH_CFLAGS :=
+@@ -629,24 +629,24 @@ ARCH_CFLAGS :=
  include arch/$(SRCARCH)/Makefile
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
@@ -86,6 +87,15 @@ index 0662b5201d3e..30f53e0691be 100644
  else
  KBUILD_CFLAGS   += -O2
  endif
+ endif
+ 
+-KBUILD_CFLAGS += $(call cc-ifversion, -lt, 0409, \
+-			$(call cc-disable-warning,maybe-uninitialized,))
++#KBUILD_CFLAGS += $(call cc-ifversion, -lt, 0409, \
++#			$(call cc-disable-warning,maybe-uninitialized,))
+ 
+ # Tell gcc to never replace conditional load with a non-conditional one
+ KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
 @@ -706,12 +706,12 @@ endif
  KBUILD_CFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC)
  KBUILD_AFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC)
@@ -137,6 +147,19 @@ index 1e902f926be3..dc4a4fc40b06 100644
  #
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  
+diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
+index 8a958274b54c..fa316c0841d4 100644
+--- a/arch/x86/boot/compressed/Makefile
++++ b/arch/x86/boot/compressed/Makefile
+@@ -34,7 +34,7 @@ KBUILD_CFLAGS += $(cflags-y)
+ KBUILD_CFLAGS += -mno-mmx -mno-sse
+ KBUILD_CFLAGS += $(call cc-option,-ffreestanding)
+ KBUILD_CFLAGS += $(call cc-option,-fno-stack-protector)
+-KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
++#KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
+ 
+ KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
+ GCOV_PROFILE := n
 diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
 index 0b5fd749d96d..730abab70c10 100644
 --- a/drivers/misc/cxl/Makefile
