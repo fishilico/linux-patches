@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 11 Aug 2017 20:32:59 +0200
+Subject: [PATCH] {For LLVMLinux} ext4: fix VLAIS
+
+Commit 2df2c3402fc8 ("ext4: fix warning about stack corruption") broke
+building with clang:
+
+    fs/ext4/mballoc.c:2303:17: error: fields must have a constant size:
+    'variable length array in structure'
+          extension will never be supported
+                    ext4_grpblk_t counters[blocksize_bits + 2];
+                                  ^
+---
+ fs/ext4/mballoc.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index 5a1052627a81..7551ab3efdcf 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -2298,10 +2298,14 @@ static int ext4_mb_seq_groups_show(struct seq_file *seq, void *v)
+ 	unsigned char blocksize_bits = min_t(unsigned char,
+ 					     sb->s_blocksize_bits,
+ 					     EXT4_MAX_BLOCK_LOG_SIZE);
++	/*
+ 	struct sg {
+ 		struct ext4_group_info info;
+ 		ext4_grpblk_t counters[blocksize_bits + 2];
+ 	} sg;
++	*/
++	u8 sg_info_mem[sizeof(struct ext4_group_info) + sizeof(ext4_grpblk_t) * (blocksize_bits + 2)];
++	struct ext4_group_info *sg_info = (struct ext4_group_info *)sg_info_mem;
+ 
+ 	group--;
+ 	if (group == 0)
+@@ -2320,16 +2324,16 @@ static int ext4_mb_seq_groups_show(struct seq_file *seq, void *v)
+ 		buddy_loaded = 1;
+ 	}
+ 
+-	memcpy(&sg, ext4_get_group_info(sb, group), sizeof(sg));
++	memcpy(sg_info_mem, ext4_get_group_info(sb, group), sizeof(sg_info_mem));
+ 
+ 	if (buddy_loaded)
+ 		ext4_mb_unload_buddy(&e4b);
+ 
+-	seq_printf(seq, "#%-5u: %-5u %-5u %-5u [", group, sg.info.bb_free,
+-			sg.info.bb_fragments, sg.info.bb_first_free);
++	seq_printf(seq, "#%-5u: %-5u %-5u %-5u [", group, sg_info->bb_free,
++			sg_info->bb_fragments, sg_info->bb_first_free);
+ 	for (i = 0; i <= 13; i++)
+ 		seq_printf(seq, " %-5u", i <= blocksize_bits + 1 ?
+-				sg.info.bb_counters[i] : 0);
++				sg_info->bb_counters[i] : 0);
+ 	seq_printf(seq, " ]\n");
+ 
+ 	return 0;
+-- 

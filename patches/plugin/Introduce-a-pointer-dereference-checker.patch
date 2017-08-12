@@ -86,10 +86,10 @@ It has also detected some bugs reported and fixed by other people:
  net/rxrpc/key.c                                    |   2 +-
  net/rxrpc/rxkad.c                                  |   2 +-
  scripts/Makefile.gcc-plugins                       |   2 +
- scripts/gcc-plugins/deref_checker_plugin.c         | 408 +++++++++++++++++++++
+ scripts/gcc-plugins/deref_checker_plugin.c         | 410 +++++++++++++++++++++
  security/apparmor/apparmorfs.c                     |  11 +-
  sound/core/pcm_native.c                            |   2 +-
- 62 files changed, 735 insertions(+), 90 deletions(-)
+ 62 files changed, 737 insertions(+), 90 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -565,10 +565,10 @@ index d2b465140a6b..7b035aeb3c84 100644
  	attrn = attrcount_orig;
  
 diff --git a/drivers/isdn/i4l/isdn_common.c b/drivers/isdn/i4l/isdn_common.c
-index 89b09c51ab7c..c286065c6aff 100644
+index 38a5bb764c7b..44342d9d1133 100644
 --- a/drivers/isdn/i4l/isdn_common.c
 +++ b/drivers/isdn/i4l/isdn_common.c
-@@ -1640,7 +1640,9 @@ isdn_ioctl(struct file *file, uint cmd, ulong arg)
+@@ -1641,7 +1641,9 @@ isdn_ioctl(struct file *file, uint cmd, ulong arg)
  				return -EINVAL;
  		case IIOCDBGVAR:
  			if (arg) {
@@ -632,7 +632,7 @@ index 072612263dab..d9efc65bd344 100644
  		return -EOPNOTSUPP;
  	}
 diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index f41ab0ea942a..3893f6bf032b 100644
+index 98f17b05c68b..0bdc13049209 100644
 --- a/drivers/net/virtio_net.c
 +++ b/drivers/net/virtio_net.c
 @@ -729,7 +729,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
@@ -1225,10 +1225,10 @@ index c9b5aa10fbf9..1fb1fa1071ab 100644
  	}
  	argc -= 2; argv += 2;
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index d24b9fba8e7f..13672fd9aa8a 100644
+index b1f105003676..4fda6d42abca 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -4265,7 +4265,7 @@ void set_worker_desc(const char *fmt, ...)
+@@ -4287,7 +4287,7 @@ void set_worker_desc(const char *fmt, ...)
   */
  void print_worker_info(const char *log_lvl, struct task_struct *task)
  {
@@ -1382,10 +1382,10 @@ index 1f7ade35c129..85c238b34231 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/deref_checker_plugin.c b/scripts/gcc-plugins/deref_checker_plugin.c
 new file mode 100644
-index 000000000000..e3484b60ce77
+index 000000000000..7c3fbd2539f8
 --- /dev/null
 +++ b/scripts/gcc-plugins/deref_checker_plugin.c
-@@ -0,0 +1,408 @@
+@@ -0,0 +1,410 @@
 +/*
 + * Copyright 2016-2017 by Nicolas Iooss
 + * Licensed under the GPL v2, or (at your option) v3
@@ -1398,7 +1398,7 @@ index 000000000000..e3484b60ce77
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info deref_checker_plugin_info = {
-+	.version	= "20170708",
++	.version	= "20170811",
 +	.help		= "Pointer dereferencing checker\n",
 +};
 +
@@ -1543,6 +1543,8 @@ index 000000000000..e3484b60ce77
 +
 +	    identifier_is(fnident, "dup_param") ||
 +	    identifier_is(fnident, "free_param") ||
++
++	    identifier_is(fnident, "bsearch") || /* data may contain pointers to pointers */
 +	    false)
 +		return argidx == 2 && ptrdepth_type < ptrdepth_value;
 +
