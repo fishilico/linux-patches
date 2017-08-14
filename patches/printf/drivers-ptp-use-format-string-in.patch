@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 12 Aug 2017 16:31:07 +0200
+Subject: [PATCH] {PRINTF} drivers/ptp: use format string in
+ kthread_create_worker
+
+There is no security issue, it just is useless.
+---
+ drivers/ptp/ptp_clock.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/drivers/ptp/ptp_clock.c b/drivers/ptp/ptp_clock.c
+index 7eacc1c4b3b1..5419a89d300e 100644
+--- a/drivers/ptp/ptp_clock.c
++++ b/drivers/ptp/ptp_clock.c
+@@ -232,12 +232,8 @@ struct ptp_clock *ptp_clock_register(struct ptp_clock_info *info,
+ 	init_waitqueue_head(&ptp->tsev_wq);
+ 
+ 	if (ptp->info->do_aux_work) {
+-		char *worker_name = kasprintf(GFP_KERNEL, "ptp%d", ptp->index);
+-
+ 		kthread_init_delayed_work(&ptp->aux_work, ptp_aux_kworker);
+-		ptp->kworker = kthread_create_worker(0, worker_name ?
+-						     worker_name : info->name);
+-		kfree(worker_name);
++		ptp->kworker = kthread_create_worker(0, "ptp%d", ptp->index);
+ 		if (IS_ERR(ptp->kworker)) {
+ 			err = PTR_ERR(ptp->kworker);
+ 			pr_err("failed to create ptp aux_worker %d\n", err);
+-- 
