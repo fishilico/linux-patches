@@ -1033,7 +1033,7 @@ index 807299dd45eb..8f68e8a983b6 100644
  	ret = bmc150_accel_set_mode(data, BMC150_ACCEL_SLEEP_MODE_NORMAL, 0);
  	if (ret < 0)
 diff --git a/drivers/infiniband/core/device.c b/drivers/infiniband/core/device.c
-index a5dfab6adf49..99cd76632f18 100644
+index 221468f77128..bfe48f4fd1ef 100644
 --- a/drivers/infiniband/core/device.c
 +++ b/drivers/infiniband/core/device.c
 @@ -162,14 +162,21 @@ static int alloc_name(char *name)
@@ -2517,10 +2517,10 @@ index 622d543abb70..a84e453ca5b9 100644
  
  void iwl_mvm_handle_rx_statistics(struct iwl_mvm *mvm,
 diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/rxmq.c b/drivers/net/wireless/intel/iwlwifi/mvm/rxmq.c
-index f3e608196369..b9a16a0b6aee 100644
+index 71c8b800ffa9..70d04db77592 100644
 --- a/drivers/net/wireless/intel/iwlwifi/mvm/rxmq.c
 +++ b/drivers/net/wireless/intel/iwlwifi/mvm/rxmq.c
-@@ -908,8 +908,11 @@ void iwl_mvm_rx_mpdu_mq(struct iwl_mvm *mvm, struct napi_struct *napi,
+@@ -910,8 +910,11 @@ void iwl_mvm_rx_mpdu_mq(struct iwl_mvm *mvm, struct napi_struct *napi,
  			trig_check =
  				iwl_fw_dbg_trigger_check_stop(mvm, mvmsta->vif,
  							      trig);
@@ -2563,7 +2563,7 @@ index 5dc53d420ca8..15f2f764f449 100644
  
  	for (device = 0; device < 5; device++)
 diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index c31310db0404..570006caa304 100644
+index e6a917b4acd3..1907a552af38 100644
 --- a/drivers/pci/probe.c
 +++ b/drivers/pci/probe.c
 @@ -838,9 +838,12 @@ static int pci_register_host_bridge(struct pci_host_bridge *bridge)
@@ -2823,7 +2823,7 @@ index cb8f886e705c..fd0ff98c4ec0 100644
  		break;
  	}
 diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
-index 8e5013d9cad4..9b093fec43fd 100644
+index 94e402ed30f6..a65d4568764e 100644
 --- a/drivers/scsi/st.c
 +++ b/drivers/scsi/st.c
 @@ -4629,7 +4629,10 @@ default_density_show(struct device *dev, struct device_attribute *attr,
@@ -3825,19 +3825,16 @@ index 26db528c1d88..aaa355dcbd17 100644
  		return p;
  	kthread_bind(p, cpu);
 diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index 37385193a608..7c3b8f0ea43f 100644
+index dc498b605d5d..dc2d92822a56 100644
 --- a/kernel/trace/bpf_trace.c
 +++ b/kernel/trace/bpf_trace.c
-@@ -204,10 +204,13 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
- 		fmt_cnt++;
- 	}
+@@ -233,7 +233,10 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
+ 	      ? __BPF_ARG2_TP((long)arg3, ##__VA_ARGS__)		\
+ 	      : __BPF_ARG2_TP((u32)arg3, ##__VA_ARGS__)))
  
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
- 	return __trace_printk(1/* fake ip will not be printed */, fmt,
- 			      mod[0] == 2 ? arg1 : mod[0] == 1 ? (long) arg1 : (u32) arg1,
- 			      mod[1] == 2 ? arg2 : mod[1] == 1 ? (long) arg2 : (u32) arg2,
- 			      mod[2] == 2 ? arg3 : mod[2] == 1 ? (long) arg3 : (u32) arg3);
+ 	return __BPF_TP_EMIT();
 +#pragma GCC diagnostic pop
  }
  
@@ -3907,7 +3904,7 @@ index 6540e5982444..f121db8a6adb 100644
  	return count;
  }
 diff --git a/mm/slub.c b/mm/slub.c
-index 5eed34e095a5..2094271fa8c4 100644
+index ce5ecd77c82f..65d2e2042780 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
 @@ -3632,7 +3632,11 @@ static void list_slab_objects(struct kmem_cache *s, struct page *page,
@@ -4126,10 +4123,10 @@ index 0f818d593c9e..c0fd643d764a 100644
  	vprintk(format, args);
  #endif
 diff --git a/sound/core/seq/seq_clientmgr.c b/sound/core/seq/seq_clientmgr.c
-index 272c55fe17c8..1ed469beb612 100644
+index ea2d0ae85bd3..df6d2d06368d 100644
 --- a/sound/core/seq/seq_clientmgr.c
 +++ b/sound/core/seq/seq_clientmgr.c
-@@ -2386,7 +2386,10 @@ static void snd_seq_info_dump_subscribers(struct snd_info_buffer *buffer,
+@@ -2381,7 +2381,10 @@ static void snd_seq_info_dump_subscribers(struct snd_info_buffer *buffer,
  		up_read(&group->list_mutex);
  		return;
  	}
@@ -4272,7 +4269,7 @@ index a35f41467237..6179c247709e 100644
  	*rsubstream = substream;
  }
 diff --git a/sound/usb/mixer_quirks.c b/sound/usb/mixer_quirks.c
-index e3d1dec48ee4..9947d291d872 100644
+index e1e7ce9ab217..e4a4b5f19f50 100644
 --- a/sound/usb/mixer_quirks.c
 +++ b/sound/usb/mixer_quirks.c
 @@ -101,7 +101,10 @@ static int snd_create_std_mono_ctl_offset(struct usb_mixer_interface *mixer,
