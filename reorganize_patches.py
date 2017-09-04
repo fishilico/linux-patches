@@ -100,6 +100,7 @@ def get_patch_path(patchdir, name):
 
     return os.path.join(directory, name) + '.patch'
 
+
 def reorganize_patches(patchdir):
     """Reorganize the patches in the given directory"""
     # Read the series file
@@ -112,22 +113,31 @@ def reorganize_patches(patchdir):
     if None in new_series:
         return False
 
-    # Sanity checks on new patch names
+    # Run sanity checks on the new patch names
     new_to_old = {}
-    for old, new in zip(series, new_series):
+    for idx, old_new in enumerate(zip(series, new_series)):
+        old, new = old_new
         # Check that there are no duplicates in new_series
         if new in new_to_old:
-            sys.stderr.write("Error: patches {} and {} renamed to {}.\n"
-                             .format(new_to_old[new], old, new))
-            return False
+            # There may be duplicated fixup patches between when working on
+            # some patches. Detect this and work around it by prepending more
+            # fixups annotations
+            if new.startswith('fixup-'):
+                while new in new_to_old:
+                    new = 'fixup-' + new
+                new_series[idx] = new
+            else:
+                sys.stderr.write("Error: patches {} and {} renamed to {}.\n"
+                                 .format(new_to_old[new], old, new))
+                return False
         new_to_old[new] = old
         if old == new:
             continue
-        # Check that new does not exist in the filesystem
+        # Check that the new name does not exist in the filesystem
         new = os.path.join(patchdir, new)
         if os.path.exists(new):
             sys.stderr.write("Error: {} already exists.\n".format(new))
-            return Fase
+            return False
 
     # Create a new series file
     new_series_file = series_file + '.new'
@@ -140,6 +150,10 @@ def reorganize_patches(patchdir):
             print("{} -> {}".format(old, new))
             old = os.path.join(patchdir, old)
             new = os.path.join(patchdir, new)
+            # Check that nobody created a file under us
+            if os.path.exists(new):
+                sys.stderr.write("Error: {} already exists.\n".format(new))
+                return False
             os.renames(old, new)
     os.rename(new_series_file, series_file)
     return True
@@ -152,6 +166,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     return 0 if reorganize_patches(args.patchdir[0]) else 1
+
 
 if __name__ == '__main__':
     sys.exit(main())
