@@ -8,7 +8,7 @@ TODO: send fixes to dtc upstream:
     https://git.kernel.org/cgit/utils/dtc/dtc.git/
     https://github.com/dgibson/dtc
 ---
- scripts/dtc/checks.c                | 23 +++++++++++++----------
+ scripts/dtc/checks.c                | 18 +++++++++---------
  scripts/dtc/data.c                  |  8 ++++----
  scripts/dtc/dtc-lexer.l             |  2 +-
  scripts/dtc/dtc-lexer.lex.c_shipped |  2 +-
@@ -19,10 +19,10 @@ TODO: send fixes to dtc upstream:
  scripts/dtc/livetree.c              | 20 ++++++++++----------
  scripts/dtc/srcpos.c                |  2 +-
  scripts/dtc/treesource.c            | 16 ++++++++--------
- 11 files changed, 62 insertions(+), 56 deletions(-)
+ 11 files changed, 58 insertions(+), 55 deletions(-)
 
 diff --git a/scripts/dtc/checks.c b/scripts/dtc/checks.c
-index 4b72b530c84f..063c8d671e29 100644
+index 62ea8f83d4a0..8453db2e50e3 100644
 --- a/scripts/dtc/checks.c
 +++ b/scripts/dtc/checks.c
 @@ -45,7 +45,7 @@ typedef void (*check_fn)(struct check *c, struct dt_info *dti, struct node *node
@@ -79,19 +79,7 @@ index 4b72b530c84f..063c8d671e29 100644
  		data_free(prop->val);
  		free(prop);
  	}
-@@ -873,7 +873,10 @@ static void check_simple_bus_reg(struct check *c, struct dt_info *dti, struct no
- 	while (size--)
- 		reg = (reg << 32) | fdt32_to_cpu(*(cells++));
- 
--	snprintf(unit_addr, sizeof(unit_addr), "%zx", reg);
-+	/* Issue with x86-32 compilation with gcc:
-+	 * format ‘%zx’ expects argument of type ‘size_t’, but argument 4 has type ‘uint64_t {aka long long unsigned int}
-+	 */
-+	snprintf(unit_addr, sizeof(unit_addr), "%llx", (unsigned long long)reg);
- 	if (!streq(unitname, unit_addr))
- 		FAIL(c, dti, "Node %s simple-bus unit address format error, expected \"%s\"",
- 		     node->fullpath, unit_addr);
-@@ -1005,7 +1008,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
+@@ -1005,7 +1005,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
  
  static void disable_warning_error(struct check *c, bool warn, bool error)
  {
@@ -100,7 +88,7 @@ index 4b72b530c84f..063c8d671e29 100644
  
  	/* Lowering level, also lower it for things this is the prereq
  	 * for */
-@@ -1026,7 +1029,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
+@@ -1026,7 +1026,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
  
  void parse_checks_option(bool warn, bool error, const char *arg)
  {
@@ -109,7 +97,7 @@ index 4b72b530c84f..063c8d671e29 100644
  	const char *name = arg;
  	bool enable = true;
  
-@@ -1053,7 +1056,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
+@@ -1053,7 +1053,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
  
  void process_checks(bool force, struct dt_info *dti)
  {

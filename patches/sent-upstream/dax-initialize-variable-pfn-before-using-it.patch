@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 3 Sep 2017 10:20:43 +0200
+Subject: [PATCH] dax: initialize variable pfn before using it
+
+Function dax_pmd_insert_mapping() contains the following code:
+
+        pfn_t pfn;
+        if (bdev_dax_pgoff(bdev, sector, size, &pgoff) != 0)
+            goto fallback;
+        /* ... */
+    fallback:
+      trace_dax_pmd_insert_mapping_fallback(inode, vmf, length, pfn, ret);
+
+When the condition in the if statement fails, the function calls
+trace_dax_pmd_insert_mapping_fallback() with an uninitialized pfn value.
+
+This issue has been found while building the kernel with clang. The
+compiler reported:
+
+    fs/dax.c:1280:6: error: variable 'pfn' is used uninitialized
+    whenever 'if' condition is true [-Werror,-Wsometimes-uninitialized]
+        if (bdev_dax_pgoff(bdev, sector, size, &pgoff) != 0)
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    fs/dax.c:1310:60: note: uninitialized use occurs here
+      trace_dax_pmd_insert_mapping_fallback(inode, vmf, length, pfn, ret);
+                                                                     ^~~
+
+Signed-off-by: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+
+Sent-upstream: https://patchwork.kernel.org/patch/9936037/
+---
+ fs/dax.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/dax.c b/fs/dax.c
+index ab925dc6647a..20e6d76d6fff 100644
+--- a/fs/dax.c
++++ b/fs/dax.c
+@@ -1283,7 +1283,7 @@ static int dax_pmd_insert_mapping(struct vm_fault *vmf, struct iomap *iomap,
+ 	void *ret = NULL, *kaddr;
+ 	long length = 0;
+ 	pgoff_t pgoff;
+-	pfn_t pfn;
++	pfn_t pfn = {};
+ 	int id;
+ 
+ 	if (bdev_dax_pgoff(bdev, sector, size, &pgoff) != 0)
+-- 
