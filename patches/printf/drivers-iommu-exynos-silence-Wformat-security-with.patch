@@ -7,21 +7,38 @@ Subject: [PATCH] {PRINTF} drivers/iommu/exynos: silence -Wformat-security with
 FIXME: does it come from the plugin?
 ---
  drivers/iommu/exynos-iommu.c   | 2 +-
+ drivers/iommu/ipmmu-vmsa.c     | 2 +-
  drivers/iommu/mtk_iommu_v1.c   | 2 +-
  drivers/iommu/omap-iommu.c     | 2 +-
+ drivers/iommu/qcom_iommu.c     | 2 +-
  drivers/iommu/rockchip-iommu.c | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/iommu/tegra-gart.c     | 2 +-
+ drivers/iommu/tegra-smmu.c     | 2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
-index 2395478dde75..375396fe8db9 100644
+index f596fcc32898..b8641a0de345 100644
 --- a/drivers/iommu/exynos-iommu.c
 +++ b/drivers/iommu/exynos-iommu.c
-@@ -633,7 +633,7 @@ static int __init exynos_sysmmu_probe(struct platform_device *pdev)
+@@ -629,7 +629,7 @@ static int __init exynos_sysmmu_probe(struct platform_device *pdev)
  	spin_lock_init(&data->lock);
  
  	ret = iommu_device_sysfs_add(&data->iommu, &pdev->dev, NULL,
 -				     dev_name(data->sysmmu));
 +				     "%s", dev_name(data->sysmmu));
+ 	if (ret)
+ 		return ret;
+ 
+diff --git a/drivers/iommu/ipmmu-vmsa.c b/drivers/iommu/ipmmu-vmsa.c
+index 195d6e93ac71..60babdb8b9e2 100644
+--- a/drivers/iommu/ipmmu-vmsa.c
++++ b/drivers/iommu/ipmmu-vmsa.c
+@@ -954,7 +954,7 @@ static int ipmmu_probe(struct platform_device *pdev)
+ 	ipmmu_device_reset(mmu);
+ 
+ 	ret = iommu_device_sysfs_add(&mmu->iommu, &pdev->dev, NULL,
+-				     dev_name(&pdev->dev));
++				     "%s", dev_name(&pdev->dev));
  	if (ret)
  		return ret;
  
@@ -39,10 +56,10 @@ index bc1efbfb9ddf..5be19b1f08f7 100644
  		return ret;
  
 diff --git a/drivers/iommu/omap-iommu.c b/drivers/iommu/omap-iommu.c
-index 641e035cf866..8338781ec6f3 100644
+index bd67e1b2c64e..121010b1702a 100644
 --- a/drivers/iommu/omap-iommu.c
 +++ b/drivers/iommu/omap-iommu.c
-@@ -947,7 +947,7 @@ static int omap_iommu_probe(struct platform_device *pdev)
+@@ -988,7 +988,7 @@ static int omap_iommu_probe(struct platform_device *pdev)
  	if (IS_ERR(obj->group))
  		return PTR_ERR(obj->group);
  
@@ -51,17 +68,56 @@ index 641e035cf866..8338781ec6f3 100644
  	if (err)
  		goto out_group;
  
+diff --git a/drivers/iommu/qcom_iommu.c b/drivers/iommu/qcom_iommu.c
+index c8a587d034b0..fd2f9b72bb9d 100644
+--- a/drivers/iommu/qcom_iommu.c
++++ b/drivers/iommu/qcom_iommu.c
+@@ -820,7 +820,7 @@ static int qcom_iommu_device_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	ret = iommu_device_sysfs_add(&qcom_iommu->iommu, dev, NULL,
+-				     dev_name(dev));
++				     "%s", dev_name(dev));
+ 	if (ret) {
+ 		dev_err(dev, "Failed to register iommu in sysfs\n");
+ 		return ret;
 diff --git a/drivers/iommu/rockchip-iommu.c b/drivers/iommu/rockchip-iommu.c
-index 4ba48a26b389..1f3c27639257 100644
+index 9d991c2d8767..41021db5292d 100644
 --- a/drivers/iommu/rockchip-iommu.c
 +++ b/drivers/iommu/rockchip-iommu.c
-@@ -1163,7 +1163,7 @@ static int rk_iommu_probe(struct platform_device *pdev)
- 		return -ENXIO;
- 	}
+@@ -1187,7 +1187,7 @@ static int rk_iommu_probe(struct platform_device *pdev)
+ 	iommu->reset_disabled = device_property_read_bool(dev,
+ 					"rockchip,disable-mmu-reset");
  
 -	err = iommu_device_sysfs_add(&iommu->iommu, dev, NULL, dev_name(dev));
 +	err = iommu_device_sysfs_add(&iommu->iommu, dev, NULL, "%s", dev_name(dev));
  	if (err)
  		return err;
+ 
+diff --git a/drivers/iommu/tegra-gart.c b/drivers/iommu/tegra-gart.c
+index b62f790ad1ba..d57bea0ab650 100644
+--- a/drivers/iommu/tegra-gart.c
++++ b/drivers/iommu/tegra-gart.c
+@@ -431,7 +431,7 @@ static int tegra_gart_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	ret = iommu_device_sysfs_add(&gart->iommu, &pdev->dev, NULL,
+-				     dev_name(&pdev->dev));
++				     "%s", dev_name(&pdev->dev));
+ 	if (ret) {
+ 		dev_err(dev, "Failed to register IOMMU in sysfs\n");
+ 		return ret;
+diff --git a/drivers/iommu/tegra-smmu.c b/drivers/iommu/tegra-smmu.c
+index 3b6449e2cbf1..d1b6d2327fca 100644
+--- a/drivers/iommu/tegra-smmu.c
++++ b/drivers/iommu/tegra-smmu.c
+@@ -949,7 +949,7 @@ struct tegra_smmu *tegra_smmu_probe(struct device *dev,
+ 
+ 	tegra_smmu_ahb_enable();
+ 
+-	err = iommu_device_sysfs_add(&smmu->iommu, dev, NULL, dev_name(dev));
++	err = iommu_device_sysfs_add(&smmu->iommu, dev, NULL, "%s", dev_name(dev));
+ 	if (err)
+ 		return ERR_PTR(err);
  
 -- 

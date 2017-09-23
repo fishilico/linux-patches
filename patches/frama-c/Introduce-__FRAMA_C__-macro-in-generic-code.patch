@@ -41,7 +41,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  26 files changed, 153 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index d17b6e6393c7..98d06fa8b25c 100644
+index 7e8589ce631c..25929fb1c5e2 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -51,7 +51,7 @@
@@ -71,7 +71,7 @@ index 3d8ff09eba57..452f247b57ef 100644
  #include <linux/i8253.h>
  
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
-index 723e81a6c162..b914b1f52ae5 100644
+index 2e51f6e7b3c2..1ecda85b8996 100644
 --- a/include/asm-generic/uaccess.h
 +++ b/include/asm-generic/uaccess.h
 @@ -73,6 +73,21 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
@@ -95,9 +95,9 @@ index 723e81a6c162..b914b1f52ae5 100644
 +#else
  #define put_user(x, ptr)					\
  ({								\
- 	void *__p = (ptr);					\
+ 	void __user *__p = (ptr);				\
 @@ -81,6 +96,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
- 		__put_user((x), ((__typeof__(*(ptr)) *)__p)) :	\
+ 		__put_user((x), ((__typeof__(*(ptr)) __user *)__p)) :	\
  		-EFAULT;					\
  })
 +#endif
@@ -137,10 +137,10 @@ index b7d22d60008a..01c07346e5b9 100644
  
  /* Force a compilation error if a constant expression is not a power of 2 */
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index bdb80c4aef6e..372aa5e02c6a 100644
+index 16d41de92ee3..3ec0a7907d06 100644
 --- a/include/linux/compiler-gcc.h
 +++ b/include/linux/compiler-gcc.h
-@@ -250,8 +250,13 @@
+@@ -241,8 +241,13 @@
   * as possible, this is used for all GCC 4.6+ builds, and not just on
   * RANDSTRUCT_PLUGIN builds.
   */
@@ -155,7 +155,7 @@ index bdb80c4aef6e..372aa5e02c6a 100644
  #endif /* GCC_VERSION >= 40600 */
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 17ddbf60d857..0454443e0036 100644
+index 73eb5016b584..d63ed0f9fba7 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -3,7 +3,7 @@
@@ -196,10 +196,10 @@ index 17ddbf60d857..0454443e0036 100644
   * Generic compiler-dependent macros required for kernel
   * build go below this comment. Actual compiler/compiler version
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 4bf4479a3a80..c85d37fc6ccf 100644
+index cd415b733c2a..17120b2cf4c1 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -817,9 +817,14 @@ set_cpu_active(unsigned int cpu, bool active)
+@@ -804,9 +804,14 @@ set_cpu_active(unsigned int cpu, bool active)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -286,7 +286,7 @@ index 11366b3ff0b4..eb6e863039a6 100644
  		/*
  		 * This little trick makes sure that
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 413262161a91..6f32ee54acbf 100644
+index a9cb827b8a27..e6e2b461eb27 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -15,6 +15,9 @@
@@ -307,7 +307,7 @@ index 413262161a91..6f32ee54acbf 100644
  #define SIZE_MAX	(~(size_t)0)
  
  #define U8_MAX		((u8)~0U)
-@@ -223,6 +227,10 @@ extern int _cond_resched(void);
+@@ -226,6 +230,10 @@ extern int _cond_resched(void);
   *
   * Return: an absolute value of x.
   */
@@ -318,7 +318,7 @@ index 413262161a91..6f32ee54acbf 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -237,6 +245,7 @@ extern int _cond_resched(void);
+@@ -240,6 +248,7 @@ extern int _cond_resched(void);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -358,10 +358,10 @@ index db2f3f454a1b..5124ce3698dc 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index f958d0732af6..600f9fd43584 100644
+index f68c58a93dd0..dfe4f097a4ea 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -116,6 +116,8 @@ typedef int __bitwise pci_power_t;
+@@ -138,6 +138,8 @@ typedef int __bitwise pci_power_t;
  #define PCI_UNKNOWN	((pci_power_t __force) 5)
  #define PCI_POWER_ERROR	((pci_power_t __force) -1)
  
@@ -370,7 +370,7 @@ index f958d0732af6..600f9fd43584 100644
  /* Remember to update this when the list above changes! */
  extern const char *pci_power_names[];
  
-@@ -123,6 +125,7 @@ static inline const char *pci_power_name(pci_power_t state)
+@@ -145,6 +147,7 @@ static inline const char *pci_power_name(pci_power_t state)
  {
  	return pci_power_names[1 + (__force int) state];
  }
@@ -379,10 +379,10 @@ index f958d0732af6..600f9fd43584 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 169dbabfbb01..bb3d93741e5f 100644
+index 9e9d38422c6b..b4a978ba0333 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -192,6 +192,12 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+@@ -207,6 +207,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
  
  #define __PROTECT(...) asmlinkage_protect(__VA_ARGS__)
@@ -395,14 +395,14 @@ index 169dbabfbb01..bb3d93741e5f 100644
  #define __SYSCALL_DEFINEx(x, name, ...)					\
  	asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))	\
  		__attribute__((alias(__stringify(SyS##name))));		\
-@@ -205,6 +211,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+@@ -220,6 +226,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  		return ret;						\
  	}								\
  	static inline long SYSC##name(__MAP(x,__SC_DECL,__VA_ARGS__))
 +#endif
  
- asmlinkage long sys32_quotactl(unsigned int cmd, const char __user *special,
- 			       qid_t id, void __user *addr);
+ #ifdef TIF_FSCHECK
+ /*
 diff --git a/include/uapi/linux/limits.h b/include/uapi/linux/limits.h
 index 2d0f94162fb3..4866bbdab10e 100644
 --- a/include/uapi/linux/limits.h
@@ -433,7 +433,7 @@ index 41e5914f0a8e..08f591e2e980 100644
  #else
  #define __bitwise__
 diff --git a/init/do_mounts.c b/init/do_mounts.c
-index a9295982cc47..cc22c0417746 100644
+index 77b441487a9e..507a71eac39b 100644
 --- a/init/do_mounts.c
 +++ b/init/do_mounts.c
 @@ -3,7 +3,7 @@
@@ -485,7 +485,7 @@ index dd4104c9aa12..5c8fb9193110 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/init/initramfs.c b/init/initramfs.c
-index 8a532050043f..10720bab7e4b 100644
+index e64bf7b4c1ca..1f05b3fa549e 100644
 --- a/init/initramfs.c
 +++ b/init/initramfs.c
 @@ -3,7 +3,7 @@
@@ -498,7 +498,7 @@ index 8a532050043f..10720bab7e4b 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/kernel/signal.c b/kernel/signal.c
-index ed804a470dcd..210095b505ad 100644
+index 800a18f77732..e63dcd311742 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1111,7 +1111,7 @@ static void print_fatal_signal(int signr)
@@ -559,10 +559,10 @@ index 44a8c1402133..bcfb9f05116e 100644
  		--sec;
  	}
 diff --git a/lib/hexdump.c b/lib/hexdump.c
-index 992457b1284c..2751063061b2 100644
+index 81b70ed37209..89d1a3f19bba 100644
 --- a/lib/hexdump.c
 +++ b/lib/hexdump.c
-@@ -113,7 +113,9 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+@@ -114,7 +114,9 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
  	u8 ch;
  	int j, lx = 0;
  	int ascii_column;
@@ -572,7 +572,7 @@ index 992457b1284c..2751063061b2 100644
  
  	if (rowsize != 16 && rowsize != 32)
  		rowsize = 16;
-@@ -134,13 +136,18 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+@@ -135,13 +137,18 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
  	if (!len)
  		goto nil;
  
@@ -592,7 +592,7 @@ index 992457b1284c..2751063061b2 100644
  			if (ret >= linebuflen - lx)
  				goto overflow1;
  			lx += ret;
-@@ -167,7 +174,9 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+@@ -168,7 +175,9 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
  				goto overflow1;
  			lx += ret;
  		}

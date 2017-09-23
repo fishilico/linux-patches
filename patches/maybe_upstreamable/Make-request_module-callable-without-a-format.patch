@@ -7,14 +7,14 @@ Subject: [PATCH] {MAYBE UPS} Make request_module() callable without a format
 This avoid having to use %s when using format strings
 ---
  include/linux/kmod.h | 18 ++++++++++++------
- kernel/kmod.c        | 44 +++++++++++++++++++++++++++++++++-----------
- 2 files changed, 45 insertions(+), 17 deletions(-)
+ kernel/kmod.c        | 45 ++++++++++++++++++++++++++++++++++-----------
+ 2 files changed, 46 insertions(+), 17 deletions(-)
 
 diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-index 655082c88fd9..f9672b38a089 100644
+index 40c89ad4bea6..a019fc9131b3 100644
 --- a/include/linux/kmod.h
 +++ b/include/linux/kmod.h
-@@ -32,15 +32,21 @@
+@@ -33,15 +33,21 @@
  extern char modprobe_path[]; /* for sysctl */
  /* modprobe exit status on success, -ve on error.  Return value
   * usually useless though. */
@@ -43,10 +43,10 @@ index 655082c88fd9..f9672b38a089 100644
  #endif
  
 diff --git a/kernel/kmod.c b/kernel/kmod.c
-index 0a344cf28f97..f9e6b9a5a21b 100644
+index cf46fdc0150a..21fa08966e51 100644
 --- a/kernel/kmod.c
 +++ b/kernel/kmod.c
-@@ -136,8 +136,7 @@ static int call_modprobe(const char *modname, int wait)
+@@ -110,8 +110,7 @@ static int call_modprobe(const char *modname, int wait)
  /**
   * __request_module - try to load a kernel module
   * @wait: wait (or not) for the operation to complete
@@ -56,7 +56,7 @@ index 0a344cf28f97..f9e6b9a5a21b 100644
   *
   * Load a module using the user mode module loader. The function returns
   * zero on success or a negative errno code or positive exit code from
-@@ -149,10 +148,8 @@ static int call_modprobe(const char *modname, int wait)
+@@ -123,10 +122,8 @@ static int call_modprobe(const char *modname, int wait)
   * If module auto-loading support is disabled then this function
   * becomes a no-operation.
   */
@@ -68,7 +68,7 @@ index 0a344cf28f97..f9e6b9a5a21b 100644
  	int ret;
  
  	/*
-@@ -166,12 +163,6 @@ int __request_module(bool wait, const char *fmt, ...)
+@@ -140,12 +137,6 @@ int __request_module(bool wait, const char *fmt, ...)
  	if (!modprobe_path[0])
  		return 0;
  
@@ -81,10 +81,11 @@ index 0a344cf28f97..f9e6b9a5a21b 100644
  	ret = security_kernel_module_request(module_name);
  	if (ret)
  		return ret;
-@@ -204,6 +195,37 @@ int __request_module(bool wait, const char *fmt, ...)
+@@ -177,3 +168,35 @@ int __request_module(bool wait, const char *fmt, ...)
+ 	return ret;
  }
  EXPORT_SYMBOL(__request_module);
- 
++
 +/**
 + * __request_module_fmt - try to load a kernel module with a format string
 + * @wait: wait (or not) for the operation to complete
@@ -116,7 +117,4 @@ index 0a344cf28f97..f9e6b9a5a21b 100644
 +	return __request_module(wait, module_name);
 +}
 +EXPORT_SYMBOL(__request_module_fmt);
- #endif /* CONFIG_MODULES */
- 
- static void call_usermodehelper_freeinfo(struct subprocess_info *info)
 -- 

@@ -1,32 +1,32 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
 Date: Sun, 18 Sep 2016 12:56:20 +0200
-Subject: [PATCH] {PRAGMA} isdn/eicon: silent -Wsuggest-attribute=format and
+Subject: [PATCH] {PRAGMA} isdn/eicon: silence -Wsuggest-attribute=format and
  -Wformat-security with pragmas
 
 This allows fixing all formatting errors too.
 ---
  drivers/isdn/hardware/eicon/capifunc.c  |  15 +++-
- drivers/isdn/hardware/eicon/dadapter.c  |  12 +--
+ drivers/isdn/hardware/eicon/dadapter.c  |  12 ++--
  drivers/isdn/hardware/eicon/debug.c     |   3 +
  drivers/isdn/hardware/eicon/debuglib.c  |   9 ++-
  drivers/isdn/hardware/eicon/debuglib.h  |  59 +++++++--------
- drivers/isdn/hardware/eicon/di.c        |   8 ++
+ drivers/isdn/hardware/eicon/di.c        |   8 +++
  drivers/isdn/hardware/eicon/diva.c      |   4 +-
  drivers/isdn/hardware/eicon/divasfunc.c |   2 +-
  drivers/isdn/hardware/eicon/divasi.c    |   6 +-
  drivers/isdn/hardware/eicon/divasmain.c |  10 +--
  drivers/isdn/hardware/eicon/idifunc.c   |   2 +-
  drivers/isdn/hardware/eicon/io.c        |   7 +-
- drivers/isdn/hardware/eicon/message.c   | 126 ++++++++++++++++----------------
+ drivers/isdn/hardware/eicon/message.c   | 122 ++++++++++++++++----------------
  drivers/isdn/hardware/eicon/mntfunc.c   |   2 +-
- drivers/isdn/hardware/eicon/os_4bri.c   |  11 ++-
+ drivers/isdn/hardware/eicon/os_4bri.c   |  11 +--
  drivers/isdn/hardware/eicon/os_bri.c    |   4 +-
- drivers/isdn/hardware/eicon/os_pri.c    |  36 ++++-----
+ drivers/isdn/hardware/eicon/os_pri.c    |  36 +++++-----
  drivers/isdn/hardware/eicon/platform.h  |   4 +-
  drivers/isdn/hardware/eicon/s_4bri.c    |  18 ++---
  drivers/isdn/hardware/eicon/um_idi.c    |  62 ++++++++--------
- 20 files changed, 216 insertions(+), 184 deletions(-)
+ 20 files changed, 214 insertions(+), 182 deletions(-)
 
 diff --git a/drivers/isdn/hardware/eicon/capifunc.c b/drivers/isdn/hardware/eicon/capifunc.c
 index 7a0bdbdd87ea..5b696bf46980 100644
@@ -470,10 +470,10 @@ index 8851ce580c23..cb6bea3d75d8 100644
  					return;
  			}
 diff --git a/drivers/isdn/hardware/eicon/message.c b/drivers/isdn/hardware/eicon/message.c
-index 3e3c2b858b1c..5ed6477e82f1 100644
+index 9e674064fc72..27d7daf22a23 100644
 --- a/drivers/isdn/hardware/eicon/message.c
 +++ b/drivers/isdn/hardware/eicon/message.c
-@@ -784,7 +784,7 @@ static word get_ncci(PLCI *plci, byte ch, word force_ncci)
+@@ -769,7 +769,7 @@ static word get_ncci(PLCI *plci, byte ch, word force_ncci)
  	if (!ch || a->ch_ncci[ch])
  	{
  		ncci_mapping_bug++;
@@ -482,7 +482,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				ncci_mapping_bug, ch, force_ncci, a->ncci_ch[a->ch_ncci[ch]], a->ch_ncci[ch]));
  		ncci = ch;
  	}
-@@ -821,12 +821,12 @@ static word get_ncci(PLCI *plci, byte ch, word force_ncci)
+@@ -806,12 +806,12 @@ static word get_ncci(PLCI *plci, byte ch, word force_ncci)
  					} while ((i < MAX_NL_CHANNEL + 1) && (j < MAX_NCCI + 1));
  					if (i < MAX_NL_CHANNEL + 1)
  					{
@@ -497,7 +497,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  								ncci_mapping_bug, ch, force_ncci));
  					}
  					ncci = ch;
-@@ -842,7 +842,7 @@ static word get_ncci(PLCI *plci, byte ch, word force_ncci)
+@@ -827,7 +827,7 @@ static word get_ncci(PLCI *plci, byte ch, word force_ncci)
  		}
  		a->ncci_ch[ncci] = ch;
  		a->ch_ncci[ch] = (byte) ncci;
@@ -506,7 +506,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				ncci_mapping_bug, ch, force_ncci, ch, ncci));
  	}
  	return (ncci);
-@@ -865,7 +865,7 @@ static void ncci_free_receive_buffers(PLCI *plci, word ncci)
+@@ -850,7 +850,7 @@ static void ncci_free_receive_buffers(PLCI *plci, word ncci)
  			if (!plci->appl)
  			{
  				ncci_mapping_bug++;
@@ -515,7 +515,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  						ncci_mapping_bug, Id));
  			}
  			else
-@@ -892,7 +892,7 @@ static void ncci_free_receive_buffers(PLCI *plci, word ncci)
+@@ -877,7 +877,7 @@ static void ncci_free_receive_buffers(PLCI *plci, word ncci)
  				if (!plci->appl)
  				{
  					ncci_mapping_bug++;
@@ -524,7 +524,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  							ncci_mapping_bug, Id));
  				}
  				else
-@@ -956,13 +956,13 @@ static void ncci_remove(PLCI *plci, word ncci, byte preserve_ncci)
+@@ -941,13 +941,13 @@ static void ncci_remove(PLCI *plci, word ncci, byte preserve_ncci)
  		if (a->ncci_plci[ncci] != plci->Id)
  		{
  			ncci_mapping_bug++;
@@ -540,7 +540,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  					ncci_mapping_bug, Id, preserve_ncci, a->ncci_ch[ncci], ncci));
  			a->ch_ncci[a->ncci_ch[ncci]] = 0;
  			if (!preserve_ncci)
-@@ -992,7 +992,7 @@ static void ncci_remove(PLCI *plci, word ncci, byte preserve_ncci)
+@@ -977,7 +977,7 @@ static void ncci_remove(PLCI *plci, word ncci, byte preserve_ncci)
  			if (a->ncci_plci[ncci] == plci->Id)
  			{
  				cleanup_ncci_data(plci, ncci);
@@ -549,7 +549,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  						ncci_mapping_bug, Id, preserve_ncci, a->ncci_ch[ncci], ncci));
  				a->ch_ncci[a->ncci_ch[ncci]] = 0;
  				if (!preserve_ncci)
-@@ -1667,7 +1667,7 @@ static byte listen_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
+@@ -1546,7 +1546,7 @@ static byte listen_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
  		Info = 0;
  		a->Info_Mask[appl->Id - 1] = GET_DWORD(parms[0].info);
  		a->CIP_Mask[appl->Id - 1] = GET_DWORD(parms[1].info);
@@ -558,7 +558,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  		if (a->Info_Mask[appl->Id - 1] & 0x200) { /* early B3 connect provides */
  			a->Info_Mask[appl->Id - 1] |=  0x10;   /* call progression infos    */
  		}
-@@ -4132,7 +4132,7 @@ static void control_rc(PLCI *plci, byte req, byte rc, byte ch, byte global_req,
+@@ -4009,7 +4009,7 @@ static void control_rc(PLCI *plci, byte req, byte rc, byte ch, byte global_req,
  		Id = (((dword)(ncci ? ncci : ch)) << 16) | ((word)plci->Id << 8) | a->Id;
  		if (plci->tel && plci->SuppState != CALL_HELD) Id |= EXT_CONTROLLER;
  		Number = plci->number;
@@ -567,7 +567,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  		dbug(1, dprintf("channels=0x%x", plci->channels));
  		if (plci_remove_check(plci))
  			return;
-@@ -4895,7 +4895,7 @@ static void sig_ind(PLCI *plci)
+@@ -4772,7 +4772,7 @@ static void sig_ind(PLCI *plci)
  		return;
  	}
  	if (plci->tel && plci->SuppState != CALL_HELD) Id |= EXT_CONTROLLER;
@@ -576,7 +576,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			Id, plci->Id, plci->tel, plci->State, plci->channels, plci->hangup_flow_ctrl_timer));
  	if (plci->Sig.Ind == CALL_HOLD_ACK && plci->channels)
  	{
-@@ -4997,7 +4997,7 @@ static void sig_ind(PLCI *plci)
+@@ -4874,7 +4874,7 @@ static void sig_ind(PLCI *plci)
  		}
  		if (esc_profile[0])
  		{
@@ -585,7 +585,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  					UnMapController(a->Id), GET_DWORD(&esc_profile[6]),
  					GET_DWORD(&esc_profile[10]), GET_DWORD(&esc_profile[14]),
  					GET_DWORD(&esc_profile[18]), GET_DWORD(&esc_profile[46])));
-@@ -5074,7 +5074,7 @@ static void sig_ind(PLCI *plci)
+@@ -4951,7 +4951,7 @@ static void sig_ind(PLCI *plci)
  			a->profile.Global_Options |= GL_DTMF_SUPPORTED;
  		}
  		a->manufacturer_features &= ~MANUFACTURER_FEATURE_OOB_CHANNEL;
@@ -594,25 +594,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				UnMapController(a->Id), a->profile.Global_Options,
  				a->profile.B1_Protocols, a->profile.B2_Protocols,
  				a->profile.B3_Protocols, a->manufacturer_features));
-@@ -5691,7 +5691,7 @@ static void sig_ind(PLCI *plci)
- 		}
- 		cip = find_cip(a, parms[4], parms[6]);
- 		cip_mask = 1L << cip;
--		dbug(1, dprintf("cip=%d,cip_mask=%lx", cip, cip_mask));
-+		dbug(1, dprintf("cip=%d,cip_mask=%x", cip, cip_mask));
- 		clear_c_ind_mask(plci);
- 		if (!remove_started && !a->adapter_disabled)
- 		{
-@@ -5702,7 +5702,7 @@ static void sig_ind(PLCI *plci)
- 				    && (a->CIP_Mask[i] & 1 || a->CIP_Mask[i] & cip_mask)
- 				    && CPN_filter_ok(parms[0], a, i)
- 				    && test_group_ind_mask_bit(plci, i)) {
--					dbug(1, dprintf("storedcip_mask[%d]=0x%lx", i, a->CIP_Mask[i]));
-+					dbug(1, dprintf("storedcip_mask[%d]=0x%x", i, a->CIP_Mask[i]));
- 					set_c_ind_mask_bit(plci, i);
- 					dump_c_ind_mask(plci);
- 					plci->State = INC_CON_PENDING;
-@@ -6570,7 +6570,7 @@ static void nl_ind(PLCI *plci)
+@@ -6433,7 +6433,7 @@ static void nl_ind(PLCI *plci)
  	Id = (((dword)(ncci ? ncci : ch)) << 16) | (((word) plci->Id) << 8) | a->Id;
  	if (plci->tel) Id |= EXT_CONTROLLER;
  	APPLptr = plci->appl;
@@ -621,7 +603,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			plci->NL.Id, Id, plci->Id, plci->tel, plci->State, ch, plci->channels, plci->NL.Ind & 0x0f));
  
  	/* in the case if no connect_active_Ind was sent to the appl we wait for */
-@@ -6986,7 +6986,7 @@ static void nl_ind(PLCI *plci)
+@@ -6849,7 +6849,7 @@ static void nl_ind(PLCI *plci)
  			ncci = get_ncci(plci, ch, 0);
  			Id = (Id & 0xffff) | (((dword) ncci) << 16);
  		}
@@ -630,7 +612,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				ch, a->ncci_state[ncci], a->ncci_plci[ncci], plci->Id, plci->State));
  
  		msg = _CONNECT_B3_I;
-@@ -9589,7 +9589,7 @@ static void dtmf_enable_receiver(PLCI *plci, byte enable_mask)
+@@ -9451,7 +9451,7 @@ static void dtmf_enable_receiver(PLCI *plci, byte enable_mask)
  {
  	word min_digit_duration, min_gap_duration;
  
@@ -639,7 +621,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__, enable_mask));
  
-@@ -9627,7 +9627,7 @@ static void dtmf_send_digits(PLCI *plci, byte *digit_buffer, word digit_count)
+@@ -9489,7 +9489,7 @@ static void dtmf_send_digits(PLCI *plci, byte *digit_buffer, word digit_count)
  {
  	word w, i;
  
@@ -648,7 +630,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__, digit_count));
  
-@@ -9659,7 +9659,7 @@ static void dtmf_send_digits(PLCI *plci, byte *digit_buffer, word digit_count)
+@@ -9521,7 +9521,7 @@ static void dtmf_send_digits(PLCI *plci, byte *digit_buffer, word digit_count)
  static void dtmf_rec_clear_config(PLCI *plci)
  {
  
@@ -657,7 +639,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -9675,7 +9675,7 @@ static void dtmf_rec_clear_config(PLCI *plci)
+@@ -9537,7 +9537,7 @@ static void dtmf_rec_clear_config(PLCI *plci)
  static void dtmf_send_clear_config(PLCI *plci)
  {
  
@@ -666,7 +648,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -10187,7 +10187,7 @@ static void dtmf_parameter_write(PLCI *plci)
+@@ -10049,7 +10049,7 @@ static void dtmf_parameter_write(PLCI *plci)
  	word i;
  	byte parameter_buffer[DTMF_PARAMETER_BUFFER_SIZE + 2];
  
@@ -675,7 +657,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -10204,7 +10204,7 @@ static void dtmf_parameter_write(PLCI *plci)
+@@ -10066,7 +10066,7 @@ static void dtmf_parameter_write(PLCI *plci)
  static void dtmf_parameter_clear_config(PLCI *plci)
  {
  
@@ -684,7 +666,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -10422,7 +10422,7 @@ static void mixer_set_bchannel_id_esc(PLCI *plci, byte bchannel_id)
+@@ -10284,7 +10284,7 @@ static void mixer_set_bchannel_id_esc(PLCI *plci, byte bchannel_id)
  					}
  					splci->li_bchannel_id = 3 - plci->li_bchannel_id;
  					li_config_table[a->li_base + (2 - plci->li_bchannel_id)].plci = splci;
@@ -693,7 +675,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  							(dword)((splci->Id << 8) | UnMapController(splci->adapter->Id)),
  							(char *)(FILE_), __LINE__, splci->li_bchannel_id));
  				}
-@@ -10436,7 +10436,7 @@ static void mixer_set_bchannel_id_esc(PLCI *plci, byte bchannel_id)
+@@ -10298,7 +10298,7 @@ static void mixer_set_bchannel_id_esc(PLCI *plci, byte bchannel_id)
  	{
  		mixer_clear_config(plci);
  	}
@@ -702,7 +684,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__, bchannel_id, plci->li_bchannel_id));
  }
-@@ -10480,7 +10480,7 @@ static void mixer_set_bchannel_id(PLCI *plci, byte *chi)
+@@ -10342,7 +10342,7 @@ static void mixer_set_bchannel_id(PLCI *plci, byte *chi)
  						}
  						splci->li_bchannel_id = 3 - plci->li_bchannel_id;
  						li_config_table[a->li_base + (2 - plci->li_bchannel_id)].plci = splci;
@@ -711,7 +693,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  								(dword)((splci->Id << 8) | UnMapController(splci->adapter->Id)),
  								(char *)(FILE_), __LINE__, splci->li_bchannel_id));
  					}
-@@ -10495,7 +10495,7 @@ static void mixer_set_bchannel_id(PLCI *plci, byte *chi)
+@@ -10357,7 +10357,7 @@ static void mixer_set_bchannel_id(PLCI *plci, byte *chi)
  	{
  		mixer_clear_config(plci);
  	}
@@ -720,7 +702,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__, ch, plci->li_bchannel_id));
  }
-@@ -10509,7 +10509,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
+@@ -10371,7 +10371,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
  	char *p;
  	char hex_line[2 * MIXER_MAX_DUMP_CHANNELS + MIXER_MAX_DUMP_CHANNELS / 8 + 4];
  
@@ -729,7 +711,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)(UnMapController(a->Id)), (char *)(FILE_), __LINE__));
  
  	for (i = 0; i < li_total_channels; i++)
-@@ -10696,7 +10696,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
+@@ -10558,7 +10558,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
  		p = hex_byte_pack(p, li_config_table[j].curchnl);
  	}
  	*p = '\0';
@@ -738,7 +720,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)(UnMapController(a->Id)), (char *)hex_line));
  	p = hex_line;
  	for (j = 0; j < n; j++)
-@@ -10706,7 +10706,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
+@@ -10568,7 +10568,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
  		p = hex_byte_pack(p, li_config_table[j].channel);
  	}
  	*p = '\0';
@@ -747,7 +729,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)(UnMapController(a->Id)), (char *)hex_line));
  	p = hex_line;
  	for (j = 0; j < n; j++)
-@@ -10716,7 +10716,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
+@@ -10578,7 +10578,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
  		p = hex_byte_pack(p, li_config_table[j].chflags);
  	}
  	*p = '\0';
@@ -756,7 +738,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)(UnMapController(a->Id)), (char *)hex_line));
  	for (i = 0; i < n; i++)
  	{
-@@ -10728,7 +10728,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
+@@ -10590,7 +10590,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
  			p = hex_byte_pack(p, li_config_table[i].flag_table[j]);
  		}
  		*p = '\0';
@@ -765,7 +747,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				(dword)(UnMapController(a->Id)), i, (char *)hex_line));
  	}
  	for (i = 0; i < n; i++)
-@@ -10741,7 +10741,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
+@@ -10603,7 +10603,7 @@ static void mixer_calculate_coefs(DIVA_CAPI_ADAPTER *a)
  			p = hex_byte_pack(p, li_config_table[i].coef_table[j]);
  		}
  		*p = '\0';
@@ -774,7 +756,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				(dword)(UnMapController(a->Id)), i, (char *)hex_line));
  	}
  }
-@@ -10865,7 +10865,7 @@ static void xconnect_query_addresses(PLCI *plci)
+@@ -10727,7 +10727,7 @@ static void xconnect_query_addresses(PLCI *plci)
  	word w, ch;
  	byte *p;
  
@@ -783,7 +765,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -10899,7 +10899,7 @@ static void xconnect_query_addresses(PLCI *plci)
+@@ -10761,7 +10761,7 @@ static void xconnect_query_addresses(PLCI *plci)
  static void xconnect_write_coefs(PLCI *plci, word internal_command)
  {
  
@@ -792,7 +774,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__, internal_command));
  
-@@ -10917,14 +10917,14 @@ static byte xconnect_write_coefs_process(dword Id, PLCI *plci, byte Rc)
+@@ -10779,14 +10779,14 @@ static byte xconnect_write_coefs_process(dword Id, PLCI *plci, byte Rc)
  	struct xconnect_transfer_address_s   *transfer_address;
  	byte ch_map[MIXER_CHANNELS_BRI];
  
@@ -809,7 +791,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				UnMapId(Id), (char *)(FILE_), __LINE__));
  		return (true);
  	}
-@@ -11253,7 +11253,7 @@ static void mixer_notify_update(PLCI *plci, byte others)
+@@ -11115,7 +11115,7 @@ static void mixer_notify_update(PLCI *plci, byte others)
  	PLCI *notify_plci;
  	byte msg[sizeof(CAPI_MSG_HEADER) + 6];
  
@@ -818,7 +800,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__, others));
  
-@@ -11305,7 +11305,7 @@ static void mixer_notify_update(PLCI *plci, byte others)
+@@ -11167,7 +11167,7 @@ static void mixer_notify_update(PLCI *plci, byte others)
  				{
  					if (w != 0)
  					{
@@ -827,7 +809,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  								(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  								(char *)(FILE_), __LINE__,
  								(dword)((notify_plci->Id << 8) | UnMapController(notify_plci->adapter->Id)), w));
-@@ -11325,7 +11325,7 @@ static void mixer_clear_config(PLCI *plci)
+@@ -11187,7 +11187,7 @@ static void mixer_clear_config(PLCI *plci)
  	DIVA_CAPI_ADAPTER *a;
  	word i, j;
  
@@ -836,7 +818,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -11607,7 +11607,7 @@ static void mixer_command(dword Id, PLCI *plci, byte Rc)
+@@ -11469,7 +11469,7 @@ static void mixer_command(dword Id, PLCI *plci, byte Rc)
  	if ((plci->li_bchannel_id == 0)
  	    || (li_config_table[a->li_base + (plci->li_bchannel_id - 1)].plci != plci))
  	{
@@ -845,7 +827,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				UnMapId(Id), (char *)(FILE_), __LINE__, (int)(plci->li_bchannel_id)));
  	}
  	else
-@@ -11925,7 +11925,7 @@ static PLCI *li_check_plci_b(dword Id, PLCI *plci,
+@@ -11787,7 +11787,7 @@ static PLCI *li_check_plci_b(dword Id, PLCI *plci,
  	    || (((plci_b_id >> 8) & 0xff) == 0)
  	    || (((plci_b_id >> 8) & 0xff) > adapter[ctlr_b - 1].max_plci))
  	{
@@ -854,7 +836,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				UnMapId(Id), (char *)(FILE_), __LINE__, plci_b_id));
  		PUT_WORD(p_result, _WRONG_IDENTIFIER);
  		return (NULL);
-@@ -11935,7 +11935,7 @@ static PLCI *li_check_plci_b(dword Id, PLCI *plci,
+@@ -11797,7 +11797,7 @@ static PLCI *li_check_plci_b(dword Id, PLCI *plci,
  	    || !plci_b->NL.Id || plci_b->nl_remove_id
  	    || (plci_b->li_bchannel_id == 0))
  	{
@@ -863,7 +845,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				UnMapId(Id), (char *)(FILE_), __LINE__, plci_b_id));
  		PUT_WORD(p_result, _REQUEST_NOT_ALLOWED_IN_THIS_STATE);
  		return (NULL);
-@@ -11946,7 +11946,7 @@ static PLCI *li_check_plci_b(dword Id, PLCI *plci,
+@@ -11808,7 +11808,7 @@ static PLCI *li_check_plci_b(dword Id, PLCI *plci,
  	    && (!(plci->adapter->manufacturer_features & MANUFACTURER_FEATURE_XCONNECT)
  		|| !(plci_b->adapter->manufacturer_features & MANUFACTURER_FEATURE_XCONNECT)))
  	{
@@ -872,7 +854,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				UnMapId(Id), (char *)(FILE_), __LINE__, plci_b_id));
  		PUT_WORD(p_result, _WRONG_IDENTIFIER);
  		return (NULL);
-@@ -11988,7 +11988,7 @@ static PLCI *li2_check_plci_b(dword Id, PLCI *plci,
+@@ -11850,7 +11850,7 @@ static PLCI *li2_check_plci_b(dword Id, PLCI *plci,
  	    || (((plci_b_id >> 8) & 0xff) == 0)
  	    || (((plci_b_id >> 8) & 0xff) > adapter[ctlr_b - 1].max_plci))
  	{
@@ -881,7 +863,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				UnMapId(Id), (char *)(FILE_), __LINE__, plci_b_id));
  		PUT_WORD(p_result, _WRONG_IDENTIFIER);
  		return (NULL);
-@@ -11999,7 +11999,7 @@ static PLCI *li2_check_plci_b(dword Id, PLCI *plci,
+@@ -11861,7 +11861,7 @@ static PLCI *li2_check_plci_b(dword Id, PLCI *plci,
  	    || (plci_b->li_bchannel_id == 0)
  	    || (li_config_table[plci_b->adapter->li_base + (plci_b->li_bchannel_id - 1)].plci != plci_b))
  	{
@@ -890,7 +872,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				UnMapId(Id), (char *)(FILE_), __LINE__, plci_b_id));
  		PUT_WORD(p_result, _WRONG_STATE);
  		return (NULL);
-@@ -12009,7 +12009,7 @@ static PLCI *li2_check_plci_b(dword Id, PLCI *plci,
+@@ -11871,7 +11871,7 @@ static PLCI *li2_check_plci_b(dword Id, PLCI *plci,
  	    && (!(plci->adapter->manufacturer_features & MANUFACTURER_FEATURE_XCONNECT)
  		|| !(plci_b->adapter->manufacturer_features & MANUFACTURER_FEATURE_XCONNECT)))
  	{
@@ -899,7 +881,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				UnMapId(Id), (char *)(FILE_), __LINE__, plci_b_id));
  		PUT_WORD(p_result, _WRONG_IDENTIFIER);
  		return (NULL);
-@@ -12549,7 +12549,7 @@ static byte mixer_notify_source_removed(PLCI *plci, dword plci_b_id)
+@@ -12411,7 +12411,7 @@ static byte mixer_notify_source_removed(PLCI *plci, dword plci_b_id)
  	if (((plci->li_plci_b_read_pos > plci_b_write_pos) ? plci->li_plci_b_read_pos :
  	     LI_PLCI_B_QUEUE_ENTRIES + plci->li_plci_b_read_pos) - plci_b_write_pos - 1 < 1)
  	{
@@ -908,7 +890,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  				(char *)(FILE_), __LINE__));
  		return (false);
-@@ -12568,7 +12568,7 @@ static void mixer_remove(PLCI *plci)
+@@ -12430,7 +12430,7 @@ static void mixer_remove(PLCI *plci)
  	dword plci_b_id;
  	word i, j;
  
@@ -917,7 +899,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -12620,7 +12620,7 @@ static void ec_write_parameters(PLCI *plci)
+@@ -12482,7 +12482,7 @@ static void ec_write_parameters(PLCI *plci)
  	word w;
  	byte parameter_buffer[6];
  
@@ -926,7 +908,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -12639,7 +12639,7 @@ static void ec_write_parameters(PLCI *plci)
+@@ -12501,7 +12501,7 @@ static void ec_write_parameters(PLCI *plci)
  static void ec_clear_config(PLCI *plci)
  {
  
@@ -935,7 +917,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -13075,7 +13075,7 @@ static void adv_voice_write_coefs(PLCI *plci, word write_command)
+@@ -12937,7 +12937,7 @@ static void adv_voice_write_coefs(PLCI *plci, word write_command)
  
  	byte coef_buffer[ADV_VOICE_COEF_BUFFER_SIZE + 2];
  
@@ -944,7 +926,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__, write_command));
  
-@@ -13102,7 +13102,7 @@ static void adv_voice_write_coefs(PLCI *plci, word write_command)
+@@ -12964,7 +12964,7 @@ static void adv_voice_write_coefs(PLCI *plci, word write_command)
  		{
  			plci->li_bchannel_id = 1;
  			li_config_table[a->li_base].plci = plci;
@@ -953,7 +935,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  					(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  					(char *)(FILE_), __LINE__, plci->li_bchannel_id));
  		}
-@@ -13110,7 +13110,7 @@ static void adv_voice_write_coefs(PLCI *plci, word write_command)
+@@ -12972,7 +12972,7 @@ static void adv_voice_write_coefs(PLCI *plci, word write_command)
  		{
  			plci->li_bchannel_id = 2;
  			li_config_table[a->li_base + 1].plci = plci;
@@ -962,7 +944,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  					(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  					(char *)(FILE_), __LINE__, plci->li_bchannel_id));
  		}
-@@ -13226,7 +13226,7 @@ static void adv_voice_clear_config(PLCI *plci)
+@@ -13088,7 +13088,7 @@ static void adv_voice_clear_config(PLCI *plci)
  	word i, j;
  
  
@@ -971,7 +953,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -13519,7 +13519,7 @@ static byte add_b1_facilities(PLCI *plci, byte b1_resource, word b1_facilities)
+@@ -13381,7 +13381,7 @@ static byte add_b1_facilities(PLCI *plci, byte b1_resource, word b1_facilities)
  	default:
  		b = b1_resource;
  	}
@@ -980,7 +962,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__,
  			b1_resource, b1_facilities, b, get_b1_facilities(plci, b)));
-@@ -13531,7 +13531,7 @@ static void adjust_b1_facilities(PLCI *plci, byte new_b1_resource, word new_b1_f
+@@ -13393,7 +13393,7 @@ static void adjust_b1_facilities(PLCI *plci, byte new_b1_resource, word new_b1_f
  {
  	word removed_facilities;
  
@@ -989,7 +971,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__, new_b1_resource, new_b1_facilities,
  			new_b1_facilities & get_b1_facilities(plci, new_b1_resource)));
-@@ -13564,7 +13564,7 @@ static void adjust_b1_facilities(PLCI *plci, byte new_b1_resource, word new_b1_f
+@@ -13426,7 +13426,7 @@ static void adjust_b1_facilities(PLCI *plci, byte new_b1_resource, word new_b1_f
  static void adjust_b_clear(PLCI *plci)
  {
  
@@ -998,7 +980,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -14505,7 +14505,7 @@ static void retrieve_restore_command(dword Id, PLCI *plci, byte Rc)
+@@ -14367,7 +14367,7 @@ static void retrieve_restore_command(dword Id, PLCI *plci, byte Rc)
  static void init_b1_config(PLCI *plci)
  {
  
@@ -1007,7 +989,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -14531,7 +14531,7 @@ static void init_b1_config(PLCI *plci)
+@@ -14393,7 +14393,7 @@ static void init_b1_config(PLCI *plci)
  static void clear_b1_config(PLCI *plci)
  {
  
@@ -1016,7 +998,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  			(dword)((plci->Id << 8) | UnMapController(plci->adapter->Id)),
  			(char *)(FILE_), __LINE__));
  
-@@ -14796,7 +14796,7 @@ static void group_optimization(DIVA_CAPI_ADAPTER *a, PLCI *plci)
+@@ -14658,7 +14658,7 @@ static void group_optimization(DIVA_CAPI_ADAPTER *a, PLCI *plci)
  				{                                      /* is group already present ?                  */
  					appl_number_group_type[i] = j | 0x80;  /* store the group number for each application */
  					group_found = true;
@@ -1025,7 +1007,7 @@ index 3e3c2b858b1c..5ed6477e82f1 100644
  				}
  				else if (!info_mask_group[j])
  				{                                      /* establish a new group                       */
-@@ -14804,7 +14804,7 @@ static void group_optimization(DIVA_CAPI_ADAPTER *a, PLCI *plci)
+@@ -14666,7 +14666,7 @@ static void group_optimization(DIVA_CAPI_ADAPTER *a, PLCI *plci)
  					info_mask_group[j] = a->CIP_Mask[i]; /* store the new CIP mask for the new group    */
  					cip_mask_group[j] = a->Info_Mask[i]; /* store the new Info_Mask for this new group  */
  					group_found = true;

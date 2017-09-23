@@ -4,16 +4,18 @@ Date: Mon, 8 May 2017 11:36:56 +0200
 Subject: [PATCH] {PRINTF} drivers/staging/typec: add __printf attribute to
  logging function
 
+Commit e79e01254d02ff7c460851c773135db35bd2abb6 ("staging: typec: Add
+__printf verification") seems to have added some __printf attributes
+too, in 4.14-rc1
 ---
- drivers/staging/typec/fusb302/fusb302.c |  6 +++---
- drivers/staging/typec/tcpm.c            | 10 +++++-----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/staging/typec/fusb302/fusb302.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/staging/typec/fusb302/fusb302.c b/drivers/staging/typec/fusb302/fusb302.c
-index 03a3809d18f0..4ca5019386ce 100644
+index fc6a3cf74eb3..832a6ba2108b 100644
 --- a/drivers/staging/typec/fusb302/fusb302.c
 +++ b/drivers/staging/typec/fusb302/fusb302.c
-@@ -144,7 +144,7 @@ static bool fusb302_log_full(struct fusb302_chip *chip)
+@@ -153,7 +153,7 @@ static bool fusb302_log_full(struct fusb302_chip *chip)
  		(chip->logbuffer_head + 1) % LOG_BUFFER_ENTRIES;
  }
  
@@ -22,7 +24,7 @@ index 03a3809d18f0..4ca5019386ce 100644
  			 va_list args)
  {
  	char tmpbuffer[LOG_BUFFER_ENTRY_SIZE];
-@@ -191,7 +191,7 @@ static void _fusb302_log(struct fusb302_chip *chip, const char *fmt,
+@@ -200,7 +200,7 @@ static void _fusb302_log(struct fusb302_chip *chip, const char *fmt,
  	mutex_unlock(&chip->logbuffer_lock);
  }
  
@@ -31,7 +33,7 @@ index 03a3809d18f0..4ca5019386ce 100644
  {
  	va_list args;
  
-@@ -255,7 +255,7 @@ static void fusb302_debugfs_exit(struct fusb302_chip *chip)
+@@ -264,7 +264,7 @@ static void fusb302_debugfs_exit(struct fusb302_chip *chip)
  
  #else
  
@@ -40,46 +42,4 @@ index 03a3809d18f0..4ca5019386ce 100644
  			const char *fmt, ...) { }
  static int fusb302_debugfs_init(const struct fusb302_chip *chip) { return 0; }
  static void fusb302_debugfs_exit(const struct fusb302_chip *chip) { }
-diff --git a/drivers/staging/typec/tcpm.c b/drivers/staging/typec/tcpm.c
-index 20eb4ebcf8c3..9d982e010ce2 100644
---- a/drivers/staging/typec/tcpm.c
-+++ b/drivers/staging/typec/tcpm.c
-@@ -369,7 +369,7 @@ static bool tcpm_log_full(struct tcpm_port *port)
- 		(port->logbuffer_head + 1) % LOG_BUFFER_ENTRIES;
- }
- 
--static void _tcpm_log(struct tcpm_port *port, const char *fmt, va_list args)
-+static __printf(2, 0) void _tcpm_log(struct tcpm_port *port, const char *fmt, va_list args)
- {
- 	char tmpbuffer[LOG_BUFFER_ENTRY_SIZE];
- 	u64 ts_nsec = local_clock();
-@@ -415,7 +415,7 @@ static void _tcpm_log(struct tcpm_port *port, const char *fmt, va_list args)
- 	mutex_unlock(&port->logbuffer_lock);
- }
- 
--static void tcpm_log(struct tcpm_port *port, const char *fmt, ...)
-+static __printf(2, 3) void tcpm_log(struct tcpm_port *port, const char *fmt, ...)
- {
- 	va_list args;
- 
-@@ -430,7 +430,7 @@ static void tcpm_log(struct tcpm_port *port, const char *fmt, ...)
- 	va_end(args);
- }
- 
--static void tcpm_log_force(struct tcpm_port *port, const char *fmt, ...)
-+static __printf(2, 3) void tcpm_log_force(struct tcpm_port *port, const char *fmt, ...)
- {
- 	va_list args;
- 
-@@ -546,8 +546,8 @@ static void tcpm_debugfs_exit(struct tcpm_port *port)
- 
- #else
- 
--static void tcpm_log(const struct tcpm_port *port, const char *fmt, ...) { }
--static void tcpm_log_force(struct tcpm_port *port, const char *fmt, ...) { }
-+static __printf(2, 3) void tcpm_log(const struct tcpm_port *port, const char *fmt, ...) { }
-+static __printf(2, 3) void tcpm_log_force(struct tcpm_port *port, const char *fmt, ...) { }
- static void tcpm_log_source_caps(struct tcpm_port *port) { }
- static int tcpm_debugfs_init(const struct tcpm_port *port) { return 0; }
- static void tcpm_debugfs_exit(const struct tcpm_port *port) { }
 -- 

@@ -11,18 +11,18 @@ This plugins helped to detect the following bugs:
 ---
  arch/Kconfig                                  |   6 +
  drivers/nvme/target/core.c                    |   4 +-
- drivers/scsi/scsi_sysfs.c                     |   2 +-
  drivers/staging/fbtft/fbtft_device.c          |   3 +-
  scripts/Makefile.gcc-plugins                  |   2 +
  scripts/gcc-plugins/string_ncmp_size_plugin.c | 235 ++++++++++++++++++++++++++
- 6 files changed, 248 insertions(+), 4 deletions(-)
+ sound/soc/intel/boards/bxt_rt298.c            |   9 +-
+ 6 files changed, 250 insertions(+), 9 deletions(-)
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index 8dbae916fb25..e213011a9081 100644
+index a03efad4af01..1f2135f122d2 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -519,6 +519,12 @@ config GCC_PLUGIN_DEREF_CHECKER
+@@ -528,6 +528,12 @@ config GCC_PLUGIN_DEREF_CHECKER
  	help
  	  Check function calls involving pointers about some consistencies.
  
@@ -36,10 +36,10 @@ index 8dbae916fb25..e213011a9081 100644
  	bool
  	help
 diff --git a/drivers/nvme/target/core.c b/drivers/nvme/target/core.c
-index f4b02bb4a1a8..d9f1dcf46717 100644
+index 7c23eaf8e563..2ed127ac836a 100644
 --- a/drivers/nvme/target/core.c
 +++ b/drivers/nvme/target/core.c
-@@ -894,8 +894,8 @@ static struct nvmet_subsys *nvmet_find_get_subsys(struct nvmet_port *port,
+@@ -895,8 +895,8 @@ static struct nvmet_subsys *nvmet_find_get_subsys(struct nvmet_port *port,
  	if (!port)
  		return NULL;
  
@@ -50,19 +50,6 @@ index f4b02bb4a1a8..d9f1dcf46717 100644
  		if (!kref_get_unless_zero(&nvmet_disc_subsys->ref))
  			return NULL;
  		return nvmet_disc_subsys;
-diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index b1020dddde60..81436c07e4a3 100644
---- a/drivers/scsi/scsi_sysfs.c
-+++ b/drivers/scsi/scsi_sysfs.c
-@@ -114,7 +114,7 @@ static int check_set(unsigned long long *val, char *src)
- {
- 	char *last;
- 
--	if (strncmp(src, "-", 20) == 0) {
-+	if (strcmp(src, "-") == 0) {
- 		*val = SCAN_WILD_CARD;
- 	} else {
- 		/*
 diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
 index c0c90d7701be..2b0f517109eb 100644
 --- a/drivers/staging/fbtft/fbtft_device.c
@@ -78,7 +65,7 @@ index c0c90d7701be..2b0f517109eb 100644
  
  		for (i = 0; i < ARRAY_SIZE(displays); i++)
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index 85c238b34231..ffadbe77aad8 100644
+index ec6d5f99c28c..8df620303502 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
 @@ -19,6 +19,8 @@ ifdef CONFIG_GCC_PLUGINS
@@ -331,4 +318,26 @@ index 000000000000..b6317f17d71d
 +
 +	return 0;
 +}
+diff --git a/sound/soc/intel/boards/bxt_rt298.c b/sound/soc/intel/boards/bxt_rt298.c
+index 7843104fadcb..403ea813c58a 100644
+--- a/sound/soc/intel/boards/bxt_rt298.c
++++ b/sound/soc/intel/boards/bxt_rt298.c
+@@ -564,14 +564,11 @@ static int broxton_audio_probe(struct platform_device *pdev)
+ 	int i;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(broxton_rt298_dais); i++) {
+-		if (!strncmp(card->dai_link[i].codec_name, "i2c-INT343A:00",
+-						I2C_NAME_SIZE)) {
+-			if (!strncmp(card->name, "broxton-rt298",
+-						PLATFORM_NAME_SIZE)) {
++		if (!strcmp(card->dai_link[i].codec_name, "i2c-INT343A:00")) {
++			if (!strcmp(card->name, "broxton-rt298")) {
+ 				card->dai_link[i].name = "SSP5-Codec";
+ 				card->dai_link[i].cpu_dai_name = "SSP5 Pin";
+-			} else if (!strncmp(card->name, "geminilake-rt298",
+-						PLATFORM_NAME_SIZE)) {
++			} else if (!strcmp(card->name, "geminilake-rt298")) {
+ 				card->dai_link[i].name = "SSP2-Codec";
+ 				card->dai_link[i].cpu_dai_name = "SSP2 Pin";
+ 			}
 -- 
