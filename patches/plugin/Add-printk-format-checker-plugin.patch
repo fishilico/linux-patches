@@ -37,9 +37,10 @@ This plugin helped to detect the following bugs:
  net/ipv4/sysctl_net_ipv4.c                         |   2 +-
  scripts/Makefile.gcc-plugins                       |   5 +
  scripts/gcc-plugins/printk_format_plugin.c         | 792 +++++++++++++++++++++
+ security/apparmor/mount.c                          |  10 +-
  sound/soc/intel/haswell/sst-haswell-dsp.c          |   4 +-
  sound/soc/sh/dma-sh7760.c                          |   2 +-
- 30 files changed, 886 insertions(+), 33 deletions(-)
+ 31 files changed, 891 insertions(+), 38 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -1332,6 +1333,40 @@ index 000000000000..ece773a24828
 +
 +	return 0;
 +}
+diff --git a/security/apparmor/mount.c b/security/apparmor/mount.c
+index 82a64b58041d..8c5e9c0e30e6 100644
+--- a/security/apparmor/mount.c
++++ b/security/apparmor/mount.c
+@@ -52,7 +52,7 @@ static void audit_mnt_flags(struct audit_buffer *ab, unsigned long flags)
+ 	if (flags & MS_NODIRATIME)
+ 		audit_log_format(ab, ", nodiratime");
+ 	if (flags & MS_BIND)
+-		audit_log_format(ab, flags & MS_REC ? ", rbind" : ", bind");
++		audit_log_format(ab, "%s", flags & MS_REC ? ", rbind" : ", bind");
+ 	if (flags & MS_MOVE)
+ 		audit_log_format(ab, ", move");
+ 	if (flags & MS_SILENT)
+@@ -60,16 +60,16 @@ static void audit_mnt_flags(struct audit_buffer *ab, unsigned long flags)
+ 	if (flags & MS_POSIXACL)
+ 		audit_log_format(ab, ", acl");
+ 	if (flags & MS_UNBINDABLE)
+-		audit_log_format(ab, flags & MS_REC ? ", runbindable" :
++		audit_log_format(ab, "%s", flags & MS_REC ? ", runbindable" :
+ 				 ", unbindable");
+ 	if (flags & MS_PRIVATE)
+-		audit_log_format(ab, flags & MS_REC ? ", rprivate" :
++		audit_log_format(ab, "%s", flags & MS_REC ? ", rprivate" :
+ 				 ", private");
+ 	if (flags & MS_SLAVE)
+-		audit_log_format(ab, flags & MS_REC ? ", rslave" :
++		audit_log_format(ab, "%s", flags & MS_REC ? ", rslave" :
+ 				 ", slave");
+ 	if (flags & MS_SHARED)
+-		audit_log_format(ab, flags & MS_REC ? ", rshared" :
++		audit_log_format(ab, "%s", flags & MS_REC ? ", rshared" :
+ 				 ", shared");
+ 	if (flags & MS_RELATIME)
+ 		audit_log_format(ab, ", relatime");
 diff --git a/sound/soc/intel/haswell/sst-haswell-dsp.c b/sound/soc/intel/haswell/sst-haswell-dsp.c
 index b2bec36d074c..5d13923d82f1 100644
 --- a/sound/soc/intel/haswell/sst-haswell-dsp.c
