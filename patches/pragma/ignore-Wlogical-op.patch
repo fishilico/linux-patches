@@ -4,20 +4,21 @@ Date: Thu, 3 Sep 2015 11:00:16 +0200
 Subject: [PATCH] {PRAGMA} ignore -Wlogical-op
 
 ---
- drivers/media/dvb-frontends/stb0899_priv.h | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/media/dvb-frontends/stb0899_priv.h | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/media/dvb-frontends/stb0899_priv.h b/drivers/media/dvb-frontends/stb0899_priv.h
-index 82395b912815..794f1c1a1949 100644
+index 82395b912815..f4674488397b 100644
 --- a/drivers/media/dvb-frontends/stb0899_priv.h
 +++ b/drivers/media/dvb-frontends/stb0899_priv.h
-@@ -47,8 +47,14 @@
+@@ -47,8 +47,21 @@
  	}										\
  } while(0)
  
 -#define INRANGE(val, x, y)			(((x <= val) && (val <= y)) ||		\
 -						 ((y <= val) && (val <= x)) ? 1 : 0)
 +/* Ignore -Wlogical-op because when x < y, the second test is always false */
++#ifndef __clang__
 +#define INRANGE(val, x, y)			({ \
 +_Pragma("GCC diagnostic push") \
 +_Pragma("GCC diagnostic ignored \"-Wlogical-op\"") \
@@ -25,6 +26,12 @@ index 82395b912815..794f1c1a1949 100644
 +						 ((y <= val) && (val <= x)) ? 1 : 0); \
 +_Pragma("GCC diagnostic pop") \
 +						})
++#else
++#define INRANGE(val, x, y)			({ \
++						(((x <= val) && (val <= y)) ||		\
++						 ((y <= val) && (val <= x)) ? 1 : 0); \
++						})
++#endif
  
  #define BYTE0					0
  #define BYTE1					8

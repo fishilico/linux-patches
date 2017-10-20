@@ -6,12 +6,12 @@ Subject: [PATCH] {PRAGMA} isdn/eicon: silence -Wsuggest-attribute=format and
 
 This allows fixing all formatting errors too.
 ---
- drivers/isdn/hardware/eicon/capifunc.c  |  15 +++-
+ drivers/isdn/hardware/eicon/capifunc.c  |  19 ++++-
  drivers/isdn/hardware/eicon/dadapter.c  |  12 ++--
- drivers/isdn/hardware/eicon/debug.c     |   3 +
- drivers/isdn/hardware/eicon/debuglib.c  |   9 ++-
+ drivers/isdn/hardware/eicon/debug.c     |   7 ++
+ drivers/isdn/hardware/eicon/debuglib.c  |  13 +++-
  drivers/isdn/hardware/eicon/debuglib.h  |  59 +++++++--------
- drivers/isdn/hardware/eicon/di.c        |   8 +++
+ drivers/isdn/hardware/eicon/di.c        |  10 +++
  drivers/isdn/hardware/eicon/diva.c      |   4 +-
  drivers/isdn/hardware/eicon/divasfunc.c |   2 +-
  drivers/isdn/hardware/eicon/divasi.c    |   6 +-
@@ -26,13 +26,13 @@ This allows fixing all formatting errors too.
  drivers/isdn/hardware/eicon/platform.h  |   4 +-
  drivers/isdn/hardware/eicon/s_4bri.c    |  18 ++---
  drivers/isdn/hardware/eicon/um_idi.c    |  62 ++++++++--------
- 20 files changed, 214 insertions(+), 182 deletions(-)
+ 20 files changed, 228 insertions(+), 182 deletions(-)
 
 diff --git a/drivers/isdn/hardware/eicon/capifunc.c b/drivers/isdn/hardware/eicon/capifunc.c
-index 7a0bdbdd87ea..5b696bf46980 100644
+index 7a0bdbdd87ea..6f9b77a92c07 100644
 --- a/drivers/isdn/hardware/eicon/capifunc.c
 +++ b/drivers/isdn/hardware/eicon/capifunc.c
-@@ -62,9 +62,11 @@ extern void DIVA_DIDD_Read(DESCRIPTOR *, int);
+@@ -62,9 +62,13 @@ extern void DIVA_DIDD_Read(DESCRIPTOR *, int);
  /*
   * debug
   */
@@ -40,21 +40,25 @@ index 7a0bdbdd87ea..5b696bf46980 100644
 +static __printf(1, 2) void no_printf(const char *, ...);
  #include "debuglib.c"
 -static void xlog(char *x, ...)
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
 +static void xlog(const char *x, ...)
  {
  #ifndef DIVA_NO_DEBUGLIB
  	va_list ap;
-@@ -81,6 +83,7 @@ static void xlog(char *x, ...)
+@@ -81,6 +85,9 @@ static void xlog(char *x, ...)
  	}
  #endif
  }
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  
  /*
   * info for proc
-@@ -103,7 +106,7 @@ static void stop_dbg(void)
+@@ -103,7 +110,7 @@ static void stop_dbg(void)
  /*
   * dummy debug function
   */
@@ -63,7 +67,7 @@ index 7a0bdbdd87ea..5b696bf46980 100644
  {
  }
  
-@@ -318,8 +321,11 @@ void sendf(APPL *appl, word command, dword Id, word Number, byte *format, ...)
+@@ -318,8 +325,11 @@ void sendf(APPL *appl, word command, dword Id, word Number, byte *format, ...)
  			if (myDriverDebugHandle.dbgMask & DL_BLK) {
  				xlog("\x00\x02", &msg, 0x81, length);
  				for (i = 0; i < dlength; i += 256) {
@@ -75,7 +79,7 @@ index 7a0bdbdd87ea..5b696bf46980 100644
  						if (!(myDriverDebugHandle.dbgMask & DL_PRV0))
  							break; /* not more if not explicitly requested */
  				}
-@@ -961,9 +967,12 @@ static u16 diva_send_message(struct capi_ctr *ctrl,
+@@ -961,9 +971,12 @@ static u16 diva_send_message(struct capi_ctr *ctrl,
  			for (j = 0; j <
  				     GET_WORD(&msg->info.data_b3_req.Data_Length);
  			     j += 256) {
@@ -143,28 +147,32 @@ index 168366741301..322b4142e831 100644
  		}
  		diva_os_leave_spin_lock(&didd_spin, &irql, "didd_nfy_add");
 diff --git a/drivers/isdn/hardware/eicon/debug.c b/drivers/isdn/hardware/eicon/debug.c
-index c3c090919407..ac65e96ef850 100644
+index c3c090919407..c880290f1062 100644
 --- a/drivers/isdn/hardware/eicon/debug.c
 +++ b/drivers/isdn/hardware/eicon/debug.c
-@@ -566,6 +566,8 @@ static void DI_format_locked(unsigned short id,
+@@ -566,6 +566,10 @@ static void DI_format_locked(unsigned short id,
  	DI_format(1, id, type, format, argument_list);
  }
  
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
  static void DI_format(int do_lock,
  		      unsigned short id,
  		      int type,
-@@ -723,6 +725,7 @@ static void DI_format(int do_lock,
+@@ -723,6 +727,9 @@ static void DI_format(int do_lock,
  		diva_os_leave_spin_lock(&dbg_q_lock, &old_irql, "format");
  	}
  }
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  
  /*
    Write driver ID and driver revision to callers buffer
 diff --git a/drivers/isdn/hardware/eicon/debuglib.c b/drivers/isdn/hardware/eicon/debuglib.c
-index d5b1092a54f0..c2b5924eac61 100644
+index d5b1092a54f0..7cc01512a491 100644
 --- a/drivers/isdn/hardware/eicon/debuglib.c
 +++ b/drivers/isdn/hardware/eicon/debuglib.c
 @@ -35,7 +35,7 @@ DIVA_DI_PRINTF dprintf = no_printf;
@@ -176,20 +184,24 @@ index d5b1092a54f0..c2b5924eac61 100644
  	{ va_list ap;							\
  		if (myDriverDebugHandle.dbg_prt)			\
  		{ va_start(ap, format);				\
-@@ -100,7 +100,12 @@ DbgRegister(char *drvName, char *drvTag, unsigned long dbgMask)
+@@ -100,7 +100,16 @@ DbgRegister(char *drvName, char *drvTag, unsigned long dbgMask)
  /*
   * Try to register debugging via old (and only) interface
   */
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-contains-nul"
 +#pragma GCC diagnostic ignored "-Wformat-extra-args"
 +#pragma GCC diagnostic ignored "-Wformat-security"
++#endif
  	dprintf("\000\377", &myDriverDebugHandle);
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  	if (myDriverDebugHandle.dbg_prt)
  	{
  		return (1);
-@@ -137,7 +142,7 @@ DbgDeregister(void)
+@@ -137,7 +146,7 @@ DbgDeregister(void)
  	}
  	memset(&myDriverDebugHandle, 0, sizeof(myDriverDebugHandle));
  }
@@ -288,10 +300,10 @@ index 2170de140335..a5f8f47f8269 100644
  #endif /* DIVA_NO_DEBUGLIB */
  #endif /* __DEBUGLIB_H__ */
 diff --git a/drivers/isdn/hardware/eicon/di.c b/drivers/isdn/hardware/eicon/di.c
-index cd3fba1add12..3deb7b9e490e 100644
+index cd3fba1add12..440f9a4c4715 100644
 --- a/drivers/isdn/hardware/eicon/di.c
 +++ b/drivers/isdn/hardware/eicon/di.c
-@@ -726,7 +726,15 @@ static byte isdn_ind(ADAPTER *a,
+@@ -726,7 +726,17 @@ static byte isdn_ind(ADAPTER *a,
     active board
     ----------------------------------------------------------- */
  static void xdi_xlog(byte *msg, word code, int length) {
@@ -299,9 +311,11 @@ index cd3fba1add12..3deb7b9e490e 100644
 +/* clang warning */
 +#pragma GCC diagnostic ignored "-Wformat"
 +/* gcc warnings */
++#ifndef __clang__
 +#pragma GCC diagnostic ignored "-Wformat-contains-nul"
 +#pragma GCC diagnostic ignored "-Wformat-extra-args"
 +#pragma GCC diagnostic ignored "-Wformat-security"
++#endif
  	xdi_dbg_xlog("\x00\x02", msg, code, length);
 +#pragma GCC diagnostic pop
  }

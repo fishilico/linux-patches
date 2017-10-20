@@ -4,178 +4,214 @@ Date: Sat, 4 Jul 2015 11:50:02 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
 
 ---
- drivers/infiniband/hw/hfi1/trace_dbg.h                              | 3 +++
- drivers/net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h       | 6 ++++++
- .../wireless/broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h | 6 ++++++
- drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h               | 6 ++++++
- kernel/panic.c                                                      | 4 ++++
- lib/vsprintf.c                                                      | 3 +++
- 6 files changed, 28 insertions(+)
+ drivers/infiniband/hw/hfi1/trace_dbg.h                     |  7 +++++++
+ .../net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h  | 14 ++++++++++++++
+ .../broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h | 14 ++++++++++++++
+ drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h      | 14 ++++++++++++++
+ kernel/panic.c                                             |  8 ++++++++
+ lib/vsprintf.c                                             |  7 +++++++
+ 6 files changed, 64 insertions(+)
 
 diff --git a/drivers/infiniband/hw/hfi1/trace_dbg.h b/drivers/infiniband/hw/hfi1/trace_dbg.h
-index 0e7d929530c5..1472e5a8a34d 100644
+index 0e7d929530c5..1154809adeef 100644
 --- a/drivers/infiniband/hw/hfi1/trace_dbg.h
 +++ b/drivers/infiniband/hw/hfi1/trace_dbg.h
-@@ -63,6 +63,8 @@
+@@ -63,6 +63,10 @@
  
  #define MAX_MSG_LEN 512
  
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
  DECLARE_EVENT_CLASS(hfi1_trace_template,
  		    TP_PROTO(const char *function, struct va_format *vaf),
  		    TP_ARGS(function, vaf),
-@@ -80,6 +82,7 @@ DECLARE_EVENT_CLASS(hfi1_trace_template,
+@@ -80,6 +84,9 @@ DECLARE_EVENT_CLASS(hfi1_trace_template,
  			      __get_str(function),
  			      __get_str(msg))
  );
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  
  /*
   * It may be nice to macroize the __hfi1_trace but the va_* stuff requires an
 diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h
-index 4d7d51f95716..dea7a25ec254 100644
+index 4d7d51f95716..50aa7d0249ed 100644
 --- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h
 +++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h
-@@ -39,6 +39,8 @@ static inline void trace_ ## name(proto) {}
+@@ -39,6 +39,10 @@ static inline void trace_ ## name(proto) {}
  
  #define MAX_MSG_LEN		100
  
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
  TRACE_EVENT(brcmf_err,
  	TP_PROTO(const char *func, struct va_format *vaf),
  	TP_ARGS(func, vaf),
-@@ -54,7 +56,10 @@ TRACE_EVENT(brcmf_err,
+@@ -54,7 +58,14 @@ TRACE_EVENT(brcmf_err,
  	),
  	TP_printk("%s: %s", __get_str(func), __get_str(msg))
  );
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
  TRACE_EVENT(brcmf_dbg,
  	TP_PROTO(u32 level, const char *func, struct va_format *vaf),
  	TP_ARGS(level, func, vaf),
-@@ -72,6 +77,7 @@ TRACE_EVENT(brcmf_dbg,
+@@ -72,6 +83,9 @@ TRACE_EVENT(brcmf_dbg,
  	),
  	TP_printk("%s: %s", __get_str(func), __get_str(msg))
  );
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  
  TRACE_EVENT(brcmf_hexdump,
  	TP_PROTO(void *data, size_t len),
 diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h b/drivers/net/wireless/broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h
-index 0e8a69ab909f..2f5e5715eb14 100644
+index 0e8a69ab909f..98c76f1be5f6 100644
 --- a/drivers/net/wireless/broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h
 +++ b/drivers/net/wireless/broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h
-@@ -24,6 +24,8 @@
+@@ -24,6 +24,10 @@
  
  #define MAX_MSG_LEN	100
  
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
  DECLARE_EVENT_CLASS(brcms_msg_event,
  	TP_PROTO(struct va_format *vaf),
  	TP_ARGS(vaf),
-@@ -37,6 +39,7 @@ DECLARE_EVENT_CLASS(brcms_msg_event,
+@@ -37,6 +41,9 @@ DECLARE_EVENT_CLASS(brcms_msg_event,
  	),
  	TP_printk("%s", __get_str(msg))
  );
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  
  DEFINE_EVENT(brcms_msg_event, brcms_info,
  	TP_PROTO(struct va_format *vaf),
-@@ -58,6 +61,8 @@ DEFINE_EVENT(brcms_msg_event, brcms_crit,
+@@ -58,6 +65,10 @@ DEFINE_EVENT(brcms_msg_event, brcms_crit,
  	TP_ARGS(vaf)
  );
  
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
  TRACE_EVENT(brcms_dbg,
  	TP_PROTO(u32 level, const char *func, struct va_format *vaf),
  	TP_ARGS(level, func, vaf),
-@@ -75,6 +80,7 @@ TRACE_EVENT(brcms_dbg,
+@@ -75,6 +86,9 @@ TRACE_EVENT(brcms_dbg,
  	),
  	TP_printk("%s: %s", __get_str(func), __get_str(msg))
  );
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  #endif /* __TRACE_BRCMSMAC_MSG_H */
  
  #ifdef CONFIG_BRCM_TRACING
 diff --git a/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h b/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
-index 5dfc9295a7e0..ebf1fd43e63f 100644
+index 5dfc9295a7e0..91b1d33cbb81 100644
 --- a/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
 +++ b/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
-@@ -34,6 +34,8 @@
+@@ -34,6 +34,10 @@
  
  #define MAX_MSG_LEN	110
  
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
  DECLARE_EVENT_CLASS(iwlwifi_msg_event,
  	TP_PROTO(struct va_format *vaf),
  	TP_ARGS(vaf),
-@@ -47,6 +49,7 @@ DECLARE_EVENT_CLASS(iwlwifi_msg_event,
+@@ -47,6 +51,9 @@ DECLARE_EVENT_CLASS(iwlwifi_msg_event,
  	),
  	TP_printk("%s", __get_str(msg))
  );
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  
  DEFINE_EVENT(iwlwifi_msg_event, iwlwifi_err,
  	TP_PROTO(struct va_format *vaf),
-@@ -68,6 +71,8 @@ DEFINE_EVENT(iwlwifi_msg_event, iwlwifi_crit,
+@@ -68,6 +75,10 @@ DEFINE_EVENT(iwlwifi_msg_event, iwlwifi_crit,
  	TP_ARGS(vaf)
  );
  
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
  TRACE_EVENT(iwlwifi_dbg,
  	TP_PROTO(u32 level, bool in_interrupt, const char *function,
  		 struct va_format *vaf),
-@@ -88,6 +93,7 @@ TRACE_EVENT(iwlwifi_dbg,
+@@ -88,6 +99,9 @@ TRACE_EVENT(iwlwifi_dbg,
  	),
  	TP_printk("%s", __get_str(msg))
  );
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  #endif /* __IWLWIFI_DEVICE_TRACE_MSG */
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/kernel/panic.c b/kernel/panic.c
-index bdd18afa19a4..ec27ce4ea426 100644
+index bdd18afa19a4..849b2f77e76e 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -513,6 +513,9 @@ struct warn_args {
+@@ -513,6 +513,11 @@ struct warn_args {
  	va_list args;
  };
  
 +/* Ignore gcc warning about missing format attribute */
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
  void __warn(const char *file, int line, void *caller, unsigned taint,
  	    struct pt_regs *regs, struct warn_args *args)
  {
-@@ -554,6 +557,7 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -554,6 +559,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  	/* Just a warning, don't kill lockdep. */
  	add_taint(taint, LOCKDEP_STILL_OK);
  }
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  
  #ifdef WANT_WARN_ON_SLOWPATH
  void warn_slowpath_fmt(const char *file, int line, const char *fmt, ...)
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 91b3805753be..a938edbc16b3 100644
+index 91b3805753be..358e127cb145 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
-@@ -1786,8 +1786,11 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+@@ -1786,8 +1786,15 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
  			va_list va;
  
  			va_copy(va, *((struct va_format *)ptr)->va);
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
  			buf += vsnprintf(buf, end > buf ? end - buf : 0,
  					 ((struct va_format *)ptr)->fmt, va);
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  			va_end(va);
  			return buf;
  		}

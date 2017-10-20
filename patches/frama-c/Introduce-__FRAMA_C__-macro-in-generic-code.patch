@@ -286,7 +286,7 @@ index 11366b3ff0b4..eb6e863039a6 100644
  		/*
  		 * This little trick makes sure that
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index a9cb827b8a27..e6e2b461eb27 100644
+index 0006e9d632c8..174e5eb94b10 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -15,6 +15,9 @@
@@ -307,7 +307,7 @@ index a9cb827b8a27..e6e2b461eb27 100644
  #define SIZE_MAX	(~(size_t)0)
  
  #define U8_MAX		((u8)~0U)
-@@ -226,6 +230,10 @@ extern int _cond_resched(void);
+@@ -244,6 +248,10 @@ extern int _cond_resched(void);
   *
   * Return: an absolute value of x.
   */
@@ -318,7 +318,7 @@ index a9cb827b8a27..e6e2b461eb27 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -240,6 +248,7 @@ extern int _cond_resched(void);
+@@ -258,6 +266,7 @@ extern int _cond_resched(void);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -604,14 +604,14 @@ index 81b70ed37209..89d1a3f19bba 100644
  			if (linebuflen < lx + 2)
  				goto overflow2;
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index f39cbf0b0793..03862f86b552 100644
+index f39cbf0b0793..b9f3eeeaf8de 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
 @@ -787,8 +787,10 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
  	bool rhlist = ht->rhlist;
  
  /* Variable "skip" is not initialized but not used when the goto is taken */
-+#ifndef __FRAMAC__
++#if !defined(__FRAMAC__) && !defined(__clang__)
  #pragma GCC diagnostic push
  #pragma GCC diagnostic ignored "-Wjump-misses-init"
 +#endif
@@ -622,7 +622,7 @@ index f39cbf0b0793..03862f86b552 100644
  		}
  
  next:
-+#ifndef __FRAMAC__
++#if !defined(__FRAMAC__) && !defined(__clang__)
 +/* Frama-C does not like this pragma:
 + * lib/rhashtable.c:728:[kernel] user error: syntax error
 + */

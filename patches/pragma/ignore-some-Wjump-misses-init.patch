@@ -4,56 +4,64 @@ Date: Wed, 3 Jun 2015 10:57:18 +0800
 Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
 
 ---
- fs/ext4/ialloc.c      | 4 ++++
- kernel/bpf/verifier.c | 4 ++++
+ fs/ext4/ialloc.c      | 8 ++++++++
+ kernel/bpf/verifier.c | 8 ++++++++
  lib/rhashtable.c      | 4 ++++
- mm/mmap.c             | 4 ++++
- net/core/skbuff.c     | 4 ++++
- net/ipv4/fib_trie.c   | 3 +++
- net/sched/cls_u32.c   | 4 ++++
- 7 files changed, 27 insertions(+)
+ mm/mmap.c             | 8 ++++++++
+ net/core/skbuff.c     | 8 ++++++++
+ net/ipv4/fib_trie.c   | 7 +++++++
+ net/sched/cls_u32.c   | 8 ++++++++
+ 7 files changed, 51 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index ee823022aa34..93e80456252d 100644
+index ee823022aa34..c76495e72e78 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
-@@ -460,6 +460,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
+@@ -460,6 +460,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
  	int flex_size = ext4_flex_bg_size(sbi);
  	struct dx_hash_info hinfo;
  
 +/* Variables "ret" and "found_flex_bg" are not initialized but not used when the goto found_flex_bg branch is taken */
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wjump-misses-init"
++#endif
  	ngroups = real_ngroups;
  	if (flex_size > 1) {
  		ngroups = (real_ngroups + flex_size - 1) >>
-@@ -587,6 +590,7 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
+@@ -587,6 +592,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
  	}
  
  	return -1;
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  }
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index b914fbe1383e..83acac065717 100644
+index 8b8d6ba39e23..b0657842357d 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -3563,6 +3563,9 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -3568,6 +3568,11 @@ static int do_check(struct bpf_verifier_env *env)
  	int insn_processed = 0;
  	bool do_print_state = false;
  
 +/* Variable "opcode" is not initialized but not used when the goto process_bpf_exit branch is taken */
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wjump-misses-init"
++#endif
  	init_reg_state(regs);
  	state->parent = NULL;
  	insn_idx = 0;
-@@ -3828,6 +3831,7 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -3833,6 +3838,9 @@ static int do_check(struct bpf_verifier_env *env)
  	verbose("processed %d insns, stack depth %d\n",
  		insn_processed, env->prog->aux->stack_depth);
  	return 0;
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  }
  
  static int check_map_prealloc(struct bpf_map *map)
@@ -80,89 +88,105 @@ index b42eb69e4792..f39cbf0b0793 100644
  			iter->skip++;
  			iter->p = p;
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 680506faceae..dd60a96c052d 100644
+index 680506faceae..39c4525d45e1 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -692,6 +692,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+@@ -692,6 +692,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
  	long adjust_next = 0;
  	int remove_next = 0;
  
 +/* Variable "exporter" is not initialized but not used when the goto again branch is taken */
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wjump-misses-init"
++#endif
  	if (next && !insert) {
  		struct vm_area_struct *exporter = NULL, *importer = NULL;
  
-@@ -965,6 +968,7 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+@@ -965,6 +970,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
  	validate_mm(mm);
  
  	return 0;
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  }
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 16982de649b9..c6c3452578d0 100644
+index 16982de649b9..8a1f6c24be86 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -1765,6 +1765,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1765,6 +1765,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  	    unlikely((err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC))))
  		return err;
  
 +/* Variable "end" is not initialized but not used after the goto drop_pages branch is taken */
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wjump-misses-init"
++#endif
  	i = 0;
  	if (offset >= len)
  		goto drop_pages;
-@@ -1781,6 +1784,7 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1781,6 +1786,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  
  drop_pages:
  		skb_shinfo(skb)->nr_frags = i;
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  
  		for (; i < nfrags; i++)
  			skb_frag_unref(skb, i);
 diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
-index bdaa59e7e7bb..656447ac43cc 100644
+index bdaa59e7e7bb..ec5c9a66d7d9 100644
 --- a/net/ipv4/fib_trie.c
 +++ b/net/ipv4/fib_trie.c
-@@ -1324,6 +1324,8 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1324,6 +1324,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->gets);
  #endif
  
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wjump-misses-init"
++#endif
  	/* Step 1: Travel to the longest prefix match in the trie */
  	for (;;) {
  		index = get_cindex(key, n);
-@@ -1488,6 +1490,7 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1488,6 +1492,9 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->semantic_match_miss);
  #endif
  	goto backtrace;
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  }
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
-index 10b8d851fc6b..4e03e3e4a1ad 100644
+index 10b8d851fc6b..1fa59fdfd0aa 100644
 --- a/net/sched/cls_u32.c
 +++ b/net/sched/cls_u32.c
-@@ -110,6 +110,9 @@ static inline unsigned int u32_hash_fold(__be32 key,
+@@ -110,6 +110,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
  static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  			struct tcf_result *res)
  {
 +/* Variable "key" is not initialized but not used when the goto check_terminal is taken */
++#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wjump-misses-init"
++#endif
  	struct {
  		struct tc_u_knode *knode;
  		unsigned int	  off;
-@@ -258,6 +261,7 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
+@@ -258,6 +263,9 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  deadloop:
  	net_warn_ratelimited("cls_u32: dead loop\n");
  	return -1;
++#ifndef __clang__
 +#pragma GCC diagnostic pop
++#endif
  }
  
  static struct tc_u_hnode *u32_lookup_ht(struct tc_u_common *tp_c, u32 handle)
