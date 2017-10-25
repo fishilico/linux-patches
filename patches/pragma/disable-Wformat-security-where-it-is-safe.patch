@@ -79,6 +79,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  drivers/net/ethernet/8390/wd.c                     |  3 +++
  drivers/net/ethernet/adaptec/starfire.c            |  3 +++
  drivers/net/ethernet/amd/lance.c                   |  3 +++
+ .../net/ethernet/aquantia/atlantic/aq_ethtool.c    |  3 +++
  .../net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c    |  3 +++
  drivers/net/ethernet/chelsio/cxgb4/cxgb4_debugfs.c |  3 +++
  drivers/net/ethernet/chelsio/cxgb4/l2t.c           |  6 +++++-
@@ -200,7 +201,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  sound/soc/omap/mcbsp.c                             |  3 +++
  sound/usb/midi.c                                   |  3 +++
  sound/usb/mixer_quirks.c                           |  3 +++
- 196 files changed, 882 insertions(+), 23 deletions(-)
+ 197 files changed, 885 insertions(+), 23 deletions(-)
 
 diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
 index 948c648fea00..1b524c576c4b 100644
@@ -1648,6 +1649,22 @@ index 12a6a93d221b..7ce7421b7219 100644
  
  	/* The LANCE-specific entries in the device structure. */
  	dev->netdev_ops = &lance_netdev_ops;
+diff --git a/drivers/net/ethernet/aquantia/atlantic/aq_ethtool.c b/drivers/net/ethernet/aquantia/atlantic/aq_ethtool.c
+index d5e99b468870..fd08964179a7 100644
+--- a/drivers/net/ethernet/aquantia/atlantic/aq_ethtool.c
++++ b/drivers/net/ethernet/aquantia/atlantic/aq_ethtool.c
+@@ -143,8 +143,11 @@ static void aq_ethtool_get_strings(struct net_device *ndev,
+ 			for (si = 0;
+ 				si < ARRAY_SIZE(aq_ethtool_queue_stat_names);
+ 				si++) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 				snprintf(p, ETH_GSTRING_LEN,
+ 					 aq_ethtool_queue_stat_names[si], i);
++#pragma GCC diagnostic pop
+ 				p += ETH_GSTRING_LEN;
+ 			}
+ 		}
 diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c
 index 1e33abde4a3e..ca82c7fdf31e 100644
 --- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c
@@ -1845,7 +1862,7 @@ index 18af2a23a933..82943ce0927c 100644
  
  	return pci_register_driver(&natsemi_driver);
 diff --git a/drivers/net/ethernet/netronome/nfp/nfp_net_common.c b/drivers/net/ethernet/netronome/nfp/nfp_net_common.c
-index 1c0187f0af51..1940d0c49f97 100644
+index e118b5f23996..671577720ae6 100644
 --- a/drivers/net/ethernet/netronome/nfp/nfp_net_common.c
 +++ b/drivers/net/ethernet/netronome/nfp/nfp_net_common.c
 @@ -560,7 +560,10 @@ nfp_net_aux_irq_request(struct nfp_net *nn, u32 ctrl_offset,
@@ -2438,10 +2455,10 @@ index 482ac8fdc67b..f1269293138b 100644
  	spin_unlock_bh(&priv->statistics.lock);
  
 diff --git a/drivers/net/wireless/intel/iwlwifi/fw/dbg.h b/drivers/net/wireless/intel/iwlwifi/fw/dbg.h
-index 0f810ea89d31..cfd4a43b64b4 100644
+index 9c889a32fe24..00138697ef80 100644
 --- a/drivers/net/wireless/intel/iwlwifi/fw/dbg.h
 +++ b/drivers/net/wireless/intel/iwlwifi/fw/dbg.h
-@@ -186,7 +186,10 @@ _iwl_fw_dbg_trigger_simple_stop(struct iwl_fw_runtime *fwrt,
+@@ -188,7 +188,10 @@ _iwl_fw_dbg_trigger_simple_stop(struct iwl_fw_runtime *fwrt,
  	if (!iwl_fw_dbg_trigger_check_stop(fwrt, wdev, trigger))
  		return;
  
@@ -2491,10 +2508,10 @@ index a2bf530eeae4..bda0d077f636 100644
  
  void iwl_mvm_rx_missed_beacons_notif(struct iwl_mvm *mvm,
 diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/rx.c b/drivers/net/wireless/intel/iwlwifi/mvm/rx.c
-index 184c749766f2..df33203a832c 100644
+index 2d14a58cbdd7..9bf2526ed588 100644
 --- a/drivers/net/wireless/intel/iwlwifi/mvm/rx.c
 +++ b/drivers/net/wireless/intel/iwlwifi/mvm/rx.c
-@@ -399,9 +399,12 @@ void iwl_mvm_rx_rx_mpdu(struct iwl_mvm *mvm, struct napi_struct *napi,
+@@ -401,9 +401,12 @@ void iwl_mvm_rx_rx_mpdu(struct iwl_mvm *mvm, struct napi_struct *napi,
  				iwl_fw_dbg_trigger_check_stop(&mvm->fwrt,
  							      ieee80211_vif_to_wdev(mvmsta->vif),
  							      trig);
@@ -3524,7 +3541,7 @@ index 9841faef08ea..096c8de80e96 100644
  			free_reloc_roots(&reloc_roots);
  
 diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
-index 35a128acfbd1..f709e1d8d0d3 100644
+index 161694b66038..658c3753f9f3 100644
 --- a/fs/btrfs/super.c
 +++ b/fs/btrfs/super.c
 @@ -270,7 +270,11 @@ void __btrfs_abort_transaction(struct btrfs_trans_handle *trans,
@@ -3978,7 +3995,7 @@ index 83045f00c63c..c0ec368ef9ef 100644
  }
  
 diff --git a/net/core/dev.c b/net/core/dev.c
-index 588b473194a8..b7bded0f0014 100644
+index 11596a302a26..8b7f65af815a 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
 @@ -1084,7 +1084,10 @@ static int __dev_alloc_name(struct net *net, const char *name, char *buf)
