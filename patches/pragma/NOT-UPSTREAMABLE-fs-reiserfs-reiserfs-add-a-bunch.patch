@@ -857,10 +857,10 @@ index 64f49cafbc5b..2c8ad98c921a 100644
  }
  
 diff --git a/fs/reiserfs/reiserfs.h b/fs/reiserfs/reiserfs.h
-index 1d34377fef97..5394034c903d 100644
+index 48835a659948..177182975577 100644
 --- a/fs/reiserfs/reiserfs.h
 +++ b/fs/reiserfs/reiserfs.h
-@@ -898,8 +898,8 @@ struct fid;
+@@ -899,8 +899,8 @@ struct fid;
   */
  #define REISERFS_DEBUG_CODE 5	/* extra messages to help find/debug errors */
  
@@ -871,7 +871,7 @@ index 1d34377fef97..5394034c903d 100644
  #define reiserfs_warning(s, id, fmt, args...) \
  	 __reiserfs_warning(s, id, __func__, fmt, ##args)
  /* assertions handling */
-@@ -2943,6 +2943,7 @@ int journal_begin(struct reiserfs_transaction_handle *,
+@@ -2944,6 +2944,7 @@ int journal_begin(struct reiserfs_transaction_handle *,
  int journal_join_abort(struct reiserfs_transaction_handle *,
  		       struct super_block *sb);
  void reiserfs_abort_journal(struct super_block *sb, int errno);
@@ -879,7 +879,7 @@ index 1d34377fef97..5394034c903d 100644
  void reiserfs_abort(struct super_block *sb, int errno, const char *fmt, ...);
  int reiserfs_allocate_list_bitmaps(struct super_block *s,
  				   struct reiserfs_list_bitmap *, unsigned int);
-@@ -3183,17 +3184,18 @@ int fix_nodes(int n_op_mode, struct tree_balance *tb,
+@@ -3184,17 +3185,18 @@ int fix_nodes(int n_op_mode, struct tree_balance *tb,
  void unfix_nodes(struct tree_balance *);
  
  /* prints.c */
@@ -1360,10 +1360,10 @@ index 5464ec517702..4bbec861cd7a 100644
  		return;
  	}
 diff --git a/fs/reiserfs/tail_conversion.c b/fs/reiserfs/tail_conversion.c
-index 2d5489b0a269..6e2770ed9811 100644
+index b0ae088dffc7..291177b3c231 100644
 --- a/fs/reiserfs/tail_conversion.c
 +++ b/fs/reiserfs/tail_conversion.c
-@@ -63,9 +63,13 @@ int direct2indirect(struct reiserfs_transaction_handle *th, struct inode *inode,
+@@ -64,9 +64,13 @@ int direct2indirect(struct reiserfs_transaction_handle *th, struct inode *inode,
  
  	/* FIXME: we could avoid this */
  	if (search_for_position_by_key(sb, &end_key, path) == POSITION_FOUND) {
@@ -1377,7 +1377,7 @@ index 2d5489b0a269..6e2770ed9811 100644
  		pathrelse(path);
  		return -EIO;
  	}
-@@ -113,12 +117,20 @@ int direct2indirect(struct reiserfs_transaction_handle *th, struct inode *inode,
+@@ -114,12 +118,20 @@ int direct2indirect(struct reiserfs_transaction_handle *th, struct inode *inode,
  		 */
  		if (search_for_position_by_key(sb, &end_key, path) ==
  		    POSITION_FOUND)
@@ -1398,7 +1398,7 @@ index 2d5489b0a269..6e2770ed9811 100644
  		tail_size = (le_ih_k_offset(p_le_ih) & (blk_size - 1))
  		    + ih_item_len(p_le_ih) - 1;
  
-@@ -247,9 +259,13 @@ int indirect2direct(struct reiserfs_transaction_handle *th,
+@@ -248,9 +260,13 @@ int indirect2direct(struct reiserfs_transaction_handle *th,
  		/* re-search indirect item */
  		if (search_for_position_by_key(sb, item_key, path)
  		    == POSITION_NOT_FOUND)
@@ -1413,10 +1413,10 @@ index 2d5489b0a269..6e2770ed9811 100644
  #ifdef CONFIG_REISERFS_CHECK
  		pos = le_ih_k_offset(&s_ih) - 1 +
 diff --git a/fs/reiserfs/xattr.c b/fs/reiserfs/xattr.c
-index e87aa21c30de..e1df2d83e74f 100644
+index 46492fb37a4c..aa0d0c652877 100644
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
-@@ -697,10 +697,14 @@ reiserfs_xattr_get(struct inode *inode, const char *name, void *buffer,
+@@ -698,10 +698,14 @@ reiserfs_xattr_get(struct inode *inode, const char *name, void *buffer,
  			if (rxh->h_magic != cpu_to_le32(REISERFS_XATTR_MAGIC)) {
  				unlock_page(page);
  				reiserfs_put_page(page);
@@ -1431,7 +1431,7 @@ index e87aa21c30de..e1df2d83e74f 100644
  				err = -EIO;
  				goto out_unlock;
  			}
-@@ -717,9 +721,13 @@ reiserfs_xattr_get(struct inode *inode, const char *name, void *buffer,
+@@ -718,9 +722,13 @@ reiserfs_xattr_get(struct inode *inode, const char *name, void *buffer,
  
  	if (xattr_hash(buffer, isize - sizeof(struct reiserfs_xattr_header)) !=
  	    hash) {

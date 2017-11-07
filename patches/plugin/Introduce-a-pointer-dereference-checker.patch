@@ -93,10 +93,10 @@ It has also detected some bugs reported and fixed by other people:
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index 8a0d3cc39082..031bb7edd843 100644
+index e0c2faf9b0d8..a09a51867bf8 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -522,6 +522,12 @@ config GCC_PLUGIN_PRINTK_FORMAT
+@@ -523,6 +523,12 @@ config GCC_PLUGIN_PRINTK_FORMAT
  	  Check printk format strings with kernel specs.
  	  This is complementary to -Wformat-security and -Wformat=2 flags.
  
@@ -110,10 +110,10 @@ index 8a0d3cc39082..031bb7edd843 100644
  	bool
  	help
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
-index f3a4bedd1afc..685243c54bc5 100644
+index a2ac3fe7dbf8..33e4e914d5fc 100644
 --- a/arch/arm/boot/compressed/decompress.c
 +++ b/arch/arm/boot/compressed/decompress.c
-@@ -48,8 +48,10 @@ extern int memcmp(const void *cs, const void *ct, size_t count);
+@@ -49,8 +49,10 @@ extern int memcmp(const void *cs, const void *ct, size_t count);
  #endif
  
  #ifdef CONFIG_KERNEL_XZ
@@ -125,10 +125,10 @@ index f3a4bedd1afc..685243c54bc5 100644
  #endif
  
 diff --git a/arch/arm/boot/compressed/string.c b/arch/arm/boot/compressed/string.c
-index 689467448736..6fe0739fc08d 100644
+index 309e1bbad75d..e57e36aed681 100644
 --- a/arch/arm/boot/compressed/string.c
 +++ b/arch/arm/boot/compressed/string.c
-@@ -6,6 +6,13 @@
+@@ -7,6 +7,13 @@
  
  #include <linux/string.h>
  
@@ -143,10 +143,10 @@ index 689467448736..6fe0739fc08d 100644
  {
  	int i = 0;
 diff --git a/arch/arm/include/asm/string.h b/arch/arm/include/asm/string.h
-index fe1c6af3a1b1..99a7a994643b 100644
+index f54a3136aac6..3e822707b9e6 100644
 --- a/arch/arm/include/asm/string.h
 +++ b/arch/arm/include/asm/string.h
-@@ -52,4 +52,16 @@ extern void __memzero(void *ptr, __kernel_size_t n);
+@@ -53,4 +53,16 @@ extern void __memzero(void *ptr, __kernel_size_t n);
  		(__p);							\
  	})
  
@@ -164,10 +164,10 @@ index fe1c6af3a1b1..99a7a994643b 100644
 +
  #endif
 diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-index c14217cd0155..c33b5aded32f 100644
+index b50c42455e25..14f78e6b1aa0 100644
 --- a/arch/x86/boot/compressed/misc.c
 +++ b/arch/x86/boot/compressed/misc.c
-@@ -34,6 +34,10 @@
+@@ -35,6 +35,10 @@
  #undef memcpy
  #undef memset
  #define memzero(s, n)	memset((s), 0, (n))
@@ -179,10 +179,10 @@ index c14217cd0155..c33b5aded32f 100644
  
  /* Functions used by the included decompressor code below. */
 diff --git a/arch/x86/boot/compressed/string.c b/arch/x86/boot/compressed/string.c
-index cea140ce6b42..009ed75127b5 100644
+index 19dbbcdd1a53..e33d8e015362 100644
 --- a/arch/x86/boot/compressed/string.c
 +++ b/arch/x86/boot/compressed/string.c
-@@ -9,6 +9,11 @@
+@@ -10,6 +10,11 @@
  
  #include "../string.c"
  
@@ -195,10 +195,10 @@ index cea140ce6b42..009ed75127b5 100644
  static void *__memcpy(void *dest, const void *src, size_t n)
  {
 diff --git a/arch/x86/boot/string.h b/arch/x86/boot/string.h
-index 2203b6902096..92e3fb8ddb2c 100644
+index 8371f2e58fc1..808d0264e8cf 100644
 --- a/arch/x86/boot/string.h
 +++ b/arch/x86/boot/string.h
-@@ -15,7 +15,11 @@ int memcmp(const void *s1, const void *s2, size_t len);
+@@ -16,7 +16,11 @@ int memcmp(const void *s1, const void *s2, size_t len);
   * do "undef memcpy" in .c file and link against right string.c
   */
  #ifndef __clang__ /* PR18415 */
@@ -231,10 +231,10 @@ index 80534d3c2480..9a0455d02b3d 100644
  			break;
  		bytes = __copy_from_user_nmi(&frame.return_address, fp + 1, sizeof(*fp));
 diff --git a/arch/x86/include/asm/string_32.h b/arch/x86/include/asm/string_32.h
-index e371e7229042..091b62ca04ce 100644
+index 076502241eae..29bf2ba3ac00 100644
 --- a/arch/x86/include/asm/string_32.h
 +++ b/arch/x86/include/asm/string_32.h
-@@ -32,6 +32,7 @@ extern size_t strlen(const char *s);
+@@ -33,6 +33,7 @@ extern size_t strlen(const char *s);
  static __always_inline void *__memcpy(void *to, const void *from, size_t n)
  {
  	int d0, d1, d2;
@@ -242,7 +242,7 @@ index e371e7229042..091b62ca04ce 100644
  	asm volatile("rep ; movsl\n\t"
  		     "movl %4,%%ecx\n\t"
  		     "andl $3,%%ecx\n\t"
-@@ -52,6 +53,7 @@ static __always_inline void *__constant_memcpy(void *to, const void *from,
+@@ -53,6 +54,7 @@ static __always_inline void *__constant_memcpy(void *to, const void *from,
  					       size_t n)
  {
  	long esi, edi;
@@ -250,7 +250,7 @@ index e371e7229042..091b62ca04ce 100644
  	if (!n)
  		return to;
  
-@@ -155,6 +157,7 @@ extern void *memcpy(void *, const void *, size_t);
+@@ -156,6 +158,7 @@ extern void *memcpy(void *, const void *, size_t);
  
  static inline void *__constant_memcpy3d(void *to, const void *from, size_t len)
  {
@@ -258,7 +258,7 @@ index e371e7229042..091b62ca04ce 100644
  	if (len < 512)
  		return __constant_memcpy(to, from, len);
  	return _mmx_memcpy(to, from, len);
-@@ -162,15 +165,17 @@ static inline void *__constant_memcpy3d(void *to, const void *from, size_t len)
+@@ -163,15 +166,17 @@ static inline void *__constant_memcpy3d(void *to, const void *from, size_t len)
  
  static inline void *__memcpy3d(void *to, const void *from, size_t len)
  {
@@ -277,7 +277,7 @@ index e371e7229042..091b62ca04ce 100644
  
  #else
  
-@@ -181,24 +186,35 @@ static inline void *__memcpy3d(void *to, const void *from, size_t len)
+@@ -182,24 +187,35 @@ static inline void *__memcpy3d(void *to, const void *from, size_t len)
  #ifndef CONFIG_KMEMCHECK
  
  #if (__GNUC__ >= 4)
@@ -317,10 +317,10 @@ index e371e7229042..091b62ca04ce 100644
  void *memmove(void *dest, const void *src, size_t n);
  
 diff --git a/arch/x86/include/asm/string_64.h b/arch/x86/include/asm/string_64.h
-index f372a70a523f..4cd2afd93a81 100644
+index 0b1b4445f4c5..ea91dbd7f2ab 100644
 --- a/arch/x86/include/asm/string_64.h
 +++ b/arch/x86/include/asm/string_64.h
-@@ -10,6 +10,7 @@
+@@ -11,6 +11,7 @@
  static __always_inline void *__inline_memcpy(void *to, const void *from, size_t n)
  {
  	unsigned long d0, d1, d2;
@@ -328,7 +328,7 @@ index f372a70a523f..4cd2afd93a81 100644
  	asm volatile("rep ; movsl\n\t"
  		     "testb $2,%b4\n\t"
  		     "je 1f\n\t"
-@@ -104,6 +105,19 @@ char *strcpy(char *dest, const char *src);
+@@ -105,6 +106,19 @@ char *strcpy(char *dest, const char *src);
  char *strcat(char *dest, const char *src);
  int strcmp(const char *cs, const char *ct);
  
@@ -348,7 +348,7 @@ index f372a70a523f..4cd2afd93a81 100644
  #if defined(CONFIG_KASAN) && !defined(__SANITIZE_ADDRESS__)
  
  /*
-@@ -120,6 +134,10 @@ int strcmp(const char *cs, const char *ct);
+@@ -121,6 +135,10 @@ int strcmp(const char *cs, const char *ct);
  #define __NO_FORTIFY /* FORTIFY_SOURCE uses __builtin_memcpy, etc. */
  #endif
  
@@ -360,10 +360,10 @@ index f372a70a523f..4cd2afd93a81 100644
  
  #define __HAVE_ARCH_MEMCPY_MCSAFE 1
 diff --git a/arch/x86/lib/memcpy_32.c b/arch/x86/lib/memcpy_32.c
-index 2eab7d0bfedd..de0c93633894 100644
+index e565d1c9019e..9f95ef31c49f 100644
 --- a/arch/x86/lib/memcpy_32.c
 +++ b/arch/x86/lib/memcpy_32.c
-@@ -3,6 +3,9 @@
+@@ -4,6 +4,9 @@
  
  #undef memcpy
  #undef memset
@@ -374,10 +374,10 @@ index 2eab7d0bfedd..de0c93633894 100644
  __visible void *memcpy(void *to, const void *from, size_t n)
  {
 diff --git a/arch/x86/math-emu/fpu_entry.c b/arch/x86/math-emu/fpu_entry.c
-index 220638a4cb94..c6c668b09506 100644
+index 9e2ba7e667f6..01f1120e68ab 100644
 --- a/arch/x86/math-emu/fpu_entry.c
 +++ b/arch/x86/math-emu/fpu_entry.c
-@@ -113,6 +113,7 @@ void math_emulate(struct math_emu_info *info)
+@@ -114,6 +114,7 @@ void math_emulate(struct math_emu_info *info)
  	unsigned long code_limit = 0;	/* Initialized to stop compiler warnings */
  	struct desc_struct code_descriptor;
  	struct fpu *fpu = &current->thread.fpu;
@@ -385,7 +385,7 @@ index 220638a4cb94..c6c668b09506 100644
  
  	fpu__initialize(fpu);
  
-@@ -165,7 +166,8 @@ void math_emulate(struct math_emu_info *info)
+@@ -166,7 +167,8 @@ void math_emulate(struct math_emu_info *info)
  
  	FPU_lookahead = !(FPU_EFLAGS & X86_EFLAGS_TF);
  
@@ -395,7 +395,7 @@ index 220638a4cb94..c6c668b09506 100644
  			  &addr_modes.override)) {
  		RE_ENTRANT_CHECK_OFF;
  		printk
-@@ -529,7 +531,8 @@ void math_emulate(struct math_emu_info *info)
+@@ -530,7 +532,8 @@ void math_emulate(struct math_emu_info *info)
  
  	if (FPU_lookahead && !need_resched()) {
  		FPU_ORIG_EIP = FPU_EIP - code_base;
@@ -790,10 +790,10 @@ index 46b3f19e0878..dfd088b9eda6 100644
  		skb_push(skb, USB_HWDESC_HEADER_LEN);
  		rtl819xU_tx_cmd(dev, skb);
 diff --git a/drivers/staging/rtl8192u/r819xU_cmdpkt.c b/drivers/staging/rtl8192u/r819xU_cmdpkt.c
-index ae9a4f1ac8fd..d56ca64390bc 100644
+index 80672100ea26..fbc31048c7a3 100644
 --- a/drivers/staging/rtl8192u/r819xU_cmdpkt.c
 +++ b/drivers/staging/rtl8192u/r819xU_cmdpkt.c
-@@ -38,7 +38,7 @@ rt_status SendTxCommandPacket(struct net_device *dev, void *pData, u32 DataLen)
+@@ -39,7 +39,7 @@ rt_status SendTxCommandPacket(struct net_device *dev, void *pData, u32 DataLen)
  	skb  = dev_alloc_skb(USB_HWDESC_HEADER_LEN + DataLen + 4);
  	if (!skb)
  		return RT_STATUS_FAILURE;
@@ -803,10 +803,10 @@ index ae9a4f1ac8fd..d56ca64390bc 100644
  	tcb_desc->queue_index = TXCMD_QUEUE;
  	tcb_desc->bCmdOrInit = DESC_PACKET_TYPE_NORMAL;
 diff --git a/drivers/staging/rtl8192u/r819xU_firmware.c b/drivers/staging/rtl8192u/r819xU_firmware.c
-index 35d1786703a7..c80ba723c2ba 100644
+index 9c7e19aedff1..9676f1a384f2 100644
 --- a/drivers/staging/rtl8192u/r819xU_firmware.c
 +++ b/drivers/staging/rtl8192u/r819xU_firmware.c
-@@ -66,7 +66,7 @@ static bool fw_download_code(struct net_device *dev, u8 *code_virtual_address,
+@@ -67,7 +67,7 @@ static bool fw_download_code(struct net_device *dev, u8 *code_virtual_address,
  		skb  = dev_alloc_skb(USB_HWDESC_HEADER_LEN + frag_length + 4);
  		if (!skb)
  			return false;
@@ -935,10 +935,10 @@ index b98436f5c7c7..86ac27daa6c5 100644
  		if (gid_valid(gid))
  			fgid = gid;
 diff --git a/include/asm-generic/asm-prototypes.h b/include/asm-generic/asm-prototypes.h
-index 939869c772b1..7ea151802331 100644
+index 2fa2bc208383..7c392857a3d3 100644
 --- a/include/asm-generic/asm-prototypes.h
 +++ b/include/asm-generic/asm-prototypes.h
-@@ -11,3 +11,9 @@ extern void *memset(void *, int, __kernel_size_t);
+@@ -12,3 +12,9 @@ extern void *memset(void *, int, __kernel_size_t);
  extern void *memcpy(void *, const void *, __kernel_size_t);
  #undef memmove
  extern void *memmove(void *, const void *, __kernel_size_t);
@@ -949,10 +949,10 @@ index 939869c772b1..7ea151802331 100644
 +#define memmove(t, f, l) ({ __same_pointer_depths_chk(t, f); memmove(t, f, l); })
 +#endif
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index e95a2631e545..a55e00c30dfb 100644
+index 202710420d6d..687140e4d6d7 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
-@@ -78,6 +78,27 @@ extern void __chk_io_ptr(const volatile void __iomem *);
+@@ -79,6 +79,27 @@ extern void __chk_io_ptr(const volatile void __iomem *);
  #include <linux/compiler-clang.h>
  #endif
  
@@ -980,7 +980,7 @@ index e95a2631e545..a55e00c30dfb 100644
  /*
   * Generic compiler-dependent macros required for kernel
   * build go below this comment. Actual compiler/compiler version
-@@ -258,6 +279,7 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
+@@ -259,6 +280,7 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
  
  #define __READ_ONCE_SIZE						\
  ({									\
@@ -988,7 +988,7 @@ index e95a2631e545..a55e00c30dfb 100644
  	switch (size) {							\
  	case 1: *(__u8 *)res = *(volatile __u8 *)p; break;		\
  	case 2: *(__u16 *)res = *(volatile __u16 *)p; break;		\
-@@ -298,6 +320,7 @@ void __read_once_size_nocheck(const volatile void *p, void *res, int size)
+@@ -299,6 +321,7 @@ void __read_once_size_nocheck(const volatile void *p, void *res, int size)
  
  static __always_inline void __write_once_size(volatile void *p, void *res, int size)
  {
@@ -997,10 +997,10 @@ index e95a2631e545..a55e00c30dfb 100644
  	case 1: *(volatile __u8 *)p = *(__u8 *)res; break;
  	case 2: *(volatile __u16 *)p = *(__u16 *)res; break;
 diff --git a/include/linux/string.h b/include/linux/string.h
-index 88ab7e5e5ade..43b92a8199a0 100644
+index 958df46900eb..d11ca1296a9f 100644
 --- a/include/linux/string.h
 +++ b/include/linux/string.h
-@@ -139,7 +139,13 @@ extern void * memmove(void *,const void *,__kernel_size_t);
+@@ -140,7 +140,13 @@ extern void * memmove(void *,const void *,__kernel_size_t);
  extern void * memscan(void *,int,__kernel_size_t);
  #endif
  #ifndef __HAVE_ARCH_MEMCMP
@@ -1014,7 +1014,7 @@ index 88ab7e5e5ade..43b92a8199a0 100644
  #endif
  #ifndef __HAVE_ARCH_MEMCHR
  extern void * memchr(const void *,int,__kernel_size_t);
-@@ -233,6 +239,12 @@ void __read_overflow2(void) __compiletime_error("detected read beyond size of ob
+@@ -234,6 +240,12 @@ void __read_overflow2(void) __compiletime_error("detected read beyond size of ob
  void __read_overflow3(void) __compiletime_error("detected read beyond size of object passed as 3rd parameter");
  void __write_overflow(void) __compiletime_error("detected write beyond size of object passed as 1st parameter");
  
@@ -1027,7 +1027,7 @@ index 88ab7e5e5ade..43b92a8199a0 100644
  #if !defined(__NO_FORTIFY) && defined(__OPTIMIZE__) && defined(CONFIG_FORTIFY_SOURCE)
  __FORTIFY_INLINE char *strncpy(char *p, const char *q, __kernel_size_t size)
  {
-@@ -444,4 +456,10 @@ static inline void memcpy_and_pad(void *dest, size_t dest_len,
+@@ -445,4 +457,10 @@ static inline void memcpy_and_pad(void *dest, size_t dest_len,
  		memcpy(dest, src, dest_len);
  }
  
@@ -1143,10 +1143,10 @@ index cf43802a4cae..b11610bf6ea5 100644
  		return ret;
  
 diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-index a0910c0cdf2e..6c06e5995aa2 100644
+index 27f7ad12c4b1..1ab3149c3509 100644
 --- a/kernel/trace/trace_functions.c
 +++ b/kernel/trace/trace_functions.c
-@@ -615,7 +615,7 @@ ftrace_trace_probe_callback(struct trace_array *tr,
+@@ -616,7 +616,7 @@ ftrace_trace_probe_callback(struct trace_array *tr,
  			    struct ftrace_hash *hash, char *glob,
  			    char *cmd, char *param, int enable)
  {
@@ -1155,7 +1155,7 @@ index a0910c0cdf2e..6c06e5995aa2 100644
  	char *number;
  	int ret;
  
-@@ -638,12 +638,12 @@ ftrace_trace_probe_callback(struct trace_array *tr,
+@@ -639,12 +639,12 @@ ftrace_trace_probe_callback(struct trace_array *tr,
  	 * We use the callback data field (which is a pointer)
  	 * as our counter.
  	 */
@@ -1245,10 +1245,10 @@ index 15dab691ea70..4f5aaab273f6 100644
  }
  
 diff --git a/mm/slub.c b/mm/slub.c
-index 0c3c73d7dd41..575c010802b2 100644
+index 5310446410fb..a45b30378cd5 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -276,13 +276,15 @@ static void prefetch_freepointer(const struct kmem_cache *s, void *object)
+@@ -277,13 +277,15 @@ static void prefetch_freepointer(const struct kmem_cache *s, void *object)
  static inline void *get_freepointer_safe(struct kmem_cache *s, void *object)
  {
  	unsigned long freepointer_addr;
@@ -1358,10 +1358,10 @@ index bc058a07b34d..256f2c800b22 100644
  	ret = -ENOMEM;
  	req = skcipher_request_alloc(conn->server_key->payload.data[0],
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index bc8da16c3172..ec6d5f99c28c 100644
+index f6b3d47e75e8..d1d0f986cf35 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
-@@ -17,6 +17,8 @@ ifdef CONFIG_GCC_PLUGINS
+@@ -18,6 +18,8 @@ ifdef CONFIG_GCC_PLUGINS
      DISABLE_PRINTK_FORMAT_PLUGIN			+= -fplugin-arg-printk_format_plugin-disable
    endif
  

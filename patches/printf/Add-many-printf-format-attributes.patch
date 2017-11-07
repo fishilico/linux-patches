@@ -56,10 +56,10 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  49 files changed, 105 insertions(+), 88 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
-index 0702d2531bc7..01ed0e57d243 100644
+index d4e6cd4577e5..6cf61035d2af 100644
 --- a/arch/x86/boot/tools/build.c
 +++ b/arch/x86/boot/tools/build.c
-@@ -126,7 +126,8 @@ static u32 partial_crc32(const u8 *s, int len, u32 crc)
+@@ -127,7 +127,8 @@ static u32 partial_crc32(const u8 *s, int len, u32 crc)
  	return crc;
  }
  
@@ -151,10 +151,10 @@ index 12ebd055724c..8a37eef96d3e 100644
  			   dev_t devt, void *drvdata,
  			   const struct attribute_group **groups,
 diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 227bac5f1191..15e756fdee22 100644
+index 321cd7b4d817..2724b4d75e74 100644
 --- a/drivers/base/cpu.c
 +++ b/drivers/base/cpu.c
-@@ -397,7 +397,7 @@ static void device_create_release(struct device *dev)
+@@ -396,7 +396,7 @@ static void device_create_release(struct device *dev)
  	kfree(dev);
  }
  
@@ -427,10 +427,10 @@ index 31d7c1415543..63da693c6822 100644
  	while (card->async_busy) {
  
 diff --git a/drivers/md/bcache/bset.h b/drivers/md/bcache/bset.h
-index ae964624efb2..453ee14942bf 100644
+index fa506c1aa524..5c3effeddf50 100644
 --- a/drivers/md/bcache/bset.h
 +++ b/drivers/md/bcache/bset.h
-@@ -530,14 +530,15 @@ int __bch_keylist_realloc(struct keylist *, unsigned);
+@@ -531,14 +531,15 @@ int __bch_keylist_realloc(struct keylist *, unsigned);
  #ifdef CONFIG_BCACHE_DEBUG
  
  int __bch_count_data(struct btree_keys *);
@@ -449,10 +449,10 @@ index ae964624efb2..453ee14942bf 100644
  void bch_dump_bset(struct btree_keys *, struct bset *, unsigned);
  
 diff --git a/drivers/pnp/interface.c b/drivers/pnp/interface.c
-index 5c5b3d47b5f6..4509dd039921 100644
+index 187e4a1175b0..553fb28c2d7f 100644
 --- a/drivers/pnp/interface.c
 +++ b/drivers/pnp/interface.c
-@@ -32,7 +32,7 @@ struct pnp_info_buffer {
+@@ -33,7 +33,7 @@ struct pnp_info_buffer {
  
  typedef struct pnp_info_buffer pnp_info_buffer_t;
  
@@ -531,10 +531,10 @@ index a899614ce829..604869624d41 100644
  	if (!par->spi) {
  		dev_err(par->info->device,
 diff --git a/drivers/staging/fbtft/fbtft-io.c b/drivers/staging/fbtft/fbtft-io.c
-index ffb9a3b4d454..f3199b1352ed 100644
+index f4a591919f62..0e9220bd2fe9 100644
 --- a/drivers/staging/fbtft/fbtft-io.c
 +++ b/drivers/staging/fbtft/fbtft-io.c
-@@ -13,7 +13,7 @@ int fbtft_write_spi(struct fbtft_par *par, void *buf, size_t len)
+@@ -14,7 +14,7 @@ int fbtft_write_spi(struct fbtft_par *par, void *buf, size_t len)
  	struct spi_message m;
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
@@ -543,7 +543,7 @@ index ffb9a3b4d454..f3199b1352ed 100644
  
  	if (!par->spi) {
  		dev_err(par->info->device,
-@@ -46,7 +46,7 @@ int fbtft_write_spi_emulate_9(struct fbtft_par *par, void *buf, size_t len)
+@@ -47,7 +47,7 @@ int fbtft_write_spi_emulate_9(struct fbtft_par *par, void *buf, size_t len)
  	u64 val, dc, tmp;
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
@@ -552,7 +552,7 @@ index ffb9a3b4d454..f3199b1352ed 100644
  
  	if (!par->extra) {
  		dev_err(par->info->device, "%s: error: par->extra is NULL\n",
-@@ -108,14 +108,14 @@ int fbtft_read_spi(struct fbtft_par *par, void *buf, size_t len)
+@@ -109,14 +109,14 @@ int fbtft_read_spi(struct fbtft_par *par, void *buf, size_t len)
  		txbuf[0] = par->startbyte | 0x3;
  		t.tx_buf = txbuf;
  		fbtft_par_dbg_hex(DEBUG_READ, par, par->info->device, u8,
@@ -569,7 +569,7 @@ index ffb9a3b4d454..f3199b1352ed 100644
  
  	return ret;
  }
-@@ -134,7 +134,7 @@ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
+@@ -135,7 +135,7 @@ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
  #endif
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
@@ -578,7 +578,7 @@ index ffb9a3b4d454..f3199b1352ed 100644
  
  	while (len--) {
  		data = *(u8 *)buf;
-@@ -184,7 +184,7 @@ int fbtft_write_gpio16_wr(struct fbtft_par *par, void *buf, size_t len)
+@@ -185,7 +185,7 @@ int fbtft_write_gpio16_wr(struct fbtft_par *par, void *buf, size_t len)
  #endif
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
@@ -701,10 +701,10 @@ index c4f8c7409666..6b0e38074444 100644
  		    irqreturn_t (*thread)(int irq, void *p),
  		    int type,
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index 2e0f22298fe9..a1320c9f6849 100644
+index 2bcb4dc6df1a..64ca17d371da 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
-@@ -161,7 +161,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
+@@ -162,7 +162,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
  void tracing_record_cmdline(struct task_struct *task);
  void tracing_record_tgid(struct task_struct *task);
  
@@ -743,10 +743,10 @@ index 752e5daf0896..cf43802a4cae 100644
  		      unsigned long ip, const char *fmt, va_list args)
  {
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 652c682707cd..1de61bebc417 100644
+index 401b0639116f..85e7e6821e5f 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -755,15 +755,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -756,15 +756,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -792,10 +792,10 @@ index c738e764e2a5..8dc41384bd47 100644
  	va_list ap;
  	int ret;
 diff --git a/mm/slub.c b/mm/slub.c
-index 163352c537ab..4c3bd8138541 100644
+index 1efbb8123037..2c4f2467b2ac 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -708,8 +708,8 @@ void object_err(struct kmem_cache *s, struct page *page,
+@@ -709,8 +709,8 @@ void object_err(struct kmem_cache *s, struct page *page,
  	print_trailer(s, page, object);
  }
  
@@ -864,10 +864,10 @@ index e48f0b2c01b9..a2fe5402ef22 100644
  	int n;
  	u16 len;
 diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
-index 6a5e1515123b..ebe4c5288f67 100644
+index 8453d6ac2f77..7aecdcc1d224 100644
 --- a/scripts/mod/modpost.h
 +++ b/scripts/mod/modpost.h
-@@ -188,6 +188,6 @@ void *grab_file(const char *filename, unsigned long *size);
+@@ -189,6 +189,6 @@ void *grab_file(const char *filename, unsigned long *size);
  char* get_next_line(unsigned long *pos, void *file, unsigned long size);
  void release_file(void *file, unsigned long size);
  
@@ -891,10 +891,10 @@ index 7493c0ee51cc..fba8ff17d8c6 100644
  {
  	va_list ap;
 diff --git a/security/tomoyo/common.c b/security/tomoyo/common.c
-index e0fb75052550..0b83ad25716e 100644
+index 21691b99e61f..143b037aad40 100644
 --- a/security/tomoyo/common.c
 +++ b/security/tomoyo/common.c
-@@ -192,7 +192,8 @@ const char *tomoyo_yesno(const unsigned int value)
+@@ -193,7 +193,8 @@ const char *tomoyo_yesno(const unsigned int value)
   *
   * Returns nothing.
   */
@@ -905,10 +905,10 @@ index e0fb75052550..0b83ad25716e 100644
  	va_list args;
  	const int pos = strlen(buffer);
 diff --git a/security/tomoyo/common.h b/security/tomoyo/common.h
-index 361e7a284699..558ffd21c285 100644
+index e4097d7994b1..2f7388b10a14 100644
 --- a/security/tomoyo/common.h
 +++ b/security/tomoyo/common.h
-@@ -943,7 +943,7 @@ bool tomoyo_str_starts(char **src, const char *find);
+@@ -944,7 +944,7 @@ bool tomoyo_str_starts(char **src, const char *find);
  char *tomoyo_encode(const char *str);
  char *tomoyo_encode2(const char *str, int str_len);
  char *tomoyo_init_log(struct tomoyo_request_info *r, int len, const char *fmt,
@@ -917,7 +917,7 @@ index 361e7a284699..558ffd21c285 100644
  char *tomoyo_read_token(struct tomoyo_acl_param *param);
  char *tomoyo_realpath_from_path(const struct path *path);
  char *tomoyo_realpath_nofollow(const char *pathname);
-@@ -1056,7 +1056,7 @@ void tomoyo_warn_oom(const char *function);
+@@ -1057,7 +1057,7 @@ void tomoyo_warn_oom(const char *function);
  void tomoyo_write_log(struct tomoyo_request_info *r, const char *fmt, ...)
  	__printf(2, 3);
  void tomoyo_write_log2(struct tomoyo_request_info *r, int len, const char *fmt,
