@@ -204,12 +204,12 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  197 files changed, 885 insertions(+), 23 deletions(-)
 
 diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
-index 948c648fea00..1b524c576c4b 100644
+index 0fcd82f01388..b5722b7d1df9 100644
 --- a/arch/arm/kernel/traps.c
 +++ b/arch/arm/kernel/traps.c
-@@ -179,10 +179,13 @@ static void dump_instr(const char *lvl, struct pt_regs *regs)
+@@ -175,10 +175,13 @@ static void __dump_instr(const char *lvl, struct pt_regs *regs)
  		else
- 			bad = __get_user(val, &((u32 *)addr)[i]);
+ 			bad = get_user(val, &((u32 *)addr)[i]);
  
 -		if (!bad)
 +		if (!bad) {
