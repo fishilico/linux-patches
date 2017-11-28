@@ -4,26 +4,33 @@ Date: Wed, 17 Jun 2015 15:40:10 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wduplicate-enum by design
 
 ---
- arch/x86/include/asm/fixmap.h                               |  7 +++++++
- drivers/media/dvb-frontends/tda1002x.h                      |  7 +++++++
- drivers/media/usb/cx231xx/cx231xx.h                         |  7 +++++++
- drivers/net/wireless/ath/ath10k/htt.h                       |  7 +++++++
- drivers/net/wireless/ath/carl9170/hw.h                      |  7 +++++++
- drivers/net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h |  9 +++++++++
- drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h         |  7 +++++++
- drivers/staging/comedi/comedi.h                             |  7 +++++++
- include/uapi/linux/netfilter/nf_conntrack_common.h          | 10 ++++++++++
- include/uapi/linux/nl80211.h                                |  7 +++++++
- sound/pci/pcxhr/pcxhr.h                                     |  8 ++++++++
- 11 files changed, 83 insertions(+)
+ arch/x86/include/asm/fixmap.h                              |  7 +++++++
+ drivers/gpu/drm/amd/display/dc/dc_hw_types.h               |  7 +++++++
+ drivers/gpu/drm/amd/display/dc/dc_types.h                  |  7 +++++++
+ drivers/gpu/drm/amd/display/dc/dm_services_types.h         |  7 +++++++
+ drivers/gpu/drm/i915/i915_reg.h                            |  7 +++++++
+ drivers/media/dvb-frontends/helene.c                       |  7 +++++++
+ drivers/media/dvb-frontends/mxl5xx_defs.h                  | 14 ++++++++++++++
+ drivers/media/dvb-frontends/tda1002x.h                     |  7 +++++++
+ drivers/media/usb/cx231xx/cx231xx.h                        |  7 +++++++
+ drivers/net/wireless/ath/ath10k/htt.h                      |  7 +++++++
+ drivers/net/wireless/ath/carl9170/hw.h                     |  7 +++++++
+ .../net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h    |  9 +++++++++
+ drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h        |  7 +++++++
+ drivers/staging/comedi/comedi.h                            |  7 +++++++
+ include/linux/mfd/max77686-private.h                       |  7 +++++++
+ include/uapi/linux/netfilter/nf_conntrack_common.h         | 10 ++++++++++
+ include/uapi/linux/nl80211.h                               |  7 +++++++
+ sound/pci/pcxhr/pcxhr.h                                    |  8 ++++++++
+ 18 files changed, 139 insertions(+)
 
 diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
-index dcd9fb55e679..04874732cf66 100644
+index b0c505fe9a95..e3379969bc8d 100644
 --- a/arch/x86/include/asm/fixmap.h
 +++ b/arch/x86/include/asm/fixmap.h
-@@ -104,6 +104,10 @@ enum fixed_addresses {
- 	FIX_GDT_REMAP_BEGIN,
- 	FIX_GDT_REMAP_END = FIX_GDT_REMAP_BEGIN + NR_CPUS - 1,
+@@ -110,6 +110,10 @@ enum fixed_addresses {
+ 	FIX_APEI_GHES_NMI,
+ #endif
  
 +#ifdef __clang__
 +#pragma GCC diagnostic push
@@ -32,7 +39,7 @@ index dcd9fb55e679..04874732cf66 100644
  	__end_of_permanent_fixed_addresses,
  
  	/*
-@@ -123,6 +127,9 @@ enum fixed_addresses {
+@@ -129,6 +133,9 @@ enum fixed_addresses {
  	 ? __end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS -
  	   (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1))
  	 : __end_of_permanent_fixed_addresses,
@@ -42,6 +49,177 @@ index dcd9fb55e679..04874732cf66 100644
  	FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1,
  #ifdef CONFIG_X86_32
  	FIX_WP_TEST,
+diff --git a/drivers/gpu/drm/amd/display/dc/dc_hw_types.h b/drivers/gpu/drm/amd/display/dc/dc_hw_types.h
+index 1a9f57fb0838..f1d1259648a0 100644
+--- a/drivers/gpu/drm/amd/display/dc/dc_hw_types.h
++++ b/drivers/gpu/drm/amd/display/dc/dc_hw_types.h
+@@ -207,6 +207,10 @@ enum surface_pixel_format {
+ 
+ 
+ /* Pixel format */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum pixel_format {
+ 	/*graph*/
+ 	PIXEL_FORMAT_UNINITIALIZED,
+@@ -228,6 +232,9 @@ enum pixel_format {
+ 	PIXEL_FORMAT_VIDEO_END = PIXEL_FORMAT_420BPP10,
+ 	PIXEL_FORMAT_UNKNOWN
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ enum tile_split_values {
+ 	DC_DISPLAY_MICRO_TILING = 0x0,
+diff --git a/drivers/gpu/drm/amd/display/dc/dc_types.h b/drivers/gpu/drm/amd/display/dc/dc_types.h
+index a8698e399111..5456cc48aca7 100644
+--- a/drivers/gpu/drm/amd/display/dc/dc_types.h
++++ b/drivers/gpu/drm/amd/display/dc/dc_types.h
+@@ -457,6 +457,10 @@ struct audio_info_flags {
+ 	};
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum audio_format_code {
+ 	AUDIO_FORMAT_CODE_FIRST = 1,
+ 	AUDIO_FORMAT_CODE_LINEARPCM = AUDIO_FORMAT_CODE_FIRST,
+@@ -481,6 +485,9 @@ enum audio_format_code {
+ 	AUDIO_FORMAT_CODE_COUNT =
+ 		AUDIO_FORMAT_CODE_LAST - AUDIO_FORMAT_CODE_FIRST
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ struct audio_mode {
+ 	 /* ucData[0] [6:3] */
+diff --git a/drivers/gpu/drm/amd/display/dc/dm_services_types.h b/drivers/gpu/drm/amd/display/dc/dm_services_types.h
+index fa26cf488b3c..34b97282bbb5 100644
+--- a/drivers/gpu/drm/amd/display/dc/dm_services_types.h
++++ b/drivers/gpu/drm/amd/display/dc/dm_services_types.h
+@@ -36,6 +36,10 @@ struct dm_pp_clock_range {
+ 	int max_khz;
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum dm_pp_clocks_state {
+ 	DM_PP_CLOCKS_STATE_INVALID,
+ 	DM_PP_CLOCKS_STATE_ULTRA_LOW,
+@@ -57,6 +61,9 @@ enum dm_pp_clocks_state {
+ 
+ 	DM_PP_CLOCKS_MAX_STATES
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ struct dm_pp_gpu_clock_range {
+ 	enum dm_pp_clocks_state clock_state;
+diff --git a/drivers/gpu/drm/i915/i915_reg.h b/drivers/gpu/drm/i915/i915_reg.h
+index 68a58cce6ab1..c84430a4bbce 100644
+--- a/drivers/gpu/drm/i915/i915_reg.h
++++ b/drivers/gpu/drm/i915/i915_reg.h
+@@ -1226,6 +1226,10 @@ static inline bool i915_mmio_reg_valid(i915_reg_t reg)
+  * the set of IDs on a given platform must be unique and except for custom
+  * power wells their value must stay fixed.
+  */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum i915_power_well_id {
+ 	/*
+ 	 * I830
+@@ -1294,6 +1298,9 @@ enum i915_power_well_id {
+ 	 */
+ 	I915_DISP_PW_ALWAYS_ON = 20,
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ #define PUNIT_REG_PWRGT_CTRL			0x60
+ #define PUNIT_REG_PWRGT_STATUS			0x61
+diff --git a/drivers/media/dvb-frontends/helene.c b/drivers/media/dvb-frontends/helene.c
+index 4bf5a551ba40..ca78206e5fde 100644
+--- a/drivers/media/dvb-frontends/helene.c
++++ b/drivers/media/dvb-frontends/helene.c
+@@ -56,6 +56,10 @@ struct helene_priv {
+ #define HELENE_BW_8		0x02
+ #define HELENE_BW_1_7		0x03
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum helene_tv_system_t {
+ 	SONY_HELENE_TV_SYSTEM_UNKNOWN,
+ 	/* Terrestrial Analog */
+@@ -137,6 +141,9 @@ enum helene_tv_system_t {
+ 	SONY_HELENE_STV_MAX = SONY_HELENE_STV_DVBS2
+ 	/**< Maximum satellite system */
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ struct helene_terr_adjust_param_t {
+ 	/* < Addr:0x69 Bit[6:4] : RFVGA gain.
+diff --git a/drivers/media/dvb-frontends/mxl5xx_defs.h b/drivers/media/dvb-frontends/mxl5xx_defs.h
+index fd9e61e0188f..fe0f08733f70 100644
+--- a/drivers/media/dvb-frontends/mxl5xx_defs.h
++++ b/drivers/media/dvb-frontends/mxl5xx_defs.h
+@@ -513,6 +513,10 @@ enum MXL_HYDRA_PID_FILTER_BANK_E {
+ 	MXL_HYDRA_PID_BANK_B,
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum MXL_HYDRA_MPEG_DATA_FMT_E {
+ 	MXL_HYDRA_MPEG_SERIAL_MSB_1ST = 0,
+ 	MXL_HYDRA_MPEG_SERIAL_LSB_1ST,
+@@ -520,6 +524,9 @@ enum MXL_HYDRA_MPEG_DATA_FMT_E {
+ 	MXL_HYDRA_MPEG_SYNC_WIDTH_BIT = 0,
+ 	MXL_HYDRA_MPEG_SYNC_WIDTH_BYTE
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ enum MXL_HYDRA_MPEG_MODE_E {
+ 	MXL_HYDRA_MPEG_MODE_SERIAL_4_WIRE = 0, /* MPEG 4 Wire serial mode */
+@@ -533,6 +540,10 @@ enum MXL_HYDRA_MPEG_CLK_TYPE_E {
+ 	MXL_HYDRA_MPEG_CLK_GAPPED,         /* Gapped (gated) MPEG clock */
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum MXL_HYDRA_MPEG_CLK_FMT_E {
+ 	MXL_HYDRA_MPEG_ACTIVE_LOW = 0,
+ 	MXL_HYDRA_MPEG_ACTIVE_HIGH,
+@@ -543,6 +554,9 @@ enum MXL_HYDRA_MPEG_CLK_FMT_E {
+ 	MXL_HYDRA_MPEG_CLK_IN_PHASE = 0,
+ 	MXL_HYDRA_MPEG_CLK_INVERTED,
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ enum MXL_HYDRA_MPEG_CLK_PHASE_E {
+ 	MXL_HYDRA_MPEG_CLK_PHASE_SHIFT_0_DEG = 0,
 diff --git a/drivers/media/dvb-frontends/tda1002x.h b/drivers/media/dvb-frontends/tda1002x.h
 index 0d334613de1b..2f8fde5dd2a4 100644
 --- a/drivers/media/dvb-frontends/tda1002x.h
@@ -218,6 +396,31 @@ index a1c1081906c5..2fbc35f813d7 100644
  
  /*
   * Values for setting a clock source with INSN_CONFIG_SET_CLOCK_SRC for
+diff --git a/include/linux/mfd/max77686-private.h b/include/linux/mfd/max77686-private.h
+index 643dae777b43..32ad3f3b7cb2 100644
+--- a/include/linux/mfd/max77686-private.h
++++ b/include/linux/mfd/max77686-private.h
+@@ -394,6 +394,10 @@ enum max77686_irq_source {
+ 	MAX77686_IRQ_GROUP_NR,
+ };
+ 
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum max77686_irq {
+ 	MAX77686_PMICIRQ_PWRONF,
+ 	MAX77686_PMICIRQ_PWRONR,
+@@ -414,6 +418,9 @@ enum max77686_irq {
+ 	MAX77686_RTCIRQ_RTC1S,
+ 	MAX77686_RTCIRQ_WTSR,
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ #define MAX77686_INT1_PWRONF_MSK	BIT(0)
+ #define MAX77686_INT1_PWRONR_MSK	BIT(1)
 diff --git a/include/uapi/linux/netfilter/nf_conntrack_common.h b/include/uapi/linux/netfilter/nf_conntrack_common.h
 index 3fea7709a441..40250aa8ba3e 100644
 --- a/include/uapi/linux/netfilter/nf_conntrack_common.h
@@ -247,10 +450,10 @@ index 3fea7709a441..40250aa8ba3e 100644
  #define NF_CT_STATE_INVALID_BIT			(1 << 0)
  #define NF_CT_STATE_BIT(ctinfo)			(1 << ((ctinfo) % IP_CT_IS_REPLY + 1))
 diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
-index 51626b4175c0..e37995ae466f 100644
+index f882fe1f9709..b69681851bee 100644
 --- a/include/uapi/linux/nl80211.h
 +++ b/include/uapi/linux/nl80211.h
-@@ -3912,6 +3912,10 @@ enum nl80211_bss_status {
+@@ -3926,6 +3926,10 @@ enum nl80211_bss_status {
   *	trying multiple times); this is invalid in netlink -- leave out
   *	the attribute for this on CONNECT commands.
   */
@@ -261,7 +464,7 @@ index 51626b4175c0..e37995ae466f 100644
  enum nl80211_auth_type {
  	NL80211_AUTHTYPE_OPEN_SYSTEM,
  	NL80211_AUTHTYPE_SHARED_KEY,
-@@ -3927,6 +3931,9 @@ enum nl80211_auth_type {
+@@ -3941,6 +3945,9 @@ enum nl80211_auth_type {
  	NL80211_AUTHTYPE_MAX = __NL80211_AUTHTYPE_NUM - 1,
  	NL80211_AUTHTYPE_AUTOMATIC
  };

@@ -269,6 +269,7 @@ if $HOSTCC -v 2>&1 | grep -q clang
 then
     HOSTCFLAGS="$HOSTCFLAGS -Weverything"
     disable_in_hostcflags 'c99-extensions'
+    disable_in_hostcflags 'c++-compat' # Empty structs are used in ARRAY_SIZE
     disable_in_hostcflags 'cast-qual' # Some pointer casts don't specify const
     disable_in_hostcflags 'comma' # There are legimitate uses like "while ((n = read(...)), n > 0)"
     disable_in_hostcflags 'covered-switch-default' # Some switch one enums cover all values
@@ -352,6 +353,11 @@ then
     echo 'CONFIG_RCU_BOOST_DELAY=1' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_DEBUG_PREEMPT=y' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_PREEMPT_TRACER=y' >> "$KBUILD_OUTPUT/.config"
+
+    # CEC_GPIO depends on PREEMPT
+    echo 'CONFIG_CEC_GPIO=m' >> "$KBUILD_OUTPUT/.config"
+    # PREEMPTIRQ_EVENTS depends on DEBUG_PREEMPT
+    echo 'CONFIG_PREEMPTIRQ_EVENTS=y' >> "$KBUILD_OUTPUT/.config"
 
     if $CC -v 2>&1 | grep -q clang
     then

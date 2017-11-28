@@ -9,12 +9,7 @@ gcc 7 complains on "EZ(t->setup * 1000,  T);":
     suggest '&&' instead [-Werror=int-in-bool-context]
 ---
  drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c | 2 +-
- drivers/gpu/drm/stm/dw_mipi_dsi-stm.c           | 2 +-
- drivers/infiniband/core/uverbs.h                | 4 ++--
- drivers/input/misc/adxl34x.c                    | 2 +-
- include/linux/iopoll.h                          | 6 +++---
- include/linux/regmap.h                          | 2 +-
- 6 files changed, 9 insertions(+), 9 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c b/drivers/gpu/drm/nouveau/nvkm/subdev/clk/gt215.c
 index 96e0941c8edd..e3c104728847 100644
@@ -29,82 +24,4 @@ index 96e0941c8edd..e3c104728847 100644
  		return sclk * N / (M * P);
  
  	return 0;
-diff --git a/drivers/gpu/drm/stm/dw_mipi_dsi-stm.c b/drivers/gpu/drm/stm/dw_mipi_dsi-stm.c
-index 568c5d0461ea..34be503a32ef 100644
---- a/drivers/gpu/drm/stm/dw_mipi_dsi-stm.c
-+++ b/drivers/gpu/drm/stm/dw_mipi_dsi-stm.c
-@@ -114,7 +114,7 @@ static enum dsi_color dsi_color_from_mipi(enum mipi_dsi_pixel_format fmt)
- static int dsi_pll_get_clkout_khz(int clkin_khz, int idf, int ndiv, int odf)
- {
- 	/* prevent from division by 0 */
--	if (idf * odf)
-+	if ((idf * odf) != 0)
- 		return DIV_ROUND_CLOSEST(clkin_khz * ndiv, idf * odf);
- 
- 	return 0;
-diff --git a/drivers/infiniband/core/uverbs.h b/drivers/infiniband/core/uverbs.h
-index 37c8903e7fd0..d9ba5f24508e 100644
---- a/drivers/infiniband/core/uverbs.h
-+++ b/drivers/infiniband/core/uverbs.h
-@@ -57,8 +57,8 @@
- 
- #define INIT_UDATA_BUF_OR_NULL(udata, ibuf, obuf, ilen, olen)			\
- 	do {									\
--		(udata)->inbuf  = (ilen) ? (const void __user *) (ibuf) : NULL;	\
--		(udata)->outbuf = (olen) ? (void __user *) (obuf) : NULL;	\
-+		(udata)->inbuf  = (ilen) != 0 ? (const void __user *) (ibuf) : NULL;	\
-+		(udata)->outbuf = (olen) != 0 ? (void __user *) (obuf) : NULL;	\
- 		(udata)->inlen  = (ilen);					\
- 		(udata)->outlen = (olen);					\
- 	} while (0)
-diff --git a/drivers/input/misc/adxl34x.c b/drivers/input/misc/adxl34x.c
-index 2b2d02f408bb..0e991398409a 100644
---- a/drivers/input/misc/adxl34x.c
-+++ b/drivers/input/misc/adxl34x.c
-@@ -796,7 +796,7 @@ struct adxl34x *adxl34x_probe(struct device *dev, int irq,
- 
- 	if (pdata->watermark) {
- 		ac->int_mask |= WATERMARK;
--		if (!FIFO_MODE(pdata->fifo_mode))
-+		if (0 != FIFO_MODE(pdata->fifo_mode))
- 			ac->pdata.fifo_mode |= FIFO_STREAM;
- 	} else {
- 		ac->int_mask |= DATA_READY;
-diff --git a/include/linux/iopoll.h b/include/linux/iopoll.h
-index d29e1e21bf3f..b0bbacc4effa 100644
---- a/include/linux/iopoll.h
-+++ b/include/linux/iopoll.h
-@@ -43,16 +43,16 @@
- #define readx_poll_timeout(op, addr, val, cond, sleep_us, timeout_us)	\
- ({ \
- 	ktime_t timeout = ktime_add_us(ktime_get(), timeout_us); \
--	might_sleep_if(sleep_us); \
-+	might_sleep_if((sleep_us) != 0); \
- 	for (;;) { \
- 		(val) = op(addr); \
- 		if (cond) \
- 			break; \
--		if (timeout_us && ktime_compare(ktime_get(), timeout) > 0) { \
-+		if ((timeout_us) != 0 && ktime_compare(ktime_get(), timeout) > 0) { \
- 			(val) = op(addr); \
- 			break; \
- 		} \
--		if (sleep_us) \
-+		if ((sleep_us) != 0) \
- 			usleep_range((sleep_us >> 2) + 1, sleep_us); \
- 	} \
- 	(cond) ? 0 : -ETIMEDOUT; \
-diff --git a/include/linux/regmap.h b/include/linux/regmap.h
-index 978abfbac617..b97f348fdbcc 100644
---- a/include/linux/regmap.h
-+++ b/include/linux/regmap.h
-@@ -129,7 +129,7 @@ struct reg_sequence {
- 			break; \
- 		if (cond) \
- 			break; \
--		if (timeout_us && ktime_compare(ktime_get(), timeout) > 0) { \
-+		if ((timeout_us) != 0 && ktime_compare(ktime_get(), timeout) > 0) { \
- 			pollret = regmap_read((map), (addr), &(val)); \
- 			break; \
- 		} \
 -- 

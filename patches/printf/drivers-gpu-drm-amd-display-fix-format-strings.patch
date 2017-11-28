@@ -1,0 +1,252 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 18 Nov 2017 15:35:03 +0100
+Subject: [PATCH] {PRINTF} drivers/gpu/drm/amd/display: fix format strings
+
+- "%%" to display "%"
+- "%f" to format floats
+- "%p" to format pointers
+- missing format line
+---
+ drivers/gpu/drm/amd/display/dc/calcs/dcn_calcs.c   | 74 +++++++++++-----------
+ drivers/gpu/drm/amd/display/dc/core/dc_debug.c     | 11 ++--
+ drivers/gpu/drm/amd/display/dc/core/dc_link.c      |  4 +-
+ drivers/gpu/drm/amd/display/dc/core/dc_stream.c    |  2 +-
+ .../amd/display/dc/dce110/dce110_hw_sequencer.c    |  2 +-
+ .../drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c  |  2 +-
+ .../dc/i2caux/dce110/i2c_hw_engine_dce110.c        |  3 +-
+ .../gpu/drm/amd/display/include/logger_interface.h |  2 +-
+ 8 files changed, 50 insertions(+), 50 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/display/dc/calcs/dcn_calcs.c b/drivers/gpu/drm/amd/display/dc/calcs/dcn_calcs.c
+index 3dce35e66b09..a7b11f1d7b60 100644
+--- a/drivers/gpu/drm/amd/display/dc/calcs/dcn_calcs.c
++++ b/drivers/gpu/drm/amd/display/dc/calcs/dcn_calcs.c
+@@ -1404,39 +1404,39 @@ void dcn_bw_sync_calcs_and_dml(struct dc *dc)
+ {
+ 	kernel_fpu_begin();
+ 	dm_logger_write(dc->ctx->logger, LOG_BANDWIDTH_CALCS,
+-			"sr_exit_time: %d ns\n"
+-			"sr_enter_plus_exit_time: %d ns\n"
+-			"urgent_latency: %d ns\n"
+-			"write_back_latency: %d ns\n"
+-			"percent_of_ideal_drambw_received_after_urg_latency: %d %\n"
++			"sr_exit_time: %.0f ns\n"
++			"sr_enter_plus_exit_time: %.0f ns\n"
++			"urgent_latency: %.0f ns\n"
++			"write_back_latency: %.0f ns\n"
++			"percent_of_ideal_drambw_received_after_urg_latency: %.0f %%\n"
+ 			"max_request_size: %d bytes\n"
+-			"dcfclkv_max0p9: %d kHz\n"
+-			"dcfclkv_nom0p8: %d kHz\n"
+-			"dcfclkv_mid0p72: %d kHz\n"
+-			"dcfclkv_min0p65: %d kHz\n"
+-			"max_dispclk_vmax0p9: %d kHz\n"
+-			"max_dispclk_vnom0p8: %d kHz\n"
+-			"max_dispclk_vmid0p72: %d kHz\n"
+-			"max_dispclk_vmin0p65: %d kHz\n"
+-			"max_dppclk_vmax0p9: %d kHz\n"
+-			"max_dppclk_vnom0p8: %d kHz\n"
+-			"max_dppclk_vmid0p72: %d kHz\n"
+-			"max_dppclk_vmin0p65: %d kHz\n"
+-			"socclk: %d kHz\n"
+-			"fabric_and_dram_bandwidth_vmax0p9: %d MB/s\n"
+-			"fabric_and_dram_bandwidth_vnom0p8: %d MB/s\n"
+-			"fabric_and_dram_bandwidth_vmid0p72: %d MB/s\n"
+-			"fabric_and_dram_bandwidth_vmin0p65: %d MB/s\n"
+-			"phyclkv_max0p9: %d kHz\n"
+-			"phyclkv_nom0p8: %d kHz\n"
+-			"phyclkv_mid0p72: %d kHz\n"
+-			"phyclkv_min0p65: %d kHz\n"
+-			"downspreading: %d %\n"
++			"dcfclkv_max0p9: %.0f kHz\n"
++			"dcfclkv_nom0p8: %.0f kHz\n"
++			"dcfclkv_mid0p72: %.0f kHz\n"
++			"dcfclkv_min0p65: %.0f kHz\n"
++			"max_dispclk_vmax0p9: %.0f kHz\n"
++			"max_dispclk_vnom0p8: %.0f kHz\n"
++			"max_dispclk_vmid0p72: %.0f kHz\n"
++			"max_dispclk_vmin0p65: %.0f kHz\n"
++			"max_dppclk_vmax0p9: %.0f kHz\n"
++			"max_dppclk_vnom0p8: %.0f kHz\n"
++			"max_dppclk_vmid0p72: %.0f kHz\n"
++			"max_dppclk_vmin0p65: %.0f kHz\n"
++			"socclk: %.0f kHz\n"
++			"fabric_and_dram_bandwidth_vmax0p9: %.0f MB/s\n"
++			"fabric_and_dram_bandwidth_vnom0p8: %.0f MB/s\n"
++			"fabric_and_dram_bandwidth_vmid0p72: %.0f MB/s\n"
++			"fabric_and_dram_bandwidth_vmin0p65: %.0f MB/s\n"
++			"phyclkv_max0p9: %.0f kHz\n"
++			"phyclkv_nom0p8: %.0f kHz\n"
++			"phyclkv_mid0p72: %.0f kHz\n"
++			"phyclkv_min0p65: %.0f kHz\n"
++			"downspreading: %.0f %%\n"
+ 			"round_trip_ping_latency_cycles: %d DCFCLK Cycles\n"
+ 			"urgent_out_of_order_return_per_channel: %d Bytes\n"
+ 			"number_of_channels: %d\n"
+ 			"vmm_page_size: %d Bytes\n"
+-			"dram_clock_change_latency: %d ns\n"
++			"dram_clock_change_latency: %.0f ns\n"
+ 			"return_bus_width: %d Bytes\n",
+ 			dc->dcn_soc->sr_exit_time * 1000,
+ 			dc->dcn_soc->sr_enter_plus_exit_time * 1000,
+@@ -1473,11 +1473,11 @@ void dcn_bw_sync_calcs_and_dml(struct dc *dc)
+ 			dc->dcn_soc->dram_clock_change_latency * 1000,
+ 			dc->dcn_soc->return_bus_width);
+ 	dm_logger_write(dc->ctx->logger, LOG_BANDWIDTH_CALCS,
+-			"rob_buffer_size_in_kbyte: %d\n"
+-			"det_buffer_size_in_kbyte: %d\n"
+-			"dpp_output_buffer_pixels: %d\n"
+-			"opp_output_buffer_lines: %d\n"
+-			"pixel_chunk_size_in_kbyte: %d\n"
++			"rob_buffer_size_in_kbyte: %.0f\n"
++			"det_buffer_size_in_kbyte: %.0f\n"
++			"dpp_output_buffer_pixels: %.0f\n"
++			"opp_output_buffer_lines: %.0f\n"
++			"pixel_chunk_size_in_kbyte: %.0f\n"
+ 			"pte_enable: %d\n"
+ 			"pte_chunk_size: %d kbytes\n"
+ 			"meta_chunk_size: %d kbytes\n"
+@@ -1496,13 +1496,13 @@ void dcn_bw_sync_calcs_and_dml(struct dc *dc)
+ 			"max_pscl_tolb_throughput: %d pixels/dppclk\n"
+ 			"max_lb_tovscl_throughput: %d pixels/dppclk\n"
+ 			"max_vscl_tohscl_throughput: %d pixels/dppclk\n"
+-			"max_hscl_ratio: %d\n"
+-			"max_vscl_ratio: %d\n"
++			"max_hscl_ratio: %.0f\n"
++			"max_vscl_ratio: %.0f\n"
+ 			"max_hscl_taps: %d\n"
+ 			"max_vscl_taps: %d\n"
+ 			"pte_buffer_size_in_requests: %d\n"
+-			"dispclk_ramping_margin: %d %\n"
+-			"under_scan_factor: %d %\n"
++			"dispclk_ramping_margin: %.0f %%\n"
++			"under_scan_factor: %.0f %%\n"
+ 			"max_inter_dcn_tile_repeaters: %d\n"
+ 			"can_vstartup_lines_exceed_vsync_plus_back_porch_lines_minus_one: %d\n"
+ 			"bug_forcing_luma_and_chroma_request_to_same_size_fixed: %d\n"
+diff --git a/drivers/gpu/drm/amd/display/dc/core/dc_debug.c b/drivers/gpu/drm/amd/display/dc/core/dc_debug.c
+index 6acee5426e4b..775779459e30 100644
+--- a/drivers/gpu/drm/amd/display/dc/core/dc_debug.c
++++ b/drivers/gpu/drm/amd/display/dc/core/dc_debug.c
+@@ -54,8 +54,8 @@ void pre_surface_trace(
+ 				"plane_state->visible = %d;\n"
+ 				"plane_state->flip_immediate = %d;\n"
+ 				"plane_state->address.type = %d;\n"
+-				"plane_state->address.grph.addr.quad_part = 0x%X;\n"
+-				"plane_state->address.grph.meta_addr.quad_part = 0x%X;\n"
++				"plane_state->address.grph.addr.quad_part = 0x%llX;\n"
++				"plane_state->address.grph.meta_addr.quad_part = 0x%llX;\n"
+ 				"plane_state->scaling_quality.h_taps = %d;\n"
+ 				"plane_state->scaling_quality.v_taps = %d;\n"
+ 				"plane_state->scaling_quality.h_taps_c = %d;\n"
+@@ -172,8 +172,8 @@ void update_surface_trace(
+ 		SURFACE_TRACE("Update %d\n", i);
+ 		if (update->flip_addr) {
+ 			SURFACE_TRACE("flip_addr->address.type = %d;\n"
+-					"flip_addr->address.grph.addr.quad_part = 0x%X;\n"
+-					"flip_addr->address.grph.meta_addr.quad_part = 0x%X;\n"
++					"flip_addr->address.grph.addr.quad_part = 0x%llX;\n"
++					"flip_addr->address.grph.meta_addr.quad_part = 0x%llX;\n"
+ 					"flip_addr->flip_immediate = %d;\n",
+ 					update->flip_addr->address.type,
+ 					update->flip_addr->address.grph.addr.quad_part,
+@@ -190,7 +190,8 @@ void update_surface_trace(
+ 					"plane_info->plane_size.grph.surface_size.width = %d;\n"
+ 					"plane_info->plane_size.grph.surface_size.x = %d;\n"
+ 					"plane_info->plane_size.grph.surface_size.y = %d;\n"
+-					"plane_info->rotation = %d;\n",
++					"plane_info->rotation = %d;\n"
++					"plane_info->stereo_format = %d;\n",
+ 					update->plane_info->color_space,
+ 					update->plane_info->format,
+ 					update->plane_info->plane_size.grph.surface_pitch,
+diff --git a/drivers/gpu/drm/amd/display/dc/core/dc_link.c b/drivers/gpu/drm/amd/display/dc/core/dc_link.c
+index 0602610489d7..901c6a82602e 100644
+--- a/drivers/gpu/drm/amd/display/dc/core/dc_link.c
++++ b/drivers/gpu/drm/amd/display/dc/core/dc_link.c
+@@ -2181,7 +2181,7 @@ static enum dc_status allocate_mst_payload(struct pipe_ctx *pipe_ctx)
+ 
+ 	for (i = 0; i < MAX_CONTROLLER_NUM; i++) {
+ 		dm_logger_write(link->ctx->logger, LOG_MST,
+-		"stream_enc[%d]: 0x%x      "
++		"stream_enc[%d]: 0x%p      "
+ 		"stream[%d].vcp_id: %d      "
+ 		"stream[%d].slot_count: %d\n",
+ 		i,
+@@ -2273,7 +2273,7 @@ static enum dc_status deallocate_mst_payload(struct pipe_ctx *pipe_ctx)
+ 
+ 	for (i = 0; i < MAX_CONTROLLER_NUM; i++) {
+ 		dm_logger_write(link->ctx->logger, LOG_MST,
+-		"stream_enc[%d]: 0x%x      "
++		"stream_enc[%d]: 0x%p      "
+ 		"stream[%d].vcp_id: %d      "
+ 		"stream[%d].slot_count: %d\n",
+ 		i,
+diff --git a/drivers/gpu/drm/amd/display/dc/core/dc_stream.c b/drivers/gpu/drm/amd/display/dc/core/dc_stream.c
+index b00a6040a697..5c5f81ccf16f 100644
+--- a/drivers/gpu/drm/amd/display/dc/core/dc_stream.c
++++ b/drivers/gpu/drm/amd/display/dc/core/dc_stream.c
+@@ -367,7 +367,7 @@ void dc_stream_log(
+ 
+ 	dm_logger_write(dm_logger,
+ 			log_type,
+-			"core_stream 0x%x: src: %d, %d, %d, %d; dst: %d, %d, %d, %d, colorSpace:%d\n",
++			"core_stream 0x%p: src: %d, %d, %d, %d; dst: %d, %d, %d, %d, colorSpace:%d\n",
+ 			stream,
+ 			stream->src.x,
+ 			stream->src.y,
+diff --git a/drivers/gpu/drm/amd/display/dc/dce110/dce110_hw_sequencer.c b/drivers/gpu/drm/amd/display/dc/dce110/dce110_hw_sequencer.c
+index 1229a3315018..479c14af85b0 100644
+--- a/drivers/gpu/drm/amd/display/dc/dce110/dce110_hw_sequencer.c
++++ b/drivers/gpu/drm/amd/display/dc/dce110/dce110_hw_sequencer.c
+@@ -2819,7 +2819,7 @@ static void dce110_program_front_end_for_pipe(
+ 	}
+ 
+ 	dm_logger_write(dc->ctx->logger, LOG_SURFACE,
+-			"Pipe:%d 0x%x: addr hi:0x%x, "
++			"Pipe:%d 0x%p: addr hi:0x%x, "
+ 			"addr low:0x%x, "
+ 			"src: %d, %d, %d,"
+ 			" %d; dst: %d, %d, %d, %d;"
+diff --git a/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c b/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c
+index 961ad5c3b454..6252729b5e3c 100644
+--- a/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c
++++ b/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c
+@@ -1997,7 +1997,7 @@ static void dcn10_power_on_fe(
+ 
+ 	if (plane_state) {
+ 		dm_logger_write(dc->ctx->logger, LOG_DC,
+-				"Pipe:%d 0x%x: addr hi:0x%x, "
++				"Pipe:%d 0x%p: addr hi:0x%x, "
+ 				"addr low:0x%x, "
+ 				"src: %d, %d, %d,"
+ 				" %d; dst: %d, %d, %d, %d;\n",
+diff --git a/drivers/gpu/drm/amd/display/dc/i2caux/dce110/i2c_hw_engine_dce110.c b/drivers/gpu/drm/amd/display/dc/i2caux/dce110/i2c_hw_engine_dce110.c
+index 56e25b3d65fd..7dfdbc6246f8 100644
+--- a/drivers/gpu/drm/amd/display/dc/i2caux/dce110/i2c_hw_engine_dce110.c
++++ b/drivers/gpu/drm/amd/display/dc/i2caux/dce110/i2c_hw_engine_dce110.c
+@@ -527,8 +527,7 @@ static void construct(
+ 	if (xtal_ref_div == 0) {
+ 		dm_logger_write(
+ 				hw_engine->base.base.base.ctx->logger, LOG_WARNING,
+-				"Invalid base timer divider\n",
+-				__func__);
++				"Invalid base timer divider\n");
+ 		xtal_ref_div = 2;
+ 	}
+ 
+diff --git a/drivers/gpu/drm/amd/display/include/logger_interface.h b/drivers/gpu/drm/amd/display/include/logger_interface.h
+index a24ca8abf658..fe6131a6d9ad 100644
+--- a/drivers/gpu/drm/amd/display/include/logger_interface.h
++++ b/drivers/gpu/drm/amd/display/include/logger_interface.h
+@@ -175,7 +175,7 @@ void context_clock_trace(
+ 	if (dc->debug.performance_trace) {\
+ 		dm_logger_write(dc->ctx->logger, \
+ 				LOG_PERF_TRACE, \
+-				"%s duration: %d ticks\n", __func__,\
++				"%s duration: %lld ticks\n", __func__,\
+ 				perf_trc_end_stmp - perf_trc_start_stmp); \
+ 		if (perf_trc_start_log_msk != 1<<LOG_PERF_TRACE) {\
+ 			dc->ctx->logger->mask = perf_trc_start_log_msk;\
+-- 

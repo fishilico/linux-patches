@@ -26,10 +26,10 @@ index 915330abf6e5..747eafda8a6b 100644
  		struct file *file;
  		struct lsm_ibpkey_audit *ibpkey;
 diff --git a/include/linux/lsm_hooks.h b/include/linux/lsm_hooks.h
-index c9258124e417..6ee72ad1304c 100644
+index 7161d8e7ee79..e6c8a82afe6d 100644
 --- a/include/linux/lsm_hooks.h
 +++ b/include/linux/lsm_hooks.h
-@@ -1509,7 +1509,7 @@ union security_list_options {
+@@ -1543,7 +1543,7 @@ union security_list_options {
  	void (*cred_transfer)(struct cred *new, const struct cred *old);
  	int (*kernel_act_as)(struct cred *new, u32 secid);
  	int (*kernel_create_files_as)(struct cred *new, struct inode *inode);
@@ -39,7 +39,7 @@ index c9258124e417..6ee72ad1304c 100644
  	int (*kernel_post_read_file)(struct file *file, char *buf, loff_t size,
  				     enum kernel_read_file_id id);
 diff --git a/include/linux/security.h b/include/linux/security.h
-index ce6265960d6c..b5b695b2a204 100644
+index 73f1ef625d40..eb24c9494a0a 100644
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
 @@ -326,7 +326,7 @@ int security_prepare_creds(struct cred *new, const struct cred *old, gfp_t gfp);
@@ -61,10 +61,10 @@ index ce6265960d6c..b5b695b2a204 100644
  	return 0;
  }
 diff --git a/security/security.c b/security/security.c
-index 4bf0f571b4ef..d43ddd4cc031 100644
+index 1cd8526cb0b7..7dc7d11420d7 100644
 --- a/security/security.c
 +++ b/security/security.c
-@@ -1014,7 +1014,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
+@@ -1015,7 +1015,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
  	return call_int_hook(kernel_create_files_as, 0, new, inode);
  }
  
@@ -74,10 +74,10 @@ index 4bf0f571b4ef..d43ddd4cc031 100644
  	return call_int_hook(kernel_module_request, 0, kmod_name);
  }
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 11c3a45dda56..c6abf36c9ba6 100644
+index 19b8e92afd23..e76580b49f36 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -3880,7 +3880,7 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
+@@ -3888,7 +3888,7 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
  	return ret;
  }
  

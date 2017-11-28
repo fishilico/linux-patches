@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 17 Nov 2017 23:02:24 +0100
+Subject: [PATCH] {MAYBE UPS} drivers/net/wireless/broadcom/brcm80211: ignore a
+ useless statement
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc complains:
+
+    drivers/net/wireless/broadcom/brcm80211/brcmfmac/p2p.c: In function
+    ‘brcmf_p2p_scan_prep’:
+    drivers/net/wireless/broadcom/brcm80211/brcmfmac/p2p.c:880:31:
+    error: parameter ‘vif’ set but not used
+    [-Werror=unused-but-set-parameter]
+        struct brcmf_cfg80211_vif *vif)
+                                   ^~~
+---
+ drivers/net/wireless/broadcom/brcm80211/brcmfmac/p2p.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/p2p.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/p2p.c
+index 2ee54133efa1..1efd00249c08 100644
+--- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/p2p.c
++++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/p2p.c
+@@ -899,7 +899,7 @@ int brcmf_p2p_scan_prep(struct wiphy *wiphy,
+ 		if (err)
+ 			return err;
+ 
+-		vif = p2p->bss_idx[P2PAPI_BSSCFG_DEVICE].vif;
++		/* vif = p2p->bss_idx[P2PAPI_BSSCFG_DEVICE].vif; */
+ 
+ 		/* override .run_escan() callback. */
+ 		cfg->escan_info.run = brcmf_p2p_run_escan;
+-- 

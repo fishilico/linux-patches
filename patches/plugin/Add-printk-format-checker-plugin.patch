@@ -33,23 +33,22 @@ This plugin helped to detect the following bugs:
  fs/nfsd/nfsctl.c                                   |   9 +-
  fs/overlayfs/inode.c                               |   3 +
  fs/reiserfs/Makefile                               |  16 +
- kernel/irq/irqdomain.c                             |   6 +
  net/ipv4/sysctl_net_ipv4.c                         |   2 +-
  scripts/Makefile.gcc-plugins                       |   5 +
- scripts/gcc-plugins/printk_format_plugin.c         | 792 +++++++++++++++++++++
+ scripts/gcc-plugins/printk_format_plugin.c         | 812 +++++++++++++++++++++
  security/apparmor/mount.c                          |  10 +-
  sound/soc/intel/haswell/sst-haswell-dsp.c          |   4 +-
  sound/soc/sh/dma-sh7760.c                          |   2 +-
- 31 files changed, 891 insertions(+), 38 deletions(-)
+ 30 files changed, 905 insertions(+), 38 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index 06b9990a7d4e..e0c2faf9b0d8 100644
+index e11a1a2c1d41..cd729d5c87c1 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -516,6 +516,13 @@ config GCC_PLUGIN_RANDSTRUCT_PERFORMANCE
- 	  in structures.  This reduces the performance hit of RANDSTRUCT
- 	  at the cost of weakened randomization.
+@@ -534,6 +534,13 @@ config GCC_PLUGIN_FORMAT_TEMPLATE
+ 	  attribute can be beneficial, since it serves as
+ 	  documentation.
  
 +config GCC_PLUGIN_PRINTK_FORMAT
 +	bool "Check printk format strings"
@@ -62,7 +61,7 @@ index 06b9990a7d4e..e0c2faf9b0d8 100644
  	bool
  	help
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
-index fddf76ef5bd6..55351953e93b 100644
+index a73596a4f804..d99fa7f1eabf 100644
 --- a/drivers/android/binder.c
 +++ b/drivers/android/binder.c
 @@ -5408,7 +5408,7 @@ static void print_binder_transaction_log_entry(struct seq_file *m,
@@ -75,10 +74,10 @@ index fddf76ef5bd6..55351953e93b 100644
  }
  
 diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index adc877dfef5c..8018ddacf6ef 100644
+index 38fc5f397fde..d6d0ea6d3d8a 100644
 --- a/drivers/block/rbd.c
 +++ b/drivers/block/rbd.c
-@@ -1949,10 +1949,15 @@ __rbd_osd_req_create(struct rbd_device *rbd_dev,
+@@ -1922,10 +1922,15 @@ __rbd_osd_req_create(struct rbd_device *rbd_dev,
  	req->r_priv = obj_request;
  
  	req->r_base_oloc.pool = rbd_dev->layout.pool_id;
@@ -134,7 +133,7 @@ index ec0832278170..e596d235642a 100644
  			       __func__, module_name(is->is_owner),
  			       pci_name(idd->idd_pdev));
 diff --git a/drivers/net/ethernet/ti/netcp_ethss.c b/drivers/net/ethernet/ti/netcp_ethss.c
-index 28cb38af1a34..1f1a2d10e21a 100644
+index e831c49713ee..7373c37730ef 100644
 --- a/drivers/net/ethernet/ti/netcp_ethss.c
 +++ b/drivers/net/ethernet/ti/netcp_ethss.c
 @@ -2308,7 +2308,7 @@ static int gbe_slave_open(struct gbe_intf *gbe_intf)
@@ -156,7 +155,7 @@ index 28cb38af1a34..1f1a2d10e21a 100644
  			phy_start(slave->phy);
  		}
 diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
-index 38a97086708b..2bea62a8a263 100644
+index cad2e42dcef6..663775fd9096 100644
 --- a/drivers/net/wireless/ath/ath10k/wmi.c
 +++ b/drivers/net/wireless/ath/ath10k/wmi.c
 @@ -6569,7 +6569,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
@@ -169,7 +168,7 @@ index 38a97086708b..2bea62a8a263 100644
  	return skb;
  }
 diff --git a/drivers/net/wireless/realtek/rtlwifi/rtl8192de/fw.c b/drivers/net/wireless/realtek/rtlwifi/rtl8192de/fw.c
-index f4129cf96e7c..efb3f8ba1192 100644
+index 85cedd083d2b..762897f48421 100644
 --- a/drivers/net/wireless/realtek/rtlwifi/rtl8192de/fw.c
 +++ b/drivers/net/wireless/realtek/rtlwifi/rtl8192de/fw.c
 @@ -173,7 +173,7 @@ static int _rtl92d_fw_init(struct ieee80211_hw *hw)
@@ -182,7 +181,7 @@ index f4129cf96e7c..efb3f8ba1192 100644
  	return -1;
  }
 diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 168ef0bbabde..35f18d2bcc97 100644
+index e568b1e82501..85a5f505d58e 100644
 --- a/drivers/of/unittest.c
 +++ b/drivers/of/unittest.c
 @@ -256,7 +256,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
@@ -226,7 +225,7 @@ index c4768be24ba9..62eda5ae9264 100644
  
  	return len;
 diff --git a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
-index 6844ba361616..61dc02542a57 100644
+index e6b9de7d41ac..df72e8e1555d 100644
 --- a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
 +++ b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
 @@ -1145,7 +1145,7 @@ static int bnx2fc_vport_create(struct fc_vport *vport, bool disabled)
@@ -239,10 +238,10 @@ index 6844ba361616..61dc02542a57 100644
  		return rc;
  	}
 diff --git a/drivers/scsi/fcoe/fcoe.c b/drivers/scsi/fcoe/fcoe.c
-index 85f9a3eba387..4dc289bafc49 100644
+index f46b312d04bc..6f1266b5bf3b 100644
 --- a/drivers/scsi/fcoe/fcoe.c
 +++ b/drivers/scsi/fcoe/fcoe.c
-@@ -2694,7 +2694,7 @@ static int fcoe_vport_create(struct fc_vport *vport, bool disabled)
+@@ -2682,7 +2682,7 @@ static int fcoe_vport_create(struct fc_vport *vport, bool disabled)
  	if (rc) {
  		fcoe_wwn_to_str(vport->port_name, buf, sizeof(buf));
  		printk(KERN_ERR "fcoe: Failed to create vport, "
@@ -252,7 +251,7 @@ index 85f9a3eba387..4dc289bafc49 100644
  		return rc;
  	}
 diff --git a/drivers/scsi/fcoe/fcoe_transport.c b/drivers/scsi/fcoe/fcoe_transport.c
-index 375c536cbc68..393dac714c4e 100644
+index f4909cd206d3..f36d09b8357f 100644
 --- a/drivers/scsi/fcoe/fcoe_transport.c
 +++ b/drivers/scsi/fcoe/fcoe_transport.c
 @@ -270,7 +270,7 @@ int fcoe_validate_vport_create(struct fc_vport *vport)
@@ -274,10 +273,10 @@ index 375c536cbc68..393dac714c4e 100644
  			rc = -EINVAL;
  			break;
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index 4ed3d26ffdde..45a8b711a53d 100644
+index 287e5eb0723f..1e3a5470585c 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
-@@ -6615,7 +6615,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
+@@ -6755,7 +6755,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
  			c->Request.CDB[9] = 0;
  			break;
  		default:
@@ -332,7 +331,7 @@ index c17ff688cbed..ccdd800a6eb8 100644
  	return rc;
  }
 diff --git a/drivers/scsi/smartpqi/smartpqi_init.c b/drivers/scsi/smartpqi/smartpqi_init.c
-index 55b2efa564c3..845f92eecf60 100644
+index 806b5637f394..f1cdf8d810ed 100644
 --- a/drivers/scsi/smartpqi/smartpqi_init.c
 +++ b/drivers/scsi/smartpqi/smartpqi_init.c
 @@ -451,7 +451,7 @@ static int pqi_build_raid_path_request(struct pqi_ctrl_info *ctrl_info,
@@ -345,7 +344,7 @@ index 55b2efa564c3..845f92eecf60 100644
  		break;
  	}
 diff --git a/drivers/staging/irda/drivers/vlsi_ir.c b/drivers/staging/irda/drivers/vlsi_ir.c
-index 6638784c082e..24cbeb2c2b9a 100644
+index 3dff3c55ddf5..c986dbfe7adc 100644
 --- a/drivers/staging/irda/drivers/vlsi_ir.c
 +++ b/drivers/staging/irda/drivers/vlsi_ir.c
 @@ -201,9 +201,9 @@ static void vlsi_proc_ndev(struct seq_file *seq, struct net_device *ndev)
@@ -362,10 +361,10 @@ index 6638784c082e..24cbeb2c2b9a 100644
  	pci_read_config_byte(idev->pdev, VLSI_PCI_CLKCTL, &byte);
  	seq_printf(seq, "CLKCTL: PLL %s%s%s / clock %s / wakeup %s\n",
 diff --git a/drivers/staging/rtlwifi/phydm/phydm_debug.c b/drivers/staging/rtlwifi/phydm/phydm_debug.c
-index a5f90afdae9b..1cc1322ea145 100644
+index e18ba2cca2bd..a45f6c2958a9 100644
 --- a/drivers/staging/rtlwifi/phydm/phydm_debug.c
 +++ b/drivers/staging/rtlwifi/phydm/phydm_debug.c
-@@ -1483,7 +1483,7 @@ static void phydm_get_per_path_txagc(void *dm_void, u8 path, u32 *_used,
+@@ -1484,7 +1484,7 @@ static void phydm_get_per_path_txagc(void *dm_void, u8 path, u32 *_used,
  					       "  0x%02x    ", txagc);
  			else
  				PHYDM_SNPRINTF(output + used, out_len - used,
@@ -405,12 +404,12 @@ index f9bc8ec6fb6b..e772914d93af 100644
  out:
  	kzfree(desc);
 diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index d9800c01e20c..65e08216391f 100644
+index e9983ee03bed..1d07224aa5bd 100644
 --- a/drivers/target/target_core_pr.c
 +++ b/drivers/target/target_core_pr.c
-@@ -61,7 +61,7 @@ void core_pr_dump_initiator_port(
- 	if (!pr_reg->isid_present_at_reg)
- 		buf[0] = '\0';
+@@ -63,7 +63,7 @@ void core_pr_dump_initiator_port(
+ 		return;
+ 	}
  
 -	snprintf(buf, size, ",i,0x%s", pr_reg->pr_reg_isid);
 +	snprintf(buf, size, ",i,0x %s", pr_reg->pr_reg_isid); /* Silence false positive "0x%s" warning */
@@ -445,10 +444,10 @@ index 6493df6b1bd5..3b50527d8973 100644
  }
  
 diff --git a/fs/overlayfs/inode.c b/fs/overlayfs/inode.c
-index 321511ed8c42..a8018ab7595b 100644
+index 00b6b294272a..b4b71d0ce77c 100644
 --- a/fs/overlayfs/inode.c
 +++ b/fs/overlayfs/inode.c
-@@ -495,8 +495,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
+@@ -522,8 +522,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
  	char buf[13];
  	int len;
  
@@ -487,30 +486,11 @@ index a39a562c1c10..dff4bc0d344d 100644
  ifeq ($(CONFIG_REISERFS_PROC_INFO),y)
  reiserfs-objs += procfs.o
  endif
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index ac4644e92b49..e595c09ab712 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -921,8 +921,14 @@ static void virq_debug_show_one(struct seq_file *m, struct irq_desc *desc)
- 		chip = irq_data_get_irq_chip(data);
- 		seq_printf(m, "%-15s  ", (chip && chip->name) ? chip->name : "none");
- 
-+/* FIXME this change should not be mandatory with the printk checker plugin
-+ * (need to find the formats of a conditional)
-+ */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		seq_printf(m, data ? "0x%p  " : "  %p  ",
- 			   irq_data_get_irq_chip_data(data));
-+#pragma GCC diagnostic pop
- 
- 		seq_printf(m, "   %c    ", (desc->action && desc->action->handler) ? '*' : ' ');
- 		direct = (irq == hwirq) && (irq < domain->revmap_direct_max_irq);
 diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-index 0989e739d098..3aebd0e20c59 100644
+index 93e172118a94..9b1ce83ce058 100644
 --- a/net/ipv4/sysctl_net_ipv4.c
 +++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -292,7 +292,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *ctl, int write,
+@@ -293,7 +293,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
  	}
  
  bad_key:
@@ -520,7 +500,7 @@ index 0989e739d098..3aebd0e20c59 100644
  	       (char *)tbl.data, ret);
  	kfree(tbl.data);
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index b2a95af7df18..f6b3d47e75e8 100644
+index 2f9bc96aab90..342bd768a661 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
 @@ -13,6 +13,11 @@ ifdef CONFIG_GCC_PLUGINS
@@ -537,10 +517,10 @@ index b2a95af7df18..f6b3d47e75e8 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..ece773a24828
+index 000000000000..cf03e9be6b2c
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,792 @@
+@@ -0,0 +1,812 @@
 +/*
 + * Copyright 2016-2017 by Nicolas Iooss
 + *
@@ -552,7 +532,7 @@ index 000000000000..ece773a24828
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info printk_format_plugin_info = {
-+	.version	= "20170730",
++	.version	= "20171118",
 +	.help		= "Printk format checker\n",
 +};
 +
@@ -597,6 +577,16 @@ index 000000000000..ece773a24828
 +{
 +	return TREE_CODE(value) == INTEGER_TYPE &&
 +		(TREE_INT_CST_ELT_CHECK(TYPE_SIZE(value), 0) == 32);
++}
++
++/**
++ * Verify that the given value is a float
++ */
++static bool is_float_type(const_tree value)
++{
++	if (TREE_CODE(TREE_TYPE(value)) == REAL_TYPE)
++		return true;
++	return false;
 +}
 +
 +/**
@@ -1244,6 +1234,16 @@ index 000000000000..ece773a24828
 +			}
 +			format++;
 +			break;
++		case 'f':
++			/* float type */
++			if (!is_float_type(arg_tree)) {
++				warning_at(gimple_location(call_stmt),
++					   OPT_Wformat_,
++					   G_("Argument for %.*s is not a float\n"),
++					   format + 1 - subs_start, subs_start);
++			}
++			format++;
++			break;
 +		case 's':
 +			/* string type */
 +			if (!is_string_type(arg_tree, subs_start)) {
@@ -1334,7 +1334,7 @@ index 000000000000..ece773a24828
 +	return 0;
 +}
 diff --git a/security/apparmor/mount.c b/security/apparmor/mount.c
-index 82a64b58041d..8c5e9c0e30e6 100644
+index ed9b4d0f9f7e..2869be82fd3b 100644
 --- a/security/apparmor/mount.c
 +++ b/security/apparmor/mount.c
 @@ -52,7 +52,7 @@ static void audit_mnt_flags(struct audit_buffer *ab, unsigned long flags)

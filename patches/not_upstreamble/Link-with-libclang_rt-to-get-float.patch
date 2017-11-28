@@ -1,0 +1,67 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 18 Nov 2017 23:53:48 +0100
+Subject: [PATCH] {NOT UPSTREAMABLE} Link with libclang_rt to get float
+ functions
+
+When building with clang, amdgpu.ko fails to build because of missing
+functions in libclang_rt:
+
+ERROR: "__addsf3" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__subdf3" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__gedf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__fixunssfsi" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__floatunsisf" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__unordsf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__gesf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__nedf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__mulsf3" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__truncdfsf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__ltsf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__muldf3" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__divdf3" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__eqsf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__floatsisf" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__ledf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__gtsf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__fixdfsi" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__floatunsidf" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__nesf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__adddf3" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__extendsfdf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__fixunsdfsi" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__lesf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__ltdf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__floatsidf" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__subsf3" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__gtdf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__fixsfsi" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__divsf3" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__floatdidf" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__eqdf2" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+
+In order to fix this in a quick & dirty way, link the module with the
+library which provides these functions, in a very very ugly way.
+---
+ drivers/gpu/drm/amd/amdgpu/Makefile | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/gpu/drm/amd/amdgpu/Makefile b/drivers/gpu/drm/amd/amdgpu/Makefile
+index 78d609123420..44b10f586cec 100644
+--- a/drivers/gpu/drm/amd/amdgpu/Makefile
++++ b/drivers/gpu/drm/amd/amdgpu/Makefile
+@@ -148,4 +148,13 @@ amdgpu-y += $(AMD_DISPLAY_FILES)
+ 
+ endif
+ 
++# TEST
++# TODO: filter on architecture and clang
++ifeq ($(cc-name),clang)
++CLANGVER = $(shell $(CC) --version | sed -n 's/^clang version \(\S\+\).*/\1/p')
++ifeq ($(CONFIG_X86_64),y)
++ROOTDIR := ../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../..
++amdgpu-y += $(ROOTDIR)/usr/lib/clang/$(CLANGVER)/lib/linux/libclang_rt.builtins-x86_64.a
++endif
++endif
+ obj-$(CONFIG_DRM_AMDGPU)+= amdgpu.o
+-- 

@@ -12,7 +12,7 @@ Subject: [PATCH] {CONSTIFY} init/do_mounts: constify a few things including
  4 files changed, 15 insertions(+), 13 deletions(-)
 
 diff --git a/fs/namespace.c b/fs/namespace.c
-index d1603b1f684a..2078d8db345c 100644
+index d0f91bb65c1e..087088924db2 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
 @@ -1688,7 +1688,7 @@ static inline bool may_mandlock(void)
@@ -68,7 +68,7 @@ index a78186d826d7..73a4e2107024 100644
  asmlinkage long sys_ftruncate(unsigned int fd, unsigned long length);
  asmlinkage long sys_stat(const char __user *filename,
 diff --git a/init/do_mounts.c b/init/do_mounts.c
-index cc9998b89c70..77b441487a9e 100644
+index 3333cfb10a4a..7df4d948d516 100644
 --- a/init/do_mounts.c
 +++ b/init/do_mounts.c
 @@ -360,7 +360,7 @@ static void __init get_fs_names(char *page)
@@ -87,8 +87,8 @@ index cc9998b89c70..77b441487a9e 100644
 -void __init mount_block_root(char *name, int flags)
 +void __init mount_block_root(const char *name, int flags)
  {
- 	struct page *page = alloc_page(GFP_KERNEL |
- 					__GFP_NOTRACK_FALSE_POSITIVE);
+ 	struct page *page = alloc_page(GFP_KERNEL);
+ 	char *fs_names = page_address(page);
 diff --git a/init/do_mounts.h b/init/do_mounts.h
 index ec424920630a..400a98753d71 100644
 --- a/init/do_mounts.h

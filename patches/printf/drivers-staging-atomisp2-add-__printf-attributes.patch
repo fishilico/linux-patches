@@ -14,10 +14,10 @@ Subject: [PATCH] {PRINTF} drivers/staging: atomisp2: add __printf attributes
  7 files changed, 15 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/staging/media/atomisp/pci/atomisp2/atomisp_compat_css20.c b/drivers/staging/media/atomisp/pci/atomisp2/atomisp_compat_css20.c
-index 05897b747349..1346a15d0ce0 100644
+index 6e87aa5aab4c..c563c24ab6ef 100644
 --- a/drivers/staging/media/atomisp/pci/atomisp2/atomisp_compat_css20.c
 +++ b/drivers/staging/media/atomisp/pci/atomisp2/atomisp_compat_css20.c
-@@ -178,19 +178,19 @@ static void atomisp_css2_hw_load(hrt_address addr, void *to, uint32_t n)
+@@ -174,19 +174,19 @@ static void atomisp_css2_hw_load(hrt_address addr, void *to, uint32_t n)
  	spin_unlock_irqrestore(&mmio_lock, flags);
  }
  
@@ -41,18 +41,18 @@ index 05897b747349..1346a15d0ce0 100644
  	vprintk(fmt, args);
  	return 0;
 diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/print_support.h b/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/print_support.h
-index cfbc222ea0c1..ab8bfd0cad8e 100644
+index ca0fbbb57788..3dd8c9f2804b 100644
 --- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/print_support.h
 +++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/hive_isp_css_include/print_support.h
-@@ -22,9 +22,9 @@
+@@ -21,9 +21,9 @@
  #include <stdio.h>
  #endif
  
 -extern int (*sh_css_printf) (const char *fmt, va_list args);
 +extern __printf(1, 0) int (*sh_css_printf) (const char *fmt, va_list args);
  /* depends on host supplied print function in ia_css_init() */
--STORAGE_CLASS_INLINE void ia_css_print(const char *fmt, ...)
-+STORAGE_CLASS_INLINE __printf(1, 2) void ia_css_print(const char *fmt, ...)
+-static inline void ia_css_print(const char *fmt, ...)
++static inline  __printf(1, 2) void ia_css_print(const char *fmt, ...)
  {
  	va_list ap;
  	if (sh_css_printf) {
@@ -73,15 +73,15 @@ index 1ae9daf0be76..64f365c58e87 100644
  };
  
 diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/interface/ia_css_debug.h b/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/interface/ia_css_debug.h
-index 91c105cc6204..ca610bf9975d 100644
+index 3c8dcfd4bbc6..286e206d39f0 100644
 --- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/interface/ia_css_debug.h
 +++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/runtime/debug/interface/ia_css_debug.h
 @@ -130,7 +130,7 @@ enum ia_css_debug_enable_param_dump {
   * @param[in]	fmt		printf like format string
   * @param[in]	args		arguments for the format string
   */
--STORAGE_CLASS_INLINE void
-+STORAGE_CLASS_INLINE __printf(2, 0) void
+-static inline void
++static inline __printf(2, 0) void
  ia_css_debug_vdtrace(unsigned int level, const char *fmt, va_list args)
  {
  	if (ia_css_debug_trace_level >= level)
@@ -117,7 +117,7 @@ index 0fa7cb2423d8..97630b2c2848 100644
  	dtrace_dot(
  		"\"%s(pipe%d)\"->\"0x%08lx\" "
 diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css.c b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css.c
-index e882b5596813..6311ce4068c9 100644
+index f92b6a9f77eb..a27d1d41168d 100644
 --- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css.c
 +++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css.c
 @@ -116,7 +116,7 @@ static int thread_alive;
@@ -130,7 +130,7 @@ index e882b5596813..6311ce4068c9 100644
  /* modes of work: stream_create and stream_destroy will update the save/restore data
     only when in working mode, not suspend/resume
 diff --git a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_internal.h b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_internal.h
-index 5b2b78f96dc5..af77869e3bdd 100644
+index 0910021286a4..c22db1073b4a 100644
 --- a/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_internal.h
 +++ b/drivers/staging/media/atomisp/pci/atomisp2/css2400/sh_css_internal.h
 @@ -959,9 +959,9 @@ struct host_sp_queues {
@@ -140,8 +140,8 @@ index 5b2b78f96dc5..af77869e3bdd 100644
 -extern int (*sh_css_printf)(const char *fmt, va_list args);
 +extern __printf(1, 0) int (*sh_css_printf)(const char *fmt, va_list args);
  
--STORAGE_CLASS_INLINE void
-+STORAGE_CLASS_INLINE __printf(1, 2) void
+-static inline void
++static inline __printf(1, 2) void
  sh_css_print(const char *fmt, ...)
  {
  	va_list ap;
@@ -149,8 +149,8 @@ index 5b2b78f96dc5..af77869e3bdd 100644
  	}
  }
  
--STORAGE_CLASS_INLINE void
-+STORAGE_CLASS_INLINE __printf(1, 0) void
+-static inline void
++static inline __printf(1, 0) void
  sh_css_vprint(const char *fmt, va_list args)
  {
  	if (sh_css_printf)

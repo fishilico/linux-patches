@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 16 Nov 2017 23:49:30 +0100
+Subject: [PATCH] {PRINTF} drivers/infiniband/hw: silence -Wformat-security
+
+---
+ drivers/infiniband/hw/hfi1/chip.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/infiniband/hw/hfi1/chip.c b/drivers/infiniband/hw/hfi1/chip.c
+index 4f057e8ffe50..86fda21e42db 100644
+--- a/drivers/infiniband/hw/hfi1/chip.c
++++ b/drivers/infiniband/hw/hfi1/chip.c
+@@ -13169,7 +13169,7 @@ static int request_msix_irqs(struct hfi1_devdata *dd)
+ 		name[sizeof(name) - 1] = 0;
+ 		me->irq = pci_irq_vector(dd->pcidev, i);
+ 		ret = pci_request_irq(dd->pcidev, i, handler, thread, arg,
+-				      name);
++				      "%s", name);
+ 		if (ret) {
+ 			dd_dev_err(dd,
+ 				   "unable to allocate %s interrupt, irq %d, index %d, err %d\n",
+-- 

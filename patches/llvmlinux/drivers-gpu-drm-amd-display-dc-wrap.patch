@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 18 Nov 2017 18:55:04 +0100
+Subject: [PATCH] {For LLVMLinux} drivers/gpu/drm/amd/display/dc: wrap
+ -mpreferred-stack-boundary=4 with cc-option
+
+clang does not know -mpreferred-stack-boundary=4
+---
+ drivers/gpu/drm/amd/display/dc/calcs/Makefile |  6 +++---
+ drivers/gpu/drm/amd/display/dc/dml/Makefile   | 16 ++++++++--------
+ 2 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/display/dc/calcs/Makefile b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
+index f884b10c414e..c153255c9665 100644
+--- a/drivers/gpu/drm/amd/display/dc/calcs/Makefile
++++ b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
+@@ -3,9 +3,9 @@
+ # It calculates Bandwidth and Watermarks values for HW programming
+ #
+ 
+-CFLAGS_dcn_calcs.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-float-equal
+-CFLAGS_dcn_calc_auto.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-float-equal
+-CFLAGS_dcn_calc_math.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-tautological-compare -Wno-float-equal
++CFLAGS_dcn_calcs.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-float-equal
++CFLAGS_dcn_calc_auto.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-float-equal
++CFLAGS_dcn_calc_math.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-tautological-compare -Wno-float-equal
+ 
+ BW_CALCS = dce_calcs.o bw_fixed.o custom_float.o
+ 
+diff --git a/drivers/gpu/drm/amd/display/dc/dml/Makefile b/drivers/gpu/drm/amd/display/dc/dml/Makefile
+index ee9926e9b46c..187fa2260dcb 100644
+--- a/drivers/gpu/drm/amd/display/dc/dml/Makefile
++++ b/drivers/gpu/drm/amd/display/dc/dml/Makefile
+@@ -3,14 +3,14 @@
+ # It provides the general basic services required by other DAL
+ # subcomponents.
+ 
+-CFLAGS_display_mode_vba.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-float-equal
+-CFLAGS_display_mode_lib.o := -mhard-float -msse -mpreferred-stack-boundary=4
+-CFLAGS_display_pipe_clocks.o := -mhard-float -msse -mpreferred-stack-boundary=4
+-CFLAGS_display_rq_dlg_calc.o := -mhard-float -msse -mpreferred-stack-boundary=4
+-CFLAGS_dml1_display_rq_dlg_calc.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-float-equal
+-CFLAGS_display_rq_dlg_helpers.o := -mhard-float -msse -mpreferred-stack-boundary=4
+-CFLAGS_soc_bounding_box.o := -mhard-float -msse -mpreferred-stack-boundary=4
+-CFLAGS_dml_common_defs.o := -mhard-float -msse -mpreferred-stack-boundary=4
++CFLAGS_display_mode_vba.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-float-equal
++CFLAGS_display_mode_lib.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4)
++CFLAGS_display_pipe_clocks.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4)
++CFLAGS_display_rq_dlg_calc.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4)
++CFLAGS_dml1_display_rq_dlg_calc.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-float-equal
++CFLAGS_display_rq_dlg_helpers.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4)
++CFLAGS_soc_bounding_box.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4)
++CFLAGS_dml_common_defs.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4)
+ 
+ 
+ DML = display_mode_lib.o display_rq_dlg_calc.o \
+-- 

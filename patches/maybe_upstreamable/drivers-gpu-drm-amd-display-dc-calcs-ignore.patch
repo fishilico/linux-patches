@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 18 Nov 2017 19:14:01 +0100
+Subject: [PATCH] {MAYBE UPS} drivers/gpu/drm/amd/display/dc/calcs: ignore
+ -Wdouble-promotion
+
+clang reports issues
+---
+ drivers/gpu/drm/amd/display/dc/calcs/Makefile        | 6 +++---
+ drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/display/dc/calcs/Makefile b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
+index c153255c9665..2aa1990c2585 100644
+--- a/drivers/gpu/drm/amd/display/dc/calcs/Makefile
++++ b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
+@@ -3,9 +3,9 @@
+ # It calculates Bandwidth and Watermarks values for HW programming
+ #
+ 
+-CFLAGS_dcn_calcs.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-float-equal
+-CFLAGS_dcn_calc_auto.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-float-equal
+-CFLAGS_dcn_calc_math.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-tautological-compare -Wno-float-equal
++CFLAGS_dcn_calcs.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-float-equal -Wno-double-promotion
++CFLAGS_dcn_calc_auto.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-float-equal -Wno-double-promotion
++CFLAGS_dcn_calc_math.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4) -Wno-tautological-compare -Wno-float-equal -Wno-double-promotion
+ 
+ BW_CALCS = dce_calcs.o bw_fixed.o custom_float.o
+ 
+diff --git a/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c b/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c
+index b6abe0f3bb15..85083f1486be 100644
+--- a/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c
++++ b/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c
+@@ -72,7 +72,7 @@ float dcn_bw_ceil2(const float arg, const float significance)
+ 	float flr = dcn_bw_floor2(arg, significance);
+ 	if (significance == 0)
+ 		return 0;
+-	return flr + 0.00001 >= arg ? arg : flr + significance;
++	return flr + 0.00001f >= arg ? arg : flr + significance;
+ }
+ 
+ float dcn_bw_max3(float v1, float v2, float v3)
+@@ -113,7 +113,7 @@ float dcn_bw_log(float a, float b)
+ 
+ 	a = ((-1.0f / 3) * a + 2) * a - 2.0f / 3;
+ 
+-	if (b > 2.00001 || b < 1.99999)
++	if (b > 2.00001f || b < 1.99999f)
+ 		return (a + log_2) / dcn_bw_log(b, 2);
+ 	else
+ 		return (a + log_2);
+-- 

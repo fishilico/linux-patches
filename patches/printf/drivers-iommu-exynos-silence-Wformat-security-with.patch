@@ -17,10 +17,10 @@ FIXME: does it come from the plugin?
  8 files changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
-index 25c2c75f5332..c5a04496086f 100644
+index 79c45650f8de..0c24da85bd21 100644
 --- a/drivers/iommu/exynos-iommu.c
 +++ b/drivers/iommu/exynos-iommu.c
-@@ -629,7 +629,7 @@ static int __init exynos_sysmmu_probe(struct platform_device *pdev)
+@@ -630,7 +630,7 @@ static int __init exynos_sysmmu_probe(struct platform_device *pdev)
  	spin_lock_init(&data->lock);
  
  	ret = iommu_device_sysfs_add(&data->iommu, &pdev->dev, NULL,
@@ -30,20 +30,20 @@ index 25c2c75f5332..c5a04496086f 100644
  		return ret;
  
 diff --git a/drivers/iommu/ipmmu-vmsa.c b/drivers/iommu/ipmmu-vmsa.c
-index 195d6e93ac71..60babdb8b9e2 100644
+index 8dce3a9de9d8..f5dd2666fefe 100644
 --- a/drivers/iommu/ipmmu-vmsa.c
 +++ b/drivers/iommu/ipmmu-vmsa.c
-@@ -954,7 +954,7 @@ static int ipmmu_probe(struct platform_device *pdev)
- 	ipmmu_device_reset(mmu);
- 
- 	ret = iommu_device_sysfs_add(&mmu->iommu, &pdev->dev, NULL,
--				     dev_name(&pdev->dev));
-+				     "%s", dev_name(&pdev->dev));
- 	if (ret)
- 		return ret;
+@@ -1027,7 +1027,7 @@ static int ipmmu_probe(struct platform_device *pdev)
+ 	 */
+ 	if (!mmu->features->has_cache_leaf_nodes || !ipmmu_is_root(mmu)) {
+ 		ret = iommu_device_sysfs_add(&mmu->iommu, &pdev->dev, NULL,
+-					     dev_name(&pdev->dev));
++					     "%s", dev_name(&pdev->dev));
+ 		if (ret)
+ 			return ret;
  
 diff --git a/drivers/iommu/mtk_iommu_v1.c b/drivers/iommu/mtk_iommu_v1.c
-index bc1efbfb9ddf..5be19b1f08f7 100644
+index 542930cd183d..ab21eb7156e3 100644
 --- a/drivers/iommu/mtk_iommu_v1.c
 +++ b/drivers/iommu/mtk_iommu_v1.c
 @@ -638,7 +638,7 @@ static int mtk_iommu_probe(struct platform_device *pdev)
@@ -56,23 +56,23 @@ index bc1efbfb9ddf..5be19b1f08f7 100644
  		return ret;
  
 diff --git a/drivers/iommu/omap-iommu.c b/drivers/iommu/omap-iommu.c
-index bd67e1b2c64e..121010b1702a 100644
+index e135ab830ebf..4784d37ed09d 100644
 --- a/drivers/iommu/omap-iommu.c
 +++ b/drivers/iommu/omap-iommu.c
-@@ -988,7 +988,7 @@ static int omap_iommu_probe(struct platform_device *pdev)
- 	if (IS_ERR(obj->group))
- 		return PTR_ERR(obj->group);
+@@ -1029,7 +1029,7 @@ static int omap_iommu_probe(struct platform_device *pdev)
+ 			return PTR_ERR(obj->group);
  
--	err = iommu_device_sysfs_add(&obj->iommu, obj->dev, NULL, obj->name);
-+	err = iommu_device_sysfs_add(&obj->iommu, obj->dev, NULL, "%s", obj->name);
- 	if (err)
- 		goto out_group;
+ 		err = iommu_device_sysfs_add(&obj->iommu, obj->dev, NULL,
+-					     obj->name);
++					     "%s", obj->name);
+ 		if (err)
+ 			goto out_group;
  
 diff --git a/drivers/iommu/qcom_iommu.c b/drivers/iommu/qcom_iommu.c
-index c8a587d034b0..fd2f9b72bb9d 100644
+index e07f02d00c68..fb498ab8c1c9 100644
 --- a/drivers/iommu/qcom_iommu.c
 +++ b/drivers/iommu/qcom_iommu.c
-@@ -820,7 +820,7 @@ static int qcom_iommu_device_probe(struct platform_device *pdev)
+@@ -843,7 +843,7 @@ static int qcom_iommu_device_probe(struct platform_device *pdev)
  	}
  
  	ret = iommu_device_sysfs_add(&qcom_iommu->iommu, dev, NULL,

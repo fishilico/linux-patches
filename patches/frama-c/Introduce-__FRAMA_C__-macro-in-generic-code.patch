@@ -17,7 +17,8 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  include/asm-generic/uaccess.h   | 16 ++++++++++++++++
  include/linux/build_bug.h       | 14 ++++++++++++++
  include/linux/compiler-gcc.h    |  5 +++++
- include/linux/compiler.h        | 23 ++++++++++++++++++++++-
+ include/linux/compiler.h        | 21 +++++++++++++++++++++
+ include/linux/compiler_types.h  |  2 +-
  include/linux/cpumask.h         |  5 +++++
  include/linux/crypto.h          | 11 +++++++++--
  include/linux/delay.h           | 15 ++++++++++++---
@@ -38,10 +39,10 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  kernel/time/time.c              |  8 ++++++++
  lib/hexdump.c                   | 13 +++++++++++--
  lib/rhashtable.c                |  7 +++++++
- 26 files changed, 153 insertions(+), 18 deletions(-)
+ 27 files changed, 153 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 7e8589ce631c..25929fb1c5e2 100644
+index 06ecee1b528e..9ccd4e388084 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -51,7 +51,7 @@
@@ -137,10 +138,10 @@ index 3efed0d742a0..f106b9b4506a 100644
  
  /* Force a compilation error if a constant expression is not a power of 2 */
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index bb78e5bdff26..00dd202514e9 100644
+index 176e80dc8a5e..fbe9bf195eba 100644
 --- a/include/linux/compiler-gcc.h
 +++ b/include/linux/compiler-gcc.h
-@@ -242,8 +242,13 @@
+@@ -243,8 +243,13 @@
   * as possible, this is used for all GCC 4.6+ builds, and not just on
   * RANDSTRUCT_PLUGIN builds.
   */
@@ -155,19 +156,10 @@ index bb78e5bdff26..00dd202514e9 100644
  #endif /* GCC_VERSION >= 40600 */
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index b22270c8e166..4f8dc7602a66 100644
+index 680e4bf21c65..74786513a7fb 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
-@@ -4,7 +4,7 @@
- 
- #ifndef __ASSEMBLY__
- 
--#ifdef __CHECKER__
-+#if defined(__CHECKER__) && !defined(__FRAMAC__)
- # define __user		__attribute__((noderef, address_space(1)))
- # define __kernel	__attribute__((address_space(0)))
- # define __safe		__attribute__((safe))
-@@ -100,6 +100,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
+@@ -29,6 +29,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
  #define __same_pointer_depths_with_volatile2_chk(p1, p2) do { } while (0)
  #endif
  
@@ -193,13 +185,26 @@ index b22270c8e166..4f8dc7602a66 100644
 +#define __builtin_expect(x, v) (x)
 +#endif /* __FRAMAC__ */
  /*
-  * Generic compiler-dependent macros required for kernel
-  * build go below this comment. Actual compiler/compiler version
+  * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
+  * to disable branch tracing on a per file basis.
+diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
+index fe5015c1fc73..ae24fbc62410 100644
+--- a/include/linux/compiler_types.h
++++ b/include/linux/compiler_types.h
+@@ -3,7 +3,7 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
+-#ifdef __CHECKER__
++#if defined(__CHECKER__) && !defined(__FRAMAC__)
+ # define __user		__attribute__((noderef, address_space(1)))
+ # define __kernel	__attribute__((address_space(0)))
+ # define __safe		__attribute__((safe))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 8d3125c493b2..217288ee56e7 100644
+index 75b565194437..b3934769a602 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -805,9 +805,14 @@ set_cpu_active(unsigned int cpu, bool active)
+@@ -821,9 +821,14 @@ set_cpu_active(unsigned int cpu, bool active)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -215,10 +220,10 @@ index 8d3125c493b2..217288ee56e7 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 8a8985b362bd..a5b3c12cf0a9 100644
+index 9b2f2cc19db5..0d4fbe7e85a1 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -173,7 +173,9 @@ struct ablkcipher_request {
+@@ -174,7 +174,9 @@ struct ablkcipher_request {
  	struct scatterlist *src;
  	struct scatterlist *dst;
  
@@ -229,7 +234,7 @@ index 8a8985b362bd..a5b3c12cf0a9 100644
  };
  
  struct blkcipher_desc {
-@@ -544,7 +546,12 @@ struct crypto_tfm {
+@@ -584,7 +586,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -286,7 +291,7 @@ index b94fa61b51fb..ffd6208aabbd 100644
  		/*
  		 * This little trick makes sure that
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 695fbebb672d..21875a67af4f 100644
+index fcef82113513..5e0746ecfc89 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -16,6 +16,9 @@
@@ -327,10 +332,10 @@ index 695fbebb672d..21875a67af4f 100644
  /**
   * reciprocal_scale - "scale" a value into range [0, ep_ro)
 diff --git a/include/linux/math64.h b/include/linux/math64.h
-index 082de345b73c..f9ead922c828 100644
+index 837f2f2d1d34..f137e5a246ae 100644
 --- a/include/linux/math64.h
 +++ b/include/linux/math64.h
-@@ -121,9 +121,11 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
+@@ -148,9 +148,11 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
  	u32 ret = 0;
  
  	while (dividend >= divisor) {
@@ -358,7 +363,7 @@ index db2f3f454a1b..5124ce3698dc 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index d16a7c037ec0..4d06a46ba8d2 100644
+index 0403894147a3..c10b28ce34a4 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -139,6 +139,8 @@ typedef int __bitwise pci_power_t;
@@ -433,7 +438,7 @@ index e3d1d0c78f3c..fc048136f23b 100644
  #else
  #define __bitwise__
 diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 77b441487a9e..507a71eac39b 100644
+index 7df4d948d516..1a3f000b7103 100644
 --- a/init/do_mounts.c
 +++ b/init/do_mounts.c
 @@ -3,7 +3,7 @@
@@ -485,7 +490,7 @@ index 99e0b649fc0e..59b0a4ea5178 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/init/initramfs.c b/init/initramfs.c
-index 7046feffef6b..9c54a5779b79 100644
+index 7e99a0038942..6130fe962de8 100644
 --- a/init/initramfs.c
 +++ b/init/initramfs.c
 @@ -4,7 +4,7 @@
@@ -498,10 +503,10 @@ index 7046feffef6b..9c54a5779b79 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 8dcd8825b2de..212584e0282e 100644
+index 9558664bd9ec..c6c746be0108 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1111,7 +1111,7 @@ static void print_fatal_signal(int signr)
+@@ -1112,7 +1112,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  
@@ -511,10 +516,10 @@ index 8dcd8825b2de..212584e0282e 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index 44a8c1402133..bcfb9f05116e 100644
+index bd4e6c7dd689..38da5e7abe59 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
-@@ -458,17 +458,21 @@ EXPORT_SYMBOL(mktime64);
+@@ -425,17 +425,21 @@ EXPORT_SYMBOL(mktime64);
  void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
@@ -536,7 +541,7 @@ index 44a8c1402133..bcfb9f05116e 100644
  		nsec += NSEC_PER_SEC;
  		--sec;
  	}
-@@ -538,17 +542,21 @@ EXPORT_SYMBOL(ns_to_timeval);
+@@ -505,17 +509,21 @@ EXPORT_SYMBOL(ns_to_timeval);
  void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {

@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 15 Nov 2017 20:45:51 +0100
+Subject: [PATCH] {BUG in 4.15-rc1} drivers/dma/stm32-mdma: fix dma_pool_free
+ argument
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This bug has been found with deref checker plugin:
+
+    drivers/dma/stm32-mdma.c: In function ‘stm32_mdma_prep_dma_cyclic’:
+    drivers/dma/stm32-mdma.c:898:2: error: Invalid pointer depth in
+    function call ‘dma_pool_free’: type of argument 2 says 1 but value
+    is 2
+     [-Werror]
+      dma_pool_free(chan->desc_pool, &desc->hwdesc, desc->hwdesc_phys);
+      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/dma/stm32-mdma.c: In function ‘stm32_mdma_prep_slave_sg’:
+
+    drivers/dma/stm32-mdma.c:809:2: error: Invalid pointer depth in
+    function call ‘dma_pool_free’: type of argument 2 says 1 but value
+    is 2
+     [-Werror]
+      dma_pool_free(chan->desc_pool, &desc->hwdesc, desc->hwdesc_phys);
+      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---
+ drivers/dma/stm32-mdma.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/dma/stm32-mdma.c b/drivers/dma/stm32-mdma.c
+index daa1602eb9f5..84fc262e15d8 100644
+--- a/drivers/dma/stm32-mdma.c
++++ b/drivers/dma/stm32-mdma.c
+@@ -806,7 +806,7 @@ stm32_mdma_prep_slave_sg(struct dma_chan *c, struct scatterlist *sgl,
+ 	return vchan_tx_prep(&chan->vchan, &desc->vdesc, flags);
+ 
+ xfer_setup_err:
+-	dma_pool_free(chan->desc_pool, &desc->hwdesc, desc->hwdesc_phys);
++	dma_pool_free(chan->desc_pool, desc->hwdesc, desc->hwdesc_phys);
+ 	kfree(desc);
+ 	return NULL;
+ }
+@@ -895,7 +895,7 @@ stm32_mdma_prep_dma_cyclic(struct dma_chan *c, dma_addr_t buf_addr,
+ 	return vchan_tx_prep(&chan->vchan, &desc->vdesc, flags);
+ 
+ xfer_setup_err:
+-	dma_pool_free(chan->desc_pool, &desc->hwdesc, desc->hwdesc_phys);
++	dma_pool_free(chan->desc_pool, desc->hwdesc, desc->hwdesc_phys);
+ 	kfree(desc);
+ 	return NULL;
+ }
+-- 

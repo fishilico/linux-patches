@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 15 Nov 2017 20:34:20 +0100
+Subject: [PATCH] {BUG in 4.15-rc1} drivers/usb/typec: fix regmap_raw_write()
+ call
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This bug has been found with deref checker plugin:
+
+    drivers/usb/typec/tps6598x.c:116:9: error: Invalid pointer depth in
+    function call ‘regmap_raw_write’: type of argument 3 says 1 but
+    value is 2
+     [-Werror]
+      return regmap_raw_write(tps->regmap, reg, &val, sizeof(u32));
+             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---
+ drivers/usb/typec/tps6598x.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/typec/tps6598x.c b/drivers/usb/typec/tps6598x.c
+index 2719f5d382f7..8288d0ecee77 100644
+--- a/drivers/usb/typec/tps6598x.c
++++ b/drivers/usb/typec/tps6598x.c
+@@ -113,7 +113,7 @@ static inline int tps6598x_write64(struct tps6598x *tps, u8 reg, u64 val)
+ static inline int
+ tps6598x_write_4cc(struct tps6598x *tps, u8 reg, const char *val)
+ {
+-	return regmap_raw_write(tps->regmap, reg, &val, sizeof(u32));
++	return regmap_raw_write(tps->regmap, reg, val, sizeof(u32));
+ }
+ 
+ static int tps6598x_read_partner_identity(struct tps6598x *tps)
+-- 

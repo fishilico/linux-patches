@@ -5,16 +5,16 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
 
 ---
  fs/ext4/ialloc.c      | 8 ++++++++
- kernel/bpf/verifier.c | 8 ++++++++
+ kernel/bpf/verifier.c | 9 +++++++++
  lib/rhashtable.c      | 4 ++++
  mm/mmap.c             | 8 ++++++++
  net/core/skbuff.c     | 8 ++++++++
  net/ipv4/fib_trie.c   | 7 +++++++
  net/sched/cls_u32.c   | 8 ++++++++
- 7 files changed, 51 insertions(+)
+ 7 files changed, 52 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index c5f697a3fad4..71361b6adc73 100644
+index b4267d72f249..079cf02081e2 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
 @@ -461,6 +461,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
@@ -40,10 +40,10 @@ index c5f697a3fad4..71361b6adc73 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index c48ca2a34b5e..980acf2ccf0f 100644
+index d4593571c404..954bb5b97cb8 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -3605,6 +3605,11 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -3760,6 +3760,12 @@ static int do_check(struct bpf_verifier_env *env)
  	int insn_processed = 0;
  	bool do_print_state = false;
  
@@ -52,12 +52,13 @@ index c48ca2a34b5e..980acf2ccf0f 100644
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wjump-misses-init"
 +#endif
- 	init_reg_state(regs);
- 	state->parent = NULL;
- 	insn_idx = 0;
-@@ -3870,6 +3875,9 @@ static int do_check(struct bpf_verifier_env *env)
- 	verbose("processed %d insns, stack depth %d\n",
- 		insn_processed, env->prog->aux->stack_depth);
++
+ 	state = kzalloc(sizeof(struct bpf_verifier_state), GFP_KERNEL);
+ 	if (!state)
+ 		return -ENOMEM;
+@@ -4039,6 +4045,9 @@ static int do_check(struct bpf_verifier_env *env)
+ 	verbose(env, "processed %d insns, stack depth %d\n", insn_processed,
+ 		env->prog->aux->stack_depth);
  	return 0;
 +#ifndef __clang__
 +#pragma GCC diagnostic pop
@@ -88,7 +89,7 @@ index b42eb69e4792..f39cbf0b0793 100644
  			iter->skip++;
  			iter->p = p;
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 680506faceae..39c4525d45e1 100644
+index 924839fac0e6..8daed37c36b2 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
 @@ -692,6 +692,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
@@ -114,10 +115,10 @@ index 680506faceae..39c4525d45e1 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index e140ba49b30a..0386575781f6 100644
+index 6b0ff396fa9d..da56866a1cf0 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -1769,6 +1769,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1763,6 +1763,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  	    unlikely((err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC))))
  		return err;
  
@@ -129,7 +130,7 @@ index e140ba49b30a..0386575781f6 100644
  	i = 0;
  	if (offset >= len)
  		goto drop_pages;
-@@ -1785,6 +1790,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1779,6 +1784,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  
  drop_pages:
  		skb_shinfo(skb)->nr_frags = i;
@@ -140,10 +141,10 @@ index e140ba49b30a..0386575781f6 100644
  		for (; i < nfrags; i++)
  			skb_frag_unref(skb, i);
 diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
-index bdaa59e7e7bb..ec5c9a66d7d9 100644
+index 014c27a6d81d..0ebb0dae59e7 100644
 --- a/net/ipv4/fib_trie.c
 +++ b/net/ipv4/fib_trie.c
-@@ -1324,6 +1324,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1321,6 +1321,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->gets);
  #endif
  
@@ -154,7 +155,7 @@ index bdaa59e7e7bb..ec5c9a66d7d9 100644
  	/* Step 1: Travel to the longest prefix match in the trie */
  	for (;;) {
  		index = get_cindex(key, n);
-@@ -1488,6 +1492,9 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1485,6 +1489,9 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->semantic_match_miss);
  #endif
  	goto backtrace;
@@ -165,10 +166,10 @@ index bdaa59e7e7bb..ec5c9a66d7d9 100644
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
-index b58eccb21f03..f2cc07b0f1d1 100644
+index ac152b4f4247..51589c1982c4 100644
 --- a/net/sched/cls_u32.c
 +++ b/net/sched/cls_u32.c
-@@ -113,6 +113,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
+@@ -115,6 +115,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
  static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  			struct tcf_result *res)
  {
@@ -180,7 +181,7 @@ index b58eccb21f03..f2cc07b0f1d1 100644
  	struct {
  		struct tc_u_knode *knode;
  		unsigned int	  off;
-@@ -261,6 +266,9 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
+@@ -263,6 +268,9 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  deadloop:
  	net_warn_ratelimited("cls_u32: dead loop\n");
  	return -1;

@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 17 Nov 2017 23:00:14 +0100
+Subject: [PATCH] {BUG in 4.15-rc1} drivers/net/ethernet/chelsio/cxgb4: fix
+ insane cast of IPv6 address
+
+Found with deref checker plugin
+---
+ drivers/net/ethernet/chelsio/cxgb4/cxgb4_filter.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_filter.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_filter.c
+index 5980f308a253..0eb006a93dc3 100644
+--- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_filter.c
++++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_filter.c
+@@ -801,8 +801,7 @@ static bool is_inaddr_any(u8 *ip, int family)
+ 		struct in6_addr *addr6;
+ 
+ 		addr6 = (struct in6_addr *)ip;
+-		addr_type = ipv6_addr_type((const struct in6_addr *)
+-					   &addr6);
++		addr_type = ipv6_addr_type(addr6);
+ 		if (addr_type == IPV6_ADDR_ANY)
+ 			return true;
+ 	}
+-- 
