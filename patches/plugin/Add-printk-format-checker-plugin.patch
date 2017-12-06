@@ -35,11 +35,11 @@ This plugin helped to detect the following bugs:
  fs/reiserfs/Makefile                               |  16 +
  net/ipv4/sysctl_net_ipv4.c                         |   2 +-
  scripts/Makefile.gcc-plugins                       |   5 +
- scripts/gcc-plugins/printk_format_plugin.c         | 812 +++++++++++++++++++++
+ scripts/gcc-plugins/printk_format_plugin.c         | 816 +++++++++++++++++++++
  security/apparmor/mount.c                          |  10 +-
  sound/soc/intel/haswell/sst-haswell-dsp.c          |   4 +-
  sound/soc/sh/dma-sh7760.c                          |   2 +-
- 30 files changed, 905 insertions(+), 38 deletions(-)
+ 30 files changed, 909 insertions(+), 38 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -417,7 +417,7 @@ index e9983ee03bed..1d07224aa5bd 100644
  
  enum register_type {
 diff --git a/fs/nfsd/nfsctl.c b/fs/nfsd/nfsctl.c
-index 6493df6b1bd5..3b50527d8973 100644
+index d107b4426f7e..6f5a100eff35 100644
 --- a/fs/nfsd/nfsctl.c
 +++ b/fs/nfsd/nfsctl.c
 @@ -540,7 +540,6 @@ static ssize_t
@@ -517,10 +517,10 @@ index 2f9bc96aab90..342bd768a661 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..cf03e9be6b2c
+index 000000000000..5d3d394a0f59
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,812 @@
+@@ -0,0 +1,816 @@
 +/*
 + * Copyright 2016-2017 by Nicolas Iooss
 + *
@@ -532,7 +532,7 @@ index 000000000000..cf03e9be6b2c
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info printk_format_plugin_info = {
-+	.version	= "20171118",
++	.version	= "20171202",
 +	.help		= "Printk format checker\n",
 +};
 +
@@ -682,6 +682,10 @@ index 000000000000..cf03e9be6b2c
 +
 +	/* Kernel pointers */
 +	case 'K':
++		return true;
++
++	/* Unmodified Addresses */
++	case 'x':
 +		return true;
 +
 +	/* Struct Resources */
@@ -1204,7 +1208,7 @@ index 000000000000..cf03e9be6b2c
 +		 * - 0x%p without any pointer modifier
 +		 * - 0x%pK, 0x%pad, 0x*phN...
 +		 */
-+#define ALLOW_0xPTR_CHARS "abhK:-.;,'/ )]\t\n"
++#define ALLOW_0xPTR_CHARS "abhKx:-.;,'/ )]\t\n"
 +		if (has_hex_prefix && !(strchr("xX", *format) ||
 +		    (*format == 'p' && memchr(ALLOW_0xPTR_CHARS, format[1], sizeof(ALLOW_0xPTR_CHARS))))) {
 +			warning_at(gimple_location(call_stmt),
