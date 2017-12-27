@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 22 Dec 2017 21:35:57 +0100
+Subject: [PATCH] {BUG in 4.15-rc5} x86: define cpu_tss_rw as page-aligned
+
+arch/x86/include/asm/processor.h uses:
+
+    struct tss_struct {
+        /*
+         * The fixed hardware portion.  This must not cross a page boundary
+         * at risk of violating the SDM's advice and potentially triggering
+         * errata.
+         */
+        struct x86_hw_tss   x86_tss;
+    /* ... */
+    DECLARE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw);
+
+but arch/x86/kernel/process.c:
+
+    /*
+     * per-CPU TSS segments. Threads are completely 'soft' on Linux,
+     * no more per-task TSS's. The TSS size is kept cacheline-aligned
+     * so they are allowed to end up in the .data..cacheline_aligned
+     * section. Since TSS's are completely CPU-local, we want them
+     * on exact cacheline boundaries, to eliminate cacheline ping-pong.
+     */
+    __visible DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, cpu_tss_rw) = {
+
+This uses a different sections, which is reported when building with
+clang an some warning flags:
+
+    arch/x86/kernel/process.c:50:11: error: section does not match
+    previous declaration [-Werror,-Wsection]
+    __visible DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, cpu_tss_rw) = {
+              ^
+    include/linux/percpu-defs.h:144:2: note: expanded from macro
+    'DEFINE_PER_CPU_SHARED_ALIGNED'
+            DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
+            ^
+    include/linux/percpu-defs.h:93:9: note: expanded from macro
+    'DEFINE_PER_CPU_SECTION'
+            extern __PCPU_ATTRS(sec) __typeof__(type) name;                 \
+                   ^
+    include/linux/percpu-defs.h:49:26: note: expanded from macro '__PCPU_ATTRS'
+            __percpu __attribute__((section(PER_CPU_BASE_SECTION sec)))     \
+                                    ^
+    arch/x86/include/asm/processor.h:365:1: note: previous attribute is here
+    DECLARE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw);
+    ^
+    include/linux/percpu-defs.h:159:2: note: expanded from macro
+    'DECLARE_PER_CPU_PAGE_ALIGNED'
+            DECLARE_PER_CPU_SECTION(type, name, "..page_aligned")           \
+            ^
+    include/linux/percpu-defs.h:87:9: note: expanded from macro
+    'DECLARE_PER_CPU_SECTION'
+            extern __PCPU_ATTRS(sec) __typeof__(type) name
+                   ^
+    include/linux/percpu-defs.h:49:26: note: expanded from macro '__PCPU_ATTRS'
+            __percpu __attribute__((section(PER_CPU_BASE_SECTION sec)))     \
+                                    ^
+---
+ arch/x86/kernel/process.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index aed9d94bd46f..832a6acd730f 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -47,7 +47,7 @@
+  * section. Since TSS's are completely CPU-local, we want them
+  * on exact cacheline boundaries, to eliminate cacheline ping-pong.
+  */
+-__visible DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, cpu_tss_rw) = {
++__visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
+ 	.x86_tss = {
+ 		/*
+ 		 * .sp0 is only used when entering ring 0 from a lower
+-- 
