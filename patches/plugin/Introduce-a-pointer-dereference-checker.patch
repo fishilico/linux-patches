@@ -67,6 +67,7 @@ It has also detected some bugs reported and fixed by other people:
  drivers/staging/rtl8192u/r819xU_firmware.c         |   2 +-
  drivers/thermal/int340x_thermal/int3402_thermal.c  |   2 +-
  drivers/usb/core/devio.c                           |  12 +-
+ drivers/usb/host/xhci-debugfs.c                    |   4 +-
  drivers/xen/xenbus/xenbus_xs.c                     |   4 +-
  fs/cifs/cifsacl.c                                  |  12 +-
  include/asm-generic/asm-prototypes.h               |   6 +
@@ -92,7 +93,7 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/deref_checker_plugin.c         | 414 +++++++++++++++++++++
  security/apparmor/apparmorfs.c                     |  11 +-
  sound/core/pcm_native.c                            |   2 +-
- 65 files changed, 748 insertions(+), 92 deletions(-)
+ 66 files changed, 751 insertions(+), 93 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -898,6 +899,24 @@ index a3fad4ec9870..96828c672a0e 100644
  		free_async(as);
  	} else {
  		retval = (connected(ps) ? -EAGAIN : -ENODEV);
+diff --git a/drivers/usb/host/xhci-debugfs.c b/drivers/usb/host/xhci-debugfs.c
+index e26e685d8a57..b23277891a29 100644
+--- a/drivers/usb/host/xhci-debugfs.c
++++ b/drivers/usb/host/xhci-debugfs.c
+@@ -351,10 +351,12 @@ static struct dentry *xhci_debugfs_create_ring_dir(struct xhci_hcd *xhci,
+ 						   struct dentry *parent)
+ {
+ 	struct dentry		*dir;
++	/* Play nice with the pointer deref checker */
++	void *ring_ptr = ring;
+ 
+ 	dir = debugfs_create_dir(name, parent);
+ 	xhci_debugfs_create_files(xhci, ring_files, ARRAY_SIZE(ring_files),
+-				  ring, dir, &xhci_ring_fops);
++				  ring_ptr, dir, &xhci_ring_fops);
+ 
+ 	return dir;
+ }
 diff --git a/drivers/xen/xenbus/xenbus_xs.c b/drivers/xen/xenbus/xenbus_xs.c
 index 3e59590c7254..c0143e705275 100644
 --- a/drivers/xen/xenbus/xenbus_xs.c
@@ -1133,10 +1152,10 @@ index d35cc2d3a4cc..0b45978c2f2b 100644
  			debug_kfree(knt1);
  			knt1 = kdb_name_table[i];
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index fb1799fe864d..fe30f99270f6 100644
+index aa4a975ae001..14dc6cec5e53 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -7102,7 +7102,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
+@@ -7094,7 +7094,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
  	 * We use the callback data field (which is a pointer)
  	 * as our counter.
  	 */
