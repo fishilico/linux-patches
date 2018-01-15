@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 10 Jan 2018 22:57:04 +0100
+Subject: [PATCH] {BUG in 4.15-rc8} tipc: invalid use of uninitialized value
+
+Variable "inflight" is not uninitialized if an if condition is false,
+and if it is, it is to zero. How can this value be used afterwards?
+
+clang reports:
+
+    net/tipc/group.c:767:7: error: variable 'in_flight' is used
+    uninitialized whenever 'if' condition is false
+    [-Werror,-Wsometimes-uninitialized]
+                    if (m->advertised <= remitted) {
+                        ^~~~~~~~~~~~~~~~~~~~~~~~~
+    net/tipc/group.c:775:30: note: uninitialized use occurs here
+                    m->advertised = ADV_IDLE + in_flight;
+                                               ^~~~~~~~~
+    net/tipc/group.c:767:3: note: remove the 'if' if its condition is
+    always true
+                    if (m->advertised <= remitted) {
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    net/tipc/group.c:676:25: note: initialize the variable 'in_flight'
+    to silence this warning
+            u16 remitted, in_flight;
+                                   ^
+                                    = 0
+---
+ net/tipc/group.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/tipc/group.c b/net/tipc/group.c
+index 5f4ffae807ee..6f4ab2cbeddd 100644
+--- a/net/tipc/group.c
++++ b/net/tipc/group.c
+@@ -772,7 +772,7 @@ void tipc_group_proto_rcv(struct tipc_group *grp, bool *usr_wakeup,
+ 		if (m->advertised < remitted)
+ 			tipc_group_proto_xmit(grp, m, GRP_ADV_MSG, xmitq);
+ 
+-		m->advertised = ADV_IDLE + in_flight;
++		m->advertised = ADV_IDLE /* + in_flight */; /* BUG! What value would this be? */
+ 		grp->active_cnt--;
+ 		list_del_init(&m->list);
+ 
+-- 

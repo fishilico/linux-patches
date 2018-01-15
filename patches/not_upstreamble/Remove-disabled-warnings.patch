@@ -18,7 +18,7 @@ list of disabled warnings.
  9 files changed, 54 insertions(+), 44 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index eb59638035dd..73f2c0c9c6c9 100644
+index bf5b8cbb9469..14ca855e122d 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -386,7 +386,7 @@ PYTHON		= python
@@ -47,36 +47,7 @@ index eb59638035dd..73f2c0c9c6c9 100644
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
  KBUILD_CFLAGS_KERNEL :=
-@@ -485,12 +489,12 @@ endif
- KBUILD_CFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC)
- KBUILD_AFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC)
- KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
--KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
--KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
--KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
--KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
- # Quiet clang warning: comparison of unsigned expression < 0 is always false
--KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
- # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
- # source of a reference will be _MergedGlobals and not on of the whitelisted names.
- # See modpost pattern 2
-@@ -502,8 +506,8 @@ else
- 
- # These warnings generated too much noise in a regular build.
- # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
--KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
--KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
- endif
- 
- ifeq ($(config-targets),1)
-@@ -638,7 +642,7 @@ all: vmlinux
+@@ -618,7 +622,7 @@ all: vmlinux
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-PIE)
  KBUILD_AFLAGS	+= $(call cc-option,-fno-PIE)
@@ -85,7 +56,7 @@ index eb59638035dd..73f2c0c9c6c9 100644
  export CFLAGS_GCOV CFLAGS_KCOV
  
  # The arch Makefile can set ARCH_{CPP,A,C}FLAGS to override the default
-@@ -649,24 +653,24 @@ ARCH_CFLAGS :=
+@@ -629,24 +633,24 @@ ARCH_CFLAGS :=
  include arch/$(SRCARCH)/Makefile
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
@@ -118,7 +89,36 @@ index eb59638035dd..73f2c0c9c6c9 100644
  
  # Tell gcc to never replace conditional load with a non-conditional one
  KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
-@@ -784,7 +788,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
+@@ -698,12 +702,12 @@ KBUILD_CFLAGS += $(stackp-flag)
+ 
+ ifeq ($(cc-name),clang)
+ KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
+-KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
+-KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
+-KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
+-KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
++#KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
++#KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
++#KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
++#KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
+ # Quiet clang warning: comparison of unsigned expression < 0 is always false
+-KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
++#KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
+ # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
+ # source of a reference will be _MergedGlobals and not on of the whitelisted names.
+ # See modpost pattern 2
+@@ -715,8 +719,8 @@ else
+ 
+ # These warnings generated too much noise in a regular build.
+ # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
+-KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
+-KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
++#KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
++#KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
+ endif
+ 
+ ifdef CONFIG_FRAME_POINTER
+@@ -787,7 +791,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
  KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -128,7 +128,7 @@ index eb59638035dd..73f2c0c9c6c9 100644
  # disable invalid "can't wrap" optimizations for signed / pointers
  KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 3e73bc255e4e..116b7a374a32 100644
+index fad55160dcb9..1091afb68c5e 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
 @@ -226,7 +226,7 @@ LDFLAGS := -m elf_$(UTS_MACHINE)
