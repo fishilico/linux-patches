@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 22 Jan 2018 21:53:27 +0100
+Subject: [PATCH] {BUG in 4.15-rc9} kernel/futex: do not use an uninitialized
+ value
+
+---
+ kernel/futex.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 8c5424dd5924..3eda3dfd3124 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -2312,8 +2312,8 @@ static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
+ 
+ 	oldowner = pi_state->owner;
+ 	/* Owner died? */
+-	if (!pi_state->owner)
+-		newtid |= FUTEX_OWNER_DIED;
++	/*if (!pi_state->owner)
++		newtid |= FUTEX_OWNER_DIED; harmless bug in 4.15-rc9 */
+ 
+ 	/*
+ 	 * We are here because either:
+-- 
