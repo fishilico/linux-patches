@@ -35,18 +35,18 @@ This plugin helped to detect the following bugs:
  fs/reiserfs/Makefile                               |  16 +
  net/ipv4/sysctl_net_ipv4.c                         |   2 +-
  scripts/Makefile.gcc-plugins                       |   5 +
- scripts/gcc-plugins/printk_format_plugin.c         | 816 +++++++++++++++++++++
+ scripts/gcc-plugins/printk_format_plugin.c         | 822 +++++++++++++++++++++
  security/apparmor/mount.c                          |  10 +-
  sound/soc/intel/haswell/sst-haswell-dsp.c          |   4 +-
  sound/soc/sh/dma-sh7760.c                          |   2 +-
- 30 files changed, 909 insertions(+), 38 deletions(-)
+ 30 files changed, 915 insertions(+), 38 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index e11a1a2c1d41..cd729d5c87c1 100644
+index c923245d1b37..07b07fe34ee8 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -534,6 +534,13 @@ config GCC_PLUGIN_FORMAT_TEMPLATE
+@@ -548,6 +548,13 @@ config GCC_PLUGIN_FORMAT_TEMPLATE
  	  attribute can be beneficial, since it serves as
  	  documentation.
  
@@ -61,10 +61,10 @@ index e11a1a2c1d41..cd729d5c87c1 100644
  	bool
  	help
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
-index a7ecfde66b7b..b5297a607517 100644
+index 15e3d3c2260d..5b8ef09bf01a 100644
 --- a/drivers/android/binder.c
 +++ b/drivers/android/binder.c
-@@ -5448,7 +5448,7 @@ static void print_binder_transaction_log_entry(struct seq_file *m,
+@@ -5520,7 +5520,7 @@ static void print_binder_transaction_log_entry(struct seq_file *m,
  	 * done printing the fields of the entry
  	 */
  	smp_rmb();
@@ -74,10 +74,10 @@ index a7ecfde66b7b..b5297a607517 100644
  }
  
 diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index cc93522a6d41..cfee23fb524d 100644
+index 8e40da093766..4869fd6b7913 100644
 --- a/drivers/block/rbd.c
 +++ b/drivers/block/rbd.c
-@@ -1922,10 +1922,15 @@ __rbd_osd_req_create(struct rbd_device *rbd_dev,
+@@ -1920,10 +1920,15 @@ __rbd_osd_req_create(struct rbd_device *rbd_dev,
  	req->r_priv = obj_request;
  
  	req->r_base_oloc.pool = rbd_dev->layout.pool_id;
@@ -133,10 +133,10 @@ index ec0832278170..e596d235642a 100644
  			       __func__, module_name(is->is_owner),
  			       pci_name(idd->idd_pdev));
 diff --git a/drivers/net/ethernet/ti/netcp_ethss.c b/drivers/net/ethernet/ti/netcp_ethss.c
-index e831c49713ee..7373c37730ef 100644
+index 56dbc0b9fedc..ca5ecef5c84f 100644
 --- a/drivers/net/ethernet/ti/netcp_ethss.c
 +++ b/drivers/net/ethernet/ti/netcp_ethss.c
-@@ -2308,7 +2308,7 @@ static int gbe_slave_open(struct gbe_intf *gbe_intf)
+@@ -2305,7 +2305,7 @@ static int gbe_slave_open(struct gbe_intf *gbe_intf)
  				slave->slave_num);
  			return -ENODEV;
  		}
@@ -145,7 +145,7 @@ index e831c49713ee..7373c37730ef 100644
  			phydev_name(slave->phy));
  		phy_start(slave->phy);
  	}
-@@ -3095,7 +3095,7 @@ static void init_secondary_ports(struct gbe_priv *gbe_dev,
+@@ -3092,7 +3092,7 @@ static void init_secondary_ports(struct gbe_priv *gbe_dev,
  				slave->slave_num);
  			slave->phy = NULL;
  		} else {
@@ -155,10 +155,10 @@ index e831c49713ee..7373c37730ef 100644
  			phy_start(slave->phy);
  		}
 diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
-index cad2e42dcef6..663775fd9096 100644
+index 58dc2189ba49..de67f3ec5942 100644
 --- a/drivers/net/wireless/ath/ath10k/wmi.c
 +++ b/drivers/net/wireless/ath/ath10k/wmi.c
-@@ -6569,7 +6569,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
+@@ -6641,7 +6641,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
  	ether_addr_copy(cmd->peer_macaddr.addr, peer_addr);
  
  	ath10k_dbg(ar, ATH10K_DBG_WMI,
@@ -181,10 +181,10 @@ index 85cedd083d2b..762897f48421 100644
  	return -1;
  }
 diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 0f8052f1355c..4bf87ac241ba 100644
+index 7a9abaae874d..cfa7096b467f 100644
 --- a/drivers/of/unittest.c
 +++ b/drivers/of/unittest.c
-@@ -256,7 +256,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
+@@ -257,7 +257,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
  
  	/* Baseline; check conversion with a large size limit */
  	memset(buf, 0xff, sizeof(buf));
@@ -195,7 +195,7 @@ index 0f8052f1355c..4bf87ac241ba 100644
  
  	/* use strcmp() instead of strncmp() here to be absolutely sure strings match */
  	unittest((strcmp(buf, expected) == 0) && (buf[size+1] == 0xff),
-@@ -268,7 +271,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
+@@ -269,7 +272,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
  	for (i = 0; i < 2; i++, size--) {
  		/* Clear the buffer, and make sure it works correctly still */
  		memset(buf, 0xff, sizeof(buf));
@@ -225,7 +225,7 @@ index c4768be24ba9..62eda5ae9264 100644
  
  	return len;
 diff --git a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
-index e6b9de7d41ac..df72e8e1555d 100644
+index 65de1d0578a1..e17a63dd2077 100644
 --- a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
 +++ b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
 @@ -1145,7 +1145,7 @@ static int bnx2fc_vport_create(struct fc_vport *vport, bool disabled)
@@ -273,10 +273,10 @@ index f4909cd206d3..f36d09b8357f 100644
  			rc = -EINVAL;
  			break;
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index 287e5eb0723f..1e3a5470585c 100644
+index 5293e6827ce5..b2d2aa193d20 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
-@@ -6755,7 +6755,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
+@@ -6747,7 +6747,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
  			c->Request.CDB[9] = 0;
  			break;
  		default:
@@ -286,7 +286,7 @@ index 287e5eb0723f..1e3a5470585c 100644
  		}
  	} else if (cmd_type == TYPE_MSG) {
 diff --git a/drivers/scsi/qedf/qedf_main.c b/drivers/scsi/qedf/qedf_main.c
-index 7c0064500cc5..b349923f7ccd 100644
+index ccd9a08ea030..a188c91596b2 100644
 --- a/drivers/scsi/qedf/qedf_main.c
 +++ b/drivers/scsi/qedf/qedf_main.c
 @@ -1540,7 +1540,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
@@ -299,10 +299,10 @@ index 7c0064500cc5..b349923f7ccd 100644
  	}
  
 diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index c17ff688cbed..ccdd800a6eb8 100644
+index 86e73d6a3121..17b059f7c5ef 100644
 --- a/drivers/scsi/qedi/qedi_main.c
 +++ b/drivers/scsi/qedi/qedi_main.c
-@@ -1737,7 +1737,8 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+@@ -1728,7 +1728,8 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
  	int rc = 1;
  	u32 ipv6_en, dhcp_en, ip_len;
  	struct nvm_iscsi_block *block;
@@ -312,7 +312,7 @@ index c17ff688cbed..ccdd800a6eb8 100644
  
  	block = qedi_get_nvram_block(qedi);
  	if (!block)
-@@ -1765,6 +1766,9 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+@@ -1756,6 +1757,9 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
  		ip_len = ipv6_en ? 5 : 8;
  	}
  
@@ -322,7 +322,7 @@ index c17ff688cbed..ccdd800a6eb8 100644
  	switch (type) {
  	case ISCSI_BOOT_ETH_IP_ADDR:
  		rc = snprintf(str, ip_len, fmt, ip);
-@@ -1798,6 +1802,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+@@ -1789,6 +1793,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
  		rc = 0;
  		break;
  	}
@@ -374,7 +374,7 @@ index e18ba2cca2bd..a45f6c2958a9 100644
  	}
  }
 diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index f9bc8ec6fb6b..e772914d93af 100644
+index 9518ffd8b8ba..8bdb5aad884b 100644
 --- a/drivers/target/iscsi/iscsi_target_auth.c
 +++ b/drivers/target/iscsi/iscsi_target_auth.c
 @@ -67,10 +67,10 @@ static int chap_gen_challenge(
@@ -404,7 +404,7 @@ index f9bc8ec6fb6b..e772914d93af 100644
  out:
  	kzfree(desc);
 diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index e9983ee03bed..1d07224aa5bd 100644
+index ce957efeb0bd..19db4ed20dd5 100644
 --- a/drivers/target/target_core_pr.c
 +++ b/drivers/target/target_core_pr.c
 @@ -63,7 +63,7 @@ void core_pr_dump_initiator_port(
@@ -444,10 +444,10 @@ index d107b4426f7e..6f5a100eff35 100644
  }
  
 diff --git a/fs/overlayfs/inode.c b/fs/overlayfs/inode.c
-index 00b6b294272a..b4b71d0ce77c 100644
+index fcd97b783fa1..fca564ac9b53 100644
 --- a/fs/overlayfs/inode.c
 +++ b/fs/overlayfs/inode.c
-@@ -522,8 +522,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
+@@ -532,8 +532,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
  	char buf[13];
  	int len;
  
@@ -517,10 +517,10 @@ index 2f9bc96aab90..342bd768a661 100644
        # It is needed because of the gcc-plugin.sh and gcc version checks.
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..329aeefaa424
+index 000000000000..7ef27db70e0e
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,816 @@
+@@ -0,0 +1,822 @@
 +/*
 + * Copyright 2016-2018 by Nicolas Iooss
 + *
@@ -532,7 +532,7 @@ index 000000000000..329aeefaa424
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info printk_format_plugin_info = {
-+	.version	= "20171202",
++	.version	= "20180201",
 +	.help		= "Printk format checker\n",
 +};
 +
@@ -673,6 +673,8 @@ index 000000000000..329aeefaa424
 +		if (TREE_CODE(subtype) == POINTER_TYPE &&
 +		    TREE_CODE(TREE_TYPE(subtype)) == FUNCTION_TYPE)
 +			return true;
++		if (TREE_CODE(subtype) == INTEGER_TYPE) /* Field addr of struct kprobes */
++			return true;
 +		break;
 +	case 'S':
 +	case 's':
@@ -787,6 +789,10 @@ index 000000000000..329aeefaa424
 +			    identifier_is(TYPE_IDENTIFIER(subtype), "sockaddr") ||
 +			    identifier_is(TYPE_IDENTIFIER(subtype), "__kernel_sockaddr_storage") ||
 +			    identifier_is(TYPE_IDENTIFIER(subtype), "sockaddr_in")))
++				return true;
++			if (TREE_CODE(subtype) == ARRAY_TYPE &&
++			    TREE_CODE(TREE_TYPE(subtype)) == INTEGER_TYPE &&
++			    is_8bit_int_type(TREE_TYPE(subtype)))
 +				return true;
 +		}
 +		if (TREE_CODE(subtype) == UNION_TYPE) /* FIXME: detect sockaddr union */

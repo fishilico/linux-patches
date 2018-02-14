@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 1 Feb 2018 23:16:52 +0100
+Subject: [PATCH] {PRINTF} ath10k: use dma_addr_t with %pad
+
+Using u32 to display a DMA address may lead to unexpected result? This
+makes the printk format checker unhappy anyway.
+---
+ drivers/net/wireless/ath/ath10k/htt_tx.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/ath/ath10k/htt_tx.c b/drivers/net/wireless/ath/ath10k/htt_tx.c
+index 46cc1c62f915..9b667a73eff8 100644
+--- a/drivers/net/wireless/ath/ath10k/htt_tx.c
++++ b/drivers/net/wireless/ath/ath10k/htt_tx.c
+@@ -1157,6 +1157,7 @@ static int ath10k_htt_tx_32(struct ath10k_htt *htt,
+ 	u16 msdu_id, flags1 = 0;
+ 	u16 freq = 0;
+ 	u32 frags_paddr = 0;
++	dma_addr_t frags_paddr_as_dma_addr;
+ 	u32 txbuf_paddr;
+ 	struct htt_msdu_ext_desc *ext_desc = NULL;
+ 	struct htt_msdu_ext_desc *ext_desc_t = NULL;
+@@ -1298,9 +1299,10 @@ static int ath10k_htt_tx_32(struct ath10k_htt *htt,
+ 	}
+ 
+ 	trace_ath10k_htt_tx(ar, msdu_id, msdu->len, vdev_id, tid);
++	frags_paddr_as_dma_addr = frags_paddr;
+ 	ath10k_dbg(ar, ATH10K_DBG_HTT,
+ 		   "htt tx flags0 %hhu flags1 %hu len %d id %hu frags_paddr %pad, msdu_paddr %pad vdev %hhu tid %hhu freq %hu\n",
+-		   flags0, flags1, msdu->len, msdu_id, &frags_paddr,
++		   flags0, flags1, msdu->len, msdu_id, &frags_paddr_as_dma_addr,
+ 		   &skb_cb->paddr, vdev_id, tid, freq);
+ 	ath10k_dbg_dump(ar, ATH10K_DBG_HTT_DUMP, NULL, "htt tx msdu: ",
+ 			msdu->data, msdu->len);
+-- 

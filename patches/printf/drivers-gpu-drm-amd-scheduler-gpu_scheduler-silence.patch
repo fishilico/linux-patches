@@ -5,19 +5,19 @@ Subject: [PATCH] {PRINTF} drivers/gpu/drm/amd/scheduler/gpu_scheduler: silence
  -Wformat-security
 
 ---
- drivers/gpu/drm/amd/scheduler/gpu_scheduler.c | 2 +-
+ drivers/gpu/drm/scheduler/gpu_scheduler.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c b/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c
-index 92ec663fdada..6010d3c2b1b1 100644
---- a/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c
-+++ b/drivers/gpu/drm/amd/scheduler/gpu_scheduler.c
-@@ -693,7 +693,7 @@ int amd_sched_init(struct amd_gpu_scheduler *sched,
+diff --git a/drivers/gpu/drm/scheduler/gpu_scheduler.c b/drivers/gpu/drm/scheduler/gpu_scheduler.c
+index 2c18996d59c5..2bb7db032bf6 100644
+--- a/drivers/gpu/drm/scheduler/gpu_scheduler.c
++++ b/drivers/gpu/drm/scheduler/gpu_scheduler.c
+@@ -721,7 +721,7 @@ int drm_sched_init(struct drm_gpu_scheduler *sched,
  	atomic64_set(&sched->job_id_count, 0);
  
  	/* Each scheduler will run on a seperate kernel thread */
--	sched->thread = kthread_run(amd_sched_main, sched, sched->name);
-+	sched->thread = kthread_run(amd_sched_main, sched, "%s", sched->name); /* not a vulnerability because ring->name is initialized by callers of amdgpu_ring_init with strings without %s */
+-	sched->thread = kthread_run(drm_sched_main, sched, sched->name);
++	sched->thread = kthread_run(drm_sched_main, sched, "%s", sched->name); /* not a vulnerability because ring->name is initialized by callers of amdgpu_ring_init with strings without %s */
  	if (IS_ERR(sched->thread)) {
  		DRM_ERROR("Failed to create scheduler for %s.\n", name);
  		return PTR_ERR(sched->thread);

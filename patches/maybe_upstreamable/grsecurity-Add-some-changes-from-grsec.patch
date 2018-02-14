@@ -4,14 +4,14 @@ Date: Sat, 28 Feb 2015 11:07:33 +0800
 Subject: [PATCH] {MAYBE UPS} (grsecurity) Add some changes from grsec
 
 ---
- net/socket.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ net/socket.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/net/socket.c b/net/socket.c
-index 6f05d5c4bf30..c52a9bdd7742 100644
+index a93c99b518ca..cb46b35631d4 100644
 --- a/net/socket.c
 +++ b/net/socket.c
-@@ -1207,6 +1207,8 @@ int __sock_create(struct net *net, int family, int type, int protocol,
+@@ -1225,6 +1225,8 @@ int __sock_create(struct net *net, int family, int type, int protocol,
  		return -EAFNOSUPPORT;
  	if (type < 0 || type >= SOCK_MAX)
  		return -EINVAL;
@@ -20,7 +20,7 @@ index 6f05d5c4bf30..c52a9bdd7742 100644
  
  	/* Compatibility.
  
-@@ -1757,7 +1759,7 @@ SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,
+@@ -1775,7 +1777,7 @@ SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,
  	struct socket *sock;
  	struct iovec iov;
  	struct msghdr msg;
@@ -29,7 +29,7 @@ index 6f05d5c4bf30..c52a9bdd7742 100644
  	int err, err2;
  	int fput_needed;
  
-@@ -2161,7 +2163,7 @@ static int ___sys_recvmsg(struct socket *sock, struct user_msghdr __user *msg,
+@@ -2179,7 +2181,7 @@ static int ___sys_recvmsg(struct socket *sock, struct user_msghdr __user *msg,
  	ssize_t err;
  
  	/* kernel mode address */
@@ -38,13 +38,4 @@ index 6f05d5c4bf30..c52a9bdd7742 100644
  
  	/* user mode address pointers */
  	struct sockaddr __user *uaddr;
-@@ -2818,7 +2820,7 @@ static int ethtool_ioctl(struct net *net, struct compat_ifreq __user *ifr32)
- 	ifr = compat_alloc_user_space(buf_size);
- 	rxnfc = (void __user *)ifr + ALIGN(sizeof(struct ifreq), 8);
- 
--	if (copy_in_user(&ifr->ifr_name, &ifr32->ifr_name, IFNAMSIZ))
-+	if (copy_in_user(ifr->ifr_name, ifr32->ifr_name, IFNAMSIZ))  /* Found in grsecurity patch 2015-02-27 */
- 		return -EFAULT;
- 
- 	if (put_user(convert_in ? rxnfc : compat_ptr(data),
 -- 

@@ -38,8 +38,8 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  kernel/signal.c                 |  2 +-
  kernel/time/time.c              |  8 ++++++++
  lib/hexdump.c                   | 13 +++++++++++--
- lib/rhashtable.c                |  7 +++++++
- 27 files changed, 153 insertions(+), 18 deletions(-)
+ lib/rhashtable.c                |  5 +++++
+ 27 files changed, 151 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
 index 06ecee1b528e..9ccd4e388084 100644
@@ -106,7 +106,7 @@ index 6b2e63df2739..99bf0f4654cf 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/build_bug.h b/include/linux/build_bug.h
-index 3efed0d742a0..f106b9b4506a 100644
+index 43d1fd50d433..97415a0bdcb4 100644
 --- a/include/linux/build_bug.h
 +++ b/include/linux/build_bug.h
 @@ -5,6 +5,19 @@
@@ -129,7 +129,7 @@ index 3efed0d742a0..f106b9b4506a 100644
  #define __BUILD_BUG_ON_NOT_POWER_OF_2(n) (0)
  #define BUILD_BUG_ON_NOT_POWER_OF_2(n) (0)
  #define BUILD_BUG_ON_ZERO(e) (0)
-@@ -13,6 +26,7 @@
+@@ -12,6 +25,7 @@
  #define BUILD_BUG_ON_MSG(cond, msg) (0)
  #define BUILD_BUG_ON(condition) (0)
  #define BUILD_BUG() (0)
@@ -156,7 +156,7 @@ index 91a5a824482f..f6b3eb283004 100644
  #endif /* GCC_VERSION >= 40600 */
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 0a7797c02d77..d8b5002482f9 100644
+index b3b413034795..1ef69622b48e 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
@@ -201,7 +201,7 @@ index fe5015c1fc73..ae24fbc62410 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __safe		__attribute__((safe))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 75b565194437..b3934769a602 100644
+index d4a2a7dcd72d..8d645c9a28b5 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
 @@ -821,9 +821,14 @@ set_cpu_active(unsigned int cpu, bool active)
@@ -220,10 +220,10 @@ index 75b565194437..b3934769a602 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 9b2f2cc19db5..0d4fbe7e85a1 100644
+index 6b175759b4b9..fe35aa5e4f82 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -174,7 +174,9 @@ struct ablkcipher_request {
+@@ -182,7 +182,9 @@ struct ablkcipher_request {
  	struct scatterlist *src;
  	struct scatterlist *dst;
  
@@ -234,7 +234,7 @@ index 9b2f2cc19db5..0d4fbe7e85a1 100644
  };
  
  struct blkcipher_desc {
-@@ -584,7 +586,12 @@ struct crypto_tfm {
+@@ -592,7 +594,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -363,10 +363,10 @@ index db2f3f454a1b..5124ce3698dc 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index c170c9250c8b..4676331157ba 100644
+index 024a1beda008..8bd699943c85 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -139,6 +139,8 @@ typedef int __bitwise pci_power_t;
+@@ -137,6 +137,8 @@ typedef int __bitwise pci_power_t;
  #define PCI_UNKNOWN	((pci_power_t __force) 5)
  #define PCI_POWER_ERROR	((pci_power_t __force) -1)
  
@@ -375,7 +375,7 @@ index c170c9250c8b..4676331157ba 100644
  /* Remember to update this when the list above changes! */
  extern const char *pci_power_names[];
  
-@@ -146,6 +148,7 @@ static inline const char *pci_power_name(pci_power_t state)
+@@ -144,6 +146,7 @@ static inline const char *pci_power_name(pci_power_t state)
  {
  	return pci_power_names[1 + (__force int) state];
  }
@@ -425,7 +425,7 @@ index c3547f07605c..ecda73784a29 100644
  #define XATTR_NAME_MAX   255	/* # chars in an extended attribute name */
  #define XATTR_SIZE_MAX 65536	/* size of an extended attribute value (64k) */
 diff --git a/include/uapi/linux/types.h b/include/uapi/linux/types.h
-index e3d1d0c78f3c..fc048136f23b 100644
+index cd4f0b897a48..35007be18087 100644
 --- a/include/uapi/linux/types.h
 +++ b/include/uapi/linux/types.h
 @@ -19,7 +19,7 @@
@@ -503,10 +503,10 @@ index 7e99a0038942..6130fe962de8 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 9558664bd9ec..c6c746be0108 100644
+index c6e4c83dc090..76f86e9309c8 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1112,7 +1112,7 @@ static void print_fatal_signal(int signr)
+@@ -1120,7 +1120,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  
@@ -609,21 +609,10 @@ index 81b70ed37209..89d1a3f19bba 100644
  			if (linebuflen < lx + 2)
  				goto overflow2;
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index f39cbf0b0793..b9f3eeeaf8de 100644
+index 60db95ee155b..6f516429da95 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -787,8 +787,10 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
- 	bool rhlist = ht->rhlist;
- 
- /* Variable "skip" is not initialized but not used when the goto is taken */
-+#if !defined(__FRAMAC__) && !defined(__clang__)
- #pragma GCC diagnostic push
- #pragma GCC diagnostic ignored "-Wjump-misses-init"
-+#endif
- 	if (p) {
- 		if (!rhlist || !(list = rcu_dereference(list->next))) {
- 			p = rcu_dereference(p->next);
-@@ -819,7 +821,12 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+@@ -783,7 +783,12 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
  		}
  
  next:

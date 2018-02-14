@@ -19,7 +19,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/include/asm/processor.h    |  40 +++++++++++
  arch/framac/include/asm/ptrace.h       |  23 ++++++
  arch/framac/include/asm/sigcontext.h   |  10 +++
- arch/framac/include/asm/thread_info.h  |  64 +++++++++++++++++
+ arch/framac/include/asm/thread_info.h  |  61 ++++++++++++++++
  arch/framac/include/asm/uaccess.h      |  22 ++++++
  arch/framac/kernel/Makefile            |  12 ++++
  arch/framac/kernel/asm-offsets.c       |  13 ++++
@@ -38,7 +38,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/delay.c                |  27 +++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 ++++
- 34 files changed, 1033 insertions(+)
+ 34 files changed, 1030 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Makefile
  create mode 100644 arch/framac/extra/Makefile
@@ -807,10 +807,10 @@ index 000000000000..797b8392aa72
 +#endif /* _ASM_FRAMA_C_SIGCONTEXT_H */
 diff --git a/arch/framac/include/asm/thread_info.h b/arch/framac/include/asm/thread_info.h
 new file mode 100644
-index 000000000000..026466edfa4f
+index 000000000000..514801937c95
 --- /dev/null
 +++ b/arch/framac/include/asm/thread_info.h
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,61 @@
 +#ifndef _ASM_FRAMA_C_THREAD_INFO_H
 +#define _ASM_FRAMA_C_THREAD_INFO_H
 +
@@ -858,9 +858,6 @@ index 000000000000..026466edfa4f
 +		.fn = do_no_restart_syscall,	\
 +	},					\
 +}
-+
-+#define init_thread_info	(init_thread_union.thread_info)
-+#define init_stack		(init_thread_union.stack)
 +
 +static inline struct thread_info *current_thread_info(void)
 +{

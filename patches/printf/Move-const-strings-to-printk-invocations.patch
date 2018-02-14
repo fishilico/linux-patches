@@ -42,6 +42,7 @@ This fixes errors like:
  drivers/remoteproc/keystone_remoteproc.c     |   5 +-
  drivers/scsi/esas2r/esas2r_log.c             |   6 +-
  drivers/scsi/fnic/fnic_trace.c               |   5 +-
+ drivers/staging/ipx/af_ipx.c                 |  16 +--
  drivers/tty/n_hdlc.c                         |  22 +---
  drivers/tty/serial/st-asc.c                  |   4 +-
  fs/ext4/super.c                              |   8 +-
@@ -50,12 +51,11 @@ This fixes errors like:
  kernel/power/suspend_test.c                  |  33 ++----
  net/802/psnap.c                              |   5 +-
  net/appletalk/ddp.c                          |   5 +-
- net/core/net-sysfs.c                         |  45 ++++---
+ net/core/net-sysfs.c                         |  49 ++++----
  net/decnet/af_decnet.c                       |   5 +-
- net/ipx/af_ipx.c                             |  16 +--
  net/llc/af_llc.c                             |  13 +--
  security/apparmor/lib.c                      |   6 +-
- 29 files changed, 171 insertions(+), 293 deletions(-)
+ 29 files changed, 173 insertions(+), 295 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 20f25539d572..00574cc2d16a 100644
@@ -285,7 +285,7 @@ index 660492b9becb..2c931d4479f7 100644
  	}
  	of_clk_parent_fill(d->np, d->parent_names, nr_inputs);
 diff --git a/drivers/iommu/omap-iommu-debug.c b/drivers/iommu/omap-iommu-debug.c
-index 505548aafeff..f5fe8e2a979a 100644
+index 50217548c3b8..1eef5fcf0e9c 100644
 --- a/drivers/iommu/omap-iommu-debug.c
 +++ b/drivers/iommu/omap-iommu-debug.c
 @@ -33,9 +33,8 @@ static inline bool is_omap_iommu_detached(struct omap_iommu *obj)
@@ -532,7 +532,7 @@ index 3349670b09de..99a61ba3b070 100644
  				 (dev->driver ? dev->driver->name : "unknown"),
  				 (dev->bus ? dev->bus->name : "unknown"),
 diff --git a/drivers/scsi/fnic/fnic_trace.c b/drivers/scsi/fnic/fnic_trace.c
-index 4826f596cb31..223aca735a7d 100644
+index abddde11982b..d5d06f7331dc 100644
 --- a/drivers/scsi/fnic/fnic_trace.c
 +++ b/drivers/scsi/fnic/fnic_trace.c
 @@ -795,7 +795,7 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
@@ -556,8 +556,53 @@ index 4826f596cb31..223aca735a7d 100644
  		tm.tm_mon + 1, tm.tm_mday, tm.tm_year + 1900,
  		tm.tm_hour, tm.tm_min, tm.tm_sec,
  		tdata->time_stamp.tv_nsec, tdata->host_no,
+diff --git a/drivers/staging/ipx/af_ipx.c b/drivers/staging/ipx/af_ipx.c
+index d21a9d128d3e..02e3d0527364 100644
+--- a/drivers/staging/ipx/af_ipx.c
++++ b/drivers/staging/ipx/af_ipx.c
+@@ -1998,14 +1998,6 @@ static struct notifier_block ipx_dev_notifier = {
+ 
+ static const unsigned char ipx_8022_type = 0xE0;
+ static const unsigned char ipx_snap_id[5] = { 0x0, 0x0, 0x0, 0x81, 0x37 };
+-static const char ipx_EII_err_msg[] __initconst =
+-	KERN_CRIT "IPX: Unable to register with Ethernet II\n";
+-static const char ipx_8023_err_msg[] __initconst =
+-	KERN_CRIT "IPX: Unable to register with 802.3\n";
+-static const char ipx_llc_err_msg[] __initconst =
+-	KERN_CRIT "IPX: Unable to register with 802.2\n";
+-static const char ipx_snap_err_msg[] __initconst =
+-	KERN_CRIT "IPX: Unable to register with SNAP\n";
+ 
+ static int __init ipx_init(void)
+ {
+@@ -2020,21 +2012,21 @@ static int __init ipx_init(void)
+ 	if (pEII_datalink)
+ 		dev_add_pack(&ipx_dix_packet_type);
+ 	else
+-		printk(ipx_EII_err_msg);
++		printk(KERN_CRIT "IPX: Unable to register with Ethernet II\n");
+ 
+ 	p8023_datalink = make_8023_client();
+ 	if (p8023_datalink)
+ 		dev_add_pack(&ipx_8023_packet_type);
+ 	else
+-		printk(ipx_8023_err_msg);
++		printk(KERN_CRIT "IPX: Unable to register with 802.3\n");
+ 
+ 	p8022_datalink = register_8022_client(ipx_8022_type, ipx_rcv);
+ 	if (!p8022_datalink)
+-		printk(ipx_llc_err_msg);
++		printk(KERN_CRIT "IPX: Unable to register with 802.2\n");
+ 
+ 	pSNAP_datalink = register_snap_client(ipx_snap_id, ipx_rcv);
+ 	if (!pSNAP_datalink)
+-		printk(ipx_snap_err_msg);
++		printk(KERN_CRIT "IPX: Unable to register with SNAP\n");
+ 
+ 	register_netdevice_notifier(&ipx_dev_notifier);
+ 	ipx_register_sysctl();
 diff --git a/drivers/tty/n_hdlc.c b/drivers/tty/n_hdlc.c
-index eea7b6cb3cc4..1aa2c65b3812 100644
+index dabb391909aa..73ec6bc053a2 100644
 --- a/drivers/tty/n_hdlc.c
 +++ b/drivers/tty/n_hdlc.c
 @@ -938,13 +938,6 @@ static struct n_hdlc_buf *n_hdlc_buf_get(struct n_hdlc_buf_list *buf_list)
@@ -629,10 +674,10 @@ index c763253514e9..6426e77ed790 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 7c46693a14d7..8299d52dac3b 100644
+index 39bf464c35f1..91508101a270 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1466,9 +1466,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1468,9 +1468,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  }
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
@@ -642,7 +687,7 @@ index 7c46693a14d7..8299d52dac3b 100644
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -1668,7 +1665,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -1670,7 +1667,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -655,7 +700,7 @@ index 7c46693a14d7..8299d52dac3b 100644
  	case Opt_sb:
  		return 1;	/* handled by get_sb_block() */
 diff --git a/fs/nilfs2/sysfs.c b/fs/nilfs2/sysfs.c
-index 490303e3d517..2581e5c1e491 100644
+index 4b25837e7724..f5af19b9f173 100644
 --- a/fs/nilfs2/sysfs.c
 +++ b/fs/nilfs2/sysfs.c
 @@ -131,16 +131,14 @@ nilfs_snapshot_blocks_count_show(struct nilfs_snapshot_attr *attr,
@@ -755,7 +800,7 @@ index 490303e3d517..2581e5c1e491 100644
  }
  
  NILFS_SEGMENTS_RO_ATTR(segments_number);
-@@ -645,41 +637,39 @@ nilfs_segctor_dirty_data_blocks_count_show(struct nilfs_segctor_attr *attr,
+@@ -644,41 +636,39 @@ nilfs_segctor_dirty_data_blocks_count_show(struct nilfs_segctor_attr *attr,
  	return snprintf(buf, PAGE_SIZE, "%u\n", ndirtyblks);
  }
  
@@ -826,7 +871,7 @@ index 490303e3d517..2581e5c1e491 100644
  }
  
  NILFS_SEGCTOR_RO_ATTR(last_pseg_block);
-@@ -807,24 +797,22 @@ nilfs_superblock_sb_update_frequency_store(struct nilfs_superblock_attr *attr,
+@@ -806,24 +796,22 @@ nilfs_superblock_sb_update_frequency_store(struct nilfs_superblock_attr *attr,
  	return count;
  }
  
@@ -863,7 +908,7 @@ index 490303e3d517..2581e5c1e491 100644
  }
  
  NILFS_SUPERBLOCK_RO_ATTR(sb_write_time);
-@@ -914,21 +902,19 @@ ssize_t nilfs_dev_volume_name_show(struct nilfs_dev_attr *attr,
+@@ -913,21 +901,19 @@ ssize_t nilfs_dev_volume_name_show(struct nilfs_dev_attr *attr,
  			 sbp[0]->s_volume_name);
  }
  
@@ -894,7 +939,7 @@ index 490303e3d517..2581e5c1e491 100644
  }
  
  NILFS_DEV_RO_ATTR(revision);
-@@ -1078,16 +1064,14 @@ static ssize_t nilfs_feature_revision_show(struct kobject *kobj,
+@@ -1077,16 +1063,14 @@ static ssize_t nilfs_feature_revision_show(struct kobject *kobj,
  			NILFS_CURRENT_REV, NILFS_MINOR_REV);
  }
  
@@ -1108,7 +1153,7 @@ index 03a9fc0771c0..2015a1bb94a1 100644
  	dev_add_pack(&ltalk_packet_type);
  	dev_add_pack(&ppptalk_packet_type);
 diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 799b75268291..88111d10aa3a 100644
+index 60a5ad2c33ee..d42aac5441f3 100644
 --- a/net/core/net-sysfs.c
 +++ b/net/core/net-sysfs.c
 @@ -30,11 +30,6 @@
@@ -1192,10 +1237,28 @@ index 799b75268291..88111d10aa3a 100644
  
 -	return sprintf(buf, fmt_dec,
 +	return sprintf(buf, "%d\n",
- 		       atomic_read(&netdev->carrier_changes));
+ 		       atomic_read(&netdev->carrier_up_count) +
+ 		       atomic_read(&netdev->carrier_down_count));
  }
- static DEVICE_ATTR_RO(carrier_changes);
-@@ -311,7 +306,7 @@ static ssize_t mtu_store(struct device *dev, struct device_attribute *attr,
+@@ -306,7 +301,7 @@ static ssize_t carrier_up_count_show(struct device *dev,
+ {
+ 	struct net_device *netdev = to_net_dev(dev);
+ 
+-	return sprintf(buf, fmt_dec, atomic_read(&netdev->carrier_up_count));
++	return sprintf(buf, "%d\n", atomic_read(&netdev->carrier_up_count));
+ }
+ static DEVICE_ATTR_RO(carrier_up_count);
+ 
+@@ -316,7 +311,7 @@ static ssize_t carrier_down_count_show(struct device *dev,
+ {
+ 	struct net_device *netdev = to_net_dev(dev);
+ 
+-	return sprintf(buf, fmt_dec, atomic_read(&netdev->carrier_down_count));
++	return sprintf(buf, "%d\n", atomic_read(&netdev->carrier_down_count));
+ }
+ static DEVICE_ATTR_RO(carrier_down_count);
+ 
+@@ -332,7 +327,7 @@ static ssize_t mtu_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_mtu);
  }
@@ -1204,25 +1267,25 @@ index 799b75268291..88111d10aa3a 100644
  
  static int change_flags(struct net_device *dev, unsigned long new_flags)
  {
-@@ -323,7 +318,7 @@ static ssize_t flags_store(struct device *dev, struct device_attribute *attr,
+@@ -344,7 +339,7 @@ static ssize_t flags_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_flags);
  }
 -NETDEVICE_SHOW_RW(flags, fmt_hex);
 +NETDEVICE_SHOW_RW(flags, "%#x\n");
  
- static int change_tx_queue_len(struct net_device *dev, unsigned long new_len)
- {
-@@ -357,7 +352,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
+ static ssize_t tx_queue_len_store(struct device *dev,
+ 				  struct device_attribute *attr,
+@@ -355,7 +350,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
  
- 	return netdev_store(dev, attr, buf, len, change_tx_queue_len);
+ 	return netdev_store(dev, attr, buf, len, dev_change_tx_queue_len);
  }
 -NETDEVICE_SHOW_RW(tx_queue_len, fmt_dec);
 +NETDEVICE_SHOW_RW(tx_queue_len, "%d\n");
  
  static int change_gro_flush_timeout(struct net_device *dev, unsigned long val)
  {
-@@ -374,7 +369,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
+@@ -372,7 +367,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, change_gro_flush_timeout);
  }
@@ -1231,7 +1294,7 @@ index 799b75268291..88111d10aa3a 100644
  
  static ssize_t ifalias_store(struct device *dev, struct device_attribute *attr,
  			     const char *buf, size_t len)
-@@ -432,7 +427,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
+@@ -430,7 +425,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_group);
  }
@@ -1240,7 +1303,7 @@ index 799b75268291..88111d10aa3a 100644
  static DEVICE_ATTR(netdev_group, S_IRUGO | S_IWUSR, group_show, group_store);
  
  static int change_proto_down(struct net_device *dev, unsigned long proto_down)
-@@ -446,7 +441,7 @@ static ssize_t proto_down_store(struct device *dev,
+@@ -444,7 +439,7 @@ static ssize_t proto_down_store(struct device *dev,
  {
  	return netdev_store(dev, attr, buf, len, change_proto_down);
  }
@@ -1259,10 +1322,10 @@ index 799b75268291..88111d10aa3a 100644
  	read_unlock(&dev_base_lock);
  	return ret;
 diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
-index 518cea17b811..226d3f16f106 100644
+index 91dd09f79808..784ad1a8e459 100644
 --- a/net/decnet/af_decnet.c
 +++ b/net/decnet/af_decnet.c
-@@ -2360,14 +2360,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");
+@@ -2359,14 +2359,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");
  MODULE_LICENSE("GPL");
  MODULE_ALIAS_NETPROTO(PF_DECnet);
  
@@ -1278,51 +1341,6 @@ index 518cea17b811..226d3f16f106 100644
  
  	rc = proto_register(&dn_proto, 1);
  	if (rc != 0)
-diff --git a/net/ipx/af_ipx.c b/net/ipx/af_ipx.c
-index d21a9d128d3e..02e3d0527364 100644
---- a/net/ipx/af_ipx.c
-+++ b/net/ipx/af_ipx.c
-@@ -1998,14 +1998,6 @@ static struct notifier_block ipx_dev_notifier = {
- 
- static const unsigned char ipx_8022_type = 0xE0;
- static const unsigned char ipx_snap_id[5] = { 0x0, 0x0, 0x0, 0x81, 0x37 };
--static const char ipx_EII_err_msg[] __initconst =
--	KERN_CRIT "IPX: Unable to register with Ethernet II\n";
--static const char ipx_8023_err_msg[] __initconst =
--	KERN_CRIT "IPX: Unable to register with 802.3\n";
--static const char ipx_llc_err_msg[] __initconst =
--	KERN_CRIT "IPX: Unable to register with 802.2\n";
--static const char ipx_snap_err_msg[] __initconst =
--	KERN_CRIT "IPX: Unable to register with SNAP\n";
- 
- static int __init ipx_init(void)
- {
-@@ -2020,21 +2012,21 @@ static int __init ipx_init(void)
- 	if (pEII_datalink)
- 		dev_add_pack(&ipx_dix_packet_type);
- 	else
--		printk(ipx_EII_err_msg);
-+		printk(KERN_CRIT "IPX: Unable to register with Ethernet II\n");
- 
- 	p8023_datalink = make_8023_client();
- 	if (p8023_datalink)
- 		dev_add_pack(&ipx_8023_packet_type);
- 	else
--		printk(ipx_8023_err_msg);
-+		printk(KERN_CRIT "IPX: Unable to register with 802.3\n");
- 
- 	p8022_datalink = register_8022_client(ipx_8022_type, ipx_rcv);
- 	if (!p8022_datalink)
--		printk(ipx_llc_err_msg);
-+		printk(KERN_CRIT "IPX: Unable to register with 802.2\n");
- 
- 	pSNAP_datalink = register_snap_client(ipx_snap_id, ipx_rcv);
- 	if (!pSNAP_datalink)
--		printk(ipx_snap_err_msg);
-+		printk(KERN_CRIT "IPX: Unable to register with SNAP\n");
- 
- 	register_netdevice_notifier(&ipx_dev_notifier);
- 	ipx_register_sysctl();
 diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
 index c38d16f22d2a..02c3fe750292 100644
 --- a/net/llc/af_llc.c

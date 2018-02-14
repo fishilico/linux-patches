@@ -5,37 +5,35 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  reported by clang
 
 ---
- arch/x86/kernel/hw_breakpoint.c                           | 1 +
- drivers/acpi/sysfs.c                                      | 2 ++
- drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c     | 4 ++++
- drivers/gpu/drm/i915/i915_gem_request.c                   | 2 +-
- drivers/gpu/drm/qxl/qxl_draw.c                            | 2 +-
- drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c                   | 1 +
- drivers/iio/common/ssp_sensors/ssp_iio.c                  | 3 ++-
- drivers/md/bcache/alloc.c                                 | 2 +-
- drivers/media/radio/radio-si476x.c                        | 6 ++++--
- drivers/media/tuners/tda8290.c                            | 2 ++
- drivers/misc/qcom-coincell.c                              | 4 ++++
- drivers/misc/sgi-xp/xpc_partition.c                       | 2 +-
- drivers/net/ethernet/sun/niu.c                            | 1 +
- drivers/net/sb1000.c                                      | 2 +-
- drivers/net/wireless/broadcom/b43/phy_lp.c                | 2 +-
- drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c | 4 +++-
- drivers/pwm/pwm-img.c                                     | 2 +-
- drivers/scsi/qla2xxx/qla_mr.c                             | 1 +
- drivers/scsi/qla4xxx/ql4_os.c                             | 2 +-
- drivers/usb/atm/cxacru.c                                  | 3 ++-
- fs/btrfs/uuid-tree.c                                      | 3 ++-
- fs/ocfs2/localalloc.c                                     | 1 +
- fs/xfs/libxfs/xfs_dir2_node.c                             | 6 ++++--
- fs/xfs/libxfs/xfs_ialloc.c                                | 2 +-
- fs/xfs/xfs_log_recover.c                                  | 2 +-
- include/linux/sunrpc/cache.h                              | 2 +-
- mm/filemap.c                                              | 2 +-
- net/mac80211/mlme.c                                       | 2 +-
- net/mac80211/tx.c                                         | 2 +-
- net/tipc/socket.c                                         | 3 ++-
- 30 files changed, 50 insertions(+), 23 deletions(-)
+ arch/x86/kernel/hw_breakpoint.c                       | 1 +
+ drivers/acpi/sysfs.c                                  | 2 ++
+ drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c | 4 ++++
+ drivers/gpu/drm/i915/i915_gem_request.c               | 2 +-
+ drivers/gpu/drm/qxl/qxl_draw.c                        | 2 +-
+ drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c               | 1 +
+ drivers/iio/common/ssp_sensors/ssp_iio.c              | 3 ++-
+ drivers/md/bcache/alloc.c                             | 2 +-
+ drivers/media/tuners/tda8290.c                        | 2 ++
+ drivers/misc/qcom-coincell.c                          | 4 ++++
+ drivers/misc/sgi-xp/xpc_partition.c                   | 2 +-
+ drivers/net/ethernet/sun/niu.c                        | 1 +
+ drivers/net/sb1000.c                                  | 2 +-
+ drivers/net/wireless/broadcom/b43/phy_lp.c            | 2 +-
+ drivers/pwm/pwm-img.c                                 | 2 +-
+ drivers/scsi/qla2xxx/qla_mr.c                         | 1 +
+ drivers/scsi/qla4xxx/ql4_os.c                         | 2 +-
+ drivers/usb/atm/cxacru.c                              | 3 ++-
+ fs/btrfs/uuid-tree.c                                  | 3 ++-
+ fs/ocfs2/localalloc.c                                 | 1 +
+ fs/xfs/libxfs/xfs_dir2_node.c                         | 6 ++++--
+ fs/xfs/libxfs/xfs_ialloc.c                            | 2 +-
+ fs/xfs/xfs_log_recover.c                              | 2 +-
+ include/linux/sunrpc/cache.h                          | 2 +-
+ mm/filemap.c                                          | 2 +-
+ net/mac80211/mlme.c                                   | 2 +-
+ net/mac80211/tx.c                                     | 2 +-
+ net/tipc/socket.c                                     | 3 ++-
+ 28 files changed, 43 insertions(+), 20 deletions(-)
 
 diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
 index 8771766d46b6..df760ec0e44e 100644
@@ -50,7 +48,7 @@ index 8771766d46b6..df760ec0e44e 100644
  
  	/*
 diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
-index 06a150bb35bf..c439af7a2634 100644
+index 4fc59c3bc673..5f79db5f5fd2 100644
 --- a/drivers/acpi/sysfs.c
 +++ b/drivers/acpi/sysfs.c
 @@ -666,6 +666,8 @@ static int get_status(u32 index, acpi_event_status *status,
@@ -63,7 +61,7 @@ index 06a150bb35bf..c439af7a2634 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
-index afae32ee2b0d..85f194e84f44 100644
+index c3e7e34535e8..6526bdefa84c 100644
 --- a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 +++ b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 @@ -1073,6 +1073,10 @@ static int init_overdrive_limits(struct pp_hwmgr *hwmgr,
@@ -78,10 +76,10 @@ index afae32ee2b0d..85f194e84f44 100644
  	if (hwmgr->platform_descriptor.overdriveLimit.engineClock > 0
  		&& hwmgr->platform_descriptor.overdriveLimit.memoryClock > 0
 diff --git a/drivers/gpu/drm/i915/i915_gem_request.c b/drivers/gpu/drm/i915/i915_gem_request.c
-index d140fcf5c6a3..114873da57b1 100644
+index e09d18df8b7f..bb84cf2d21ef 100644
 --- a/drivers/gpu/drm/i915/i915_gem_request.c
 +++ b/drivers/gpu/drm/i915/i915_gem_request.c
-@@ -1029,7 +1029,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
+@@ -1073,7 +1073,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
@@ -104,10 +102,10 @@ index 4d8681e84e68..18f862ad3e05 100644
  	struct qxl_rect *rects;
  	int stride = qxl_fb->base.pitches[0];
 diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-index 87e8af5776a3..29ede3cba4f8 100644
+index c9d5cc237124..d7f02160e21b 100644
 --- a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
 +++ b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-@@ -4218,6 +4218,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
+@@ -4217,6 +4217,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
  		goto out_err;
  
  	vmw_query_bo_switch_commit(dev_priv, sw_context);
@@ -130,10 +128,10 @@ index 645f2e3975db..e5aa6d1abcf5 100644
  	return iio_push_to_buffers_with_timestamp(indio_dev, spd->buffer,
  						  calculated_time);
 diff --git a/drivers/md/bcache/alloc.c b/drivers/md/bcache/alloc.c
-index a0cc1bc6d884..c5db08b0d1d0 100644
+index 458e1d38577d..02cf3080fafd 100644
 --- a/drivers/md/bcache/alloc.c
 +++ b/drivers/md/bcache/alloc.c
-@@ -324,7 +324,7 @@ static int bch_allocator_thread(void *arg)
+@@ -326,7 +326,7 @@ static int bch_allocator_thread(void *arg)
  		 * the free list:
  		 */
  		while (!fifo_empty(&ca->free_inc)) {
@@ -142,32 +140,8 @@ index a0cc1bc6d884..c5db08b0d1d0 100644
  
  			fifo_pop(&ca->free_inc, bucket);
  
-diff --git a/drivers/media/radio/radio-si476x.c b/drivers/media/radio/radio-si476x.c
-index 540ac887a63c..a79ce358b331 100644
---- a/drivers/media/radio/radio-si476x.c
-+++ b/drivers/media/radio/radio-si476x.c
-@@ -779,7 +779,8 @@ static int si476x_radio_s_hw_freq_seek(struct file *file, void *priv,
- 			rangelow = si476x_to_v4l2(radio->core, rangelow);
- 		else
- 			goto unlock;
--	}
-+	} else
-+		rangelow = 0; /* BUG! maybe use seek->rangelow? */
- 	if (!seek->rangehigh) {
- 		err = regmap_read(radio->core->regmap,
- 				  SI476X_PROP_SEEK_BAND_TOP,
-@@ -788,7 +789,8 @@ static int si476x_radio_s_hw_freq_seek(struct file *file, void *priv,
- 			rangehigh = si476x_to_v4l2(radio->core, rangehigh);
- 		else
- 			goto unlock;
--	}
-+	} else
-+		rangehigh = 0; /* BUG! Same as above... */
- 
- 	if (rangelow > rangehigh) {
- 		err = -EINVAL;
 diff --git a/drivers/media/tuners/tda8290.c b/drivers/media/tuners/tda8290.c
-index a59c567c55d6..3e3bd78a0676 100644
+index 9f1f1d2b8bdc..3258a43b5da2 100644
 --- a/drivers/media/tuners/tda8290.c
 +++ b/drivers/media/tuners/tda8290.c
 @@ -240,6 +240,8 @@ static void tda8290_set_params(struct dvb_frontend *fe,
@@ -208,10 +182,10 @@ index 6956f7e7d439..b5ddd77d01a9 100644
  	enum xp_retval (*get_partition_rsvd_page_pa)
  		(void *, u64 *, unsigned long *, size_t *) =
 diff --git a/drivers/net/ethernet/sun/niu.c b/drivers/net/ethernet/sun/niu.c
-index 06001bacbe0f..ba321dc17b85 100644
+index 8dd545fed30d..6f951c348617 100644
 --- a/drivers/net/ethernet/sun/niu.c
 +++ b/drivers/net/ethernet/sun/niu.c
-@@ -7480,6 +7480,7 @@ static int niu_add_ethtool_tcam_entry(struct niu *np,
+@@ -7481,6 +7481,7 @@ static int niu_add_ethtool_tcam_entry(struct niu *np,
  					class = CLASS_CODE_USER_PROG4;
  					break;
  				default:
@@ -245,22 +219,6 @@ index 6922cbb99a04..7f71ede46738 100644
  	int old_txpctl, old_afe_ovr, old_rf, old_bbmult;
  
  	lpphy_read_tx_pctl_mode_from_hardware(dev);
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-index cd587325e286..8661313dcc9f 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-@@ -424,8 +424,10 @@ u32 brcmf_sdiod_regrl(struct brcmf_sdio_dev *sdiodev, u32 addr, int *ret)
- 
- 	brcmf_dbg(SDIO, "addr:0x%08x\n", addr);
- 	retval = brcmf_sdiod_addrprep(sdiodev, sizeof(data), &addr);
--	if (retval)
-+	if (retval) {
-+		data = 0; /* BUG? */
- 		goto done;
-+	}
- 	retval = brcmf_sdiod_regrw_helper(sdiodev, addr, sizeof(data), &data,
- 					  false);
- 	brcmf_dbg(SDIO, "data:0x%08x\n", data);
 diff --git a/drivers/pwm/pwm-img.c b/drivers/pwm/pwm-img.c
 index 815f5333bb8f..cf50604ba973 100644
 --- a/drivers/pwm/pwm-img.c
@@ -287,10 +245,10 @@ index d5da3981cefe..0f07dda860f5 100644
  		bsg_job = sp->u.bsg_job;
  		bsg_reply = bsg_job->reply;
 diff --git a/drivers/scsi/qla4xxx/ql4_os.c b/drivers/scsi/qla4xxx/ql4_os.c
-index 2b8a8ce2a431..bb888fe73ad3 100644
+index 82e889bbe0ed..91d489fd974b 100644
 --- a/drivers/scsi/qla4xxx/ql4_os.c
 +++ b/drivers/scsi/qla4xxx/ql4_os.c
-@@ -5873,7 +5873,7 @@ static void qla4xxx_boot_release(void *data)
+@@ -5871,7 +5871,7 @@ static void qla4xxx_boot_release(void *data)
  
  static int get_fw_boot_info(struct scsi_qla_host *ha, uint16_t ddb_index[])
  {
@@ -300,10 +258,10 @@ index 2b8a8ce2a431..bb888fe73ad3 100644
  	uint32_t offset;
  	uint16_t func_num;
 diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
-index df872d12bbd6..04f340bc38a7 100644
+index c8e633594479..c99968bf2df8 100644
 --- a/drivers/usb/atm/cxacru.c
 +++ b/drivers/usb/atm/cxacru.c
-@@ -1106,7 +1106,8 @@ static int cxacru_heavy_init(struct usbatm_data *usbatm_instance,
+@@ -1104,7 +1104,8 @@ static int cxacru_heavy_init(struct usbatm_data *usbatm_instance,
  			release_firmware(fw);
  			return ret;
  		}
@@ -340,10 +298,10 @@ index fe0d1f9571bb..202b795867fa 100644
  	}
  
 diff --git a/fs/xfs/libxfs/xfs_dir2_node.c b/fs/xfs/libxfs/xfs_dir2_node.c
-index 682e2bf370c7..a580f9b03dcb 100644
+index 239d97a64296..795d9db893c4 100644
 --- a/fs/xfs/libxfs/xfs_dir2_node.c
 +++ b/fs/xfs/libxfs/xfs_dir2_node.c
-@@ -428,12 +428,12 @@ xfs_dir2_leafn_add(
+@@ -441,12 +441,12 @@ xfs_dir2_leafn_add(
  {
  	int			compact;	/* compacting stale leaves */
  	xfs_inode_t		*dp;		/* incore directory inode */
@@ -358,7 +316,7 @@ index 682e2bf370c7..a580f9b03dcb 100644
  	struct xfs_dir3_icleaf_hdr leafhdr;
  	struct xfs_dir2_leaf_entry *ents;
  
-@@ -484,6 +484,8 @@ xfs_dir2_leafn_add(
+@@ -497,6 +497,8 @@ xfs_dir2_leafn_add(
  		 */
  		lfloglow = leafhdr.count;
  		lfloghigh = -1;
@@ -368,7 +326,7 @@ index 682e2bf370c7..a580f9b03dcb 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index 3b57ef0f2f76..50757639745b 100644
+index 0e2cf5f0be1f..dffedba4c1c6 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
 @@ -2033,7 +2033,7 @@ xfs_difree_finobt(
@@ -381,7 +339,7 @@ index 3b57ef0f2f76..50757639745b 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 0e58d4b2b96d..b5076f7d0c12 100644
+index 05e3395d698f..7b8ffa8de5c9 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
 @@ -1085,7 +1085,7 @@ xlog_verify_tail(
@@ -407,10 +365,10 @@ index 40d2822f0e2f..f2eb1bcbd47f 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/mm/filemap.c b/mm/filemap.c
-index ee83baaf855d..b65331f8943d 100644
+index 693f62212a59..eba6220773c1 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -829,7 +829,7 @@ static int __add_to_page_cache_locked(struct page *page,
+@@ -828,7 +828,7 @@ static int __add_to_page_cache_locked(struct page *page,
  				      void **shadowp)
  {
  	int huge = PageHuge(page);
@@ -420,10 +378,10 @@ index ee83baaf855d..b65331f8943d 100644
  
  	VM_BUG_ON_PAGE(!PageLocked(page), page);
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index c244691deab9..50a6fdd0303a 100644
+index 39b660b9a908..a736798fa5fa 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1303,7 +1303,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
+@@ -1304,7 +1304,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
  {
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;
@@ -433,7 +391,7 @@ index c244691deab9..50a6fdd0303a 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index 3160954fc406..96bb4f81e6a8 100644
+index 25904af38839..3ac4f192d33c 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
 @@ -2399,7 +2399,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
@@ -446,10 +404,10 @@ index 3160954fc406..96bb4f81e6a8 100644
  	enum nl80211_band band;
  	int ret;
 diff --git a/net/tipc/socket.c b/net/tipc/socket.c
-index 3b4084480377..787740ddb335 100644
+index b0323ec7971e..22bc6e6e6533 100644
 --- a/net/tipc/socket.c
 +++ b/net/tipc/socket.c
-@@ -1336,7 +1336,8 @@ static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dlen)
+@@ -1351,7 +1351,8 @@ static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dlen)
  		msg_set_destnode(hdr, dnode);
  		msg_set_destport(hdr, dest->addr.id.ref);
  		msg_set_hdr_sz(hdr, BASIC_H_SIZE);

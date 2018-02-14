@@ -5,10 +5,6 @@ Subject: [PATCH] {MAYBE UPS} Eradicate -Wself-assign
 
 ---
  drivers/media/dvb-frontends/dib7000p.c              |  2 --
- drivers/media/dvb-frontends/drxd_hard.c             |  3 ---
- drivers/media/dvb-frontends/stb0899_algo.c          |  2 +-
- drivers/media/dvb-frontends/stv0367.c               |  2 +-
- drivers/media/dvb-frontends/tda18271c2dd.c          |  1 -
  drivers/media/pci/bt8xx/bttv-driver.c               |  2 +-
  drivers/net/ethernet/brocade/bna/bna_enet.c         |  4 ++--
  drivers/net/fddi/skfp/pcmplc.c                      |  4 +---
@@ -17,13 +13,11 @@ Subject: [PATCH] {MAYBE UPS} Eradicate -Wself-assign
  drivers/scsi/bfa/bfa_fcbuild.c                      | 18 +++++-------------
  drivers/scsi/qla2xxx/qla_mbx.c                      |  3 +--
  drivers/staging/irda/drivers/via-ircc.c             |  2 --
- drivers/usb/serial/iuu_phoenix.c                    |  1 -
- drivers/video/fbdev/vga16fb.c                       |  1 -
  fs/ubifs/scan.c                                     |  1 -
- 16 files changed, 13 insertions(+), 38 deletions(-)
+ 10 files changed, 11 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/media/dvb-frontends/dib7000p.c b/drivers/media/dvb-frontends/dib7000p.c
-index aec615262c7b..7ae62802e9f0 100644
+index 3917f6080408..b3b9e4d941ab 100644
 --- a/drivers/media/dvb-frontends/dib7000p.c
 +++ b/drivers/media/dvb-frontends/dib7000p.c
 @@ -1871,8 +1871,6 @@ static u32 dib7000p_get_time_us(struct dvb_frontend *demod)
@@ -35,74 +29,8 @@ index aec615262c7b..7ae62802e9f0 100644
  	denom = bits_per_symbol * rate_num * fft_div * 384;
  
  	/* If calculus gets wrong, wait for 1s for the next stats */
-diff --git a/drivers/media/dvb-frontends/drxd_hard.c b/drivers/media/dvb-frontends/drxd_hard.c
-index 0696bc62dcc9..ff18a0f7dc41 100644
---- a/drivers/media/dvb-frontends/drxd_hard.c
-+++ b/drivers/media/dvb-frontends/drxd_hard.c
-@@ -2140,7 +2140,6 @@ static int DRX_Start(struct drxd_state *state, s32 off)
- 			}
- 			break;
- 		}
--		status = status;
- 		if (status < 0)
- 			break;
- 
-@@ -2251,7 +2250,6 @@ static int DRX_Start(struct drxd_state *state, s32 off)
- 			break;
- 
- 		}
--		status = status;
- 		if (status < 0)
- 			break;
- 
-@@ -2318,7 +2316,6 @@ static int DRX_Start(struct drxd_state *state, s32 off)
- 			}
- 			break;
- 		}
--		status = status;
- 		if (status < 0)
- 			break;
- 
-diff --git a/drivers/media/dvb-frontends/stb0899_algo.c b/drivers/media/dvb-frontends/stb0899_algo.c
-index 3012f196e9bd..1722b2548016 100644
---- a/drivers/media/dvb-frontends/stb0899_algo.c
-+++ b/drivers/media/dvb-frontends/stb0899_algo.c
-@@ -926,7 +926,7 @@ static void stb0899_dvbs2_set_btr_loopbw(struct stb0899_state *state)
- 		wn = (2 * (loopbw_percent * 1000) * 40 * zeta) /wn;  /*wn =wn 10^-8*/
- 
- 		k_indirect = (wn * wn) / K;
--		k_indirect = k_indirect;	  /*kindirect = kindirect 10^-6*/
-+		/*k_indirect = k_indirect;*/	  /*kindirect = kindirect 10^-6*/
- 		k_direct   = (2 * wn * zeta) / K;	/*kDirect = kDirect 10^-2*/
- 		k_direct  *= 100;
- 
-diff --git a/drivers/media/dvb-frontends/stv0367.c b/drivers/media/dvb-frontends/stv0367.c
-index f3529df8211d..1ecd4ea3c27d 100644
---- a/drivers/media/dvb-frontends/stv0367.c
-+++ b/drivers/media/dvb-frontends/stv0367.c
-@@ -1547,7 +1547,7 @@ static int stv0367ter_read_ber(struct dvb_frontend *fe, u32 *ber)
- 	} else if (abc == 0x7) {
- 		if (Errors <= 4) {
- 			temporary = (Errors * 1000000000) / (8 * (1 << 14));
--			temporary =  temporary;
-+			/*temporary =  temporary;*/
- 		} else if (Errors <= 42) {
- 			temporary = (Errors * 100000000) / (8 * (1 << 14));
- 			temporary = temporary * 10;
-diff --git a/drivers/media/dvb-frontends/tda18271c2dd.c b/drivers/media/dvb-frontends/tda18271c2dd.c
-index 2d2778be2d2f..45cd5ba0cf8a 100644
---- a/drivers/media/dvb-frontends/tda18271c2dd.c
-+++ b/drivers/media/dvb-frontends/tda18271c2dd.c
-@@ -674,7 +674,6 @@ static int PowerScan(struct tda_state *state,
- 			Count = 200000;
- 			wait = true;
- 		}
--		status = status;
- 		if (status < 0)
- 			break;
- 		if (CID_Gain >= CID_Target) {
 diff --git a/drivers/media/pci/bt8xx/bttv-driver.c b/drivers/media/pci/bt8xx/bttv-driver.c
-index b366a7e1d976..88a8e492d2a1 100644
+index f697698fe38d..789f349f18a5 100644
 --- a/drivers/media/pci/bt8xx/bttv-driver.c
 +++ b/drivers/media/pci/bt8xx/bttv-driver.c
 @@ -2040,7 +2040,7 @@ limit_scaled_size_lock       (struct bttv_fh *               fh,
@@ -155,7 +83,7 @@ index a9ecf923f63d..9d01785da4b6 100644
  
  
 diff --git a/drivers/net/usb/lan78xx.c b/drivers/net/usb/lan78xx.c
-index ec56ff29aac4..71d906794e0f 100644
+index 60a604cc7647..675c025e6c3d 100644
 --- a/drivers/net/usb/lan78xx.c
 +++ b/drivers/net/usb/lan78xx.c
 @@ -923,7 +923,7 @@ static int lan78xx_read_otp(struct lan78xx_net *dev, u32 offset,
@@ -182,7 +110,7 @@ index 9cff6bc4049c..cf551785eb08 100644
  	}
  }
 diff --git a/drivers/scsi/bfa/bfa_fcbuild.c b/drivers/scsi/bfa/bfa_fcbuild.c
-index b8dadc9cc993..133e82e5befd 100644
+index d3b00a475aeb..50329add261e 100644
 --- a/drivers/scsi/bfa/bfa_fcbuild.c
 +++ b/drivers/scsi/bfa/bfa_fcbuild.c
 @@ -191,13 +191,11 @@ fc_els_rsp_build(struct fchs_s *fchs, u32 d_id, u32 s_id, __be16 ox_id)
@@ -259,10 +187,10 @@ index b8dadc9cc993..133e82e5befd 100644
  		return FC_PARSE_FAILURE;
  
 diff --git a/drivers/scsi/qla2xxx/qla_mbx.c b/drivers/scsi/qla2xxx/qla_mbx.c
-index cb717d47339f..c3cfb8266c8f 100644
+index 7397aeddd96c..d5c055cab5e9 100644
 --- a/drivers/scsi/qla2xxx/qla_mbx.c
 +++ b/drivers/scsi/qla2xxx/qla_mbx.c
-@@ -1414,7 +1414,7 @@ qla2x00_abort_command(srb_t *sp)
+@@ -1415,7 +1415,7 @@ qla2x00_abort_command(srb_t *sp)
  }
  
  int
@@ -271,7 +199,7 @@ index cb717d47339f..c3cfb8266c8f 100644
  {
  	int rval, rval2;
  	mbx_cmd_t  mc;
-@@ -1423,7 +1423,6 @@ qla2x00_abort_target(struct fc_port *fcport, uint64_t l, int tag)
+@@ -1424,7 +1424,6 @@ qla2x00_abort_target(struct fc_port *fcport, uint64_t l, int tag)
  	struct req_que *req;
  	struct rsp_que *rsp;
  
@@ -299,30 +227,6 @@ index ca4442a9d631..7f8cf6ba3a14 100644
  
  	pr_debug("%s(): change_dongle_speed to %d for 0x%x, %d\n",
  		 __func__, speed, iobase, dongle_id);
-diff --git a/drivers/usb/serial/iuu_phoenix.c b/drivers/usb/serial/iuu_phoenix.c
-index 397a8012ffa3..62c91e360baf 100644
---- a/drivers/usb/serial/iuu_phoenix.c
-+++ b/drivers/usb/serial/iuu_phoenix.c
-@@ -472,7 +472,6 @@ static int iuu_clk(struct usb_serial_port *port, int dwFrq)
- 				}
- 	}
- 	P2 = ((P - PO) / 2) - 4;
--	DIV = DIV;
- 	PUMP = 0x04;
- 	PBmsb = (P2 >> 8 & 0x03);
- 	PBlsb = P2 & 0xFF;
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index 5f0690c8fc93..2c6a576ed84c 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -1055,7 +1055,6 @@ static void vga16fb_copyarea(struct fb_info *info, const struct fb_copyarea *are
- 	case FB_TYPE_VGA_PLANES:
- 		if (info->fix.type_aux == FB_AUX_VGA_PLANES_VGA4) {
- 			width = width/8;
--			height = height;
- 			line_ofs = info->fix.line_length - width;
- 
- 			setmode(1);
 diff --git a/fs/ubifs/scan.c b/fs/ubifs/scan.c
 index aab87340d3de..16f03d9929e5 100644
 --- a/fs/ubifs/scan.c

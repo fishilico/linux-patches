@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 4 Feb 2018 22:12:48 +0100
+Subject: [PATCH] {BUG in 4.16-rc1} net/ethernet/broadcom: initialize len
+ before using it
+
+clang reports:
+
+    drivers/net/ethernet/broadcom/bnxt/bnxt.c:1562:6: error: variable
+    'len' is used uninitialized whenever 'if' condition is true
+    [-Werror,-Wsometimes-uninitialized]
+            if (rxcmp1->rx_cmp_cfa_code_errors_v2 & RX_CMP_L2_ERRORS) {
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/net/ethernet/broadcom/bnxt/bnxt.c:1653:19: note:
+    uninitialized use occurs here
+            cpr->rx_bytes += len;
+                             ^~~
+    drivers/net/ethernet/broadcom/bnxt/bnxt.c:1562:2: note: remove the
+    'if' if its condition is always false
+            if (rxcmp1->rx_cmp_cfa_code_errors_v2 & RX_CMP_L2_ERRORS) {
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/net/ethernet/broadcom/bnxt/bnxt.c:1490:18: note: initialize
+    the variable 'len' to silence this warning
+            unsigned int len;
+                            ^
+                             = 0
+---
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt.c b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+index 1500243b9886..6dd9d8240cf2 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt.c
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+@@ -1565,6 +1565,7 @@ static int bnxt_rx_pkt(struct bnxt *bp, struct bnxt_napi *bnapi, u32 *raw_cons,
+ 			bnxt_reuse_rx_agg_bufs(bnapi, cp_cons, agg_bufs);
+ 
+ 		rc = -EIO;
++		len = 0;
+ 		goto next_rx;
+ 	}
+ 
+-- 

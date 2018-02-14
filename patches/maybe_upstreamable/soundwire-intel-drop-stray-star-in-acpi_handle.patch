@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 4 Feb 2018 16:52:20 +0100
+Subject: [PATCH] {MAYBE UPS} soundwire/intel: drop stray star in acpi_handle
+ arg
+
+Found with deref checker plugin
+---
+ drivers/soundwire/intel_init.c      | 2 +-
+ include/linux/soundwire/sdw_intel.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/soundwire/intel_init.c b/drivers/soundwire/intel_init.c
+index 6f2bb99526f2..78341bfd2db3 100644
+--- a/drivers/soundwire/intel_init.c
++++ b/drivers/soundwire/intel_init.c
+@@ -164,7 +164,7 @@ static acpi_status sdw_intel_acpi_cb(acpi_handle handle, u32 level,
+  * This scans the namespace and creates SoundWire link controller devices
+  * based on the info queried.
+  */
+-void *sdw_intel_init(acpi_handle *parent_handle, struct sdw_intel_res *res)
++void *sdw_intel_init(acpi_handle parent_handle, struct sdw_intel_res *res)
+ {
+ 	acpi_status status;
+ 
+diff --git a/include/linux/soundwire/sdw_intel.h b/include/linux/soundwire/sdw_intel.h
+index 4b37528f592d..e1964ab028d8 100644
+--- a/include/linux/soundwire/sdw_intel.h
++++ b/include/linux/soundwire/sdw_intel.h
+@@ -18,7 +18,7 @@ struct sdw_intel_res {
+ 	struct device *parent;
+ };
+ 
+-void *sdw_intel_init(acpi_handle *parent_handle, struct sdw_intel_res *res);
++void *sdw_intel_init(acpi_handle parent_handle, struct sdw_intel_res *res);
+ void sdw_intel_exit(void *arg);
+ 
+ #endif
+-- 

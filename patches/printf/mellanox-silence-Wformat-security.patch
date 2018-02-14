@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 7 Feb 2018 21:03:00 +0100
+Subject: [PATCH] {PRINTF} mellanox: silence -Wformat-security
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc 7.2.1 reported:
+
+    drivers/platform/mellanox/mlxreg-hotplug.c: In function
+    ‘mlxreg_hotplug_attr_init’:
+    drivers/platform/mellanox/mlxreg-hotplug.c:197:13: error: format not
+    a string literal and no format arguments [-Werror=format-security]
+                 data->label);
+                 ^~~~
+---
+ drivers/platform/mellanox/mlxreg-hotplug.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/platform/mellanox/mlxreg-hotplug.c b/drivers/platform/mellanox/mlxreg-hotplug.c
+index 313cf8ad77bf..f3497bd6e875 100644
+--- a/drivers/platform/mellanox/mlxreg-hotplug.c
++++ b/drivers/platform/mellanox/mlxreg-hotplug.c
+@@ -194,7 +194,7 @@ static int mlxreg_hotplug_attr_init(struct mlxreg_hotplug_priv_data *priv)
+ 			PRIV_ATTR(id) = &PRIV_DEV_ATTR(id).dev_attr.attr;
+ 			PRIV_ATTR(id)->name = devm_kasprintf(&priv->pdev->dev,
+ 							     GFP_KERNEL,
+-							     data->label);
++							     "%s", data->label);
+ 
+ 			if (!PRIV_ATTR(id)->name) {
+ 				dev_err(priv->dev, "Memory allocation failed for attr %d.\n",
+-- 

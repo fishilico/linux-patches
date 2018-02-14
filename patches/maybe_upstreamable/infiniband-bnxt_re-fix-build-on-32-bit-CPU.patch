@@ -1,0 +1,67 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 5 Feb 2018 21:29:38 +0100
+Subject: [PATCH] {MAYBE UPS} infiniband: bnxt_re: fix build on 32-bit CPU
+
+gcc x86_32 complains about 32-bit pointers casted from/to 64-bit
+integers (-Wint-to-pointer-cast and -Wpointer-to-int-cast) and about
+over-sized left shifts (-Wshift-count-overflow).
+---
+ drivers/infiniband/hw/bnxt_re/bnxt_re.h  | 2 +-
+ drivers/infiniband/hw/bnxt_re/ib_verbs.c | 2 +-
+ drivers/infiniband/hw/bnxt_re/qplib_fp.c | 6 +++---
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/infiniband/hw/bnxt_re/bnxt_re.h b/drivers/infiniband/hw/bnxt_re/bnxt_re.h
+index ca32057e886f..8753dcd02995 100644
+--- a/drivers/infiniband/hw/bnxt_re/bnxt_re.h
++++ b/drivers/infiniband/hw/bnxt_re/bnxt_re.h
+@@ -58,7 +58,7 @@
+ #define BNXT_RE_PAGE_SIZE_1G		BIT(BNXT_RE_PAGE_SHIFT_1G)
+ 
+ #define BNXT_RE_MAX_MR_SIZE_LOW		BIT(BNXT_RE_PAGE_SHIFT_1G)
+-#define BNXT_RE_MAX_MR_SIZE_HIGH	BIT(39)
++#define BNXT_RE_MAX_MR_SIZE_HIGH	BIT_ULL(39)
+ #define BNXT_RE_MAX_MR_SIZE		BNXT_RE_MAX_MR_SIZE_HIGH
+ 
+ #define BNXT_RE_MAX_QPC_COUNT		(64 * 1024)
+diff --git a/drivers/infiniband/hw/bnxt_re/ib_verbs.c b/drivers/infiniband/hw/bnxt_re/ib_verbs.c
+index ae9e9ff54826..56878387c8f9 100644
+--- a/drivers/infiniband/hw/bnxt_re/ib_verbs.c
++++ b/drivers/infiniband/hw/bnxt_re/ib_verbs.c
+@@ -3548,7 +3548,7 @@ struct ib_mr *bnxt_re_reg_user_mr(struct ib_pd *ib_pd, u64 start, u64 length,
+ 	int umem_pgs, page_shift, rc;
+ 
+ 	if (length > BNXT_RE_MAX_MR_SIZE) {
+-		dev_err(rdev_to_dev(rdev), "MR Size: %lld > Max supported:%ld\n",
++		dev_err(rdev_to_dev(rdev), "MR Size: %lld > Max supported:%lld\n",
+ 			length, BNXT_RE_MAX_MR_SIZE);
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+diff --git a/drivers/infiniband/hw/bnxt_re/qplib_fp.c b/drivers/infiniband/hw/bnxt_re/qplib_fp.c
+index 1b0e94697fe3..a0f63bd3a03e 100644
+--- a/drivers/infiniband/hw/bnxt_re/qplib_fp.c
++++ b/drivers/infiniband/hw/bnxt_re/qplib_fp.c
+@@ -330,10 +330,10 @@ static void bnxt_qplib_service_nq(unsigned long data)
+ 			q_handle = le32_to_cpu(nqsrqe->srq_handle_low);
+ 			q_handle |= (u64)le32_to_cpu(nqsrqe->srq_handle_high)
+ 				     << 32;
+-			bnxt_qplib_arm_srq((struct bnxt_qplib_srq *)q_handle,
++			bnxt_qplib_arm_srq((struct bnxt_qplib_srq *)(uintptr_t)q_handle,
+ 					   DBR_DBR_TYPE_SRQ_ARMENA);
+ 			if (!nq->srqn_handler(nq,
+-					      (struct bnxt_qplib_srq *)q_handle,
++					      (struct bnxt_qplib_srq *)(uintptr_t)q_handle,
+ 					      nqsrqe->event))
+ 				num_srqne_processed++;
+ 			else
+@@ -566,7 +566,7 @@ int bnxt_qplib_create_srq(struct bnxt_qplib_res *res,
+ 
+ 	/* Configure the request */
+ 	req.dpi = cpu_to_le32(srq->dpi->dpi);
+-	req.srq_handle = cpu_to_le64(srq);
++	req.srq_handle = cpu_to_le64((uintptr_t)srq);
+ 
+ 	req.srq_size = cpu_to_le16((u16)srq->hwq.max_elements);
+ 	pbl = &srq->hwq.pbl[PBL_LVL_0];
+-- 

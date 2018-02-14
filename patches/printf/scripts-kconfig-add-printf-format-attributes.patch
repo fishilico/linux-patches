@@ -7,22 +7,21 @@ When building with -Wformat-security and -Wsuggest-attribute=format in
 HOSTCFLAGS, gcc complains about several functions misssing a printf
 format attribute. Add them.
 ---
- scripts/kconfig/confdata.c          | 13 ++++++++-----
- scripts/kconfig/lkc.h               |  6 ++++--
- scripts/kconfig/lkc_proto.h         |  2 +-
- scripts/kconfig/lxdialog/dialog.h   |  4 ++--
- scripts/kconfig/mconf.c             |  3 ++-
- scripts/kconfig/menu.c              |  3 ++-
- scripts/kconfig/nconf.c             |  9 ++++++---
- scripts/kconfig/zconf.tab.c_shipped |  6 ++++--
- scripts/kconfig/zconf.y             | 12 ++++++++----
- 9 files changed, 37 insertions(+), 21 deletions(-)
+ scripts/kconfig/confdata.c        | 13 ++++++++-----
+ scripts/kconfig/lkc.h             |  6 ++++--
+ scripts/kconfig/lkc_proto.h       |  2 +-
+ scripts/kconfig/lxdialog/dialog.h |  4 ++--
+ scripts/kconfig/mconf.c           |  3 ++-
+ scripts/kconfig/menu.c            |  3 ++-
+ scripts/kconfig/nconf.c           |  9 ++++++---
+ scripts/kconfig/zconf.y           | 12 ++++++++----
+ 8 files changed, 33 insertions(+), 19 deletions(-)
 
 diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 297b079ae4d9..716c59977992 100644
+index 5c12dc91ef34..abf274039f95 100644
 --- a/scripts/kconfig/confdata.c
 +++ b/scripts/kconfig/confdata.c
-@@ -32,7 +32,8 @@ static int conf_lineno, conf_warnings, conf_unsaved;
+@@ -32,7 +32,8 @@ static int conf_lineno, conf_warnings;
  
  const char conf_defname[] = "arch/$ARCH/defconfig";
  
@@ -61,7 +60,7 @@ index 297b079ae4d9..716c59977992 100644
  	va_list ap;
  
 diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
-index 330c1979882a..f5255001309c 100644
+index cd1f6589f086..b92fed08e26b 100644
 --- a/scripts/kconfig/lkc.h
 +++ b/scripts/kconfig/lkc.h
 @@ -97,7 +97,8 @@ static inline void xfwrite(const void *str, size_t len, size_t count, FILE *out)
@@ -85,7 +84,7 @@ index 330c1979882a..f5255001309c 100644
  
  /* symbol.c */
 diff --git a/scripts/kconfig/lkc_proto.h b/scripts/kconfig/lkc_proto.h
-index 5d86e2dfae59..f70fcc9e9e3b 100644
+index 9dc8abfb1dc3..2ae7776e00b5 100644
 --- a/scripts/kconfig/lkc_proto.h
 +++ b/scripts/kconfig/lkc_proto.h
 @@ -10,7 +10,7 @@ int conf_write(const char *name);
@@ -113,7 +112,7 @@ index fcffd5b41fb0..c74c1368323f 100644
  void item_set_data(void *p);
  void item_set_selected(int val);
 diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
-index 315ce2c7cb9d..5d39f6bed46a 100644
+index c829be8bb19f..85717096178b 100644
 --- a/scripts/kconfig/mconf.c
 +++ b/scripts/kconfig/mconf.c
 @@ -773,7 +773,8 @@ static void show_helptext(const char *title, const char *text)
@@ -127,7 +126,7 @@ index 315ce2c7cb9d..5d39f6bed46a 100644
  	char buf[PATH_MAX+1];
  
 diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
-index e9357931b47d..74cba1d354ab 100644
+index 99222855544c..1902ebf9e079 100644
 --- a/scripts/kconfig/menu.c
 +++ b/scripts/kconfig/menu.c
 @@ -28,7 +28,8 @@ void menu_warn(struct menu *menu, const char *fmt, ...)
@@ -174,48 +173,24 @@ index 003114779815..274ff18c8cf6 100644
  {
  	char buf[1024];
  
-diff --git a/scripts/kconfig/zconf.tab.c_shipped b/scripts/kconfig/zconf.tab.c_shipped
-index a22b285d759f..ee2b26920a2f 100644
---- a/scripts/kconfig/zconf.tab.c_shipped
-+++ b/scripts/kconfig/zconf.tab.c_shipped
-@@ -2284,7 +2284,8 @@ static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtok
- 	return true;
- }
- 
--static void zconfprint(const char *err, ...)
-+static __attribute__ ((format(printf, 1, 2)))
-+void zconfprint(const char *err, ...)
- {
- 	va_list ap;
- 
-@@ -2295,7 +2296,8 @@ static void zconfprint(const char *err, ...)
- 	fprintf(stderr, "\n");
- }
- 
--static void zconf_error(const char *err, ...)
-+static __attribute__ ((format(printf, 1, 2)))
-+void zconf_error(const char *err, ...)
- {
- 	va_list ap;
- 
 diff --git a/scripts/kconfig/zconf.y b/scripts/kconfig/zconf.y
-index c8f396c3b190..59abf59a8b31 100644
+index 4be98050b961..24ed4cddafc1 100644
 --- a/scripts/kconfig/zconf.y
 +++ b/scripts/kconfig/zconf.y
-@@ -21,8 +21,10 @@
- int cdebug = PRINTD;
+@@ -22,8 +22,10 @@ int cdebug = PRINTD;
  
- extern int zconflex(void);
+ int yylex(void);
+ static void yyerror(const char *err);
 -static void zconfprint(const char *err, ...);
 -static void zconf_error(const char *err, ...);
 +static void zconfprint(const char *err, ...)
 +	__attribute__ ((format(printf, 1, 2)));
 +static void zconf_error(const char *err, ...)
 +	__attribute__ ((format(printf, 1, 2)));
- static void zconferror(const char *err);
  static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtoken);
  
-@@ -567,7 +569,8 @@ static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtok
+ struct symbol *symbol_hash[SYMBOL_HASHSIZE];
+@@ -594,7 +596,8 @@ static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtok
  	return true;
  }
  
@@ -225,7 +200,7 @@ index c8f396c3b190..59abf59a8b31 100644
  {
  	va_list ap;
  
-@@ -578,7 +581,8 @@ static void zconfprint(const char *err, ...)
+@@ -605,7 +608,8 @@ static void zconfprint(const char *err, ...)
  	fprintf(stderr, "\n");
  }
  

@@ -6,15 +6,15 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
 ---
  fs/ext4/ialloc.c      | 8 ++++++++
  kernel/bpf/verifier.c | 9 +++++++++
- lib/rhashtable.c      | 4 ++++
+ lib/rhashtable.c      | 1 +
  mm/mmap.c             | 8 ++++++++
  net/core/skbuff.c     | 8 ++++++++
  net/ipv4/fib_trie.c   | 7 +++++++
  net/sched/cls_u32.c   | 8 ++++++++
- 7 files changed, 52 insertions(+)
+ 7 files changed, 49 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index b32cf263750d..dfefb1161332 100644
+index 7830d28df331..df710db792e8 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
 @@ -461,6 +461,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
@@ -40,10 +40,10 @@ index b32cf263750d..dfefb1161332 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index 13551e623501..e46769249ed9 100644
+index 5fb69a85d967..e629465e9170 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -3839,6 +3839,12 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -4523,6 +4523,12 @@ static int do_check(struct bpf_verifier_env *env)
  	int insn_processed = 0;
  	bool do_print_state = false;
  
@@ -56,9 +56,9 @@ index 13551e623501..e46769249ed9 100644
  	state = kzalloc(sizeof(struct bpf_verifier_state), GFP_KERNEL);
  	if (!state)
  		return -ENOMEM;
-@@ -4124,6 +4130,9 @@ static int do_check(struct bpf_verifier_env *env)
- 	verbose(env, "processed %d insns, stack depth %d\n", insn_processed,
- 		env->prog->aux->stack_depth);
+@@ -4846,6 +4852,9 @@ static int do_check(struct bpf_verifier_env *env)
+ 	verbose(env, "\n");
+ 	env->prog->aux->stack_depth = env->subprog_stack_depth[0];
  	return 0;
 +#ifndef __clang__
 +#pragma GCC diagnostic pop
@@ -67,20 +67,10 @@ index 13551e623501..e46769249ed9 100644
  
  static int check_map_prealloc(struct bpf_map *map)
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index b42eb69e4792..f39cbf0b0793 100644
+index 1cd6777a6948..60db95ee155b 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -786,6 +786,9 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
- 	struct rhash_head *p = iter->p;
- 	bool rhlist = ht->rhlist;
- 
-+/* Variable "skip" is not initialized but not used when the goto is taken */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wjump-misses-init"
- 	if (p) {
- 		if (!rhlist || !(list = rcu_dereference(list->next))) {
- 			p = rcu_dereference(p->next);
-@@ -816,6 +819,7 @@ void *rhashtable_walk_next(struct rhashtable_iter *iter)
+@@ -783,6 +783,7 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
  		}
  
  next:
@@ -115,7 +105,7 @@ index 9efdc021ad22..ed226c36e04d 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 08f574081315..fa3199936b9c 100644
+index 09bd89c90a71..eef8e44fa477 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
 @@ -1764,6 +1764,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
@@ -141,7 +131,7 @@ index 08f574081315..fa3199936b9c 100644
  		for (; i < nfrags; i++)
  			skb_frag_unref(skb, i);
 diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
-index 014c27a6d81d..0ebb0dae59e7 100644
+index 07ddc55ba52e..877d4892d41e 100644
 --- a/net/ipv4/fib_trie.c
 +++ b/net/ipv4/fib_trie.c
 @@ -1321,6 +1321,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
@@ -166,10 +156,10 @@ index 014c27a6d81d..0ebb0dae59e7 100644
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
-index 507859cdd1cb..dc753c783f0d 100644
+index 6c7601a530e3..06309745e26d 100644
 --- a/net/sched/cls_u32.c
 +++ b/net/sched/cls_u32.c
-@@ -114,6 +114,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
+@@ -115,6 +115,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
  static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  			struct tcf_result *res)
  {
@@ -181,7 +171,7 @@ index 507859cdd1cb..dc753c783f0d 100644
  	struct {
  		struct tc_u_knode *knode;
  		unsigned int	  off;
-@@ -262,6 +267,9 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
+@@ -263,6 +268,9 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  deadloop:
  	net_warn_ratelimited("cls_u32: dead loop\n");
  	return -1;
