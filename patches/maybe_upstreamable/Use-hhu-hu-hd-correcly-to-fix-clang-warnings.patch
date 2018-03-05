@@ -77,12 +77,12 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  net/netfilter/nf_conntrack_h323_main.c           |  4 +-
  net/netfilter/xt_AUDIT.c                         |  2 +-
  net/netfilter/xt_CONNSECMARK.c                   |  2 +-
- net/netfilter/xt_SECMARK.c                       |  6 +-
+ net/netfilter/xt_SECMARK.c                       |  4 +-
  net/netfilter/xt_TPROXY.c                        |  4 +-
  net/rxrpc/rxkad.c                                |  2 +-
  security/selinux/hooks.c                         |  2 +-
  security/tomoyo/common.c                         |  2 +-
- 78 files changed, 190 insertions(+), 190 deletions(-)
+ 78 files changed, 189 insertions(+), 189 deletions(-)
 
 diff --git a/drivers/acpi/acpica/dbhistry.c b/drivers/acpi/acpica/dbhistry.c
 index 55c0f2742339..777badd733b9 100644
@@ -608,10 +608,10 @@ index 95f4db70dd22..6387c825d32d 100644
  
  			/*
 diff --git a/drivers/hid/hid-quirks.c b/drivers/hid/hid-quirks.c
-index 5f6035a5ce36..bd451e686711 100644
+index e92b77fa574a..9285afb3bd6d 100644
 --- a/drivers/hid/hid-quirks.c
 +++ b/drivers/hid/hid-quirks.c
-@@ -1056,7 +1056,7 @@ static struct hid_device_id *hid_exists_dquirk(const struct hid_device *hdev)
+@@ -1059,7 +1059,7 @@ static struct hid_device_id *hid_exists_dquirk(const struct hid_device *hdev)
  	}
  
  	if (bl_entry != NULL)
@@ -620,7 +620,7 @@ index 5f6035a5ce36..bd451e686711 100644
  			bl_entry->driver_data, bl_entry->vendor,
  			bl_entry->product);
  
-@@ -1223,7 +1223,7 @@ static unsigned long hid_gets_squirk(const struct hid_device *hdev)
+@@ -1226,7 +1226,7 @@ static unsigned long hid_gets_squirk(const struct hid_device *hdev)
  		quirks |= bl_entry->driver_data;
  
  	if (quirks)
@@ -1127,27 +1127,27 @@ index 21be672679fb..3f6e9f0789e1 100644
  		goto err;
  	}
 diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index 029e2e69b29f..86e73d6a3121 100644
+index f57a94b4f0d9..3033b20d1751 100644
 --- a/drivers/scsi/qedi/qedi_main.c
 +++ b/drivers/scsi/qedi/qedi_main.c
-@@ -1767,7 +1767,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
- 		rc = snprintf(str, ip_len, fmt, gw);
+@@ -1766,7 +1766,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+ 		rc = snprintf(buf, ip_len, fmt, gw);
  		break;
  	case ISCSI_BOOT_ETH_FLAGS:
--		rc = snprintf(str, 3, "%hhd\n",
-+		rc = snprintf(str, 3, "%d\n",
+-		rc = snprintf(buf, 3, "%hhd\n",
++		rc = snprintf(buf, 3, "%d\n",
  			      SYSFS_FLAG_FW_SEL_BOOT);
  		break;
  	case ISCSI_BOOT_ETH_INDEX:
-@@ -1937,7 +1937,7 @@ qedi_show_boot_tgt_info(struct qedi_ctx *qedi, int type,
- 			      mchap_secret);
+@@ -1934,7 +1934,7 @@ qedi_show_boot_tgt_info(struct qedi_ctx *qedi, int type,
+ 			     mchap_secret);
  		break;
  	case ISCSI_BOOT_TGT_FLAGS:
--		rc = snprintf(str, 3, "%hhd\n", SYSFS_FLAG_FW_SEL_BOOT);
-+		rc = snprintf(str, 3, "%d\n", SYSFS_FLAG_FW_SEL_BOOT);
+-		rc = snprintf(buf, 3, "%hhd\n", SYSFS_FLAG_FW_SEL_BOOT);
++		rc = snprintf(buf, 3, "%d\n", SYSFS_FLAG_FW_SEL_BOOT);
  		break;
  	case ISCSI_BOOT_TGT_NIC_ASSOC:
- 		rc = snprintf(str, 3, "0\n");
+ 		rc = snprintf(buf, 3, "0\n");
 diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
 index 91b90f672d23..b532a366e55b 100644
 --- a/drivers/scsi/scsi_sysfs.c
@@ -1624,57 +1624,55 @@ index 005589c6d0f6..2b9e46c7a616 100644
  			return 0;
  		}
 diff --git a/net/netfilter/xt_AUDIT.c b/net/netfilter/xt_AUDIT.c
-index c502419d6306..292cb87fbc1d 100644
+index f368ee6741db..29143f3abdb0 100644
 --- a/net/netfilter/xt_AUDIT.c
 +++ b/net/netfilter/xt_AUDIT.c
 @@ -120,7 +120,7 @@ static int audit_tg_check(const struct xt_tgchk_param *par)
  	const struct xt_audit_info *info = par->targinfo;
  
  	if (info->type > XT_AUDIT_TYPE_MAX) {
--		pr_info("Audit type out of range (valid range: 0..%hhu)\n",
-+		pr_info("Audit type out of range (valid range: 0..%d)\n",
- 			XT_AUDIT_TYPE_MAX);
+-		pr_info_ratelimited("Audit type out of range (valid range: 0..%hhu)\n",
++		pr_info_ratelimited("Audit type out of range (valid range: 0..%u)\n",
+ 				    XT_AUDIT_TYPE_MAX);
  		return -ERANGE;
  	}
 diff --git a/net/netfilter/xt_CONNSECMARK.c b/net/netfilter/xt_CONNSECMARK.c
-index da56c06a443c..989e1cce4657 100644
+index f3f1caac949b..5a06b1adf4be 100644
 --- a/net/netfilter/xt_CONNSECMARK.c
 +++ b/net/netfilter/xt_CONNSECMARK.c
 @@ -102,7 +102,7 @@ static int connsecmark_tg_check(const struct xt_tgchk_param *par)
  		break;
  
  	default:
--		pr_info("invalid mode: %hu\n", info->mode);
-+		pr_info("invalid mode: %hhu\n", info->mode);
+-		pr_info_ratelimited("invalid mode: %hu\n", info->mode);
++		pr_info_ratelimited("invalid mode: %hhu\n", info->mode);
  		return -EINVAL;
  	}
  
 diff --git a/net/netfilter/xt_SECMARK.c b/net/netfilter/xt_SECMARK.c
-index 9faf5e050b79..4a034f59f1ff 100644
+index 4ad5fe27e08b..ffa54436bbec 100644
 --- a/net/netfilter/xt_SECMARK.c
 +++ b/net/netfilter/xt_SECMARK.c
-@@ -92,8 +92,8 @@ static int secmark_tg_check(const struct xt_tgchk_param *par)
+@@ -94,7 +94,7 @@ static int secmark_tg_check(const struct xt_tgchk_param *par)
  	}
  
  	if (mode && mode != info->mode) {
--		pr_info("mode already set to %hu cannot mix with "
--			"rules for mode %hu\n", mode, info->mode);
-+		pr_info("mode already set to %hhu cannot mix with "
-+			"rules for mode %hhu\n", mode, info->mode);
+-		pr_info_ratelimited("mode already set to %hu cannot mix with rules for mode %hu\n",
++		pr_info_ratelimited("mode already set to %hhu cannot mix with rules for mode %hhu\n",
+ 				    mode, info->mode);
  		return -EINVAL;
  	}
- 
-@@ -101,7 +101,7 @@ static int secmark_tg_check(const struct xt_tgchk_param *par)
+@@ -103,7 +103,7 @@ static int secmark_tg_check(const struct xt_tgchk_param *par)
  	case SECMARK_MODE_SEL:
  		break;
  	default:
--		pr_info("invalid mode: %hu\n", info->mode);
-+		pr_info("invalid mode: %hhu\n", info->mode);
+-		pr_info_ratelimited("invalid mode: %hu\n", info->mode);
++		pr_info_ratelimited("invalid mode: %hhu\n", info->mode);
  		return -EINVAL;
  	}
  
 diff --git a/net/netfilter/xt_TPROXY.c b/net/netfilter/xt_TPROXY.c
-index 17d7705e3bd4..deab7bd6fd82 100644
+index 8c89323c06af..2d0d2ed324f7 100644
 --- a/net/netfilter/xt_TPROXY.c
 +++ b/net/netfilter/xt_TPROXY.c
 @@ -512,7 +512,7 @@ tproxy_tg6_v1(struct sk_buff *skb, const struct xt_action_param *par)
