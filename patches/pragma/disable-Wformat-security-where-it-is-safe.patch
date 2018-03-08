@@ -3570,12 +3570,12 @@ index c1618ab9fecf..31f614ee612d 100644
  }
  
 diff --git a/fs/btrfs/inode-item.c b/fs/btrfs/inode-item.c
-index 39c968f80157..edec9694ea62 100644
+index 65e1a76bf755..13e9aab96db7 100644
 --- a/fs/btrfs/inode-item.c
 +++ b/fs/btrfs/inode-item.c
-@@ -157,7 +157,10 @@ static int btrfs_del_inode_extref(struct btrfs_trans_handle *trans,
- 	 */
- 	if (!btrfs_find_name_in_ext_backref(path, ref_objectid,
+@@ -159,7 +159,10 @@ static int btrfs_del_inode_extref(struct btrfs_trans_handle *trans,
+ 	if (!btrfs_find_name_in_ext_backref(path->nodes[0], path->slots[0],
+ 					    ref_objectid,
  					    name, name_len, &extref)) {
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
@@ -3585,7 +3585,7 @@ index 39c968f80157..edec9694ea62 100644
  		goto out;
  	}
 diff --git a/fs/btrfs/relocation.c b/fs/btrfs/relocation.c
-index f0c3f00e97cb..72ece970c550 100644
+index cd2298d185dd..131542b93e83 100644
 --- a/fs/btrfs/relocation.c
 +++ b/fs/btrfs/relocation.c
 @@ -2467,7 +2467,11 @@ void merge_reloc_roots(struct reloc_control *rc)
@@ -3601,7 +3601,7 @@ index f0c3f00e97cb..72ece970c550 100644
  			free_reloc_roots(&reloc_roots);
  
 diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
-index 6e71a2a78363..9c40809b3fba 100644
+index 4b817947e00f..4c0df661f68a 100644
 --- a/fs/btrfs/super.c
 +++ b/fs/btrfs/super.c
 @@ -270,7 +270,11 @@ void __btrfs_abort_transaction(struct btrfs_trans_handle *trans,
@@ -3617,7 +3617,7 @@ index 6e71a2a78363..9c40809b3fba 100644
  /*
   * __btrfs_panic decodes unexpected, fatal errors from the caller,
 diff --git a/fs/btrfs/sysfs.c b/fs/btrfs/sysfs.c
-index a8bafed931f4..c7949545de65 100644
+index d11c70bff5a9..622252100701 100644
 --- a/fs/btrfs/sysfs.c
 +++ b/fs/btrfs/sysfs.c
 @@ -375,7 +375,10 @@ static ssize_t btrfs_label_show(struct kobject *kobj,
@@ -3632,7 +3632,7 @@ index a8bafed931f4..c7949545de65 100644
  
  	return ret;
 diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
-index 2ceb924ca0d6..690a856c79e7 100644
+index b2d05c6b1c56..9ce1556081af 100644
 --- a/fs/btrfs/volumes.c
 +++ b/fs/btrfs/volumes.c
 @@ -3001,7 +3001,10 @@ static int btrfs_relocate_chunk(struct btrfs_fs_info *fs_info, u64 chunk_offset)
@@ -3737,10 +3737,10 @@ index 088822f31ddc..7b3f24eb4eb0 100644
  	if (id && id[0])
  		printk(KERN_CRIT "REISERFS error (device %s): %s %s: %s\n",
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index ce51455e2adf..9dc481e17aa3 100644
+index 3fd291503576..2ed0076010d1 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
-@@ -673,6 +673,7 @@ do {							\
+@@ -674,6 +674,7 @@ do {							\
  		trace_puts(fmt);			\
  } while (0)
  
@@ -3748,7 +3748,7 @@ index ce51455e2adf..9dc481e17aa3 100644
  #define do_trace_printk(fmt, args...)					\
  do {									\
  	static const char *trace_printk_fmt __used			\
-@@ -681,11 +682,22 @@ do {									\
+@@ -682,11 +683,22 @@ do {									\
  									\
  	__trace_printk_check_format(fmt, ##args);			\
  									\
