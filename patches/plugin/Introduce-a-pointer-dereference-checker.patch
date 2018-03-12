@@ -51,7 +51,6 @@ It has also detected some bugs reported and fixed by other people:
  drivers/gpu/drm/i915/i915_gem_gtt.c                |   2 +-
  drivers/gpu/drm/radeon/radeon_cs.c                 |   2 +-
  drivers/iio/industrialio-buffer.c                  |   2 +-
- drivers/infiniband/hw/qedr/qedr_iw_cm.c            |   2 +-
  drivers/isdn/i4l/isdn_common.c                     |   4 +-
  drivers/media/pci/intel/ipu3/ipu3-cio2.c           |   8 +-
  drivers/misc/ibmasm/lowlevel.c                     |   4 +-
@@ -96,7 +95,7 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/deref_checker_plugin.c         | 415 +++++++++++++++++++++
  security/apparmor/apparmorfs.c                     |  11 +-
  sound/core/pcm_native.c                            |   2 +-
- 67 files changed, 753 insertions(+), 94 deletions(-)
+ 66 files changed, 752 insertions(+), 93 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -565,19 +564,6 @@ index cd5bfe39591b..0877d039ab8b 100644
  		       sizeof(buffer->scan_el_group.attrs[0])*attrcount_orig);
  	attrn = attrcount_orig;
  
-diff --git a/drivers/infiniband/hw/qedr/qedr_iw_cm.c b/drivers/infiniband/hw/qedr/qedr_iw_cm.c
-index 478b7317b80a..25d43e1e48e9 100644
---- a/drivers/infiniband/hw/qedr/qedr_iw_cm.c
-+++ b/drivers/infiniband/hw/qedr/qedr_iw_cm.c
-@@ -458,7 +458,7 @@ qedr_addr6_resolve(struct qedr_dev *dev,
- 		}
- 		return -EINVAL;
- 	}
--	neigh = dst_neigh_lookup(dst, &dst_in);
-+	neigh = dst_neigh_lookup(dst, dst_in); /* BUG? TODO: check ops function */
- 
- 	if (neigh) {
- 		rcu_read_lock();
 diff --git a/drivers/isdn/i4l/isdn_common.c b/drivers/isdn/i4l/isdn_common.c
 index 7c6f3f5d9d9a..7f6ba7150188 100644
 --- a/drivers/isdn/i4l/isdn_common.c
@@ -665,10 +651,10 @@ index 7e14725055c7..261d95a44726 100644
  		return -EOPNOTSUPP;
  	}
 diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 9bb9e562b893..c902c89c4b79 100644
+index 23374603e4d9..6bb05d1ad67e 100644
 --- a/drivers/net/virtio_net.c
 +++ b/drivers/net/virtio_net.c
-@@ -874,7 +874,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
+@@ -890,7 +890,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
  }
  
  static int receive_buf(struct virtnet_info *vi, struct receive_queue *rq,
