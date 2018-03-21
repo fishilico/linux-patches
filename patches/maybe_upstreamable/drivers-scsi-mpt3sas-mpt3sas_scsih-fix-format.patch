@@ -30,7 +30,7 @@ index 99ccf83b8c51..7828381dacd3 100644
  	spinlock_t	fw_event_lock;
  	struct list_head fw_event_list;
 diff --git a/drivers/scsi/mpt3sas/mpt3sas_scsih.c b/drivers/scsi/mpt3sas/mpt3sas_scsih.c
-index c2ea13c7e37e..6af870fa20ac 100644
+index a1cb0236c550..e5015068c197 100644
 --- a/drivers/scsi/mpt3sas/mpt3sas_scsih.c
 +++ b/drivers/scsi/mpt3sas/mpt3sas_scsih.c
 @@ -10555,10 +10555,8 @@ _scsih_probe(struct pci_dev *pdev, const struct pci_device_id *id)
@@ -40,8 +40,8 @@ index c2ea13c7e37e..6af870fa20ac 100644
 -	snprintf(ioc->firmware_event_name, sizeof(ioc->firmware_event_name),
 -	    "fw_event_%s%d", ioc->driver_name, ioc->id);
  	ioc->firmware_event_thread = alloc_ordered_workqueue(
--	    ioc->firmware_event_name, WQ_MEM_RECLAIM);
-+	    "fw_event %s%d", WQ_MEM_RECLAIM, ioc->driver_name, ioc->id); /* printf format string bug in mainline kernels */
+-	    ioc->firmware_event_name, 0);
++	    "fw_event %s%d", 0, ioc->driver_name, ioc->id); /* printf format string bug in mainline kernels */
  	if (!ioc->firmware_event_thread) {
  		pr_err(MPT3SAS_FMT "failure at %s:%d/%s()!\n",
  		    ioc->name, __FILE__, __LINE__, __func__);
