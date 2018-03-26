@@ -170,7 +170,7 @@ index 111a1d8a41dd..d962f4dd8ff3 100644
 +
  #endif
 diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-index 98761a1576ce..308594b50ed7 100644
+index 252fee320816..356457e4a0fc 100644
 --- a/arch/x86/boot/compressed/misc.c
 +++ b/arch/x86/boot/compressed/misc.c
 @@ -35,6 +35,10 @@
@@ -217,10 +217,10 @@ index 8371f2e58fc1..808d0264e8cf 100644
  #define memcmp	__builtin_memcmp
  #endif
 diff --git a/arch/x86/events/core.c b/arch/x86/events/core.c
-index 140d33288e78..084139ff8218 100644
+index 88797c80b3e0..a7f5a240d999 100644
 --- a/arch/x86/events/core.c
 +++ b/arch/x86/events/core.c
-@@ -2475,7 +2475,14 @@ perf_callchain_user(struct perf_callchain_entry_ctx *entry, struct pt_regs *regs
+@@ -2476,7 +2476,14 @@ perf_callchain_user(struct perf_callchain_entry_ctx *entry, struct pt_regs *regs
  		if (!valid_user_frame(fp, sizeof(frame)))
  			break;
  
@@ -1219,7 +1219,7 @@ index b611cd36e22d..a38cbe9973e1 100644
  	return ret < 0 ? ret : 0;
  }
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 1fad24acd444..9f899c9423ee 100644
+index ae4147eaebd4..b0e1086913ee 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
 @@ -742,19 +742,25 @@ static int create_trace_kprobe(int argc, char **argv)
@@ -1231,7 +1231,7 @@ index 1fad24acd444..9f899c9423ee 100644
 -		symbol = argv[1];
 -		/* TODO: support .init module functions */
 -		ret = traceprobe_split_symbol_offset(symbol, &offset);
--		if (ret) {
+-		if (ret || offset < 0 || offset > UINT_MAX) {
 -			pr_info("Failed to parse either an address or a symbol.\n");
 -			return ret;
 -		}
@@ -1247,7 +1247,7 @@ index 1fad24acd444..9f899c9423ee 100644
 +			symbol = argv[1];
 +			/* TODO: support .init module functions */
 +			ret = traceprobe_split_symbol_offset(symbol, &offset);
-+			if (ret) {
++			if (ret || offset < 0 || offset > UINT_MAX) {
 +				pr_info("Failed to parse either an address or a symbol.\n");
 +				return ret;
 +			}
@@ -1262,10 +1262,10 @@ index 1fad24acd444..9f899c9423ee 100644
  	}
  	argc -= 2; argv += 2;
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index ec9bbc30671a..fa15afa49aeb 100644
+index c0e095465bd8..fc7fddc4dd89 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -4325,7 +4325,7 @@ void set_worker_desc(const char *fmt, ...)
+@@ -4317,7 +4317,7 @@ void set_worker_desc(const char *fmt, ...)
   */
  void print_worker_info(const char *log_lvl, struct task_struct *task)
  {
@@ -1275,10 +1275,10 @@ index ec9bbc30671a..fa15afa49aeb 100644
  	char desc[WORKER_DESC_LEN] = { };
  	struct pool_workqueue *pwq = NULL;
 diff --git a/mm/percpu-vm.c b/mm/percpu-vm.c
-index 9158e5a81391..2c47df73508b 100644
+index d8078de912de..f298c4c884a3 100644
 --- a/mm/percpu-vm.c
 +++ b/mm/percpu-vm.c
-@@ -358,8 +358,11 @@ static void pcpu_destroy_chunk(struct pcpu_chunk *chunk)
+@@ -362,8 +362,11 @@ static void pcpu_destroy_chunk(struct pcpu_chunk *chunk)
  	pcpu_stats_chunk_dealloc();
  	trace_percpu_destroy_chunk(chunk->base_addr);
  

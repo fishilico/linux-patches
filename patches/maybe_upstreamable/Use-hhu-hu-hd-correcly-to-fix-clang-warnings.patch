@@ -71,7 +71,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  net/ipv4/esp4.c                                  |  2 +-
  net/ipv6/ah6.c                                   |  2 +-
  net/ipv6/esp6.c                                  |  2 +-
- net/l2tp/l2tp_core.c                             |  8 +--
+ net/l2tp/l2tp_core.c                             | 10 +--
  net/l2tp/l2tp_debugfs.c                          |  6 +-
  net/l2tp/l2tp_ppp.c                              |  2 +-
  net/netfilter/nf_conntrack_h323_main.c           |  4 +-
@@ -82,7 +82,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  net/rxrpc/rxkad.c                                |  2 +-
  security/selinux/hooks.c                         |  2 +-
  security/tomoyo/common.c                         |  2 +-
- 78 files changed, 189 insertions(+), 189 deletions(-)
+ 78 files changed, 190 insertions(+), 190 deletions(-)
 
 diff --git a/drivers/acpi/acpica/dbhistry.c b/drivers/acpi/acpica/dbhistry.c
 index 55c0f2742339..777badd733b9 100644
@@ -1305,10 +1305,10 @@ index 01ac306131c1..ce957efeb0bd 100644
  				dest_rtpi);
  
 diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
-index b0f759476900..b73037f75548 100644
+index 8a1508a8e481..f899d7410da3 100644
 --- a/drivers/vfio/pci/vfio_pci.c
 +++ b/drivers/vfio/pci/vfio_pci.c
-@@ -1396,11 +1396,11 @@ static void __init vfio_pci_fill_ids(void)
+@@ -1393,11 +1393,11 @@ static void __init vfio_pci_fill_ids(void)
  		rc = pci_add_dynid(&vfio_pci_driver, vendor, device,
  				   subvendor, subdevice, class, class_mask, 0);
  		if (rc)
@@ -1525,10 +1525,10 @@ index 97513f35bcc5..fdb51af9d76e 100644
  		}
  
 diff --git a/net/l2tp/l2tp_core.c b/net/l2tp/l2tp_core.c
-index 83421c6f0bef..2d1af4301cd0 100644
+index 14b67dfacc4b..ce97f05b2664 100644
 --- a/net/l2tp/l2tp_core.c
 +++ b/net/l2tp/l2tp_core.c
-@@ -386,7 +386,7 @@ static void l2tp_recv_queue_skb(struct l2tp_session *session, struct sk_buff *sk
+@@ -393,7 +393,7 @@ static void l2tp_recv_queue_skb(struct l2tp_session *session, struct sk_buff *sk
  		if (L2TP_SKB_CB(skbp)->ns > ns) {
  			__skb_queue_before(&session->reorder_q, skbp, skb);
  			l2tp_dbg(session, L2TP_MSG_SEQ,
@@ -1537,7 +1537,7 @@ index 83421c6f0bef..2d1af4301cd0 100644
  				 session->name, ns, L2TP_SKB_CB(skbp)->ns,
  				 skb_queue_len(&session->reorder_q));
  			atomic_long_inc(&session->stats.rx_oos_packets);
-@@ -422,7 +422,7 @@ static void l2tp_recv_dequeue_skb(struct l2tp_session *session, struct sk_buff *
+@@ -429,7 +429,7 @@ static void l2tp_recv_dequeue_skb(struct l2tp_session *session, struct sk_buff *
  		session->nr++;
  		session->nr &= session->nr_max;
  
@@ -1546,18 +1546,25 @@ index 83421c6f0bef..2d1af4301cd0 100644
  			 session->name, session->nr);
  	}
  
-@@ -1461,7 +1461,7 @@ int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32
+@@ -1475,21 +1475,21 @@ int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32
+ 	/* Quick sanity checks */
+ 	err = -EPROTONOSUPPORT;
+ 	if (sk->sk_type != SOCK_DGRAM) {
+-		pr_debug("tunl %hu: fd %d wrong socket type\n",
++		pr_debug("tunl %u: fd %d wrong socket type\n",
+ 			 tunnel_id, fd);
+ 		goto err;
+ 	}
+ 	switch (encap) {
  	case L2TP_ENCAPTYPE_UDP:
- 		err = -EPROTONOSUPPORT;
  		if (sk->sk_protocol != IPPROTO_UDP) {
 -			pr_err("tunl %hu: fd %d wrong protocol, got %d, expected %d\n",
 +			pr_err("tunl %u: fd %d wrong protocol, got %d, expected %d\n",
  			       tunnel_id, fd, sk->sk_protocol, IPPROTO_UDP);
  			goto err;
  		}
-@@ -1469,7 +1469,7 @@ int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32
+ 		break;
  	case L2TP_ENCAPTYPE_IP:
- 		err = -EPROTONOSUPPORT;
  		if (sk->sk_protocol != IPPROTO_L2TP) {
 -			pr_err("tunl %hu: fd %d wrong protocol, got %d, expected %d\n",
 +			pr_err("tunl %u: fd %d wrong protocol, got %d, expected %d\n",
