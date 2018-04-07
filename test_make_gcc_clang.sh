@@ -95,7 +95,8 @@ then
     ) || exit $?
 
     # Launch Frama-C value analysis
-    ./frama-c_value.sh || exit $?
+    # ... or not, as recent Frama-C release (20171101) uses waaay too much memory
+    #./frama-c_value.sh || exit $?
 else
     UNSUPPORTED_TESTS="$UNSUPPORTED_TESTS gcc-framac"
 fi
