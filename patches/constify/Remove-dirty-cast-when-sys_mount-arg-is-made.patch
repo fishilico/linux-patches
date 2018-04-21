@@ -5,19 +5,20 @@ Subject: [PATCH] {CONSTIFY} Remove dirty cast, when sys_mount arg is made
  const...
 
 ---
- drivers/base/devtmpfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/base/devtmpfs.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/base/devtmpfs.c b/drivers/base/devtmpfs.c
-index 50025d7959cb..b85d45909b72 100644
+index f7768077e817..c32ae8a7ffb9 100644
 --- a/drivers/base/devtmpfs.c
 +++ b/drivers/base/devtmpfs.c
-@@ -356,7 +356,7 @@ int devtmpfs_mount(const char *mntdir)
+@@ -356,8 +356,7 @@ int devtmpfs_mount(const char *mntdir)
  	if (!thread)
  		return 0;
  
--	err = sys_mount("devtmpfs", (char *)mntdir, "devtmpfs", MS_SILENT, NULL);
-+	err = sys_mount("devtmpfs", mntdir, "devtmpfs", MS_SILENT, NULL);
+-	err = ksys_mount("devtmpfs", (char *)mntdir, "devtmpfs", MS_SILENT,
+-			 NULL);
++	err = ksys_mount("devtmpfs", mntdir, "devtmpfs", MS_SILENT, NULL);
  	if (err)
  		printk(KERN_INFO "devtmpfs: error mounting %i\n", err);
  	else

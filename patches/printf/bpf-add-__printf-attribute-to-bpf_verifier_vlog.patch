@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 11 Apr 2018 19:47:43 +0200
+Subject: [PATCH] {PRINTF} bpf: add __printf attribute to bpf_verifier_vlog()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Commit 77d2e05abd45 ("bpf: Add bpf_verifier_vlog() and
+bpf_verifier_log_needed()") added bpf_verifier_vlog() without a proper
+__printf attribute.
+
+gcc reports:
+
+    kernel/bpf/verifier.c: In function ‘bpf_verifier_vlog’:
+    kernel/bpf/verifier.c:176:2: error: function ‘bpf_verifier_vlog’
+    might be a candidate for ‘gnu_printf’ format attribute
+    [-Werror=suggest-attribute=format]
+      n = vscnprintf(log->kbuf, BPF_VERIFIER_TMP_LOG_SIZE, fmt, args);
+      ^
+---
+ include/linux/bpf_verifier.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/bpf_verifier.h b/include/linux/bpf_verifier.h
+index 7e61c395fddf..ebf78f8ddfa1 100644
+--- a/include/linux/bpf_verifier.h
++++ b/include/linux/bpf_verifier.h
+@@ -197,8 +197,8 @@ struct bpf_verifier_env {
+ 	u32 subprog_cnt;
+ };
+ 
+-void bpf_verifier_vlog(struct bpf_verifier_log *log, const char *fmt,
+-		       va_list args);
++__printf(2, 0) void bpf_verifier_vlog(struct bpf_verifier_log *log,
++				      const char *fmt, va_list args);
+ __printf(2, 3) void bpf_verifier_log_write(struct bpf_verifier_env *env,
+ 					   const char *fmt, ...);
+ 
+-- 

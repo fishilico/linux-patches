@@ -7,42 +7,37 @@ Subject: [PATCH] {NOT UPSTREAMABLE} gpu/drm/amd/display/dc: ignore
 There are float equalities in these files.
 ---
  drivers/gpu/drm/amd/display/dc/calcs/Makefile | 6 +++---
- drivers/gpu/drm/amd/display/dc/dml/Makefile   | 4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/gpu/drm/amd/display/dc/dml/Makefile   | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/display/dc/calcs/Makefile b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-index 7959e382ed28..e98efac99e95 100644
+index 95f332ee3e7e..4baae228ef57 100644
 --- a/drivers/gpu/drm/amd/display/dc/calcs/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-@@ -24,9 +24,9 @@
- # It calculates Bandwidth and Watermarks values for HW programming
- #
+@@ -32,9 +32,9 @@ endif
  
--CFLAGS_dcn_calcs.o := -mhard-float -msse -mpreferred-stack-boundary=4
--CFLAGS_dcn_calc_auto.o := -mhard-float -msse -mpreferred-stack-boundary=4
--CFLAGS_dcn_calc_math.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-tautological-compare
-+CFLAGS_dcn_calcs.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-float-equal
-+CFLAGS_dcn_calc_auto.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-float-equal
-+CFLAGS_dcn_calc_math.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-tautological-compare -Wno-float-equal
+ calcs_ccflags := -mhard-float -msse $(cc_stack_align)
+ 
+-CFLAGS_dcn_calcs.o := $(calcs_ccflags)
+-CFLAGS_dcn_calc_auto.o := $(calcs_ccflags)
+-CFLAGS_dcn_calc_math.o := $(calcs_ccflags) -Wno-tautological-compare
++CFLAGS_dcn_calcs.o := $(calcs_ccflags) -Wno-float-equal
++CFLAGS_dcn_calc_auto.o := $(calcs_ccflags) -Wno-float-equal
++CFLAGS_dcn_calc_math.o := $(calcs_ccflags) -Wno-tautological-compare -Wno-float-equal
  
  BW_CALCS = dce_calcs.o bw_fixed.o custom_float.o
  
 diff --git a/drivers/gpu/drm/amd/display/dc/dml/Makefile b/drivers/gpu/drm/amd/display/dc/dml/Makefile
-index 3488af2b5786..b6e74bd7b11d 100644
+index f83a608f93e9..671c7710e5c7 100644
 --- a/drivers/gpu/drm/amd/display/dc/dml/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/dml/Makefile
-@@ -24,11 +24,11 @@
- # It provides the general basic services required by other DAL
- # subcomponents.
+@@ -34,7 +34,7 @@ dml_ccflags := -mhard-float -msse $(cc_stack_align)
  
--CFLAGS_display_mode_vba.o := -mhard-float -msse -mpreferred-stack-boundary=4
-+CFLAGS_display_mode_vba.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-float-equal
- CFLAGS_display_mode_lib.o := -mhard-float -msse -mpreferred-stack-boundary=4
- CFLAGS_display_pipe_clocks.o := -mhard-float -msse -mpreferred-stack-boundary=4
- CFLAGS_display_rq_dlg_calc.o := -mhard-float -msse -mpreferred-stack-boundary=4
--CFLAGS_dml1_display_rq_dlg_calc.o := -mhard-float -msse -mpreferred-stack-boundary=4
-+CFLAGS_dml1_display_rq_dlg_calc.o := -mhard-float -msse -mpreferred-stack-boundary=4 -Wno-float-equal
- CFLAGS_display_rq_dlg_helpers.o := -mhard-float -msse -mpreferred-stack-boundary=4
- CFLAGS_soc_bounding_box.o := -mhard-float -msse -mpreferred-stack-boundary=4
- CFLAGS_dml_common_defs.o := -mhard-float -msse -mpreferred-stack-boundary=4
+ CFLAGS_display_mode_lib.o := $(dml_ccflags)
+ CFLAGS_display_pipe_clocks.o := $(dml_ccflags)
+-CFLAGS_dml1_display_rq_dlg_calc.o := $(dml_ccflags)
++CFLAGS_dml1_display_rq_dlg_calc.o := $(dml_ccflags) -Wno-float-equal
+ CFLAGS_display_rq_dlg_helpers.o := $(dml_ccflags)
+ CFLAGS_soc_bounding_box.o := $(dml_ccflags)
+ CFLAGS_dml_common_defs.o := $(dml_ccflags)
 -- 

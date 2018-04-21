@@ -359,8 +359,9 @@ then
     echo 'CONFIG_DEBUG_PREEMPT=y' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_PREEMPT_TRACER=y' >> "$KBUILD_OUTPUT/.config"
 
-    # CEC_GPIO depends on PREEMPT
+    # CEC_GPIO depends on PREEMPT, and selects CEC_PING, which enables CEC_PIN_ERROR_INJ
     echo 'CONFIG_CEC_GPIO=m' >> "$KBUILD_OUTPUT/.config"
+    echo 'CONFIG_CEC_PIN_ERROR_INJ=y' >> "$KBUILD_OUTPUT/.config"
     # PREEMPTIRQ_EVENTS depends on DEBUG_PREEMPT
     echo 'CONFIG_PREEMPTIRQ_EVENTS=y' >> "$KBUILD_OUTPUT/.config"
 

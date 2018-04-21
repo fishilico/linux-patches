@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 14 Apr 2018 15:53:18 +0200
+Subject: [PATCH] {For LLVMLinux} Make asm goto support optional
+
+clang does not support asm goto yet.
+
+https://bugs.llvm.org/show_bug.cgi?id=9295
+
+This partially reverts commit d0266046ad54 ("x86: Remove
+FAST_FEATURE_TESTS")
+---
+ arch/x86/Makefile                 | 2 +-
+ arch/x86/include/asm/cpufeature.h | 4 ++++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 11d68b8fef55..d6adbda6f15a 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -181,7 +181,7 @@ ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ endif
+ 
+ ifndef CC_HAVE_ASM_GOTO
+-  $(error Compiler lacks asm-goto support.)
++  $(warning Compiler lacks asm-goto support.)
+ endif
+ 
+ #
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index b27da9602a6d..e8a116bcef0c 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -147,6 +147,7 @@ extern void clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int bit);
+  */
+ static __always_inline __pure bool _static_cpu_has(u16 bit)
+ {
++#ifdef CC_HAVE_ASM_GOTO
+ 	asm_volatile_goto("1: jmp 6f\n"
+ 		 "2:\n"
+ 		 ".skip -(((5f-4f) - (2b-1b)) > 0) * "
+@@ -187,6 +188,9 @@ static __always_inline __pure bool _static_cpu_has(u16 bit)
+ 	return true;
+ t_no:
+ 	return false;
++#else
++	return boot_cpu_has(bit);
++#endif
+ }
+ 
+ #define static_cpu_has(bit)					\
+-- 

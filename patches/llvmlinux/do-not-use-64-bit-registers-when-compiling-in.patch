@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 14 Apr 2018 16:38:22 +0200
+Subject: [PATCH] {For LLVMLinux} do not use 64-bit registers when compiling in
+ 32-bit mode
+
+When building VDSO-32 with clang, the compiler is unhappy about using
+u64 with asm contraint "=a" (for eax register):
+
+    include/asm-generic/atomic-instrumented.h:393:10: error: invalid
+    output size for constraint '=a'
+    arch/x86/include/asm/cmpxchg.h:152:2: note: expanded from macro
+    'arch_sync_cmpxchg'
+            __sync_cmpxchg(ptr, old, new, sizeof(*(ptr)))
+            ^
+    arch/x86/include/asm/cmpxchg.h:137:2: note: expanded from macro
+    '__sync_cmpxchg'
+            __raw_cmpxchg((ptr), (old), (new), (size), "lock; ")
+            ^
+    arch/x86/include/asm/cmpxchg.h:113:17: note: expanded from macro
+    '__raw_cmpxchg'
+                         : "=a" (__ret), "+m" (*__ptr)              \
+                                 ^
+---
+ include/asm-generic/atomic-instrumented.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/include/asm-generic/atomic-instrumented.h b/include/asm-generic/atomic-instrumented.h
+index ec07f23678ea..a5a4218e66ef 100644
+--- a/include/asm-generic/atomic-instrumented.h
++++ b/include/asm-generic/atomic-instrumented.h
+@@ -360,9 +360,11 @@ cmpxchg_size(volatile void *ptr, unsigned long old, unsigned long new, int size)
+ 		return arch_cmpxchg((u16 *)ptr, (u16)old, (u16)new);
+ 	case 4:
+ 		return arch_cmpxchg((u32 *)ptr, (u32)old, (u32)new);
++#ifdef CONFIG_64BIT
+ 	case 8:
+ 		BUILD_BUG_ON(sizeof(unsigned long) != 8);
+ 		return arch_cmpxchg((u64 *)ptr, (u64)old, (u64)new);
++#endif
+ 	}
+ 	BUILD_BUG();
+ 	return 0;
+@@ -386,9 +388,11 @@ sync_cmpxchg_size(volatile void *ptr, unsigned long old, unsigned long new,
+ 		return arch_sync_cmpxchg((u16 *)ptr, (u16)old, (u16)new);
+ 	case 4:
+ 		return arch_sync_cmpxchg((u32 *)ptr, (u32)old, (u32)new);
++#ifdef CONFIG_64BIT
+ 	case 8:
+ 		BUILD_BUG_ON(sizeof(unsigned long) != 8);
+ 		return arch_sync_cmpxchg((u64 *)ptr, (u64)old, (u64)new);
++#endif
+ 	}
+ 	BUILD_BUG();
+ 	return 0;
+@@ -413,9 +417,11 @@ cmpxchg_local_size(volatile void *ptr, unsigned long old, unsigned long new,
+ 		return arch_cmpxchg_local((u16 *)ptr, (u16)old, (u16)new);
+ 	case 4:
+ 		return arch_cmpxchg_local((u32 *)ptr, (u32)old, (u32)new);
++#ifdef CONFIG_64BIT
+ 	case 8:
+ 		BUILD_BUG_ON(sizeof(unsigned long) != 8);
+ 		return arch_cmpxchg_local((u64 *)ptr, (u64)old, (u64)new);
++#endif
+ 	}
+ 	BUILD_BUG();
+ 	return 0;
+-- 

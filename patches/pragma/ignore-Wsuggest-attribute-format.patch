@@ -4,12 +4,12 @@ Date: Sat, 4 Jul 2015 11:50:02 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
 
 ---
- drivers/infiniband/hw/hfi1/trace_dbg.h                     |  7 +++++++
- .../net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h  | 14 ++++++++++++++
- .../broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h | 14 ++++++++++++++
- drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h      | 14 ++++++++++++++
- kernel/panic.c                                             |  8 ++++++++
- lib/vsprintf.c                                             |  7 +++++++
+ drivers/infiniband/hw/hfi1/trace_dbg.h             |  7 +++++++
+ .../broadcom/brcm80211/brcmfmac/tracepoint.h       | 14 ++++++++++++++
+ .../brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h  | 14 ++++++++++++++
+ .../net/wireless/intel/iwlwifi/iwl-devtrace-msg.h  | 14 ++++++++++++++
+ kernel/panic.c                                     |  8 ++++++++
+ lib/vsprintf.c                                     |  7 +++++++
  6 files changed, 64 insertions(+)
 
 diff --git a/drivers/infiniband/hw/hfi1/trace_dbg.h b/drivers/infiniband/hw/hfi1/trace_dbg.h
@@ -170,10 +170,10 @@ index 5dfc9295a7e0..91b1d33cbb81 100644
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 4b794f1d8561..4adc820675b8 100644
+index 42e487488554..37d14f298f13 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -517,6 +517,11 @@ struct warn_args {
+@@ -506,6 +506,11 @@ struct warn_args {
  	va_list args;
  };
  
@@ -185,7 +185,7 @@ index 4b794f1d8561..4adc820675b8 100644
  void __warn(const char *file, int line, void *caller, unsigned taint,
  	    struct pt_regs *regs, struct warn_args *args)
  {
-@@ -559,6 +564,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -550,6 +555,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  	/* Just a warning, don't kill lockdep. */
  	add_taint(taint, LOCKDEP_STILL_OK);
  }
@@ -196,10 +196,10 @@ index 4b794f1d8561..4adc820675b8 100644
  #ifdef WANT_WARN_ON_SLOWPATH
  void warn_slowpath_fmt(const char *file, int line, const char *fmt, ...)
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 7df44550039a..23cb54bf7c68 100644
+index b1a161d1edce..0d3a375b57fa 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
-@@ -1925,8 +1925,15 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+@@ -1935,8 +1935,15 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
  			va_list va;
  
  			va_copy(va, *((struct va_format *)ptr)->va);

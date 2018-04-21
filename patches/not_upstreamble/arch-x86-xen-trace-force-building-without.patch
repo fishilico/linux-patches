@@ -6,20 +6,40 @@ Subject: [PATCH] {NOT UPSTREAMABLE} arch/x86/xen/trace: force building without
 
 because of a non-silentable warning about a comparaison to function pointer
 ---
- arch/x86/xen/Makefile | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86/xen/Makefile | 4 ++++
+ init/Makefile         | 6 ++++++
+ 2 files changed, 10 insertions(+)
 
 diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index d83cb5478f54..6f40515a9637 100644
+index d83cb5478f54..cca74d7e05a1 100644
 --- a/arch/x86/xen/Makefile
 +++ b/arch/x86/xen/Makefile
-@@ -14,6 +14,8 @@ nostackp := $(call cc-option, -fno-stack-protector)
+@@ -14,6 +14,10 @@ nostackp := $(call cc-option, -fno-stack-protector)
  CFLAGS_enlighten_pv.o		:= $(nostackp)
  CFLAGS_mmu_pv.o		:= $(nostackp)
  
++ifeq ($(cc-name),clang)
 +CFLAGS_trace.o := -Wno-error
++endif
 +
  obj-y		:= enlighten.o multicalls.o mmu.o irq.o \
  			time.o xen-asm.o xen-asm_$(BITS).o \
  			grant-table.o suspend.o platform-pci-unplug.o
+diff --git a/init/Makefile b/init/Makefile
+index a3e5ce2bcf08..f73639ac543e 100644
+--- a/init/Makefile
++++ b/init/Makefile
+@@ -15,6 +15,12 @@ obj-$(CONFIG_GENERIC_CALIBRATE_DELAY) += calibrate.o
+ 
+ obj-y                          += init_task.o
+ 
++# clang fails with "error: ordered comparison of function pointers ('initcall_t' (aka 'int (*)(void)') and 'initcall_t') [-Werror]
++# and it is not possible to work around easily
++ifeq ($(cc-name),clang)
++CFLAGS_main.o += -Wno-error
++endif
++
+ mounts-y			:= do_mounts.o
+ mounts-$(CONFIG_BLK_DEV_RAM)	+= do_mounts_rd.o
+ mounts-$(CONFIG_BLK_DEV_INITRD)	+= do_mounts_initrd.o
 -- 

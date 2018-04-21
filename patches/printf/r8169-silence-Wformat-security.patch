@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 14 Apr 2018 11:45:46 +0200
+Subject: [PATCH] {PRINTF} r8169: silence -Wformat-security
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc reports:
+
+    drivers/net/ethernet/realtek/r8169.c: In function ‘rtl_open’:
+    drivers/net/ethernet/realtek/r8169.c:7697:6: error: format not a
+    string literal and no format arguments [-Werror=format-security]
+          dev->name);
+          ^~~
+---
+ drivers/net/ethernet/realtek/r8169.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/realtek/r8169.c b/drivers/net/ethernet/realtek/r8169.c
+index 604ae78381ae..3c6c190d994e 100644
+--- a/drivers/net/ethernet/realtek/r8169.c
++++ b/drivers/net/ethernet/realtek/r8169.c
+@@ -7694,7 +7694,7 @@ static int rtl_open(struct net_device *dev)
+ 	rtl_request_firmware(tp);
+ 
+ 	retval = pci_request_irq(pdev, 0, rtl8169_interrupt, NULL, dev,
+-				 dev->name);
++				 "%s", dev->name);
+ 	if (retval < 0)
+ 		goto err_release_fw_2;
+ 
+-- 

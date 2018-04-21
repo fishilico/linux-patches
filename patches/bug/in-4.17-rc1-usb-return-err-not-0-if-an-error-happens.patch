@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 14 Apr 2018 19:08:48 +0200
+Subject: [PATCH] {BUG in 4.17-rc1} usb: return err, not 0, if an error happens
+
+clang reports:
+
+    drivers/usb/core/phy.c:114:8: error: explicitly assigning value of
+    variable of type 'int' to itself
+          [-Werror,-Wself-assign]
+                            ret = ret;
+                            ~~~ ^ ~~~
+---
+ drivers/usb/core/phy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/core/phy.c b/drivers/usb/core/phy.c
+index 09b7c43c0ea4..f19aaa3c899c 100644
+--- a/drivers/usb/core/phy.c
++++ b/drivers/usb/core/phy.c
+@@ -111,7 +111,7 @@ int usb_phy_roothub_exit(struct usb_phy_roothub *phy_roothub)
+ 	list_for_each_entry(roothub_entry, head, list) {
+ 		err = phy_exit(roothub_entry->phy);
+ 		if (err)
+-			ret = ret;
++			ret = err;
+ 	}
+ 
+ 	return ret;
+-- 

@@ -16,7 +16,6 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  drivers/input/joystick/analog.c |  6 +++++-
  include/asm-generic/uaccess.h   | 16 ++++++++++++++++
  include/linux/build_bug.h       | 14 ++++++++++++++
- include/linux/compiler-gcc.h    |  5 +++++
  include/linux/compiler.h        | 21 +++++++++++++++++++++
  include/linux/compiler_types.h  |  2 +-
  include/linux/cpumask.h         |  5 +++++
@@ -39,7 +38,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  kernel/time/time.c              |  8 ++++++++
  lib/hexdump.c                   | 13 +++++++++++--
  lib/rhashtable.c                |  5 +++++
- 27 files changed, 151 insertions(+), 18 deletions(-)
+ 26 files changed, 146 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
 index 06ecee1b528e..9ccd4e388084 100644
@@ -55,7 +54,7 @@ index 06ecee1b528e..9ccd4e388084 100644
  # define __protected_read_by(x)  __attribute__((require_context(x,1,999,"read")))
  # define __protected_write_by(x) __attribute__((require_context(x,1,999,"write")))
 diff --git a/drivers/input/joystick/analog.c b/drivers/input/joystick/analog.c
-index c868a878c84f..7ef98f3ca905 100644
+index c79dbcb4d146..16adcc207803 100644
 --- a/drivers/input/joystick/analog.c
 +++ b/drivers/input/joystick/analog.c
 @@ -139,7 +139,11 @@ struct analog_port {
@@ -137,24 +136,6 @@ index 43d1fd50d433..97415a0bdcb4 100644
  #else /* __CHECKER__ */
  
  /* Force a compilation error if a constant expression is not a power of 2 */
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index e2c7f4369eff..63f094a3b6a2 100644
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -262,8 +262,13 @@
-  * as possible, this is used for all GCC 4.6+ builds, and not just on
-  * RANDSTRUCT_PLUGIN builds.
-  */
-+/* Frama-C does not support such structures:
-+ * init/init_task.c:19:[kernel] failure: Cannot find designated field stack
-+ */
-+#ifndef __FRAMAC__
- #define randomized_struct_fields_start	struct {
- #define randomized_struct_fields_end	} __randomize_layout;
-+#endif
- 
- #endif /* GCC_VERSION >= 40600 */
- 
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
 index 070ea3c18d1c..033b15e15be7 100644
 --- a/include/linux/compiler.h
@@ -220,7 +201,7 @@ index bf53d893ad02..7935a728ac85 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 6b175759b4b9..fe35aa5e4f82 100644
+index 093e20e28f13..f0c68c0fee52 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
 @@ -182,7 +182,9 @@ struct ablkcipher_request {
@@ -234,7 +215,7 @@ index 6b175759b4b9..fe35aa5e4f82 100644
  };
  
  struct blkcipher_desc {
-@@ -592,7 +594,12 @@ struct crypto_tfm {
+@@ -600,7 +602,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -291,7 +272,7 @@ index b94fa61b51fb..ffd6208aabbd 100644
  		/*
  		 * This little trick makes sure that
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 2ed0076010d1..cde209cc83cb 100644
+index ea16c452d0df..7e1e9290ab1c 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -16,6 +16,9 @@
@@ -363,7 +344,7 @@ index db2f3f454a1b..5124ce3698dc 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 024a1beda008..8bd699943c85 100644
+index 73178a2fcee0..dd45c6ce9c04 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -137,6 +137,8 @@ typedef int __bitwise pci_power_t;
@@ -384,13 +365,13 @@ index 024a1beda008..8bd699943c85 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 73a4e2107024..ddaeda92f273 100644
+index 8f67f9791d58..4c61ccc6445c 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -207,6 +207,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
- 	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
- 
- #define __PROTECT(...) asmlinkage_protect(__VA_ARGS__)
+@@ -229,6 +229,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+  * done within __do_sys_*().
+  */
+ #ifndef __SYSCALL_DEFINEx
 +#ifdef __FRAMAC__
 +/* Simplify __SYSCALL_DEFINEx to make frama-C understands code */
 +#define __SYSCALL_DEFINEx(x, name, ...)                    \
@@ -399,15 +380,15 @@ index 73a4e2107024..ddaeda92f273 100644
 +#else
  #define __SYSCALL_DEFINEx(x, name, ...)					\
  	asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))	\
- 		__attribute__((alias(__stringify(SyS##name))));		\
-@@ -220,6 +226,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+ 		__attribute__((alias(__stringify(__se_sys##name))));	\
+@@ -243,6 +249,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  		return ret;						\
  	}								\
- 	static inline long SYSC##name(__MAP(x,__SC_DECL,__VA_ARGS__))
-+#endif
+ 	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
++#endif /* __FRAMAC__ */
+ #endif /* __SYSCALL_DEFINEx */
  
  /*
-  * Called before coming back to user-mode. Returning to user-mode with an
 diff --git a/include/uapi/linux/limits.h b/include/uapi/linux/limits.h
 index c3547f07605c..ecda73784a29 100644
 --- a/include/uapi/linux/limits.h
@@ -438,7 +419,7 @@ index cd4f0b897a48..35007be18087 100644
  #else
  #define __bitwise__
 diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 7df4d948d516..1a3f000b7103 100644
+index 25d40cb6421f..f772b3092942 100644
 --- a/init/do_mounts.c
 +++ b/init/do_mounts.c
 @@ -3,7 +3,7 @@
@@ -451,7 +432,7 @@ index 7df4d948d516..1a3f000b7103 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/init/do_mounts_initrd.c b/init/do_mounts_initrd.c
-index ad65d1fa5a44..a83debbccab8 100644
+index 1a9a3b8ec18f..5497f0336f3e 100644
 --- a/init/do_mounts_initrd.c
 +++ b/init/do_mounts_initrd.c
 @@ -4,7 +4,7 @@
@@ -464,7 +445,7 @@ index ad65d1fa5a44..a83debbccab8 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
-index 3f733c760a8c..7898bceab3ea 100644
+index 7d85d172bc7e..806ceaaf9899 100644
 --- a/init/do_mounts_md.c
 +++ b/init/do_mounts_md.c
 @@ -4,7 +4,7 @@
@@ -477,7 +458,7 @@ index 3f733c760a8c..7898bceab3ea 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
-index 99e0b649fc0e..59b0a4ea5178 100644
+index 035a5f0ab26b..0dfc2f98921c 100644
 --- a/init/do_mounts_rd.c
 +++ b/init/do_mounts_rd.c
 @@ -4,7 +4,7 @@
@@ -490,7 +471,7 @@ index 99e0b649fc0e..59b0a4ea5178 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/init/initramfs.c b/init/initramfs.c
-index 7e99a0038942..6130fe962de8 100644
+index 13643c46ebab..24c229ed58c1 100644
 --- a/init/initramfs.c
 +++ b/init/initramfs.c
 @@ -4,7 +4,7 @@
@@ -503,7 +484,7 @@ index 7e99a0038942..6130fe962de8 100644
  #warning "Sparse checking disabled for this file"
  #endif
 diff --git a/kernel/signal.c b/kernel/signal.c
-index c6e4c83dc090..76f86e9309c8 100644
+index d4ccea599692..f14f47018e1d 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1120,7 +1120,7 @@ static void print_fatal_signal(int signr)
@@ -516,7 +497,7 @@ index c6e4c83dc090..76f86e9309c8 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index bd4e6c7dd689..38da5e7abe59 100644
+index 3044d48ebe56..0dd29b2d45ab 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
 @@ -425,17 +425,21 @@ EXPORT_SYMBOL(mktime64);
@@ -541,7 +522,7 @@ index bd4e6c7dd689..38da5e7abe59 100644
  		nsec += NSEC_PER_SEC;
  		--sec;
  	}
-@@ -505,17 +509,21 @@ EXPORT_SYMBOL(ns_to_timeval);
+@@ -517,17 +521,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
  void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
@@ -609,10 +590,10 @@ index 81b70ed37209..89d1a3f19bba 100644
  			if (linebuflen < lx + 2)
  				goto overflow2;
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index 3e064f566e82..6929e6d9bf47 100644
+index b894ffffb5e5..73a94180be5a 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -785,7 +785,12 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
+@@ -786,7 +786,12 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
  		}
  
  next:

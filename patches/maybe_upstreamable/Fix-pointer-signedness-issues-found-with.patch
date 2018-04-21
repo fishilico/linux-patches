@@ -8,8 +8,8 @@ Signed-off-by: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
 ---
  include/linux/seq_buf.h | 2 +-
  include/net/sock.h      | 5 +++--
- kernel/fork.c           | 4 ++--
- 3 files changed, 6 insertions(+), 5 deletions(-)
+ kernel/fork.c           | 2 +-
+ 3 files changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/include/linux/seq_buf.h b/include/linux/seq_buf.h
 index 8d0df0b21dda..38fc879a58b9 100644
@@ -25,10 +25,10 @@ index 8d0df0b21dda..38fc879a58b9 100644
  	seq_buf_clear(s);
  }
 diff --git a/include/net/sock.h b/include/net/sock.h
-index ae23f3b389ca..d004a3e2d4da 100644
+index 74d725fdbe0f..404a13e8e9bd 100644
 --- a/include/net/sock.h
 +++ b/include/net/sock.h
-@@ -1895,8 +1895,9 @@ static inline int skb_add_data_nocache(struct sock *sk, struct sk_buff *skb,
+@@ -1891,8 +1891,9 @@ static inline int skb_add_data_nocache(struct sock *sk, struct sk_buff *skb,
  {
  	int err, offset = skb->len;
  
@@ -41,18 +41,16 @@ index ae23f3b389ca..d004a3e2d4da 100644
  		__skb_trim(skb, offset);
  
 diff --git a/kernel/fork.c b/kernel/fork.c
-index e5d9d405ae4e..b1959718dfdc 100644
+index 242c8c93d285..7d3640f4efc4 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
-@@ -1198,8 +1198,8 @@ void mm_release(struct task_struct *tsk, struct mm_struct *mm)
+@@ -1200,7 +1200,7 @@ void mm_release(struct task_struct *tsk, struct mm_struct *mm)
  			 * not set up a proper pointer then tough luck.
  			 */
  			put_user(0, tsk->clear_child_tid);
--			sys_futex(tsk->clear_child_tid, FUTEX_WAKE,
--					1, NULL, NULL, 0);
-+			sys_futex((u32 __user *)tsk->clear_child_tid,
-+					FUTEX_WAKE, 1, NULL, NULL, 0);
+-			do_futex(tsk->clear_child_tid, FUTEX_WAKE,
++			do_futex((u32 __user *)tsk->clear_child_tid, FUTEX_WAKE, /* TODO: is the cast still useful (merge patch from 2015 in 4.17 */
+ 					1, NULL, NULL, 0, 0);
  		}
  		tsk->clear_child_tid = NULL;
- 	}
 -- 

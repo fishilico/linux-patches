@@ -8,7 +8,7 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  arch/x86/kernel/hw_breakpoint.c                       | 1 +
  drivers/acpi/sysfs.c                                  | 2 ++
  drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c | 4 ++++
- drivers/gpu/drm/i915/i915_gem_request.c               | 2 +-
+ drivers/gpu/drm/i915/i915_request.c                   | 2 +-
  drivers/gpu/drm/qxl/qxl_draw.c                        | 2 +-
  drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c               | 1 +
  drivers/iio/common/ssp_sensors/ssp_iio.c              | 3 ++-
@@ -61,7 +61,7 @@ index 4fc59c3bc673..5f79db5f5fd2 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
-index c3e7e34535e8..6526bdefa84c 100644
+index 36ca7c419c90..aba4f1e43c90 100644
 --- a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 +++ b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 @@ -1073,6 +1073,10 @@ static int init_overdrive_limits(struct pp_hwmgr *hwmgr,
@@ -73,13 +73,13 @@ index c3e7e34535e8..6526bdefa84c 100644
 +		result = 0;
 +	}
  
- 	if (hwmgr->platform_descriptor.overdriveLimit.engineClock > 0
- 		&& hwmgr->platform_descriptor.overdriveLimit.memoryClock > 0
-diff --git a/drivers/gpu/drm/i915/i915_gem_request.c b/drivers/gpu/drm/i915/i915_gem_request.c
-index a3e93d46316a..2e11134f780c 100644
---- a/drivers/gpu/drm/i915/i915_gem_request.c
-+++ b/drivers/gpu/drm/i915/i915_gem_request.c
-@@ -1073,7 +1073,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
+ 	if (hwmgr->platform_descriptor.overdriveLimit.engineClock == 0
+ 		&& hwmgr->platform_descriptor.overdriveLimit.memoryClock == 0) {
+diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i915_request.c
+index 282f57630cc1..4025f01bb074 100644
+--- a/drivers/gpu/drm/i915/i915_request.c
++++ b/drivers/gpu/drm/i915/i915_request.c
+@@ -1136,7 +1136,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
@@ -128,10 +128,10 @@ index 645f2e3975db..e5aa6d1abcf5 100644
  	return iio_push_to_buffers_with_timestamp(indio_dev, spd->buffer,
  						  calculated_time);
 diff --git a/drivers/md/bcache/alloc.c b/drivers/md/bcache/alloc.c
-index 458e1d38577d..02cf3080fafd 100644
+index 004cc3cc6123..2c71a08b90c0 100644
 --- a/drivers/md/bcache/alloc.c
 +++ b/drivers/md/bcache/alloc.c
-@@ -326,7 +326,7 @@ static int bch_allocator_thread(void *arg)
+@@ -327,7 +327,7 @@ static int bch_allocator_thread(void *arg)
  		 * the free list:
  		 */
  		while (!fifo_empty(&ca->free_inc)) {
@@ -182,7 +182,7 @@ index 6956f7e7d439..b5ddd77d01a9 100644
  	enum xp_retval (*get_partition_rsvd_page_pa)
  		(void *, u64 *, unsigned long *, size_t *) =
 diff --git a/drivers/net/ethernet/sun/niu.c b/drivers/net/ethernet/sun/niu.c
-index 8dd545fed30d..6f951c348617 100644
+index f081de4f38d7..51d5a811e230 100644
 --- a/drivers/net/ethernet/sun/niu.c
 +++ b/drivers/net/ethernet/sun/niu.c
 @@ -7481,6 +7481,7 @@ static int niu_add_ethtool_tcam_entry(struct niu *np,
@@ -233,10 +233,10 @@ index 815f5333bb8f..cf50604ba973 100644
  			"failed to configure timebase steps/divider value\n");
  		return -EINVAL;
 diff --git a/drivers/scsi/qla2xxx/qla_mr.c b/drivers/scsi/qla2xxx/qla_mr.c
-index d5da3981cefe..0f07dda860f5 100644
+index 521a51370554..a992d71cccbb 100644
 --- a/drivers/scsi/qla2xxx/qla_mr.c
 +++ b/drivers/scsi/qla2xxx/qla_mr.c
-@@ -2227,6 +2227,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
+@@ -2228,6 +2228,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
  		if (iocb_job->u.fxiocb.flags & SRB_FXDISC_RSP_DWRD_VALID)
  			iocb_job->u.fxiocb.req_data =
  			    pkt->dataword_r;
@@ -245,10 +245,10 @@ index d5da3981cefe..0f07dda860f5 100644
  		bsg_job = sp->u.bsg_job;
  		bsg_reply = bsg_job->reply;
 diff --git a/drivers/scsi/qla4xxx/ql4_os.c b/drivers/scsi/qla4xxx/ql4_os.c
-index fc2c97d9a0d6..5f46fe72207c 100644
+index 94c14ce94da2..e650405b9cf3 100644
 --- a/drivers/scsi/qla4xxx/ql4_os.c
 +++ b/drivers/scsi/qla4xxx/ql4_os.c
-@@ -5889,7 +5889,7 @@ static void qla4xxx_boot_release(void *data)
+@@ -5887,7 +5887,7 @@ static void qla4xxx_boot_release(void *data)
  
  static int get_fw_boot_info(struct scsi_qla_host *ha, uint16_t ddb_index[])
  {
@@ -272,10 +272,10 @@ index c8e633594479..c99968bf2df8 100644
  	cxacru_upload_firmware(instance, fw, bp);
  
 diff --git a/fs/btrfs/uuid-tree.c b/fs/btrfs/uuid-tree.c
-index 726f928238d0..1ff74bf53692 100644
+index 1ba7ca2a4200..981d4b02acd0 100644
 --- a/fs/btrfs/uuid-tree.c
 +++ b/fs/btrfs/uuid-tree.c
-@@ -144,7 +144,8 @@ int btrfs_uuid_tree_add(struct btrfs_trans_handle *trans,
+@@ -132,7 +132,8 @@ int btrfs_uuid_tree_add(struct btrfs_trans_handle *trans,
  			   ret, (unsigned long long)key.objectid,
  			   (unsigned long long)key.offset, type);
  		goto out;
@@ -298,10 +298,10 @@ index fe0d1f9571bb..202b795867fa 100644
  	}
  
 diff --git a/fs/xfs/libxfs/xfs_dir2_node.c b/fs/xfs/libxfs/xfs_dir2_node.c
-index 239d97a64296..795d9db893c4 100644
+index 9df096cc3c37..3bb50cdb84f5 100644
 --- a/fs/xfs/libxfs/xfs_dir2_node.c
 +++ b/fs/xfs/libxfs/xfs_dir2_node.c
-@@ -441,12 +441,12 @@ xfs_dir2_leafn_add(
+@@ -442,12 +442,12 @@ xfs_dir2_leafn_add(
  {
  	int			compact;	/* compacting stale leaves */
  	xfs_inode_t		*dp;		/* incore directory inode */
@@ -316,7 +316,7 @@ index 239d97a64296..795d9db893c4 100644
  	struct xfs_dir3_icleaf_hdr leafhdr;
  	struct xfs_dir2_leaf_entry *ents;
  
-@@ -497,6 +497,8 @@ xfs_dir2_leafn_add(
+@@ -498,6 +498,8 @@ xfs_dir2_leafn_add(
  		 */
  		lfloglow = leafhdr.count;
  		lfloghigh = -1;
@@ -326,7 +326,7 @@ index 239d97a64296..795d9db893c4 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index 0e2cf5f0be1f..dffedba4c1c6 100644
+index de627fa19168..7aa56899aa92 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
 @@ -2033,7 +2033,7 @@ xfs_difree_finobt(
@@ -339,7 +339,7 @@ index 0e2cf5f0be1f..dffedba4c1c6 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 05e3395d698f..7b8ffa8de5c9 100644
+index 768b738c240d..d38f820866ea 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
 @@ -1085,7 +1085,7 @@ xlog_verify_tail(
@@ -365,10 +365,10 @@ index 40d2822f0e2f..f2eb1bcbd47f 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/mm/filemap.c b/mm/filemap.c
-index 693f62212a59..eba6220773c1 100644
+index 9276bdb2343c..c5d46fb08744 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -828,7 +828,7 @@ static int __add_to_page_cache_locked(struct page *page,
+@@ -829,7 +829,7 @@ static int __add_to_page_cache_locked(struct page *page,
  				      void **shadowp)
  {
  	int huge = PageHuge(page);
@@ -378,10 +378,10 @@ index 693f62212a59..eba6220773c1 100644
  
  	VM_BUG_ON_PAGE(!PageLocked(page), page);
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 5f303abac5ad..84bcdb3ad4ba 100644
+index 69449db7e283..e919f13d660a 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1305,7 +1305,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
+@@ -1306,7 +1306,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
  {
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;
@@ -391,10 +391,10 @@ index 5f303abac5ad..84bcdb3ad4ba 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index 69722504e3e1..c419ebde41e7 100644
+index 535de3161a78..73bbaa56eae8 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2399,7 +2399,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
+@@ -2394,7 +2394,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
  	bool tdls_peer;
  	bool multicast;
  	u16 info_id = 0;
@@ -404,10 +404,10 @@ index 69722504e3e1..c419ebde41e7 100644
  	enum nl80211_band band;
  	int ret;
 diff --git a/net/tipc/socket.c b/net/tipc/socket.c
-index 7dfa9fc99ec3..2a7e695d4d40 100644
+index 1fd1c8b5ce03..ea4a34906066 100644
 --- a/net/tipc/socket.c
 +++ b/net/tipc/socket.c
-@@ -1352,7 +1352,8 @@ static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dlen)
+@@ -1348,7 +1348,8 @@ static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dlen)
  		msg_set_destnode(hdr, dnode);
  		msg_set_destport(hdr, dest->addr.id.ref);
  		msg_set_hdr_sz(hdr, BASIC_H_SIZE);

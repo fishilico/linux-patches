@@ -9,41 +9,40 @@ This plugin helped to detect the following bugs:
 - 4c171636bc2b ("[media] v4l: rcar_fdp1: use %4.4s to format a 4-byte
   string")
 ---
- arch/Kconfig                                       |   7 +
- drivers/android/binder.c                           |   2 +-
- drivers/block/rbd.c                                |   7 +-
- drivers/hwtracing/intel_th/pti.c                   |   3 +
- drivers/misc/ioc4.c                                |   4 +-
- drivers/net/ethernet/ti/netcp_ethss.c              |   4 +-
- drivers/net/wireless/ath/ath10k/wmi.c              |   2 +-
- .../net/wireless/realtek/rtlwifi/rtl8192de/fw.c    |   2 +-
- drivers/of/unittest.c                              |   6 +
- drivers/platform/x86/asus-laptop.c                 |   4 +-
- drivers/scsi/bnx2fc/bnx2fc_fcoe.c                  |   2 +-
- drivers/scsi/fcoe/fcoe.c                           |   2 +-
- drivers/scsi/fcoe/fcoe_transport.c                 |   4 +-
- drivers/scsi/hpsa.c                                |   2 +-
- drivers/scsi/qedf/qedf_main.c                      |   2 +-
- drivers/scsi/qedi/qedi_main.c                      |   7 +-
- drivers/scsi/smartpqi/smartpqi_init.c              |   2 +-
- drivers/staging/irda/drivers/vlsi_ir.c             |   6 +-
- drivers/staging/rtlwifi/phydm/phydm_debug.c        |   2 +-
- drivers/target/iscsi/iscsi_target_auth.c           |   8 +-
- drivers/target/target_core_pr.c                    |   2 +-
- fs/nfsd/nfsctl.c                                   |   9 +-
- fs/overlayfs/inode.c                               |   3 +
- fs/reiserfs/Makefile                               |  16 +
- net/ipv4/sysctl_net_ipv4.c                         |   2 +-
- scripts/Makefile.gcc-plugins                       |   5 +
- scripts/gcc-plugins/printk_format_plugin.c         | 822 +++++++++++++++++++++
- security/apparmor/mount.c                          |  10 +-
- sound/soc/intel/haswell/sst-haswell-dsp.c          |   4 +-
- sound/soc/sh/dma-sh7760.c                          |   2 +-
- 30 files changed, 915 insertions(+), 38 deletions(-)
+ arch/Kconfig                                  |   7 +
+ drivers/android/binder.c                      |   2 +-
+ drivers/block/rbd.c                           |   7 +-
+ drivers/hwtracing/intel_th/pti.c              |   3 +
+ drivers/misc/ioc4.c                           |   4 +-
+ drivers/net/ethernet/ti/netcp_ethss.c         |   4 +-
+ drivers/net/wireless/ath/ath10k/wmi.c         |   2 +-
+ .../wireless/realtek/rtlwifi/rtl8192de/fw.c   |   2 +-
+ drivers/of/unittest.c                         |   6 +
+ drivers/platform/x86/asus-laptop.c            |   4 +-
+ drivers/scsi/bnx2fc/bnx2fc_fcoe.c             |   2 +-
+ drivers/scsi/fcoe/fcoe.c                      |   2 +-
+ drivers/scsi/fcoe/fcoe_transport.c            |   4 +-
+ drivers/scsi/hpsa.c                           |   2 +-
+ drivers/scsi/qedf/qedf_main.c                 |   2 +-
+ drivers/scsi/qedi/qedi_main.c                 |   7 +-
+ drivers/scsi/smartpqi/smartpqi_init.c         |   2 +-
+ drivers/staging/rtlwifi/phydm/phydm_debug.c   |   2 +-
+ drivers/target/iscsi/iscsi_target_auth.c      |   8 +-
+ drivers/target/target_core_pr.c               |   2 +-
+ fs/nfsd/nfsctl.c                              |   9 +-
+ fs/overlayfs/inode.c                          |   3 +
+ fs/reiserfs/Makefile                          |  16 +
+ net/ipv4/sysctl_net_ipv4.c                    |   2 +-
+ scripts/Makefile.gcc-plugins                  |   5 +
+ scripts/gcc-plugins/printk_format_plugin.c    | 822 ++++++++++++++++++
+ security/apparmor/mount.c                     |  10 +-
+ sound/soc/intel/haswell/sst-haswell-dsp.c     |   4 +-
+ sound/soc/sh/dma-sh7760.c                     |   2 +-
+ 29 files changed, 912 insertions(+), 35 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index 07ee354f0640..aecd781cbba1 100644
+index 2b912c03f45f..b1ea6bb2b647 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
 @@ -530,6 +530,13 @@ config GCC_PLUGIN_RANDSTRUCT_PERFORMANCE
@@ -74,11 +73,11 @@ index 764b63a5aade..9b2e38dd7195 100644
  }
  
 diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index 8e40da093766..4869fd6b7913 100644
+index 07dc5419bd63..ac4d222eacfa 100644
 --- a/drivers/block/rbd.c
 +++ b/drivers/block/rbd.c
-@@ -1920,10 +1920,15 @@ __rbd_osd_req_create(struct rbd_device *rbd_dev,
- 	req->r_priv = obj_request;
+@@ -1457,10 +1457,15 @@ rbd_osd_req_create(struct rbd_obj_request *obj_req, unsigned int num_ops)
+ 	req->r_priv = obj_req;
  
  	req->r_base_oloc.pool = rbd_dev->layout.pool_id;
 +/* FIXME this change should not be mandatory with the printk checker plugin
@@ -87,7 +86,7 @@ index 8e40da093766..4869fd6b7913 100644
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
  	if (ceph_oid_aprintf(&req->r_base_oid, GFP_NOIO, name_format,
- 			rbd_dev->header.object_prefix, obj_request->object_no))
+ 			rbd_dev->header.object_prefix, obj_req->ex.oe_objno))
  		goto err_req;
 -
 +#pragma GCC diagnostic pop
@@ -95,10 +94,10 @@ index 8e40da093766..4869fd6b7913 100644
  		goto err_req;
  
 diff --git a/drivers/hwtracing/intel_th/pti.c b/drivers/hwtracing/intel_th/pti.c
-index e96a1fcb57b2..04062b30e055 100644
+index 56694339cb06..877e6005b04b 100644
 --- a/drivers/hwtracing/intel_th/pti.c
 +++ b/drivers/hwtracing/intel_th/pti.c
-@@ -266,8 +266,11 @@ static ssize_t lpp_dest_show(struct device *dev, struct device_attribute *attr,
+@@ -258,8 +258,11 @@ static ssize_t lpp_dest_show(struct device *dev, struct device_attribute *attr,
  		if (!(pti->lpp_dest_mask & BIT(i)))
  			continue;
  
@@ -155,10 +154,10 @@ index 56dbc0b9fedc..ca5ecef5c84f 100644
  			phy_start(slave->phy);
  		}
 diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
-index 58dc2189ba49..de67f3ec5942 100644
+index c5e1ca5945db..59d25d1e7738 100644
 --- a/drivers/net/wireless/ath/ath10k/wmi.c
 +++ b/drivers/net/wireless/ath/ath10k/wmi.c
-@@ -6641,7 +6641,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
+@@ -6948,7 +6948,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
  	ether_addr_copy(cmd->peer_macaddr.addr, peer_addr);
  
  	ath10k_dbg(ar, ATH10K_DBG_WMI,
@@ -181,24 +180,24 @@ index 85cedd083d2b..762897f48421 100644
  	return -1;
  }
 diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 7a9abaae874d..cfa7096b467f 100644
+index 6bb37c18292a..cf37be382879 100644
 --- a/drivers/of/unittest.c
 +++ b/drivers/of/unittest.c
-@@ -257,7 +257,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
+@@ -263,7 +263,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
  
  	/* Baseline; check conversion with a large size limit */
- 	memset(buf, 0xff, sizeof(buf));
+ 	memset(buf, 0xff, buf_size);
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
- 	size = snprintf(buf, sizeof(buf) - 2, fmt, np);
+ 	size = snprintf(buf, buf_size - 2, fmt, np);
 +#pragma GCC diagnostic pop
  
  	/* use strcmp() instead of strncmp() here to be absolutely sure strings match */
  	unittest((strcmp(buf, expected) == 0) && (buf[size+1] == 0xff),
-@@ -269,7 +272,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
+@@ -275,7 +278,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
  	for (i = 0; i < 2; i++, size--) {
  		/* Clear the buffer, and make sure it works correctly still */
- 		memset(buf, 0xff, sizeof(buf));
+ 		memset(buf, 0xff, buf_size);
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
  		snprintf(buf, size+1, fmt, np);
@@ -286,10 +285,10 @@ index 3a9eca163db8..cf9ff53b808b 100644
  		}
  	} else if (cmd_type == TYPE_MSG) {
 diff --git a/drivers/scsi/qedf/qedf_main.c b/drivers/scsi/qedf/qedf_main.c
-index ccd9a08ea030..a188c91596b2 100644
+index 284ccb566b19..6807583f6b2f 100644
 --- a/drivers/scsi/qedf/qedf_main.c
 +++ b/drivers/scsi/qedf/qedf_main.c
-@@ -1540,7 +1540,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
+@@ -1538,7 +1538,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
  	if (rc) {
  		fcoe_wwn_to_str(vport->port_name, buf, sizeof(buf));
  		QEDF_WARN(&(base_qedf->dbg_ctx), "Failed to create vport, "
@@ -299,7 +298,7 @@ index ccd9a08ea030..a188c91596b2 100644
  	}
  
 diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index 3033b20d1751..777e6414d2ef 100644
+index b9c9125acd93..e2dbe0033ec5 100644
 --- a/drivers/scsi/qedi/qedi_main.c
 +++ b/drivers/scsi/qedi/qedi_main.c
 @@ -1727,7 +1727,8 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
@@ -331,7 +330,7 @@ index 3033b20d1751..777e6414d2ef 100644
  	return rc;
  }
 diff --git a/drivers/scsi/smartpqi/smartpqi_init.c b/drivers/scsi/smartpqi/smartpqi_init.c
-index 806b5637f394..f1cdf8d810ed 100644
+index 412e8c77da20..7cb476dab0e8 100644
 --- a/drivers/scsi/smartpqi/smartpqi_init.c
 +++ b/drivers/scsi/smartpqi/smartpqi_init.c
 @@ -451,7 +451,7 @@ static int pqi_build_raid_path_request(struct pqi_ctrl_info *ctrl_info,
@@ -343,23 +342,6 @@ index 806b5637f394..f1cdf8d810ed 100644
  			cmd);
  		break;
  	}
-diff --git a/drivers/staging/irda/drivers/vlsi_ir.c b/drivers/staging/irda/drivers/vlsi_ir.c
-index 3dff3c55ddf5..c986dbfe7adc 100644
---- a/drivers/staging/irda/drivers/vlsi_ir.c
-+++ b/drivers/staging/irda/drivers/vlsi_ir.c
-@@ -201,9 +201,9 @@ static void vlsi_proc_ndev(struct seq_file *seq, struct net_device *ndev)
- 		(byte&IRMISC_UARTTST) ? " uarttest" : "",
- 		(byte&IRMISC_UARTEN) ? "@" : " disabled\n");
- 	if (byte&IRMISC_UARTEN) {
--		seq_printf(seq, "0x%s\n",
--			(byte&2) ? ((byte&1) ? "3e8" : "2e8")
--				 : ((byte&1) ? "3f8" : "2f8"));
-+		seq_printf(seq, "%s\n", /* False positive report of "0x%s" */
-+			(byte&2) ? ((byte&1) ? "0x3e8" : "0x2e8")
-+				 : ((byte&1) ? "0x3f8" : "0x2f8"));
- 	}
- 	pci_read_config_byte(idev->pdev, VLSI_PCI_CLKCTL, &byte);
- 	seq_printf(seq, "CLKCTL: PLL %s%s%s / clock %s / wakeup %s\n",
 diff --git a/drivers/staging/rtlwifi/phydm/phydm_debug.c b/drivers/staging/rtlwifi/phydm/phydm_debug.c
 index e18ba2cca2bd..a45f6c2958a9 100644
 --- a/drivers/staging/rtlwifi/phydm/phydm_debug.c
@@ -444,10 +426,10 @@ index d107b4426f7e..6f5a100eff35 100644
  }
  
 diff --git a/fs/overlayfs/inode.c b/fs/overlayfs/inode.c
-index 3b1bd469accd..bb3a1841bebb 100644
+index 6e3815fb006b..1e2a2b3bce24 100644
 --- a/fs/overlayfs/inode.c
 +++ b/fs/overlayfs/inode.c
-@@ -532,8 +532,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
+@@ -579,8 +579,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
  	char buf[13];
  	int len;
  
@@ -487,7 +469,7 @@ index a39a562c1c10..dff4bc0d344d 100644
  reiserfs-objs += procfs.o
  endif
 diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-index 93e172118a94..9b1ce83ce058 100644
+index 4b195bac8ac0..7286b6b8bbc5 100644
 --- a/net/ipv4/sysctl_net_ipv4.c
 +++ b/net/ipv4/sysctl_net_ipv4.c
 @@ -293,7 +293,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
@@ -1344,7 +1326,7 @@ index 000000000000..7ef27db70e0e
 +	return 0;
 +}
 diff --git a/security/apparmor/mount.c b/security/apparmor/mount.c
-index 8c558cbce930..3b65b88edc1b 100644
+index 6e8c7ac0b33d..e4ad78a41294 100644
 --- a/security/apparmor/mount.c
 +++ b/security/apparmor/mount.c
 @@ -52,7 +52,7 @@ static void audit_mnt_flags(struct audit_buffer *ab, unsigned long flags)
@@ -1393,7 +1375,7 @@ index b2bec36d074c..5d13923d82f1 100644
  	dev_dbg(dsp->dev, " entrypoint 0x%x\n", module->entry_point);
  	dev_dbg(dsp->dev, " persistent 0x%x scratch 0x%x\n",
 diff --git a/sound/soc/sh/dma-sh7760.c b/sound/soc/sh/dma-sh7760.c
-index 1e7d417b53ef..10c9528803a2 100644
+index 2dc3b762fdd9..768c822700f2 100644
 --- a/sound/soc/sh/dma-sh7760.c
 +++ b/sound/soc/sh/dma-sh7760.c
 @@ -204,7 +204,7 @@ static int camelot_prepare(struct snd_pcm_substream *substream)

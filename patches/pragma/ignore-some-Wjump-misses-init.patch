@@ -14,10 +14,10 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
  7 files changed, 49 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 7830d28df331..df710db792e8 100644
+index df92e3ec9913..b9e6b18a900a 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
-@@ -461,6 +461,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
+@@ -427,6 +427,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
  	int flex_size = ext4_flex_bg_size(sbi);
  	struct dx_hash_info hinfo;
  
@@ -29,7 +29,7 @@ index 7830d28df331..df710db792e8 100644
  	ngroups = real_ngroups;
  	if (flex_size > 1) {
  		ngroups = (real_ngroups + flex_size - 1) >>
-@@ -588,6 +593,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
+@@ -554,6 +559,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
  	}
  
  	return -1;
@@ -40,10 +40,10 @@ index 7830d28df331..df710db792e8 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index c6eff108aa99..bd5567ac0d93 100644
+index 5dd1dcb902bf..8fd8a8d5f3c9 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -4533,6 +4533,12 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -4545,6 +4545,12 @@ static int do_check(struct bpf_verifier_env *env)
  	int insn_processed = 0;
  	bool do_print_state = false;
  
@@ -56,7 +56,7 @@ index c6eff108aa99..bd5567ac0d93 100644
  	state = kzalloc(sizeof(struct bpf_verifier_state), GFP_KERNEL);
  	if (!state)
  		return -ENOMEM;
-@@ -4856,6 +4862,9 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -4869,6 +4875,9 @@ static int do_check(struct bpf_verifier_env *env)
  	verbose(env, "\n");
  	env->prog->aux->stack_depth = env->subprog_stack_depth[0];
  	return 0;
@@ -67,10 +67,10 @@ index c6eff108aa99..bd5567ac0d93 100644
  
  static int check_map_prealloc(struct bpf_map *map)
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index cd3905eb5399..3e064f566e82 100644
+index 57b3dc2cd957..b894ffffb5e5 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -785,6 +785,7 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
+@@ -786,6 +786,7 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
  		}
  
  next:
@@ -79,7 +79,7 @@ index cd3905eb5399..3e064f566e82 100644
  			iter->skip++;
  			iter->p = p;
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 9efdc021ad22..ed226c36e04d 100644
+index 188f195883b9..056487d90006 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
 @@ -692,6 +692,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
@@ -105,10 +105,10 @@ index 9efdc021ad22..ed226c36e04d 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 857e4e6f751a..05ac41c1a562 100644
+index 345b51837ca8..2f4e518ce446 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -1764,6 +1764,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1767,6 +1767,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  	    unlikely((err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC))))
  		return err;
  
@@ -120,7 +120,7 @@ index 857e4e6f751a..05ac41c1a562 100644
  	i = 0;
  	if (offset >= len)
  		goto drop_pages;
-@@ -1780,6 +1785,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1783,6 +1788,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  
  drop_pages:
  		skb_shinfo(skb)->nr_frags = i;
@@ -131,10 +131,10 @@ index 857e4e6f751a..05ac41c1a562 100644
  		for (; i < nfrags; i++)
  			skb_frag_unref(skb, i);
 diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
-index 07ddc55ba52e..877d4892d41e 100644
+index bb412c86aa56..6862ff612e74 100644
 --- a/net/ipv4/fib_trie.c
 +++ b/net/ipv4/fib_trie.c
-@@ -1321,6 +1321,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1341,6 +1341,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->gets);
  #endif
  
@@ -145,7 +145,7 @@ index 07ddc55ba52e..877d4892d41e 100644
  	/* Step 1: Travel to the longest prefix match in the trie */
  	for (;;) {
  		index = get_cindex(key, n);
-@@ -1485,6 +1489,9 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1505,6 +1509,9 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->semantic_match_miss);
  #endif
  	goto backtrace;
@@ -156,7 +156,7 @@ index 07ddc55ba52e..877d4892d41e 100644
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
-index ed8b6a24b9e9..6eea979cdd30 100644
+index bac47b5d18fd..0db2a15e8718 100644
 --- a/net/sched/cls_u32.c
 +++ b/net/sched/cls_u32.c
 @@ -115,6 +115,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
