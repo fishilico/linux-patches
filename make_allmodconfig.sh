@@ -179,16 +179,21 @@ then
     disable_in_kcflags 'long-long' # Use "long long" type
     disable_in_kcflags 'missing-noreturn' # It does not make sense to have boot functions (rest_init, cpu_idle_loop...) marked __noreturn
     disable_in_kcflags 'missing-variable-declarations' # Global variables can miss a declaration
+    disable_in_kcflags 'null-pointer-arithmetic' # The kernel uses horrible syntax such as "return NULL + !*ppos;"
     disable_in_kcflags 'overlength-strings' # Support loooooong strings
     disable_in_kcflags 'packed' # Packing is much too implicit to be reported
     disable_in_kcflags 'padded' # Some structures get padded
     disable_in_kcflags 'pedantic' # Use modern C
     disable_in_kcflags 'pointer-bool-conversion' # Some vectors are tested as null pointers
+    disable_in_kcflags 'redundant-parens' # Some macros expand with redundant parentheses
     disable_in_kcflags 'reserved-id-macro' # Linux uses macros begining with underscore
     disable_in_kcflags 'shift-negative-value' # Shifted negative numbers are like unsigned for Linux
     disable_in_kcflags 'switch-bool' # It happens that bool are used in switch statements
     disable_in_kcflags 'switch-enum' # Show values in switch on enum can be skipped
     disable_in_kcflags 'tautological-compare' # Many unsigned variables are compared with 0
+    disable_in_kcflags 'tautological-type-limit-compare' # Make sure the kernel keeps type bounding checks
+    disable_in_kcflags 'tautological-unsigned-enum-zero-compare' # Many unsigned enums are compared with 0
+    disable_in_kcflags 'tautological-unsigned-zero-compare' # Many unsigned variables are compared with 0
     disable_in_kcflags 'unknown-pragmas' # Ignore GCC-specific #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
     disable_in_kcflags 'unreachable-code' # Code can be unreachable depending on the config
     disable_in_kcflags 'unreachable-code-break'
