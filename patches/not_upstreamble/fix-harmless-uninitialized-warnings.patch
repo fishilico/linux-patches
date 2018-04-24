@@ -32,8 +32,7 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  mm/filemap.c                                          | 2 +-
  net/mac80211/mlme.c                                   | 2 +-
  net/mac80211/tx.c                                     | 2 +-
- net/tipc/socket.c                                     | 3 ++-
- 28 files changed, 43 insertions(+), 20 deletions(-)
+ 27 files changed, 41 insertions(+), 19 deletions(-)
 
 diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
 index 8771766d46b6..df760ec0e44e 100644
@@ -365,7 +364,7 @@ index 40d2822f0e2f..f2eb1bcbd47f 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/mm/filemap.c b/mm/filemap.c
-index 9276bdb2343c..c5d46fb08744 100644
+index 0604cb02e6f3..61fe8a391ddf 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
 @@ -829,7 +829,7 @@ static int __add_to_page_cache_locked(struct page *page,
@@ -403,18 +402,4 @@ index 535de3161a78..73bbaa56eae8 100644
  	struct ieee80211_sub_if_data *ap_sdata;
  	enum nl80211_band band;
  	int ret;
-diff --git a/net/tipc/socket.c b/net/tipc/socket.c
-index 1fd1c8b5ce03..ea4a34906066 100644
---- a/net/tipc/socket.c
-+++ b/net/tipc/socket.c
-@@ -1348,7 +1348,8 @@ static int __tipc_sendmsg(struct socket *sock, struct msghdr *m, size_t dlen)
- 		msg_set_destnode(hdr, dnode);
- 		msg_set_destport(hdr, dest->addr.id.ref);
- 		msg_set_hdr_sz(hdr, BASIC_H_SIZE);
--	}
-+	} else
-+		dnode = 0; /* BUG? */
- 
- 	/* Block or return if destination link is congested */
- 	rc = tipc_wait_for_cond(sock, &timeout,
 -- 

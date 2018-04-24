@@ -92,12 +92,11 @@ It has also detected some bugs reported and fixed by other people:
  net/rxrpc/key.c                               |   2 +-
  net/rxrpc/rxkad.c                             |   2 +-
  net/sched/act_api.c                           |   4 +-
- samples/livepatch/livepatch-shadow-fix1.c     |   6 +-
  scripts/Makefile.gcc-plugins                  |   2 +
  scripts/gcc-plugins/deref_checker_plugin.c    | 421 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 68 files changed, 763 insertions(+), 96 deletions(-)
+ 67 files changed, 758 insertions(+), 95 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -670,10 +669,10 @@ index 7e14725055c7..261d95a44726 100644
  		return -EOPNOTSUPP;
  	}
 diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 7b187ec7411e..d02f580d419d 100644
+index 770422e953f7..3e5c9caaee85 100644
 --- a/drivers/net/virtio_net.c
 +++ b/drivers/net/virtio_net.c
-@@ -890,7 +890,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
+@@ -894,7 +894,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
  }
  
  static int receive_buf(struct virtnet_info *vi, struct receive_queue *rq,
@@ -1251,10 +1250,10 @@ index b611cd36e22d..a38cbe9973e1 100644
  	return ret < 0 ? ret : 0;
  }
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 1cd3fb4d70f8..364a23a943cd 100644
+index 02aed76e0978..e3118ba4af06 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
-@@ -750,19 +750,25 @@ static int create_trace_kprobe(int argc, char **argv)
+@@ -748,19 +748,25 @@ static int create_trace_kprobe(int argc, char **argv)
  
  	/* try to parse an address. if that fails, try to read the
  	 * input as a symbol. */
@@ -1433,23 +1432,6 @@ index 72251241665a..b7d6e5d72ace 100644
  				      tcf_action_egdev_ht_params);
  }
  
-diff --git a/samples/livepatch/livepatch-shadow-fix1.c b/samples/livepatch/livepatch-shadow-fix1.c
-index 830c55514f9f..37b1d382ce71 100644
---- a/samples/livepatch/livepatch-shadow-fix1.c
-+++ b/samples/livepatch/livepatch-shadow-fix1.c
-@@ -74,7 +74,11 @@ struct dummy *livepatch_fix1_dummy_alloc(void)
- 	 * pointer to handle resource release.
- 	 */
- 	leak = kzalloc(sizeof(int), GFP_KERNEL);
--	klp_shadow_alloc(d, SV_LEAK, &leak, sizeof(leak), GFP_KERNEL);
-+	{
-+		/* Play nice with the pointer deref checker */
-+		void *pleak = &leak;
-+		klp_shadow_alloc(d, SV_LEAK, pleak, sizeof(leak), GFP_KERNEL);
-+	}
- 
- 	pr_info("%s: dummy @ %p, expires @ %lx\n",
- 		__func__, d, d->jiffies_expire);
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
 index f6b3d47e75e8..d1d0f986cf35 100644
 --- a/scripts/Makefile.gcc-plugins

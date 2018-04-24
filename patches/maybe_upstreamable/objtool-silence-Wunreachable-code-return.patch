@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 23 Apr 2018 21:19:16 +0200
+Subject: [PATCH] {MAYBE UPS} objtool: silence -Wunreachable-code-return
+
+clang reports:
+
+    builtin-orc.c:67:9: error: 'return' will never be executed
+    [-Werror,-Wunreachable-code-return]
+            return 0;
+                   ^
+---
+ tools/objtool/builtin-orc.c | 2 --
+ tools/objtool/check.c       | 2 --
+ 2 files changed, 4 deletions(-)
+
+diff --git a/tools/objtool/builtin-orc.c b/tools/objtool/builtin-orc.c
+index 77ea2b97117d..030e7c40803b 100644
+--- a/tools/objtool/builtin-orc.c
++++ b/tools/objtool/builtin-orc.c
+@@ -63,6 +63,4 @@ int cmd_orc(int argc, const char **argv)
+ 	}
+ 
+ 	usage_with_options(orc_usage, check_options);
+-
+-	return 0;
+ }
+diff --git a/tools/objtool/check.c b/tools/objtool/check.c
+index 5409f6f6c48d..d0cc403f090a 100644
+--- a/tools/objtool/check.c
++++ b/tools/objtool/check.c
+@@ -1922,8 +1922,6 @@ static int validate_branch(struct objtool_file *file, struct instruction *first,
+ 
+ 		insn = next_insn;
+ 	}
+-
+-	return 0;
+ }
+ 
+ static int validate_unwind_hints(struct objtool_file *file)
+-- 
