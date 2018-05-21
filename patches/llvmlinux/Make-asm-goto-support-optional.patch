@@ -11,8 +11,8 @@ This partially reverts commit d0266046ad54 ("x86: Remove
 FAST_FEATURE_TESTS")
 ---
  arch/x86/Makefile                 | 2 +-
- arch/x86/include/asm/cpufeature.h | 4 ++++
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/cpufeature.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
 index 11d68b8fef55..d6adbda6f15a 100644
@@ -28,25 +28,16 @@ index 11d68b8fef55..d6adbda6f15a 100644
  
  #
 diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-index b27da9602a6d..e8a116bcef0c 100644
+index aced6c9290d6..93860bf99b7c 100644
 --- a/arch/x86/include/asm/cpufeature.h
 +++ b/arch/x86/include/asm/cpufeature.h
-@@ -147,6 +147,7 @@ extern void clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int bit);
+@@ -147,7 +147,7 @@ extern void clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int bit);
+  * headers, but clang does not support ASM GOTO and fails the build.
   */
- static __always_inline __pure bool _static_cpu_has(u16 bit)
- {
-+#ifdef CC_HAVE_ASM_GOTO
- 	asm_volatile_goto("1: jmp 6f\n"
- 		 "2:\n"
- 		 ".skip -(((5f-4f) - (2b-1b)) > 0) * "
-@@ -187,6 +188,9 @@ static __always_inline __pure bool _static_cpu_has(u16 bit)
- 	return true;
- t_no:
- 	return false;
-+#else
-+	return boot_cpu_has(bit);
-+#endif
- }
+ #ifndef __BPF_TRACING__
+-#warning "Compiler lacks ASM_GOTO support. Add -D __BPF_TRACING__ to your compiler arguments"
++/* #warning "Compiler lacks ASM_GOTO support. Add -D __BPF_TRACING__ to your compiler arguments" */
+ #endif
  
- #define static_cpu_has(bit)					\
+ #define static_cpu_has(bit)            boot_cpu_has(bit)
 -- 

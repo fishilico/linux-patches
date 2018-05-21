@@ -204,10 +204,10 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  197 files changed, 907 insertions(+), 27 deletions(-)
 
 diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
-index 5e3633c24e63..cedb768eb1ab 100644
+index 2fe87109ae46..2add29474245 100644
 --- a/arch/arm/kernel/traps.c
 +++ b/arch/arm/kernel/traps.c
-@@ -175,10 +175,13 @@ static void __dump_instr(const char *lvl, struct pt_regs *regs)
+@@ -176,10 +176,13 @@ static void __dump_instr(const char *lvl, struct pt_regs *regs)
  		else
  			bad = get_user(val, &((u32 *)addr)[i]);
  
@@ -287,10 +287,10 @@ index 42cf2880d0ed..05030b295bd6 100644
  		pr_emerg(HW_ERR "Fake kernel panic: %s\n", msg);
  }
 diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd.c b/arch/x86/kernel/cpu/mcheck/mce_amd.c
-index f7666eef4a87..0c68675e4c91 100644
+index c8e038800591..cec7605f4144 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce_amd.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce_amd.c
-@@ -1170,9 +1170,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
+@@ -1169,9 +1169,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
  		per_cpu(threshold_banks, cpu)[bank]->blocks = b;
  	}
  
@@ -304,7 +304,7 @@ index f7666eef4a87..0c68675e4c91 100644
  	if (err)
  		goto out_free;
  recurse:
-@@ -1205,13 +1209,21 @@ static int __threshold_add_blocks(struct threshold_bank *b)
+@@ -1204,13 +1208,21 @@ static int __threshold_add_blocks(struct threshold_bank *b)
  	struct threshold_block *tmp = NULL;
  	int err = 0;
  
@@ -326,7 +326,7 @@ index f7666eef4a87..0c68675e4c91 100644
  		if (err) {
  			list_for_each_entry_safe_reverse(pos, tmp, head, miscj)
  				kobject_del(&pos->kobj);
-@@ -1240,7 +1252,11 @@ static int threshold_create_bank(unsigned int cpu, unsigned int bank)
+@@ -1239,7 +1251,11 @@ static int threshold_create_bank(unsigned int cpu, unsigned int bank)
  		if (nb && nb->bank4) {
  			/* yes, use it */
  			b = nb->bank4;
@@ -3474,7 +3474,7 @@ index dc062b195c46..2a7731feac00 100644
  		btrfsic_dump_tree_sub(state, l->block_ref_to,
  				      indent_level + indent_add);
 diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
-index 3fd44835b386..41b49ed68753 100644
+index 8c68961925b1..84b334ddfb54 100644
 --- a/fs/btrfs/ctree.c
 +++ b/fs/btrfs/ctree.c
 @@ -934,7 +934,11 @@ static noinline int update_ref_for_cow(struct btrfs_trans_handle *trans,
@@ -3595,7 +3595,7 @@ index 4848a4318fb5..4be576da0249 100644
  
  	return ret;
 diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
-index 292266f6ab9c..4d34bb5faed2 100644
+index be3fc701f389..6a4f2c3109f8 100644
 --- a/fs/btrfs/volumes.c
 +++ b/fs/btrfs/volumes.c
 @@ -3005,7 +3005,10 @@ static int btrfs_relocate_chunk(struct btrfs_fs_info *fs_info, u64 chunk_offset)
