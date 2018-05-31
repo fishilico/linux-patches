@@ -6,21 +6,21 @@ Subject: [PATCH] {NOT UPSTREAMABLE} Remove disabled warnings
 Remove disabled warnings in Makefile so we have full control of the
 list of disabled warnings.
 ---
- Makefile                                      | 40 ++++++++++---------
+ Makefile                                      | 42 ++++++++++---------
  arch/arc/Makefile                             |  2 +-
  arch/x86/Makefile                             |  2 +-
  arch/x86/boot/compressed/Makefile             |  4 +-
- drivers/gpu/drm/i915/Makefile                 | 18 ++++-----
+ drivers/gpu/drm/i915/Makefile                 | 18 ++++----
  drivers/misc/cxl/Makefile                     |  2 +-
  drivers/staging/greybus/tools/Makefile        |  8 +++-
  drivers/staging/media/atomisp/i2c/Makefile    |  8 ++--
  .../staging/media/atomisp/i2c/ov5693/Makefile |  8 ++--
  .../media/atomisp/pci/atomisp2/Makefile       | 12 +++---
  scripts/Makefile.extrawarn                    | 14 +++----
- 11 files changed, 64 insertions(+), 54 deletions(-)
+ 11 files changed, 65 insertions(+), 55 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index ec6f45928fd4..92345a408a3f 100644
+index 56ba070dfa09..9b206d058dbd 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -391,7 +391,7 @@ PYTHON3		= python3
@@ -49,16 +49,18 @@ index ec6f45928fd4..92345a408a3f 100644
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
  KBUILD_CFLAGS_KERNEL :=
-@@ -623,7 +627,7 @@ all: vmlinux
+@@ -625,8 +629,8 @@ endif # $(dot-config)
+ all: vmlinux
  
- KBUILD_CFLAGS	+= $(call cc-option,-fno-PIE)
- KBUILD_AFLAGS	+= $(call cc-option,-fno-PIE)
--CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage -fno-tree-loop-im $(call cc-disable-warning,maybe-uninitialized,)
-+CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage -fno-tree-loop-im # $(call cc-disable-warning,maybe-uninitialized,)
+ CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage \
+-	$(call cc-option,-fno-tree-loop-im) \
+-	$(call cc-disable-warning,maybe-uninitialized,)
++	$(call cc-option,-fno-tree-loop-im)
++#	$(call cc-disable-warning,maybe-uninitialized,)
  export CFLAGS_GCOV CFLAGS_KCOV
  
  # The arch Makefile can set ARCH_{CPP,A,C}FLAGS to override the default
-@@ -634,24 +638,24 @@ ARCH_CFLAGS :=
+@@ -637,24 +641,24 @@ ARCH_CFLAGS :=
  include arch/$(SRCARCH)/Makefile
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
@@ -91,7 +93,7 @@ index ec6f45928fd4..92345a408a3f 100644
  
  # Tell gcc to never replace conditional load with a non-conditional one
  KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
-@@ -725,11 +729,11 @@ endif
+@@ -728,11 +732,11 @@ endif
  
  ifeq ($(cc-name),clang)
  KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
@@ -107,7 +109,7 @@ index ec6f45928fd4..92345a408a3f 100644
  # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
  # source of a reference will be _MergedGlobals and not on of the whitelisted names.
  # See modpost pattern 2
-@@ -739,10 +743,10 @@ else
+@@ -742,10 +746,10 @@ else
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
@@ -120,7 +122,7 @@ index ec6f45928fd4..92345a408a3f 100644
  ifdef CONFIG_FRAME_POINTER
  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
  else
-@@ -811,7 +815,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
+@@ -814,7 +818,7 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
  KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
  
  # disable pointer signed / unsigned warnings in gcc 4.0
