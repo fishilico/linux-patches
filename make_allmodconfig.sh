@@ -225,13 +225,19 @@ then
     KCFLAGS="$KCFLAGS -Wtrampolines"
     KCFLAGS="$KCFLAGS -Wjump-misses-init"
     KCFLAGS="$KCFLAGS -Wlogical-op"
+    disable_in_kcflags 'attribute-alias' # gcc 8 warns about x86-32 syscall handler using incompatible types
+    disable_in_kcflags 'cast-function-type' # gcc 8 warns about many incompatible function casts used by Linux
     disable_in_kcflags 'format-overflow' # Many calls to snprintf may overflow
     disable_in_kcflags 'format-truncation' # Many calls to snprintf may be truncated
     disable_in_kcflags 'frame-address' # __builtin_return_address is called with a nonzero argument
     disable_in_kcflags 'implicit-fallthrough' # Many switch statements use fall-though cases
+    disable_in_kcflags 'maybe-uninitialized' # There are too many false positives with gcc 5.2
     disable_in_kcflags 'old-style-declaration' # inline does not have to be at the beginning of declarations
     disable_in_kcflags 'override-init' # When defining syscall tables, overriding default value is mandatory
-    disable_in_kcflags 'maybe-uninitialized' # There are too many false positives with gcc 5.2
+    disable_in_kcflags 'packed-not-aligned' # gcc 8 warns about __attribute__((packed, aligned(4))) because 4 < 8
+    disable_in_kcflags 'sizeof-pointer-memaccess' # gcc 8 warns about using the size of the source buffer
+    disable_in_kcflags 'stringop-truncation' # gcc 8 warns about using strncpy with a dest buffer having the specified size
+    disable_in_kcflags 'stringop-overflow' # gcc 8 warns about using strncpy when "specified bound depends on the length of the source argument"
     disable_in_kcflags 'unused-but-set-variable' # Many variables are never used
 
     disable_in_kcflags 'error=jump-misses-init' # The compiler is not smart enough in many cases
