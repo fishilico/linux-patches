@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 10 Jun 2018 16:52:27 +0200
+Subject: [PATCH] {MAYBE UPS} net/xdp: silence -Wunused-value
+
+clang reports:
+
+    net/xdp/xsk_queue.h:248:2: error: expression result unused
+    [-Werror,-Wunused-value]
+            WRITE_ONCE(q->ring->producer, q->prod_tail);
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    include/linux/compiler.h:322:6: note: expanded from macro
+    'WRITE_ONCE'
+            __u.__val;                                      \
+            ~~~ ^~~~~
+---
+ net/xdp/xsk_queue.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/xdp/xsk_queue.h b/net/xdp/xsk_queue.h
+index ef6a6f0ec949..9f80bf5bf1a3 100644
+--- a/net/xdp/xsk_queue.h
++++ b/net/xdp/xsk_queue.h
+@@ -245,7 +245,7 @@ static inline void xskq_produce_flush_desc(struct xsk_queue *q)
+ 	smp_wmb();
+ 
+ 	q->prod_tail = q->prod_head,
+-	WRITE_ONCE(q->ring->producer, q->prod_tail);
++	(void)WRITE_ONCE(q->ring->producer, q->prod_tail);
+ }
+ 
+ static inline bool xskq_full_desc(struct xsk_queue *q)
+-- 

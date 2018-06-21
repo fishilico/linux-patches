@@ -21,7 +21,7 @@ TODO: send fixes to dtc upstream:
  10 files changed, 56 insertions(+), 53 deletions(-)
 
 diff --git a/scripts/dtc/checks.c b/scripts/dtc/checks.c
-index 815eaf140ab5..b924fa4f3c47 100644
+index a2cc1036c915..c5419d651f1f 100644
 --- a/scripts/dtc/checks.c
 +++ b/scripts/dtc/checks.c
 @@ -45,7 +45,7 @@ typedef void (*check_fn)(struct check *c, struct dt_info *dti, struct node *node
@@ -60,7 +60,7 @@ index 815eaf140ab5..b924fa4f3c47 100644
  
  	if (n < strlen(node->name))
  		FAIL(c, dti, node, "Bad character '%c' in node name",
-@@ -339,7 +339,7 @@ static void check_property_name_chars(struct check *c, struct dt_info *dti,
+@@ -344,7 +344,7 @@ static void check_property_name_chars(struct check *c, struct dt_info *dti,
  	struct property *prop;
  
  	for_each_property(node, prop) {
@@ -69,7 +69,7 @@ index 815eaf140ab5..b924fa4f3c47 100644
  
  		if (n < strlen(prop->name))
  			FAIL_PROP(c, dti, node, prop, "Bad character '%c' in property name",
-@@ -540,7 +540,7 @@ static void check_name_properties(struct check *c, struct dt_info *dti,
+@@ -545,7 +545,7 @@ static void check_name_properties(struct check *c, struct dt_info *dti,
  		/* The name property is correct, and therefore redundant.
  		 * Delete it */
  		*pp = prop->next;
@@ -78,7 +78,7 @@ index 815eaf140ab5..b924fa4f3c47 100644
  		data_free(prop->val);
  		free(prop);
  	}
-@@ -1434,7 +1434,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
+@@ -1631,7 +1631,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
  
  static void disable_warning_error(struct check *c, bool warn, bool error)
  {
@@ -87,7 +87,7 @@ index 815eaf140ab5..b924fa4f3c47 100644
  
  	/* Lowering level, also lower it for things this is the prereq
  	 * for */
-@@ -1455,7 +1455,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
+@@ -1652,7 +1652,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
  
  void parse_checks_option(bool warn, bool error, const char *arg)
  {
@@ -96,7 +96,7 @@ index 815eaf140ab5..b924fa4f3c47 100644
  	const char *name = arg;
  	bool enable = true;
  
-@@ -1482,7 +1482,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
+@@ -1679,7 +1679,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
  
  void process_checks(bool force, struct dt_info *dti)
  {
@@ -138,10 +138,10 @@ index aa37a16c8891..033f12aca9c8 100644
  
  	case 64:
 diff --git a/scripts/dtc/dtc-lexer.l b/scripts/dtc/dtc-lexer.l
-index fd825ebba69c..529b8feddebd 100644
+index 615b7ec6588f..ce8d1fbb15fd 100644
 --- a/scripts/dtc/dtc-lexer.l
 +++ b/scripts/dtc/dtc-lexer.l
-@@ -294,7 +294,7 @@ static bool pop_input_file(void)
+@@ -301,7 +301,7 @@ static bool pop_input_file(void)
  	return true;
  }
  
@@ -206,7 +206,7 @@ index c36994e6eac5..cf77b06a3065 100644
  	fill_fullpaths(dti->dt, "");
  
 diff --git a/scripts/dtc/dtc.h b/scripts/dtc/dtc.h
-index 3b18a42b866e..11ec13265882 100644
+index 6d667701ab6a..577bc2c5eb99 100644
 --- a/scripts/dtc/dtc.h
 +++ b/scripts/dtc/dtc.h
 @@ -79,7 +79,7 @@ enum markertype {
@@ -236,7 +236,7 @@ index 3b18a42b866e..11ec13265882 100644
  	struct property *proplist;
  	struct node *children;
  
-@@ -194,23 +194,23 @@ struct node {
+@@ -196,14 +196,14 @@ struct node {
  void add_label(struct label **labels, char *label);
  void delete_labels(struct label **labels);
  
@@ -251,8 +251,10 @@ index 3b18a42b866e..11ec13265882 100644
  struct node *build_node_delete(void);
 -struct node *name_node(struct node *node, char *name);
 +struct node *name_node(struct node *node, const char *name);
+ struct node *omit_node_if_unused(struct node *node);
+ struct node *reference_node(struct node *node);
  struct node *chain_node(struct node *first, struct node *list);
- struct node *merge_nodes(struct node *old_node, struct node *new_node);
+@@ -211,10 +211,10 @@ struct node *merge_nodes(struct node *old_node, struct node *new_node);
  struct node *add_orphan_node(struct node *old_node, struct node *new_node, char *ref);
  
  void add_property(struct node *node, struct property *prop);
@@ -325,7 +327,7 @@ index 1e27780e1185..08281d88ae47 100644
  
  /**
 diff --git a/scripts/dtc/livetree.c b/scripts/dtc/livetree.c
-index 57b7db2ed153..abb98df9f06f 100644
+index 6e4c367f54b3..651bf493806f 100644
 --- a/scripts/dtc/livetree.c
 +++ b/scripts/dtc/livetree.c
 @@ -50,7 +50,7 @@ void delete_labels(struct label **labels)
@@ -355,7 +357,7 @@ index 57b7db2ed153..abb98df9f06f 100644
  {
  	assert(node->name == NULL);
  
-@@ -260,7 +260,7 @@ void add_property(struct node *node, struct property *prop)
+@@ -280,7 +280,7 @@ void add_property(struct node *node, struct property *prop)
  	*p = prop;
  }
  
@@ -364,7 +366,7 @@ index 57b7db2ed153..abb98df9f06f 100644
  {
  	struct property *prop = node->proplist;
  
-@@ -293,7 +293,7 @@ void add_child(struct node *parent, struct node *child)
+@@ -313,7 +313,7 @@ void add_child(struct node *parent, struct node *child)
  	*p = child;
  }
  
@@ -373,7 +375,7 @@ index 57b7db2ed153..abb98df9f06f 100644
  {
  	struct node *node = parent->children;
  
-@@ -575,7 +575,7 @@ cell_t get_node_phandle(struct node *root, struct node *node)
+@@ -595,7 +595,7 @@ cell_t get_node_phandle(struct node *root, struct node *node)
  {
  	static cell_t phandle = 1; /* FIXME: ick, static local */
  
@@ -382,7 +384,7 @@ index 57b7db2ed153..abb98df9f06f 100644
  		return node->phandle;
  
  	while (get_node_by_phandle(root, phandle))
-@@ -647,7 +647,7 @@ static int cmp_reserve_info(const void *ax, const void *bx)
+@@ -667,7 +667,7 @@ static int cmp_reserve_info(const void *ax, const void *bx)
  static void sort_reserve_entries(struct dt_info *dti)
  {
  	struct reserve_info *ri, **tbl;
@@ -391,7 +393,7 @@ index 57b7db2ed153..abb98df9f06f 100644
  
  	for (ri = dti->reservelist;
  	     ri;
-@@ -686,7 +686,7 @@ static int cmp_prop(const void *ax, const void *bx)
+@@ -706,7 +706,7 @@ static int cmp_prop(const void *ax, const void *bx)
  
  static void sort_properties(struct node *node)
  {
@@ -400,7 +402,7 @@ index 57b7db2ed153..abb98df9f06f 100644
  	struct property *prop, **tbl;
  
  	for_each_property_withdel(node, prop)
-@@ -722,7 +722,7 @@ static int cmp_subnode(const void *ax, const void *bx)
+@@ -742,7 +742,7 @@ static int cmp_subnode(const void *ax, const void *bx)
  
  static void sort_subnodes(struct node *node)
  {

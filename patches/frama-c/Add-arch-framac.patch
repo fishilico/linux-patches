@@ -10,7 +10,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/extra/gen_lds_vars.sh      |  27 ++++++
  arch/framac/extra/lds_vars.c           | 126 +++++++++++++++++++++++++
  arch/framac/include/abstract_structs.h |  73 ++++++++++++++
- arch/framac/include/asm/Kbuild         |  87 +++++++++++++++++
+ arch/framac/include/asm/Kbuild         |  88 +++++++++++++++++
  arch/framac/include/asm/byteorder.h    |   6 ++
  arch/framac/include/asm/dma-mapping.h  |  11 +++
  arch/framac/include/asm/elf.h          |  33 +++++++
@@ -19,7 +19,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/include/asm/processor.h    |  40 ++++++++
  arch/framac/include/asm/ptrace.h       |  23 +++++
  arch/framac/include/asm/sigcontext.h   |  10 ++
- arch/framac/include/asm/thread_info.h  |  61 ++++++++++++
+ arch/framac/include/asm/thread_info.h  |  68 +++++++++++++
  arch/framac/include/asm/uaccess.h      |  22 +++++
  arch/framac/kernel/Makefile            |  12 +++
  arch/framac/kernel/asm-offsets.c       |  13 +++
@@ -38,7 +38,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/delay.c                |  27 ++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 +++
- 34 files changed, 1030 insertions(+)
+ 34 files changed, 1038 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Makefile
  create mode 100644 arch/framac/extra/Makefile
@@ -454,10 +454,10 @@ index 000000000000..73c6bb86722a
 +#endif /* _ASM_FRAMA_C_ABSTRACT_STRUCT_H */
 diff --git a/arch/framac/include/asm/Kbuild b/arch/framac/include/asm/Kbuild
 new file mode 100644
-index 000000000000..e708abe76410
+index 000000000000..e71ea913e274
 --- /dev/null
 +++ b/arch/framac/include/asm/Kbuild
-@@ -0,0 +1,87 @@
+@@ -0,0 +1,88 @@
 +generic-y += atomic.h
 +generic-y += auxvec.h
 +generic-y += barrier.h
@@ -471,6 +471,7 @@ index 000000000000..e708abe76410
 +generic-y += checksum.h
 +generic-y += clkdev.h
 +generic-y += cmpxchg.h
++generic-y += compat.h
 +generic-y += current.h
 +generic-y += delay.h
 +generic-y += device.h
@@ -807,10 +808,10 @@ index 000000000000..797b8392aa72
 +#endif /* _ASM_FRAMA_C_SIGCONTEXT_H */
 diff --git a/arch/framac/include/asm/thread_info.h b/arch/framac/include/asm/thread_info.h
 new file mode 100644
-index 000000000000..514801937c95
+index 000000000000..5ef8cb601217
 --- /dev/null
 +++ b/arch/framac/include/asm/thread_info.h
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,68 @@
 +#ifndef _ASM_FRAMA_C_THREAD_INFO_H
 +#define _ASM_FRAMA_C_THREAD_INFO_H
 +
@@ -859,12 +860,19 @@ index 000000000000..514801937c95
 +	},					\
 +}
 +
++extern struct thread_info init_thread_info;
++
 +static inline struct thread_info *current_thread_info(void)
 +{
++#if 0
 +	/* Get stack pointer from local variable, without asm */
 +	unsigned long mask = THREAD_SIZE - 1;
 +
 +	return (struct thread_info *)(((unsigned long)&mask) & ~mask);
++#else
++	/* Use only one task */
++	return &init_thread_info;
++#endif
 +}
 +
 +#endif /* __ASSEMBLY__ */

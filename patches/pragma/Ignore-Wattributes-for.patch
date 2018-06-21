@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 9 Jun 2018 21:51:47 +0200
+Subject: [PATCH] {PRAGMA} Ignore -Wattributes for
+ __ubsan_handle_builtin_unreachable builtin
+
+---
+ lib/ubsan.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/lib/ubsan.c b/lib/ubsan.c
+index 59fee96c29a0..ad86f9f9d694 100644
+--- a/lib/ubsan.c
++++ b/lib/ubsan.c
+@@ -427,6 +427,12 @@ void __ubsan_handle_shift_out_of_bounds(struct shift_out_of_bounds_data *data,
+ EXPORT_SYMBOL(__ubsan_handle_shift_out_of_bounds);
+ 
+ 
++/* gcc 8 expects __ubsan_handle_builtin_unreachable to be const:
++ * error: ignoring attribute 'noreturn' in declaration of a built-in function '__ubsan_handle_builtin_unreachable' because it conflicts with attribute ‘const’ [-Werror=attributes]
++ * <built-in>: note: previous declaration here
++ */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wattributes"
+ void __noreturn
+ __ubsan_handle_builtin_unreachable(struct unreachable_data *data)
+ {
+@@ -437,6 +443,7 @@ __ubsan_handle_builtin_unreachable(struct unreachable_data *data)
+ 	ubsan_epilogue(&flags);
+ 	panic("can't return from __builtin_unreachable()");
+ }
++#pragma GCC diagnostic pop
+ EXPORT_SYMBOL(__ubsan_handle_builtin_unreachable);
+ 
+ void __ubsan_handle_load_invalid_value(struct invalid_value_data *data,
+-- 

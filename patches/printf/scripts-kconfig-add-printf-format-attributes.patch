@@ -18,12 +18,12 @@ format attribute. Add them.
  8 files changed, 33 insertions(+), 19 deletions(-)
 
 diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index df26c7b0fe13..7d6211e7ca6e 100644
+index 39e20974f4a3..1b049bb46111 100644
 --- a/scripts/kconfig/confdata.c
 +++ b/scripts/kconfig/confdata.c
 @@ -32,7 +32,8 @@ static int conf_lineno, conf_warnings;
  
- const char conf_defname[] = "arch/$ARCH/defconfig";
+ const char conf_defname[] = "arch/$(ARCH)/defconfig";
  
 -static void conf_warning(const char *fmt, ...)
 +static __attribute__ ((format(printf, 1, 2)))
@@ -60,10 +60,10 @@ index df26c7b0fe13..7d6211e7ca6e 100644
  	va_list ap;
  
 diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
-index 6731de16976c..60f1ca7f7890 100644
+index ed3ff88e60ba..10bd2b23c129 100644
 --- a/scripts/kconfig/lkc.h
 +++ b/scripts/kconfig/lkc.h
-@@ -98,7 +98,8 @@ static inline void xfwrite(const void *str, size_t len, size_t count, FILE *out)
+@@ -82,7 +82,8 @@ static inline void xfwrite(const void *str, size_t len, size_t count, FILE *out)
  
  /* menu.c */
  void _menu_init(void);
@@ -73,7 +73,7 @@ index 6731de16976c..60f1ca7f7890 100644
  struct menu *menu_add_menu(void);
  void menu_end_menu(void);
  void menu_add_entry(struct symbol *sym);
-@@ -131,7 +132,8 @@ struct gstr {
+@@ -116,7 +117,8 @@ struct gstr {
  struct gstr str_new(void);
  void str_free(struct gstr *gs);
  void str_append(struct gstr *gs, const char *s);
@@ -84,7 +84,7 @@ index 6731de16976c..60f1ca7f7890 100644
  
  /* symbol.c */
 diff --git a/scripts/kconfig/lkc_proto.h b/scripts/kconfig/lkc_proto.h
-index 9dc8abfb1dc3..2ae7776e00b5 100644
+index a8b7a330587e..ed0c61ef3a17 100644
 --- a/scripts/kconfig/lkc_proto.h
 +++ b/scripts/kconfig/lkc_proto.h
 @@ -10,7 +10,7 @@ int conf_write(const char *name);
@@ -97,10 +97,10 @@ index 9dc8abfb1dc3..2ae7776e00b5 100644
  /* menu.c */
  extern struct menu rootmenu;
 diff --git a/scripts/kconfig/lxdialog/dialog.h b/scripts/kconfig/lxdialog/dialog.h
-index fcffd5b41fb0..c74c1368323f 100644
+index 0b00be5abaa6..865c57589792 100644
 --- a/scripts/kconfig/lxdialog/dialog.h
 +++ b/scripts/kconfig/lxdialog/dialog.h
-@@ -158,8 +158,8 @@ extern int saved_x, saved_y;		/* Needed in signal handler in mconf.c */
+@@ -152,8 +152,8 @@ extern int saved_x, saved_y;		/* Needed in signal handler in mconf.c */
  
  /* item list as used by checklist and menubox */
  void item_reset(void);
@@ -112,10 +112,10 @@ index fcffd5b41fb0..c74c1368323f 100644
  void item_set_data(void *p);
  void item_set_selected(int val);
 diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
-index c829be8bb19f..85717096178b 100644
+index 5294ed159b98..d45c8aa0ee62 100644
 --- a/scripts/kconfig/mconf.c
 +++ b/scripts/kconfig/mconf.c
-@@ -773,7 +773,8 @@ static void show_helptext(const char *title, const char *text)
+@@ -772,7 +772,8 @@ static void show_helptext(const char *title, const char *text)
  	show_textbox(title, text, 0, 0);
  }
  
@@ -126,7 +126,7 @@ index c829be8bb19f..85717096178b 100644
  	char buf[PATH_MAX+1];
  
 diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
-index 5c5c1374b151..3310e7505986 100644
+index 379a119dcd1e..fda78d82f67e 100644
 --- a/scripts/kconfig/menu.c
 +++ b/scripts/kconfig/menu.c
 @@ -28,7 +28,8 @@ void menu_warn(struct menu *menu, const char *fmt, ...)
@@ -140,7 +140,7 @@ index 5c5c1374b151..3310e7505986 100644
  	va_list ap;
  	va_start(ap, fmt);
 diff --git a/scripts/kconfig/nconf.c b/scripts/kconfig/nconf.c
-index 003114779815..274ff18c8cf6 100644
+index 97b78445584b..fe588299a669 100644
 --- a/scripts/kconfig/nconf.c
 +++ b/scripts/kconfig/nconf.c
 @@ -522,7 +522,8 @@ static int get_mext_match(const char *match_str, match_f flag)
@@ -174,7 +174,7 @@ index 003114779815..274ff18c8cf6 100644
  	char buf[1024];
  
 diff --git a/scripts/kconfig/zconf.y b/scripts/kconfig/zconf.y
-index ad6305b0f40c..05a0cd6e538c 100644
+index 6f9b0aa32a82..df8d80e98999 100644
 --- a/scripts/kconfig/zconf.y
 +++ b/scripts/kconfig/zconf.y
 @@ -22,8 +22,10 @@ int cdebug = PRINTD;
@@ -190,7 +190,7 @@ index ad6305b0f40c..05a0cd6e538c 100644
  static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtoken);
  
  struct symbol *symbol_hash[SYMBOL_HASHSIZE];
-@@ -595,7 +597,8 @@ static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtok
+@@ -598,7 +600,8 @@ static bool zconf_endtoken(const struct kconf_id *id, int starttoken, int endtok
  	return true;
  }
  
@@ -200,7 +200,7 @@ index ad6305b0f40c..05a0cd6e538c 100644
  {
  	va_list ap;
  
-@@ -606,7 +609,8 @@ static void zconfprint(const char *err, ...)
+@@ -609,7 +612,8 @@ static void zconfprint(const char *err, ...)
  	fprintf(stderr, "\n");
  }
  

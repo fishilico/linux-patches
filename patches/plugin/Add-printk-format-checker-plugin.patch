@@ -13,7 +13,9 @@ This plugin helped to detect the following bugs:
  drivers/android/binder.c                      |   2 +-
  drivers/block/rbd.c                           |   7 +-
  drivers/hwtracing/intel_th/pti.c              |   3 +
+ drivers/md/bcache/sysfs.c                     |   3 +
  drivers/misc/ioc4.c                           |   4 +-
+ drivers/net/ethernet/ti/davinci_emac.c        |   2 +-
  drivers/net/ethernet/ti/netcp_ethss.c         |   4 +-
  drivers/net/wireless/ath/ath10k/wmi.c         |   2 +-
  .../wireless/realtek/rtlwifi/rtl8192de/fw.c   |   2 +-
@@ -38,14 +40,14 @@ This plugin helped to detect the following bugs:
  security/apparmor/mount.c                     |  10 +-
  sound/soc/intel/haswell/sst-haswell-dsp.c     |   4 +-
  sound/soc/sh/dma-sh7760.c                     |   2 +-
- 29 files changed, 912 insertions(+), 35 deletions(-)
+ 31 files changed, 916 insertions(+), 36 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index 7d44cfef7430..7d5beac54f0c 100644
+index 1aa59063f1fd..c0f8d75e7b3c 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -534,6 +534,13 @@ config GCC_PLUGIN_RANDSTRUCT_PERFORMANCE
+@@ -549,6 +549,13 @@ config GCC_PLUGIN_RANDSTRUCT_PERFORMANCE
  	  in structures.  This reduces the performance hit of RANDSTRUCT
  	  at the cost of weakened randomization.
  
@@ -56,14 +58,14 @@ index 7d44cfef7430..7d5beac54f0c 100644
 +	  Check printk format strings with kernel specs.
 +	  This is complementary to -Wformat-security and -Wformat=2 flags.
 +
- config HAVE_CC_STACKPROTECTOR
+ config HAVE_STACKPROTECTOR
  	bool
  	help
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
-index e578eee31589..223b31929f9a 100644
+index 95283f3bb51c..c82991259b82 100644
 --- a/drivers/android/binder.c
 +++ b/drivers/android/binder.c
-@@ -5545,7 +5545,7 @@ static void print_binder_transaction_log_entry(struct seq_file *m,
+@@ -5544,7 +5544,7 @@ static void print_binder_transaction_log_entry(struct seq_file *m,
  	 * done printing the fields of the entry
  	 */
  	smp_rmb();
@@ -73,7 +75,7 @@ index e578eee31589..223b31929f9a 100644
  }
  
 diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index 33b36fea1d73..56dab198e026 100644
+index fa0729c1e776..0264ad3a7272 100644
 --- a/drivers/block/rbd.c
 +++ b/drivers/block/rbd.c
 @@ -1476,10 +1476,15 @@ rbd_osd_req_create(struct rbd_obj_request *obj_req, unsigned int num_ops)
@@ -109,6 +111,23 @@ index 56694339cb06..877e6005b04b 100644
  	}
  
  	if (ret)
+diff --git a/drivers/md/bcache/sysfs.c b/drivers/md/bcache/sysfs.c
+index 225b15aa0340..bf0d3ed5b7f6 100644
+--- a/drivers/md/bcache/sysfs.c
++++ b/drivers/md/bcache/sysfs.c
+@@ -136,9 +136,12 @@ static ssize_t bch_snprint_string_list(char *buf, size_t size, const char * cons
+ 	char *out = buf;
+ 	size_t i;
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	for (i = 0; list[i]; i++)
+ 		out += snprintf(out, buf + size - out,
+ 				i == selected ? "[%s] " : "%s ", list[i]);
++#pragma GCC diagnostic pop
+ 
+ 	out[-1] = '\n';
+ 	return out - buf;
 diff --git a/drivers/misc/ioc4.c b/drivers/misc/ioc4.c
 index ec0832278170..e596d235642a 100644
 --- a/drivers/misc/ioc4.c
@@ -131,11 +150,24 @@ index ec0832278170..e596d235642a 100644
  			       "for pci_dev %s.\n",
  			       __func__, module_name(is->is_owner),
  			       pci_name(idd->idd_pdev));
+diff --git a/drivers/net/ethernet/ti/davinci_emac.c b/drivers/net/ethernet/ti/davinci_emac.c
+index 06d7c9e4dcda..2abff48f9e7f 100644
+--- a/drivers/net/ethernet/ti/davinci_emac.c
++++ b/drivers/net/ethernet/ti/davinci_emac.c
+@@ -327,7 +327,7 @@ struct emac_priv {
+ 	struct napi_struct napi;
+ 	char mac_addr[6];
+ 	void __iomem *remap_addr;
+-	u32 emac_base_phys;
++	phys_addr_t emac_base_phys;
+ 	void __iomem *emac_base;
+ 	void __iomem *ctrl_base;
+ 	struct cpdma_ctlr *dma;
 diff --git a/drivers/net/ethernet/ti/netcp_ethss.c b/drivers/net/ethernet/ti/netcp_ethss.c
-index 56dbc0b9fedc..ca5ecef5c84f 100644
+index 72b98e27c992..304591bf7727 100644
 --- a/drivers/net/ethernet/ti/netcp_ethss.c
 +++ b/drivers/net/ethernet/ti/netcp_ethss.c
-@@ -2305,7 +2305,7 @@ static int gbe_slave_open(struct gbe_intf *gbe_intf)
+@@ -2358,7 +2358,7 @@ static int gbe_slave_open(struct gbe_intf *gbe_intf)
  				slave->slave_num);
  			return -ENODEV;
  		}
@@ -144,9 +176,9 @@ index 56dbc0b9fedc..ca5ecef5c84f 100644
  			phydev_name(slave->phy));
  		phy_start(slave->phy);
  	}
-@@ -3092,7 +3092,7 @@ static void init_secondary_ports(struct gbe_priv *gbe_dev,
+@@ -3207,7 +3207,7 @@ static void init_secondary_ports(struct gbe_priv *gbe_dev,
+ 			dev_err(dev, "phy not found for slave %d\n",
  				slave->slave_num);
- 			slave->phy = NULL;
  		} else {
 -			dev_dbg(dev, "phy found: id is: 0x%s\n",
 +			dev_dbg(dev, "phy found: id is: %s\n", /* BUG? */
@@ -154,10 +186,10 @@ index 56dbc0b9fedc..ca5ecef5c84f 100644
  			phy_start(slave->phy);
  		}
 diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
-index c5e1ca5945db..59d25d1e7738 100644
+index f97ab795cf2e..f69f62581a4b 100644
 --- a/drivers/net/wireless/ath/ath10k/wmi.c
 +++ b/drivers/net/wireless/ath/ath10k/wmi.c
-@@ -6948,7 +6948,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
+@@ -7105,7 +7105,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
  	ether_addr_copy(cmd->peer_macaddr.addr, peer_addr);
  
  	ath10k_dbg(ar, ATH10K_DBG_WMI,
@@ -180,7 +212,7 @@ index 85cedd083d2b..762897f48421 100644
  	return -1;
  }
 diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 6bb37c18292a..cf37be382879 100644
+index 722537e14848..f0a135760f33 100644
 --- a/drivers/of/unittest.c
 +++ b/drivers/of/unittest.c
 @@ -263,7 +263,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
@@ -206,7 +238,7 @@ index 6bb37c18292a..cf37be382879 100644
  			"snprintf failed; size=%i fmt='%s' expected='%s' rslt='%s'\n",
  			size, fmt, expected, buf);
 diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
-index c4768be24ba9..62eda5ae9264 100644
+index 700c48ddfa7c..4a9bff451974 100644
 --- a/drivers/platform/x86/asus-laptop.c
 +++ b/drivers/platform/x86/asus-laptop.c
 @@ -921,11 +921,11 @@ static ssize_t infos_show(struct device *dev, struct device_attribute *attr,
@@ -224,7 +256,7 @@ index c4768be24ba9..62eda5ae9264 100644
  
  	return len;
 diff --git a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
-index 65de1d0578a1..e17a63dd2077 100644
+index f00045813378..a0cd2e334dd8 100644
 --- a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
 +++ b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
 @@ -1145,7 +1145,7 @@ static int bnx2fc_vport_create(struct fc_vport *vport, bool disabled)
@@ -272,10 +304,10 @@ index f4909cd206d3..f36d09b8357f 100644
  			rc = -EINVAL;
  			break;
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index 3a9eca163db8..cf9ff53b808b 100644
+index 15c7f3b6f35e..ba7c0df7cb48 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
-@@ -6736,7 +6736,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
+@@ -6738,7 +6738,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
  			c->Request.CDB[9] = 0;
  			break;
  		default:
@@ -285,10 +317,10 @@ index 3a9eca163db8..cf9ff53b808b 100644
  		}
  	} else if (cmd_type == TYPE_MSG) {
 diff --git a/drivers/scsi/qedf/qedf_main.c b/drivers/scsi/qedf/qedf_main.c
-index 284ccb566b19..6807583f6b2f 100644
+index 90394cef0f41..d7e708e07005 100644
 --- a/drivers/scsi/qedf/qedf_main.c
 +++ b/drivers/scsi/qedf/qedf_main.c
-@@ -1538,7 +1538,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
+@@ -1576,7 +1576,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
  	if (rc) {
  		fcoe_wwn_to_str(vport->port_name, buf, sizeof(buf));
  		QEDF_WARN(&(base_qedf->dbg_ctx), "Failed to create vport, "
@@ -298,10 +330,10 @@ index 284ccb566b19..6807583f6b2f 100644
  	}
  
 diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index b9c9125acd93..e2dbe0033ec5 100644
+index 0cfe55010bc4..a33cfad6c35b 100644
 --- a/drivers/scsi/qedi/qedi_main.c
 +++ b/drivers/scsi/qedi/qedi_main.c
-@@ -1727,7 +1727,8 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+@@ -1925,7 +1925,8 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
  	int rc = 1;
  	u32 ipv6_en, dhcp_en, ip_len;
  	struct nvm_iscsi_block *block;
@@ -311,7 +343,7 @@ index b9c9125acd93..e2dbe0033ec5 100644
  
  	block = qedi_get_nvram_block(qedi);
  	if (!block)
-@@ -1755,6 +1756,9 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+@@ -1953,6 +1954,9 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
  		ip_len = ipv6_en ? 5 : 8;
  	}
  
@@ -321,7 +353,7 @@ index b9c9125acd93..e2dbe0033ec5 100644
  	switch (type) {
  	case ISCSI_BOOT_ETH_IP_ADDR:
  		rc = snprintf(buf, ip_len, fmt, ip);
-@@ -1788,6 +1792,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+@@ -1986,6 +1990,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
  		rc = 0;
  		break;
  	}
@@ -330,7 +362,7 @@ index b9c9125acd93..e2dbe0033ec5 100644
  	return rc;
  }
 diff --git a/drivers/scsi/smartpqi/smartpqi_init.c b/drivers/scsi/smartpqi/smartpqi_init.c
-index 412e8c77da20..7cb476dab0e8 100644
+index 0452a40500af..792c5500a727 100644
 --- a/drivers/scsi/smartpqi/smartpqi_init.c
 +++ b/drivers/scsi/smartpqi/smartpqi_init.c
 @@ -451,7 +451,7 @@ static int pqi_build_raid_path_request(struct pqi_ctrl_info *ctrl_info,
@@ -343,10 +375,10 @@ index 412e8c77da20..7cb476dab0e8 100644
  		break;
  	}
 diff --git a/drivers/staging/rtlwifi/phydm/phydm_debug.c b/drivers/staging/rtlwifi/phydm/phydm_debug.c
-index e18ba2cca2bd..a45f6c2958a9 100644
+index b5b69d5f1a41..9744f1ad6806 100644
 --- a/drivers/staging/rtlwifi/phydm/phydm_debug.c
 +++ b/drivers/staging/rtlwifi/phydm/phydm_debug.c
-@@ -1484,7 +1484,7 @@ static void phydm_get_per_path_txagc(void *dm_void, u8 path, u32 *_used,
+@@ -1473,7 +1473,7 @@ static void phydm_get_per_path_txagc(void *dm_void, u8 path, u32 *_used,
  					       "  0x%02x    ", txagc);
  			else
  				PHYDM_SNPRINTF(output + used, out_len - used,
@@ -426,7 +458,7 @@ index d107b4426f7e..6f5a100eff35 100644
  }
  
 diff --git a/fs/overlayfs/inode.c b/fs/overlayfs/inode.c
-index 6e3815fb006b..1e2a2b3bce24 100644
+index ed16a898caeb..f067fdedb709 100644
 --- a/fs/overlayfs/inode.c
 +++ b/fs/overlayfs/inode.c
 @@ -579,8 +579,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
@@ -469,10 +501,10 @@ index a39a562c1c10..dff4bc0d344d 100644
  reiserfs-objs += procfs.o
  endif
 diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-index 4b195bac8ac0..7286b6b8bbc5 100644
+index d06247ba08b2..5ce9c5072b26 100644
 --- a/net/ipv4/sysctl_net_ipv4.c
 +++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -293,7 +293,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
+@@ -295,7 +295,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
  	}
  
  bad_key:
@@ -482,21 +514,21 @@ index 4b195bac8ac0..7286b6b8bbc5 100644
  	       (char *)tbl.data, ret);
  	kfree(tbl.data);
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index 7f5c86246138..50694fff907f 100644
+index c961b9a65d11..5975a384f944 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
-@@ -13,6 +13,11 @@ ifdef CONFIG_GCC_PLUGINS
+@@ -7,6 +7,11 @@ ifdef CONFIG_GCC_PLUGIN_LATENT_ENTROPY
      DISABLE_LATENT_ENTROPY_PLUGIN			+= -fplugin-arg-latent_entropy_plugin-disable
-   endif
+ endif
  
-+  gcc-plugin-$(CONFIG_GCC_PLUGIN_PRINTK_FORMAT)	+= printk_format_plugin.so
-+  ifdef CONFIG_GCC_PLUGIN_PRINTK_FORMAT
-+    DISABLE_PRINTK_FORMAT_PLUGIN			+= -fplugin-arg-printk_format_plugin-disable
-+  endif
++gcc-plugin-$(CONFIG_GCC_PLUGIN_PRINTK_FORMAT)	+= printk_format_plugin.so
++ifdef CONFIG_GCC_PLUGIN_PRINTK_FORMAT
++  DISABLE_PRINTK_FORMAT_PLUGIN			+= -fplugin-arg-printk_format_plugin-disable
++endif
 +
-   ifdef CONFIG_GCC_PLUGIN_SANCOV
-     ifeq ($(strip $(CFLAGS_KCOV)),)
-       # It is needed because of the gcc-plugin.sh and gcc version checks.
+ gcc-plugin-$(CONFIG_GCC_PLUGIN_SANCOV)		+= sancov_plugin.so
+ gcc-plugin-$(CONFIG_GCC_PLUGIN_STRUCTLEAK)	+= structleak_plugin.so
+ gcc-plugin-cflags-$(CONFIG_GCC_PLUGIN_STRUCTLEAK_VERBOSE)	+= -fplugin-arg-structleak_plugin-verbose
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
 index 000000000000..7ef27db70e0e
@@ -1326,7 +1358,7 @@ index 000000000000..7ef27db70e0e
 +	return 0;
 +}
 diff --git a/security/apparmor/mount.c b/security/apparmor/mount.c
-index 6e8c7ac0b33d..e4ad78a41294 100644
+index c1da22482bfb..0e13a8ffca68 100644
 --- a/security/apparmor/mount.c
 +++ b/security/apparmor/mount.c
 @@ -52,7 +52,7 @@ static void audit_mnt_flags(struct audit_buffer *ab, unsigned long flags)

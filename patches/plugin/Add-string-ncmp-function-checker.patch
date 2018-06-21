@@ -22,10 +22,10 @@ It has also detected some bugs reported and fixed by other people:
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index 96a6e5def73a..8b34aff909c3 100644
+index 0ba70cb471fb..27d8867c9347 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -547,6 +547,12 @@ config GCC_PLUGIN_DEREF_CHECKER
+@@ -562,6 +562,12 @@ config GCC_PLUGIN_DEREF_CHECKER
  	help
  	  Check function calls involving pointers about some consistencies.
  
@@ -35,14 +35,14 @@ index 96a6e5def73a..8b34aff909c3 100644
 +	help
 +	  Check that calls like strncmp(x, "test", 4) are consistent.
 +
- config HAVE_CC_STACKPROTECTOR
+ config HAVE_STACKPROTECTOR
  	bool
  	help
 diff --git a/drivers/nvme/target/core.c b/drivers/nvme/target/core.c
-index e95424f172fd..37dced6f565f 100644
+index a03da764ecae..da4eaecca320 100644
 --- a/drivers/nvme/target/core.c
 +++ b/drivers/nvme/target/core.c
-@@ -937,8 +937,8 @@ static struct nvmet_subsys *nvmet_find_get_subsys(struct nvmet_port *port,
+@@ -1007,8 +1007,8 @@ static struct nvmet_subsys *nvmet_find_get_subsys(struct nvmet_port *port,
  	if (!port)
  		return NULL;
  
@@ -68,18 +68,18 @@ index 429db96dd811..85ea0f57c58c 100644
  
  		for (i = 0; i < ARRAY_SIZE(displays); i++)
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index f486fdfe4571..b96da52c6221 100644
+index 8d1a65d2e89d..6046d35c4a94 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
-@@ -20,6 +20,8 @@ ifdef CONFIG_GCC_PLUGINS
+@@ -14,6 +14,8 @@ endif
  
-   gcc-plugin-$(CONFIG_GCC_PLUGIN_DEREF_CHECKER) += deref_checker_plugin.so
+ gcc-plugin-$(CONFIG_GCC_PLUGIN_DEREF_CHECKER) += deref_checker_plugin.so
  
-+  gcc-plugin-$(CONFIG_GCC_PLUGIN_STRING_NCMP_SIZE) += string_ncmp_size_plugin.so
++gcc-plugin-$(CONFIG_GCC_PLUGIN_STRING_NCMP_SIZE) += string_ncmp_size_plugin.so
 +
-   ifdef CONFIG_GCC_PLUGIN_SANCOV
-     ifeq ($(strip $(CFLAGS_KCOV)),)
-       # It is needed because of the gcc-plugin.sh and gcc version checks.
+ gcc-plugin-$(CONFIG_GCC_PLUGIN_SANCOV)		+= sancov_plugin.so
+ gcc-plugin-$(CONFIG_GCC_PLUGIN_STRUCTLEAK)	+= structleak_plugin.so
+ gcc-plugin-cflags-$(CONFIG_GCC_PLUGIN_STRUCTLEAK_VERBOSE)	+= -fplugin-arg-structleak_plugin-verbose
 diff --git a/scripts/gcc-plugins/string_ncmp_size_plugin.c b/scripts/gcc-plugins/string_ncmp_size_plugin.c
 new file mode 100644
 index 000000000000..a9d72ba2197e
@@ -323,7 +323,7 @@ index 000000000000..a9d72ba2197e
 +	return 0;
 +}
 diff --git a/sound/soc/intel/boards/bxt_rt298.c b/sound/soc/intel/boards/bxt_rt298.c
-index c7e9024e65ef..a5b84bff0c2c 100644
+index b68c289558a8..ca522fe2759a 100644
 --- a/sound/soc/intel/boards/bxt_rt298.c
 +++ b/sound/soc/intel/boards/bxt_rt298.c
 @@ -579,14 +579,11 @@ static int broxton_audio_probe(struct platform_device *pdev)

@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
-Date: Sun, 15 Apr 2018 11:22:30 +0200
+Date: Tue, 19 Jun 2018 13:16:10 +0200
 Subject: [PATCH] {PRINTF} bus/ti-sysc: silence -Wformat-security
 
 ---
@@ -8,16 +8,16 @@ Subject: [PATCH] {PRINTF} bus/ti-sysc: silence -Wformat-security
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/bus/ti-sysc.c b/drivers/bus/ti-sysc.c
-index 7cd2fd04b212..ee6c7f75bc3d 100644
+index 1cc29629d238..cdf077e0d35d 100644
 --- a/drivers/bus/ti-sysc.c
 +++ b/drivers/bus/ti-sysc.c
-@@ -831,7 +831,7 @@ static int sysc_child_add_fck(struct sysc *ddata,
- 		return -EEXIST;
- 	}
+@@ -1080,7 +1080,7 @@ static int sysc_child_add_named_clock(struct sysc *ddata,
+ 	if (IS_ERR(clk))
+ 		return -ENODEV;
  
--	l = clkdev_create(ddata->clocks[SYSC_FCK], name, dev_name(child));
-+	l = clkdev_create(ddata->clocks[SYSC_FCK], name, "%s", dev_name(child));
+-	l = clkdev_create(clk, name, dev_name(child));
++	l = clkdev_create(clk, name, "%s", dev_name(child));
+ 	if (!l)
+ 		error = -ENOMEM;
  
- 	return l ? 0 : -ENODEV;
- }
 -- 

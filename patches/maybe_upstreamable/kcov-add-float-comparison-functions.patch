@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 17 Jun 2018 21:31:38 +0200
+Subject: [PATCH] {MAYBE UPS} kcov: add float comparison functions
+
+Linking the kernel fails with:
+
+ERROR: "__sanitizer_cov_trace_cmpd" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+ERROR: "__sanitizer_cov_trace_cmpf" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+---
+ kernel/kcov.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/kernel/kcov.c b/kernel/kcov.c
+index 3ebd09efe72a..cf6f2abf44f6 100644
+--- a/kernel/kcov.c
++++ b/kernel/kcov.c
+@@ -169,6 +169,18 @@ void notrace __sanitizer_cov_trace_cmp8(u64 arg1, u64 arg2)
+ }
+ EXPORT_SYMBOL(__sanitizer_cov_trace_cmp8);
+ 
++void notrace __sanitizer_cov_trace_cmpf(float arg1, float arg2)
++{
++	write_comp_data(KCOV_CMP_SIZE(2), *(u32 *)&arg1, *(u32 *)&arg2, _RET_IP_);
++}
++EXPORT_SYMBOL(__sanitizer_cov_trace_cmpf);
++
++void notrace __sanitizer_cov_trace_cmpd(double arg1, double arg2)
++{
++	write_comp_data(KCOV_CMP_SIZE(3), *(u64 *)&arg1, *(u64 *)&arg2, _RET_IP_);
++}
++EXPORT_SYMBOL(__sanitizer_cov_trace_cmpd);
++
+ void notrace __sanitizer_cov_trace_const_cmp1(u8 arg1, u8 arg2)
+ {
+ 	write_comp_data(KCOV_CMP_SIZE(0) | KCOV_CMP_CONST, arg1, arg2,
+-- 

@@ -42,7 +42,6 @@ This fixes errors like:
  drivers/remoteproc/keystone_remoteproc.c     |   5 +-
  drivers/scsi/esas2r/esas2r_log.c             |   6 +-
  drivers/scsi/fnic/fnic_trace.c               |   5 +-
- drivers/staging/ipx/af_ipx.c                 |  16 +-
  drivers/tty/n_hdlc.c                         |  22 +--
  drivers/tty/serial/st-asc.c                  |   4 +-
  fs/ext4/super.c                              |   8 +-
@@ -55,7 +54,7 @@ This fixes errors like:
  net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
- 29 files changed, 173 insertions(+), 295 deletions(-)
+ 28 files changed, 169 insertions(+), 283 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 75bc18646df6..10d4e7064572 100644
@@ -173,10 +172,10 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 73bd8c95ac71..ec779fd4f3d5 100644
+index 9a84a0d08727..26085b9d2a95 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
-@@ -485,15 +485,6 @@ static noinline int vmalloc_fault(unsigned long address)
+@@ -486,15 +486,6 @@ static noinline int vmalloc_fault(unsigned long address)
  }
  NOKPROBE_SYMBOL(vmalloc_fault);
  
@@ -192,7 +191,7 @@ index 73bd8c95ac71..ec779fd4f3d5 100644
  /*
   * No vm86 mode in 64-bit mode:
   */
-@@ -595,7 +586,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+@@ -596,7 +587,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  	address |= 0xffffffffUL << 32;
  	if ((address >= (u64)_stext && address <= (u64)_etext) ||
  	    (address >= MODULES_VADDR && address <= MODULES_END)) {
@@ -206,7 +205,7 @@ index 73bd8c95ac71..ec779fd4f3d5 100644
  		regs->ip = address;
  		return 1;
  	}
-@@ -640,11 +636,6 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
+@@ -641,11 +637,6 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
  	return 0;
  }
  
@@ -218,7 +217,7 @@ index 73bd8c95ac71..ec779fd4f3d5 100644
  static void
  show_fault_oops(struct pt_regs *regs, unsigned long error_code,
  		unsigned long address)
-@@ -663,11 +654,11 @@ show_fault_oops(struct pt_regs *regs, unsigned long error_code,
+@@ -664,11 +655,11 @@ show_fault_oops(struct pt_regs *regs, unsigned long error_code,
  		pte = lookup_address_in_pgd(pgd, address, &level);
  
  		if (pte && pte_present(*pte) && !pte_exec(*pte))
@@ -266,10 +265,10 @@ index 42f879b75f9b..9387220e6fd8 100644
  	/* Test that a 1 KiB IMR @ zero with read/write all will bomb out. */
  	ret = imr_add_range(0, IMR_ALIGN, IMR_READ_ACCESS_ALL,
 diff --git a/drivers/clk/ti/adpll.c b/drivers/clk/ti/adpll.c
-index 660492b9becb..2c931d4479f7 100644
+index 80618b6828f1..6b79c1c095e0 100644
 --- a/drivers/clk/ti/adpll.c
 +++ b/drivers/clk/ti/adpll.c
-@@ -815,13 +815,12 @@ static int ti_adpll_init_registers(struct ti_adpll_data *d)
+@@ -816,13 +816,12 @@ static int ti_adpll_init_registers(struct ti_adpll_data *d)
  
  static int ti_adpll_init_inputs(struct ti_adpll_data *d)
  {
@@ -421,7 +420,7 @@ index 0d2122d9b115..e5e935572563 100644
  	}
  	parport_unregister_driver(&baycom_epp_par_driver);
 diff --git a/drivers/net/hamradio/mkiss.c b/drivers/net/hamradio/mkiss.c
-index c180b480f8ef..b40f7f2630d2 100644
+index 13e4c1eff353..c94dd2546e68 100644
 --- a/drivers/net/hamradio/mkiss.c
 +++ b/drivers/net/hamradio/mkiss.c
 @@ -973,33 +973,25 @@ static struct tty_ldisc_ops ax_ldisc = {
@@ -532,10 +531,10 @@ index 3349670b09de..99a61ba3b070 100644
  				 (dev->driver ? dev->driver->name : "unknown"),
  				 (dev->bus ? dev->bus->name : "unknown"),
 diff --git a/drivers/scsi/fnic/fnic_trace.c b/drivers/scsi/fnic/fnic_trace.c
-index 98597b59c12a..d09563f51df0 100644
+index 8271785bdb93..fdeac5846fc0 100644
 --- a/drivers/scsi/fnic/fnic_trace.c
 +++ b/drivers/scsi/fnic/fnic_trace.c
-@@ -795,7 +795,7 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
+@@ -798,7 +798,7 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
  {
  	struct tm tm;
  	int j, i = 1, len;
@@ -544,7 +543,7 @@ index 98597b59c12a..d09563f51df0 100644
  	int ethhdr_len = sizeof(struct ethhdr) - 1;
  	int fcoehdr_len = sizeof(struct fcoe_hdr);
  	int fchdr_len = sizeof(struct fc_frame_header);
-@@ -807,10 +807,9 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
+@@ -810,10 +810,9 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
  
  	time64_to_tm(tdata->time_stamp.tv_sec, 0, &tm);
  
@@ -556,51 +555,6 @@ index 98597b59c12a..d09563f51df0 100644
  		tm.tm_mon + 1, tm.tm_mday, tm.tm_year + 1900,
  		tm.tm_hour, tm.tm_min, tm.tm_sec,
  		tdata->time_stamp.tv_nsec, tdata->host_no,
-diff --git a/drivers/staging/ipx/af_ipx.c b/drivers/staging/ipx/af_ipx.c
-index 5703dd176787..19d06cb750a0 100644
---- a/drivers/staging/ipx/af_ipx.c
-+++ b/drivers/staging/ipx/af_ipx.c
-@@ -1996,14 +1996,6 @@ static struct notifier_block ipx_dev_notifier = {
- 
- static const unsigned char ipx_8022_type = 0xE0;
- static const unsigned char ipx_snap_id[5] = { 0x0, 0x0, 0x0, 0x81, 0x37 };
--static const char ipx_EII_err_msg[] __initconst =
--	KERN_CRIT "IPX: Unable to register with Ethernet II\n";
--static const char ipx_8023_err_msg[] __initconst =
--	KERN_CRIT "IPX: Unable to register with 802.3\n";
--static const char ipx_llc_err_msg[] __initconst =
--	KERN_CRIT "IPX: Unable to register with 802.2\n";
--static const char ipx_snap_err_msg[] __initconst =
--	KERN_CRIT "IPX: Unable to register with SNAP\n";
- 
- static int __init ipx_init(void)
- {
-@@ -2018,21 +2010,21 @@ static int __init ipx_init(void)
- 	if (pEII_datalink)
- 		dev_add_pack(&ipx_dix_packet_type);
- 	else
--		printk(ipx_EII_err_msg);
-+		printk(KERN_CRIT "IPX: Unable to register with Ethernet II\n");
- 
- 	p8023_datalink = make_8023_client();
- 	if (p8023_datalink)
- 		dev_add_pack(&ipx_8023_packet_type);
- 	else
--		printk(ipx_8023_err_msg);
-+		printk(KERN_CRIT "IPX: Unable to register with 802.3\n");
- 
- 	p8022_datalink = register_8022_client(ipx_8022_type, ipx_rcv);
- 	if (!p8022_datalink)
--		printk(ipx_llc_err_msg);
-+		printk(KERN_CRIT "IPX: Unable to register with 802.2\n");
- 
- 	pSNAP_datalink = register_snap_client(ipx_snap_id, ipx_rcv);
- 	if (!pSNAP_datalink)
--		printk(ipx_snap_err_msg);
-+		printk(KERN_CRIT "IPX: Unable to register with SNAP\n");
- 
- 	register_netdevice_notifier(&ipx_dev_notifier);
- 	ipx_register_sysctl();
 diff --git a/drivers/tty/n_hdlc.c b/drivers/tty/n_hdlc.c
 index dabb391909aa..73ec6bc053a2 100644
 --- a/drivers/tty/n_hdlc.c
@@ -658,10 +612,10 @@ index dabb391909aa..73ec6bc053a2 100644
  
  module_init(n_hdlc_init);
 diff --git a/drivers/tty/serial/st-asc.c b/drivers/tty/serial/st-asc.c
-index 5f9f01fac6dd..466f9a3f5fee 100644
+index 7971997cdead..560281a2716c 100644
 --- a/drivers/tty/serial/st-asc.c
 +++ b/drivers/tty/serial/st-asc.c
-@@ -982,10 +982,8 @@ static struct platform_driver asc_serial_driver = {
+@@ -980,10 +980,8 @@ static struct platform_driver asc_serial_driver = {
  static int __init asc_init(void)
  {
  	int ret;
@@ -674,10 +628,10 @@ index 5f9f01fac6dd..466f9a3f5fee 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index eb104e8476f0..c316d32da001 100644
+index 0c4c2201b3aa..8f2a00e7a4e5 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1470,9 +1470,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1494,9 +1494,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  }
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
@@ -687,7 +641,7 @@ index eb104e8476f0..c316d32da001 100644
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -1672,7 +1669,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -1696,7 +1693,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -1130,7 +1084,7 @@ index db6baf7cf6e9..f834c827338e 100644
  	}
  
 diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
-index 9b6bc5abe946..00d24b431a05 100644
+index 55fdba05d7d9..d0f71d7c9b95 100644
 --- a/net/appletalk/ddp.c
 +++ b/net/appletalk/ddp.c
 @@ -1904,9 +1904,6 @@ static unsigned char ddp_snap_id[] = { 0x08, 0x00, 0x07, 0x80, 0x9B };
@@ -1322,10 +1276,10 @@ index bb7e80f4ced3..3207ace0c188 100644
  	read_unlock(&dev_base_lock);
  	return ret;
 diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
-index 32751602767f..7057b87a0fac 100644
+index 9a686d890bfa..d0c899283a24 100644
 --- a/net/decnet/af_decnet.c
 +++ b/net/decnet/af_decnet.c
-@@ -2361,14 +2361,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");
+@@ -2348,14 +2348,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");
  MODULE_LICENSE("GPL");
  MODULE_ALIAS_NETPROTO(PF_DECnet);
  
@@ -1342,7 +1296,7 @@ index 32751602767f..7057b87a0fac 100644
  	rc = proto_register(&dn_proto, 1);
  	if (rc != 0)
 diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
-index 1beeea9549fa..a666e6d62433 100644
+index 804de8490186..e4bb441b01e1 100644
 --- a/net/llc/af_llc.c
 +++ b/net/llc/af_llc.c
 @@ -1204,13 +1204,6 @@ static const struct proto_ops llc_ui_ops = {
@@ -1381,7 +1335,7 @@ index 1beeea9549fa..a666e6d62433 100644
  	}
  	llc_add_pack(LLC_DEST_SAP, llc_sap_handler);
 diff --git a/security/apparmor/lib.c b/security/apparmor/lib.c
-index 068a9f471f77..e4d78b3b86ec 100644
+index a7b3f681b80e..8e62d7cd73d8 100644
 --- a/security/apparmor/lib.c
 +++ b/security/apparmor/lib.c
 @@ -214,16 +214,16 @@ void aa_perm_mask_to_str(char *str, const char *chrs, u32 mask)

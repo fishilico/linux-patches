@@ -30,10 +30,10 @@ This silents a -Wformat-security warning found by clang:
  2 files changed, 13 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
-index 24d456b0a6f0..b39a2aaac516 100644
+index bc05c69383b8..022557727464 100644
 --- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
 +++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
-@@ -3546,20 +3546,17 @@ void vchiq_platform_conn_state_changed(VCHIQ_STATE_T *state,
+@@ -3551,20 +3551,17 @@ void vchiq_platform_conn_state_changed(VCHIQ_STATE_T *state,
  	if (state->conn_state == VCHIQ_CONNSTATE_CONNECTED) {
  		write_lock_bh(&arm_state->susp_res_lock);
  		if (!arm_state->first_connect) {
@@ -59,10 +59,10 @@ index 24d456b0a6f0..b39a2aaac516 100644
  				wake_up_process(arm_state->ka_thread);
  			}
 diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
-index 5d28fff46557..70d38db3a781 100644
+index 7642ced31436..733163e51489 100644
 --- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
 +++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
-@@ -2361,7 +2361,6 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+@@ -2370,7 +2370,6 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
  	VCHIQ_SHARED_STATE_T *local;
  	VCHIQ_SHARED_STATE_T *remote;
  	VCHIQ_STATUS_T status;
@@ -70,7 +70,7 @@ index 5d28fff46557..70d38db3a781 100644
  	int i;
  
  	vchiq_log_warning(vchiq_core_log_level,
-@@ -2532,40 +2531,40 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+@@ -2541,38 +2540,38 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
  	/*
  		bring up slot handler thread
  	 */
@@ -89,7 +89,6 @@ index 5d28fff46557..70d38db3a781 100644
  		return VCHIQ_ERROR;
  	}
  	set_user_nice(state->slot_handler_thread, -19);
- 	wake_up_process(state->slot_handler_thread);
  
 -	snprintf(threadname, sizeof(threadname), "vchiq-recy/%d", state->id);
  	state->recycle_thread = kthread_create(&recycle_func,
@@ -102,10 +101,9 @@ index 5d28fff46557..70d38db3a781 100644
 -		vchiq_loud_error("couldn't create thread %s", threadname);
 +		vchiq_loud_error("couldn't create thread vchiq-recy/%d", state->id);
  		vchiq_loud_error_footer();
- 		return VCHIQ_ERROR;
+ 		goto fail_free_handler_thread;
  	}
  	set_user_nice(state->recycle_thread, -19);
- 	wake_up_process(state->recycle_thread);
  
 -	snprintf(threadname, sizeof(threadname), "vchiq-sync/%d", state->id);
  	state->sync_thread = kthread_create(&sync_func,
@@ -118,6 +116,6 @@ index 5d28fff46557..70d38db3a781 100644
 -		vchiq_loud_error("couldn't create thread %s", threadname);
 +		vchiq_loud_error("couldn't create thread vchiq-sync/%d", state->id);
  		vchiq_loud_error_footer();
- 		return VCHIQ_ERROR;
+ 		goto fail_free_recycle_thread;
  	}
 -- 
