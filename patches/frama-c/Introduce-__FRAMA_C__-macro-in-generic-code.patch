@@ -169,7 +169,7 @@ index d7ac43e17d71..c3eb9323e5a4 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 6b79a9bba9a7..73d55ba62d69 100644
+index a8ba6b04152c..36debcef8bca 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -3,7 +3,7 @@
@@ -365,7 +365,7 @@ index 340029b2fb38..f6ce611fb61b 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 2fda01276eee..af3f81dbd5bc 100644
+index 3d9a782110a9..c824beaec10d 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -230,6 +230,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
@@ -379,11 +379,11 @@ index 2fda01276eee..af3f81dbd5bc 100644
 +	asmlinkage long sys##name(__MAP(x, __SC_DECL, __VA_ARGS__))
 +#else
  #define __SYSCALL_DEFINEx(x, name, ...)					\
- 	asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))	\
- 		__attribute__((alias(__stringify(__se_sys##name))));	\
-@@ -244,6 +250,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
- 		return ret;						\
+ 	__diag_push();							\
+ 	__diag_ignore(GCC, 8, "-Wattribute-alias",			\
+@@ -248,6 +254,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  	}								\
+ 	__diag_pop();							\
  	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
 +#endif /* __FRAMAC__ */
  #endif /* __SYSCALL_DEFINEx */

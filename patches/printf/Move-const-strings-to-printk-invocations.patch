@@ -28,7 +28,7 @@ This fixes errors like:
 ---
  arch/arm/mach-omap2/board-n8x0.c             |   3 +-
  arch/arm/mach-omap2/usb-tusb6010.c           |  23 +--
- arch/x86/mm/fault.c                          |  25 +--
+ arch/x86/mm/fault.c                          |  16 +-
  arch/x86/platform/intel-quark/imr_selftest.c |   7 +-
  drivers/clk/ti/adpll.c                       |   3 +-
  drivers/iommu/omap-iommu-debug.c             |   3 +-
@@ -54,7 +54,7 @@ This fixes errors like:
  net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
- 28 files changed, 169 insertions(+), 283 deletions(-)
+ 28 files changed, 167 insertions(+), 276 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 75bc18646df6..10d4e7064572 100644
@@ -172,7 +172,7 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 9a84a0d08727..26085b9d2a95 100644
+index 2aafa6ab6103..02067e79ea3a 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
 @@ -486,15 +486,6 @@ static noinline int vmalloc_fault(unsigned long address)
@@ -205,32 +205,6 @@ index 9a84a0d08727..26085b9d2a95 100644
  		regs->ip = address;
  		return 1;
  	}
-@@ -641,11 +637,6 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
- 	return 0;
- }
- 
--static const char nx_warning[] = KERN_CRIT
--"kernel tried to execute NX-protected page - exploit attempt? (uid: %d)\n";
--static const char smep_warning[] = KERN_CRIT
--"unable to execute userspace code (SMEP?) (uid: %d)\n";
--
- static void
- show_fault_oops(struct pt_regs *regs, unsigned long error_code,
- 		unsigned long address)
-@@ -664,11 +655,11 @@ show_fault_oops(struct pt_regs *regs, unsigned long error_code,
- 		pte = lookup_address_in_pgd(pgd, address, &level);
- 
- 		if (pte && pte_present(*pte) && !pte_exec(*pte))
--			printk(nx_warning, from_kuid(&init_user_ns, current_uid()));
-+			printk("kernel tried to execute NX-protected page - exploit attempt? (uid: %d)\n", from_kuid(&init_user_ns, current_uid()));
- 		if (pte && pte_present(*pte) && pte_exec(*pte) &&
- 				(pgd_flags(*pgd) & _PAGE_USER) &&
- 				(__read_cr4() & X86_CR4_SMEP))
--			printk(smep_warning, from_kuid(&init_user_ns, current_uid()));
-+			printk("unable to execute userspace code (SMEP?) (uid: %d)\n", from_kuid(&init_user_ns, current_uid()));
- 	}
- 
- 	printk(KERN_ALERT "BUG: unable to handle kernel ");
 diff --git a/arch/x86/platform/intel-quark/imr_selftest.c b/arch/x86/platform/intel-quark/imr_selftest.c
 index 42f879b75f9b..9387220e6fd8 100644
 --- a/arch/x86/platform/intel-quark/imr_selftest.c
@@ -1084,7 +1058,7 @@ index db6baf7cf6e9..f834c827338e 100644
  	}
  
 diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
-index 55fdba05d7d9..d0f71d7c9b95 100644
+index 9b6bc5abe946..00d24b431a05 100644
 --- a/net/appletalk/ddp.c
 +++ b/net/appletalk/ddp.c
 @@ -1904,9 +1904,6 @@ static unsigned char ddp_snap_id[] = { 0x08, 0x00, 0x07, 0x80, 0x9B };
@@ -1276,7 +1250,7 @@ index bb7e80f4ced3..3207ace0c188 100644
  	read_unlock(&dev_base_lock);
  	return ret;
 diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
-index 9a686d890bfa..d0c899283a24 100644
+index 7d6ff983ba2c..ac1f82bca8d7 100644
 --- a/net/decnet/af_decnet.c
 +++ b/net/decnet/af_decnet.c
 @@ -2348,14 +2348,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");
@@ -1296,7 +1270,7 @@ index 9a686d890bfa..d0c899283a24 100644
  	rc = proto_register(&dn_proto, 1);
  	if (rc != 0)
 diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
-index 804de8490186..e4bb441b01e1 100644
+index 1beeea9549fa..a666e6d62433 100644
 --- a/net/llc/af_llc.c
 +++ b/net/llc/af_llc.c
 @@ -1204,13 +1204,6 @@ static const struct proto_ops llc_ui_ops = {
