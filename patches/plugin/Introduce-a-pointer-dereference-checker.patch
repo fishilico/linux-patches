@@ -710,18 +710,18 @@ index 4f1267477aa4..2192e38699cd 100644
  	u32			sw_len;
  };
 diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index b6c9a2af3732..0a301516692f 100644
+index 53085c63277b..60056d636008 100644
 --- a/drivers/net/virtio_net.c
 +++ b/drivers/net/virtio_net.c
-@@ -939,7 +939,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
+@@ -943,7 +943,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
  }
  
  static int receive_buf(struct virtnet_info *vi, struct receive_queue *rq,
--		       void *buf, unsigned int len, void **ctx, bool *xdp_xmit)
-+		       void *buf, unsigned int len, void *ctx /* BUG? */, bool *xdp_xmit)
+-		       void *buf, unsigned int len, void **ctx,
++		       void *buf, unsigned int len, void *ctx, /* BUG? */
+ 		       unsigned int *xdp_xmit)
  {
  	struct net_device *dev = vi->dev;
- 	struct sk_buff *skb;
 diff --git a/drivers/net/wireless/ti/wlcore/main.c b/drivers/net/wireless/ti/wlcore/main.c
 index 3a51ab116e79..93b67c074a8a 100644
 --- a/drivers/net/wireless/ti/wlcore/main.c
@@ -1289,10 +1289,10 @@ index 990b3cc526c8..93157e126a3a 100644
  			debug_kfree(knt1);
  			knt1 = kdb_name_table[i];
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index d6fafde6acdb..f7eda37e4887 100644
+index f054bd6a1c66..521096066dd3 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -7177,7 +7177,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
+@@ -7182,7 +7182,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
  	 * We use the callback data field (which is a pointer)
  	 * as our counter.
  	 */

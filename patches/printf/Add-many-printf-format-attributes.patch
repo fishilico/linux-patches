@@ -37,7 +37,6 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  include/linux/iio/trigger_consumer.h   |  2 +-
  include/linux/trace_events.h           |  3 ++-
  kernel/audit.c                         |  4 ++--
- kernel/trace/trace.c                   |  2 +-
  kernel/trace/trace.h                   |  8 +++++---
  kernel/trace/trace_output.c            |  6 +++---
  net/dccp/ccid.c                        |  3 ++-
@@ -47,7 +46,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  security/tomoyo/common.c               |  3 ++-
  security/tomoyo/common.h               |  4 ++--
  sound/soc/soc-dapm.c                   |  3 ++-
- 43 files changed, 91 insertions(+), 76 deletions(-)
+ 42 files changed, 90 insertions(+), 75 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index d4e6cd4577e5..6cf61035d2af 100644
@@ -657,24 +656,11 @@ index e7478cb58079..e1e184a4753a 100644
  {
  	int len, avail;
  	struct sk_buff *skb;
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index a0079b4c7a49..d6fafde6acdb 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2953,7 +2953,7 @@ int trace_vbprintk(unsigned long ip, const char *fmt, va_list args)
- }
- EXPORT_SYMBOL_GPL(trace_vbprintk);
- 
--static int
-+static __printf(3, 0) int
- __trace_array_vprintk(struct ring_buffer *buffer,
- 		      unsigned long ip, const char *fmt, va_list args)
- {
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 630c5a24b2b2..ad7a709f43cf 100644
+index f8f86231ad90..7ab71f039340 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -762,15 +762,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -760,15 +760,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
