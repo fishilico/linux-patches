@@ -728,10 +728,10 @@ index 97f3fc4fdd79..5e1fc0cb2693 100644
  			if (buffer != small_buf)
  				kfree(buffer);
 diff --git a/fs/reiserfs/prints.c b/fs/reiserfs/prints.c
-index 7e288d97adcb..088822f31ddc 100644
+index 9fed1c05f1f4..b3115bde87a1 100644
 --- a/fs/reiserfs/prints.c
 +++ b/fs/reiserfs/prints.c
-@@ -184,7 +184,7 @@ static char *is_there_reiserfs_struct(char *fmt, int *what)
+@@ -200,7 +200,7 @@ static char *is_there_reiserfs_struct(char *fmt, int *what)
   *         key->k_offset, key->k_uniqueness);
   */
  static DEFINE_SPINLOCK(error_lock);
@@ -740,7 +740,7 @@ index 7e288d97adcb..088822f31ddc 100644
  {
  	char *fmt1 = fmt_buf;
  	char *k;
-@@ -286,7 +286,7 @@ void reiserfs_info(struct super_block *sb, const char *fmt, ...)
+@@ -307,7 +307,7 @@ void reiserfs_info(struct super_block *sb, const char *fmt, ...)
  }
  
  /* No newline.. reiserfs_printk calls can be followed by printk's */
@@ -749,7 +749,7 @@ index 7e288d97adcb..088822f31ddc 100644
  {
  	do_reiserfs_warning(fmt);
  	printk(error_buf);
-@@ -438,14 +438,26 @@ static int print_internal(struct buffer_head *bh, int first, int last)
+@@ -459,14 +459,26 @@ static int print_internal(struct buffer_head *bh, int first, int last)
  		to = last < B_NR_ITEMS(bh) ? last : B_NR_ITEMS(bh);
  	}
  
@@ -776,7 +776,7 @@ index 7e288d97adcb..088822f31ddc 100644
  		if (i && i % 4 == 0)
  			printk("\n");
  	}
-@@ -472,11 +484,19 @@ static int print_leaf(struct buffer_head *bh, int print_mode, int first,
+@@ -493,11 +505,19 @@ static int print_leaf(struct buffer_head *bh, int print_mode, int first,
  
  	printk
  	    ("\n===================================================================\n");
@@ -796,7 +796,7 @@ index 7e288d97adcb..088822f31ddc 100644
  		return 0;
  	}
  
-@@ -498,7 +518,11 @@ static int print_leaf(struct buffer_head *bh, int print_mode, int first,
+@@ -519,7 +539,11 @@ static int print_leaf(struct buffer_head *bh, int print_mode, int first,
  	for (i = from; i < to; i++, ih++) {
  		printk
  		    ("-------------------------------------------------------------------------------\n");
@@ -808,7 +808,7 @@ index 7e288d97adcb..088822f31ddc 100644
  		if (print_mode & PRINT_LEAF_ITEMS)
  			op_print_item(ih, ih_item_body(bh, ih));
  	}
-@@ -715,11 +739,19 @@ static void check_leaf_block_head(struct buffer_head *bh)
+@@ -736,11 +760,19 @@ static void check_leaf_block_head(struct buffer_head *bh)
  	blkh = B_BLK_HEAD(bh);
  	nr = blkh_nr_item(blkh);
  	if (nr > (bh->b_size - BLKH_SIZE) / IH_SIZE)
@@ -828,7 +828,7 @@ index 7e288d97adcb..088822f31ddc 100644
  
  }
  
-@@ -729,15 +761,27 @@ static void check_internal_block_head(struct buffer_head *bh)
+@@ -750,15 +782,27 @@ static void check_internal_block_head(struct buffer_head *bh)
  
  	blkh = B_BLK_HEAD(bh);
  	if (!(B_LEVEL(bh) > DISK_LEAF_NODE_LEVEL && B_LEVEL(bh) <= MAX_HEIGHT))
