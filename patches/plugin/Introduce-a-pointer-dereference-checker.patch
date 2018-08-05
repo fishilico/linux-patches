@@ -73,6 +73,7 @@ It has also detected some bugs reported and fixed by other people:
  drivers/staging/rtl8192u/r819xU_firmware.c    |   2 +-
  .../thermal/int340x_thermal/int3402_thermal.c |   2 +-
  drivers/usb/core/devio.c                      |  12 +-
+ drivers/usb/dwc2/hcd.c                        |  16 +-
  drivers/usb/host/xhci-debugfs.c               |   4 +-
  drivers/xen/privcmd.c                         |  16 +-
  drivers/xen/xenbus/xenbus_xs.c                |   4 +-
@@ -100,7 +101,7 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/deref_checker_plugin.c    | 427 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 71 files changed, 790 insertions(+), 106 deletions(-)
+ 72 files changed, 802 insertions(+), 110 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/Kconfig b/arch/Kconfig
@@ -977,6 +978,40 @@ index 476dcc5f2da3..cae01e6cfe44 100644
  		free_async(as);
  	} else {
  		retval = (connected(ps) ? -EAGAIN : -ENODEV);
+diff --git a/drivers/usb/dwc2/hcd.c b/drivers/usb/dwc2/hcd.c
+index 6e2cdd7b93d4..48cd057eff67 100644
+--- a/drivers/usb/dwc2/hcd.c
++++ b/drivers/usb/dwc2/hcd.c
+@@ -2674,8 +2674,12 @@ static void dwc2_free_dma_aligned_buffer(struct urb *urb)
+ 		return;
+ 
+ 	/* Restore urb->transfer_buffer from the end of the allocated area */
+-	memcpy(&stored_xfer_buffer, urb->transfer_buffer +
+-	       urb->transfer_buffer_length, sizeof(urb->transfer_buffer));
++	{
++		/* Play nice with the pointer deref checker, as the code really wants to copy a pointer with memcpy */
++		void *p_stored_xfer_buffer = &stored_xfer_buffer;
++		memcpy(p_stored_xfer_buffer, urb->transfer_buffer +
++			   urb->transfer_buffer_length, sizeof(urb->transfer_buffer));
++	}
+ 
+ 	if (usb_urb_dir_in(urb)) {
+ 		if (usb_pipeisoc(urb->pipe))
+@@ -2717,8 +2721,12 @@ static int dwc2_alloc_dma_aligned_buffer(struct urb *urb, gfp_t mem_flags)
+ 	 * Position value of original urb->transfer_buffer pointer to the end
+ 	 * of allocation for later referencing
+ 	 */
+-	memcpy(kmalloc_ptr + urb->transfer_buffer_length,
+-	       &urb->transfer_buffer, sizeof(urb->transfer_buffer));
++	{
++		/* Play nice with the pointer deref checker, as the code really wants to copy a pointer with memcpy */
++		void *p_urb_transient_buffer = &urb->transfer_buffer;
++		memcpy(kmalloc_ptr + urb->transfer_buffer_length,
++			   p_urb_transient_buffer, sizeof(urb->transfer_buffer));
++	}
+ 
+ 	if (usb_urb_dir_out(urb))
+ 		memcpy(kmalloc_ptr, urb->transfer_buffer,
 diff --git a/drivers/usb/host/xhci-debugfs.c b/drivers/usb/host/xhci-debugfs.c
 index cadc01336bf8..36ac2ecac626 100644
 --- a/drivers/usb/host/xhci-debugfs.c
@@ -1289,10 +1324,10 @@ index 990b3cc526c8..93157e126a3a 100644
  			debug_kfree(knt1);
  			knt1 = kdb_name_table[i];
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 87cf25171fb8..c0302fd7df83 100644
+index 823687997b01..8c57dfdfdb1f 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -7182,7 +7182,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
+@@ -7188,7 +7188,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
  	 * We use the callback data field (which is a pointer)
  	 * as our counter.
  	 */
@@ -1335,10 +1370,10 @@ index b611cd36e22d..a38cbe9973e1 100644
  	return ret < 0 ? ret : 0;
  }
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 21f718472942..bb4824ae9b79 100644
+index 6b71860f3998..2ec08d147eb7 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
-@@ -748,19 +748,25 @@ static int create_trace_kprobe(int argc, char **argv)
+@@ -759,19 +759,25 @@ static int create_trace_kprobe(int argc, char **argv)
  
  	/* try to parse an address. if that fails, try to read the
  	 * input as a symbol. */
