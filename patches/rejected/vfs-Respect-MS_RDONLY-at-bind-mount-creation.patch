@@ -20,10 +20,10 @@ Sent-upstream: http://lists.openwall.net/linux-kernel/2014/08/02/34
  2 files changed, 25 insertions(+), 12 deletions(-)
 
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 8ddd14806799..f02a5eddb155 100644
+index bd2f4c68506a..bf938fdca775 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1139,6 +1139,14 @@ static struct mount *clone_mnt(struct mount *old, struct dentry *root,
+@@ -1148,6 +1148,14 @@ static struct mount *clone_mnt(struct mount *old, struct dentry *root,
  	if (flag & CL_MAKE_SHARED)
  		set_mnt_shared(mnt);
  
@@ -38,7 +38,7 @@ index 8ddd14806799..f02a5eddb155 100644
  	/* stick the duplicate mount on the same expiry list
  	 * as the original if that was on one */
  	if (flag & CL_EXPIRE) {
-@@ -2202,11 +2210,13 @@ static bool has_locked_children(struct mount *mnt, struct dentry *dentry)
+@@ -2226,11 +2234,13 @@ static bool has_locked_children(struct mount *mnt, struct dentry *dentry)
   * do loopback mount.
   */
  static int do_loopback(struct path *path, const char *old_name,
@@ -53,7 +53,7 @@ index 8ddd14806799..f02a5eddb155 100644
  	int err;
  	if (!old_name || !*old_name)
  		return -EINVAL;
-@@ -2240,9 +2250,10 @@ static int do_loopback(struct path *path, const char *old_name,
+@@ -2264,9 +2274,10 @@ static int do_loopback(struct path *path, const char *old_name,
  		goto out2;
  
  	if (recurse)
@@ -66,7 +66,7 @@ index 8ddd14806799..f02a5eddb155 100644
  
  	if (IS_ERR(mnt)) {
  		err = PTR_ERR(mnt);
-@@ -2839,7 +2850,8 @@ long do_mount(const char *dev_name, const char __user *dir_name,
+@@ -2863,7 +2874,8 @@ long do_mount(const char *dev_name, const char __user *dir_name,
  		retval = do_remount(&path, flags, sb_flags, mnt_flags,
  				    data_page);
  	else if (flags & MS_BIND)
