@@ -12,7 +12,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  drivers/atm/firestream.c                      |  2 +-
  drivers/atm/horizon.c                         | 10 +--
  drivers/gpio/gpiolib-acpi.c                   |  2 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c       |  4 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c       |  6 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_vce.c       |  2 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c       |  4 +-
  drivers/gpu/drm/amd/amdgpu/atombios_dp.c      |  4 +-
@@ -23,6 +23,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  drivers/hid/i2c-hid/i2c-hid.c                 |  2 +-
  drivers/hwmon/smsc47m1.c                      |  2 +-
  drivers/i2c/busses/i2c-sis630.c               |  6 +-
+ drivers/iio/light/si1133.c                    |  4 +-
  drivers/isdn/capi/capidrv.c                   |  4 +-
  drivers/isdn/hardware/eicon/message.c         |  4 +-
  drivers/media/dvb-frontends/dib0070.c         | 16 ++--
@@ -43,6 +44,9 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  drivers/net/ethernet/qlogic/qed/qed_main.c    |  2 +-
  drivers/net/wireless/ath/ath10k/htt_tx.c      |  2 +-
  drivers/net/wireless/ath/ath10k/wmi-tlv.c     |  4 +-
+ drivers/net/wireless/ath/ath10k/wmi.c         |  2 +-
+ .../wireless/mediatek/mt76/mt76x0/debugfs.c   |  4 +-
+ .../wireless/mediatek/mt76/mt76x0/eeprom.c    |  2 +-
  .../net/wireless/mediatek/mt7601u/debugfs.c   |  2 +-
  .../net/wireless/mediatek/mt7601u/eeprom.c    |  2 +-
  drivers/ntb/hw/idt/ntb_hw_idt.c               |  6 +-
@@ -62,6 +66,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  fs/cifs/smb1ops.c                             |  2 +-
  fs/nfsd/flexfilelayout.c                      |  2 +-
  fs/ntfs/attrib.c                              |  2 +-
+ fs/reiserfs/journal.c                         |  2 +-
  include/linux/usb/wusb.h                      |  4 +-
  kernel/sysctl_binary.c                        |  4 +-
  lib/test_printf.c                             |  6 +-
@@ -82,7 +87,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  net/rxrpc/rxkad.c                             |  2 +-
  security/selinux/hooks.c                      |  2 +-
  security/tomoyo/common.c                      |  2 +-
- 78 files changed, 186 insertions(+), 186 deletions(-)
+ 83 files changed, 194 insertions(+), 194 deletions(-)
 
 diff --git a/drivers/acpi/acpica/dbhistry.c b/drivers/acpi/acpica/dbhistry.c
 index b0b9a26c7db5..31bb7b240bc7 100644
@@ -98,7 +103,7 @@ index b0b9a26c7db5..31bb7b240bc7 100644
  				       cmd_num,
  				       acpi_gbl_history_buffer[history_index].
 diff --git a/drivers/acpi/acpica/dbinput.c b/drivers/acpi/acpica/dbinput.c
-index 556ff59bbbfc..70d6325cb214 100644
+index 3e5f95390f0d..c2a7ca9c899a 100644
 --- a/drivers/acpi/acpica/dbinput.c
 +++ b/drivers/acpi/acpica/dbinput.c
 @@ -592,7 +592,7 @@ static u32 acpi_db_get_line(char *input_buffer)
@@ -110,7 +115,7 @@ index 556ff59bbbfc..70d6325cb214 100644
  		     sizeof(acpi_gbl_db_parsed_buf));
  		return (0);
  	}
-@@ -848,24 +848,24 @@ acpi_db_command_dispatch(char *input_buffer,
+@@ -853,24 +853,24 @@ acpi_db_command_dispatch(char *input_buffer,
  
  		if (param_count == 0) {
  			acpi_os_printf
@@ -480,7 +485,7 @@ index 5ddc203206b8..23de2ebafb67 100644
    
    return;
 diff --git a/drivers/gpio/gpiolib-acpi.c b/drivers/gpio/gpiolib-acpi.c
-index addd9fecc198..e3b66b863773 100644
+index c48ed9d89ff5..f8d6b1bbedf5 100644
 --- a/drivers/gpio/gpiolib-acpi.c
 +++ b/drivers/gpio/gpiolib-acpi.c
 @@ -167,7 +167,7 @@ static acpi_status acpi_gpiochip_request_interrupt(struct acpi_resource *ares,
@@ -493,32 +498,41 @@ index addd9fecc198..e3b66b863773 100644
  			handler = acpi_gpio_irq_handler;
  	}
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
-index 3ff08e326838..6ac76ea508cb 100644
+index e5a6db6beab7..6efc39111265 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
-@@ -210,7 +210,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
- 	family_id = le32_to_cpu(hdr->ucode_version) & 0xff;
- 	version_major = (le32_to_cpu(hdr->ucode_version) >> 24) & 0xff;
- 	version_minor = (le32_to_cpu(hdr->ucode_version) >> 8) & 0xff;
--	DRM_INFO("Found UVD firmware Version: %hu.%hu Family ID: %hu\n",
-+	DRM_INFO("Found UVD firmware Version: %u.%u Family ID: %u\n",
- 		version_major, version_minor, family_id);
+@@ -212,7 +212,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
  
- 	/*
-@@ -229,7 +229,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
- 	if ((adev->asic_type == CHIP_POLARIS10 ||
- 	     adev->asic_type == CHIP_POLARIS11) &&
- 	    (adev->uvd.fw_version < FW_1_66_16))
--		DRM_ERROR("POLARIS10/11 UVD firmware version %hu.%hu is too old.\n",
-+		DRM_ERROR("POLARIS10/11 UVD firmware version %u.%u is too old.\n",
- 			  version_major, version_minor);
+ 		version_major = (le32_to_cpu(hdr->ucode_version) >> 24) & 0xff;
+ 		version_minor = (le32_to_cpu(hdr->ucode_version) >> 8) & 0xff;
+-		DRM_INFO("Found UVD firmware Version: %hu.%hu Family ID: %hu\n",
++		DRM_INFO("Found UVD firmware Version: %u.%u Family ID: %u\n",
+ 			version_major, version_minor, family_id);
  
- 	bo_size = AMDGPU_UVD_STACK_SIZE + AMDGPU_UVD_HEAP_SIZE
+ 		/*
+@@ -231,7 +231,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
+ 		if ((adev->asic_type == CHIP_POLARIS10 ||
+ 		     adev->asic_type == CHIP_POLARIS11) &&
+ 		    (adev->uvd.fw_version < FW_1_66_16))
+-			DRM_ERROR("POLARIS10/11 UVD firmware version %hu.%hu is too old.\n",
++			DRM_ERROR("POLARIS10/11 UVD firmware version %u.%u is too old.\n",
+ 				  version_major, version_minor);
+ 	} else {
+ 		unsigned int enc_major, enc_minor, dec_minor;
+@@ -239,7 +239,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
+ 		dec_minor = (le32_to_cpu(hdr->ucode_version) >> 8) & 0xff;
+ 		enc_minor = (le32_to_cpu(hdr->ucode_version) >> 24) & 0x3f;
+ 		enc_major = (le32_to_cpu(hdr->ucode_version) >> 30) & 0x3;
+-		DRM_INFO("Found UVD firmware ENC: %hu.%hu DEC: .%hu Family ID: %hu\n",
++		DRM_INFO("Found UVD firmware ENC: %u.%u DEC: .%u Family ID: %u\n",
+ 			enc_major, enc_minor, dec_minor, family_id);
+ 
+ 		adev->uvd.max_handles = AMDGPU_MAX_UVD_HANDLES;
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vce.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_vce.c
-index 23d960ec1cf2..eb2c3d02edb3 100644
+index 0cc5190f4f36..8abc0b21989d 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vce.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vce.c
-@@ -175,7 +175,7 @@ int amdgpu_vce_sw_init(struct amdgpu_device *adev, unsigned long size)
+@@ -173,7 +173,7 @@ int amdgpu_vce_sw_init(struct amdgpu_device *adev, unsigned long size)
  	version_major = (ucode_version >> 20) & 0xfff;
  	version_minor = (ucode_version >> 8) & 0xfff;
  	binary_id = ucode_version & 0xff;
@@ -528,7 +542,7 @@ index 23d960ec1cf2..eb2c3d02edb3 100644
  	adev->vce.fw_version = ((version_major << 24) | (version_minor << 16) |
  				(binary_id << 8));
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c
-index 1b4ad9b2a755..91964567192a 100644
+index fd654a4406db..01c79a1eaac3 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c
 @@ -99,7 +99,7 @@ int amdgpu_vcn_sw_init(struct amdgpu_device *adev)
@@ -639,10 +653,10 @@ index 249d49b6b16c..30e87a4cc69f 100644
  	return quirks;
  }
 diff --git a/drivers/hid/i2c-hid/i2c-hid.c b/drivers/hid/i2c-hid/i2c-hid.c
-index eae0cb3ddec6..8b6647351b48 100644
+index 2ce194a84868..f03d461d8488 100644
 --- a/drivers/hid/i2c-hid/i2c-hid.c
 +++ b/drivers/hid/i2c-hid/i2c-hid.c
-@@ -1095,7 +1095,7 @@ static int i2c_hid_probe(struct i2c_client *client,
+@@ -1094,7 +1094,7 @@ static int i2c_hid_probe(struct i2c_client *client,
  	hid->vendor = le16_to_cpu(ihid->hdesc.wVendorID);
  	hid->product = le16_to_cpu(ihid->hdesc.wProductID);
  
@@ -688,11 +702,29 @@ index 1e6805b5cef2..710147fd8d94 100644
  
  	return i2c_add_adapter(&sis630_adapter);
  }
+diff --git a/drivers/iio/light/si1133.c b/drivers/iio/light/si1133.c
+index 015a21f0c2ef..96a44412798e 100644
+--- a/drivers/iio/light/si1133.c
++++ b/drivers/iio/light/si1133.c
+@@ -973,11 +973,11 @@ static int si1133_validate_ids(struct iio_dev *iio_dev)
+ 		return err;
+ 
+ 	dev_info(&iio_dev->dev,
+-		 "Device ID part %#02hhx rev %#02hhx mfr %#02hhx\n",
++		 "Device ID part %#02x rev %#02x mfr %#02x\n",
+ 		 part_id, rev_id, mfr_id);
+ 	if (part_id != SI1133_PART_ID) {
+ 		dev_err(&iio_dev->dev,
+-			"Part ID mismatch got %#02hhx, expected %#02x\n",
++			"Part ID mismatch got %#02x, expected %#02x\n",
+ 			part_id, SI1133_PART_ID);
+ 		return -ENODEV;
+ 	}
 diff --git a/drivers/isdn/capi/capidrv.c b/drivers/isdn/capi/capidrv.c
-index ee510f901720..58cb8b28dc3a 100644
+index e8949f3dcae1..36b4e316de1f 100644
 --- a/drivers/isdn/capi/capidrv.c
 +++ b/drivers/isdn/capi/capidrv.c
-@@ -2435,12 +2435,12 @@ lower_callback(struct notifier_block *nb, unsigned long val, void *v)
+@@ -2436,12 +2436,12 @@ lower_callback(struct notifier_block *nb, unsigned long val, void *v)
  
  	switch (val) {
  	case CAPICTR_UP:
@@ -730,7 +762,7 @@ index 0b0fcc285a1a..dc0a23f1cae8 100644
  					dbug(1, dprintf("c_ind_mask =%*pb", MAX_APPL, plci->c_ind_mask_table));
  					plci->State = INC_CON_PENDING;
 diff --git a/drivers/media/dvb-frontends/dib0070.c b/drivers/media/dvb-frontends/dib0070.c
-index 932d235118e2..1d3bc2ddabf0 100644
+index 37ebd5af8fd4..f0cc102782f8 100644
 --- a/drivers/media/dvb-frontends/dib0070.c
 +++ b/drivers/media/dvb-frontends/dib0070.c
 @@ -201,7 +201,7 @@ static int dib0070_captrim(struct dib0070_state *state, enum frontend_tune_state
@@ -779,7 +811,7 @@ index 932d235118e2..1d3bc2ddabf0 100644
  			*tune_state = CT_TUNER_STEP_0;
  		} else { /* we are already tuned to this frequency - the configuration is correct  */
 diff --git a/drivers/media/dvb-frontends/dib0090.c b/drivers/media/dvb-frontends/dib0090.c
-index ee7af34979ed..7b1dcdc91870 100644
+index 44a074261e69..a72851d946dc 100644
 --- a/drivers/media/dvb-frontends/dib0090.c
 +++ b/drivers/media/dvb-frontends/dib0090.c
 @@ -1760,7 +1760,7 @@ static int dib0090_dc_offset_calibration(struct dib0090_state *state, enum front
@@ -792,7 +824,7 @@ index ee7af34979ed..7b1dcdc91870 100644
  			state->dc++;
  			if (state->dc->addr == 0)	/* done */
 diff --git a/drivers/media/dvb-frontends/dib7000m.c b/drivers/media/dvb-frontends/dib7000m.c
-index 6a1d357d0c7c..8c87e56fade3 100644
+index b79358d09de6..eb1d9589a01a 100644
 --- a/drivers/media/dvb-frontends/dib7000m.c
 +++ b/drivers/media/dvb-frontends/dib7000m.c
 @@ -811,7 +811,7 @@ static int dib7000m_agc_startup(struct dvb_frontend *demod)
@@ -805,7 +837,7 @@ index 6a1d357d0c7c..8c87e56fade3 100644
  			(*agc_state)++;
  			ret = 5;
 diff --git a/drivers/media/dvb-frontends/dib7000p.c b/drivers/media/dvb-frontends/dib7000p.c
-index 5a8dbc0b25fb..9912c9de4365 100644
+index 58387860b62d..349a27ec05c1 100644
 --- a/drivers/media/dvb-frontends/dib7000p.c
 +++ b/drivers/media/dvb-frontends/dib7000p.c
 @@ -918,7 +918,7 @@ static int dib7000p_agc_startup(struct dvb_frontend *demod)
@@ -865,7 +897,7 @@ index 313a95f195a2..5eecbb85ddce 100644
  		version_warning = 1;
  	}
 diff --git a/drivers/misc/eeprom/idt_89hpesx.c b/drivers/misc/eeprom/idt_89hpesx.c
-index 59dc24bb70ec..6880069c1a0a 100644
+index 8a4659518c33..d29f60a938f5 100644
 --- a/drivers/misc/eeprom/idt_89hpesx.c
 +++ b/drivers/misc/eeprom/idt_89hpesx.c
 @@ -599,7 +599,7 @@ static int idt_eeprom_read_byte(struct idt_89hpesx_dev *pdev, u16 memaddr,
@@ -896,18 +928,18 @@ index 59dc24bb70ec..6880069c1a0a 100644
  		goto err_mutex_unlock;
  	}
 diff --git a/drivers/misc/mei/hw-me.c b/drivers/misc/mei/hw-me.c
-index 334ab02e1de2..7724d3d81e07 100644
+index 0759c3a668de..9a8f6668cfcb 100644
 --- a/drivers/misc/mei/hw-me.c
 +++ b/drivers/misc/mei/hw-me.c
-@@ -538,7 +538,7 @@ static int mei_me_hbuf_write(struct mei_device *dev,
- 	dev_dbg(dev->dev, MEI_HDR_FMT, MEI_HDR_PRM(header));
+@@ -545,7 +545,7 @@ static int mei_me_hbuf_write(struct mei_device *dev,
+ 	dev_dbg(dev->dev, MEI_HDR_FMT, MEI_HDR_PRM((struct mei_msg_hdr *)hdr));
  
  	empty_slots = mei_hbuf_empty_slots(dev);
 -	dev_dbg(dev->dev, "empty slots = %hu.\n", empty_slots);
 +	dev_dbg(dev->dev, "empty slots = %d.\n", empty_slots);
  
- 	dw_cnt = mei_data2slots(length);
- 	if (empty_slots < 0 || dw_cnt > empty_slots)
+ 	if (empty_slots < 0)
+ 		return -EOVERFLOW;
 diff --git a/drivers/misc/sgi-xp/xpnet.c b/drivers/misc/sgi-xp/xpnet.c
 index 44d750d98bc8..44315fd9387f 100644
 --- a/drivers/misc/sgi-xp/xpnet.c
@@ -944,7 +976,7 @@ index 895d35639129..9066f35fe96e 100644
  
  	/* Check PFC for supported number of traffic classes */
 diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
-index 22243c480a05..ae95a70d37d8 100644
+index 98d4c5a3ff21..30c2d6edf479 100644
 --- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
 +++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
 @@ -6178,7 +6178,7 @@ static int bnx2x_format_ver(u32 num, u8 *str, u16 *len)
@@ -966,10 +998,10 @@ index 22243c480a05..ae95a70d37d8 100644
  	return 0;
  }
 diff --git a/drivers/net/ethernet/freescale/fman/mac.c b/drivers/net/ethernet/freescale/fman/mac.c
-index 7b5b95f52c09..1b417672a7a1 100644
+index a847b9c3b31a..cde7893d77ca 100644
 --- a/drivers/net/ethernet/freescale/fman/mac.c
 +++ b/drivers/net/ethernet/freescale/fman/mac.c
-@@ -856,7 +856,7 @@ static int mac_probe(struct platform_device *_of_dev)
+@@ -859,7 +859,7 @@ static int mac_probe(struct platform_device *_of_dev)
  	if (err < 0)
  		dev_err(dev, "fman_set_mac_active_pause() = %d\n", err);
  
@@ -992,10 +1024,10 @@ index e03b30c60dcf..d94daf52f63e 100644
  		return 0xffff;
  	}
 diff --git a/drivers/net/ethernet/netronome/nfp/nfp_app.c b/drivers/net/ethernet/netronome/nfp/nfp_app.c
-index f28b244f4ee7..71dc908bc0d9 100644
+index 8607d09ab732..57f6d4f884b3 100644
 --- a/drivers/net/ethernet/netronome/nfp/nfp_app.c
 +++ b/drivers/net/ethernet/netronome/nfp/nfp_app.c
-@@ -149,7 +149,7 @@ struct nfp_app *nfp_app_alloc(struct nfp_pf *pf, enum nfp_app_id id)
+@@ -166,7 +166,7 @@ struct nfp_app *nfp_app_alloc(struct nfp_pf *pf, enum nfp_app_id id)
  	struct nfp_app *app;
  
  	if (id >= ARRAY_SIZE(apps) || !apps[id]) {
@@ -1005,10 +1037,10 @@ index f28b244f4ee7..71dc908bc0d9 100644
  	}
  
 diff --git a/drivers/net/ethernet/netronome/nfp/nfp_main.c b/drivers/net/ethernet/netronome/nfp/nfp_main.c
-index 152283d7e59c..99d3a5545176 100644
+index 4a540c5e27fe..caa60f042fe8 100644
 --- a/drivers/net/ethernet/netronome/nfp/nfp_main.c
 +++ b/drivers/net/ethernet/netronome/nfp/nfp_main.c
-@@ -366,7 +366,7 @@ nfp_net_fw_find(struct pci_dev *pdev, struct nfp_pf *pf)
+@@ -370,7 +370,7 @@ nfp_net_fw_find(struct pci_dev *pdev, struct nfp_pf *pf)
  	/* First try to find a firmware image specific for this device */
  	interface = nfp_cpp_interface(pf->cpp);
  	nfp_cpp_serial(pf->cpp, &serial);
@@ -1018,7 +1050,7 @@ index 152283d7e59c..99d3a5545176 100644
  	fw = nfp_net_fw_request(pdev, pf, fw_name);
  	if (fw)
 diff --git a/drivers/net/ethernet/qlogic/qed/qed_main.c b/drivers/net/ethernet/qlogic/qed/qed_main.c
-index 758a9a5127fa..e6b2c1604633 100644
+index 2094d86a7a08..1f38ea8fd9f3 100644
 --- a/drivers/net/ethernet/qlogic/qed/qed_main.c
 +++ b/drivers/net/ethernet/qlogic/qed/qed_main.c
 @@ -791,7 +791,7 @@ static int qed_slowpath_setup_int(struct qed_dev *cdev,
@@ -1031,7 +1063,7 @@ index 758a9a5127fa..e6b2c1604633 100644
  		cdev->int_params.in.num_vectors =
  			cdev->int_params.in.min_msix_cnt;
 diff --git a/drivers/net/wireless/ath/ath10k/htt_tx.c b/drivers/net/wireless/ath/ath10k/htt_tx.c
-index 5d8b97a0ccaa..0e6748f69596 100644
+index 7cff0d52338f..18c69286ff28 100644
 --- a/drivers/net/wireless/ath/ath10k/htt_tx.c
 +++ b/drivers/net/wireless/ath/ath10k/htt_tx.c
 @@ -515,7 +515,7 @@ static int ath10k_htt_tx_clean_up_pending(int msdu_id, void *skb, void *ctx)
@@ -1044,7 +1076,7 @@ index 5d8b97a0ccaa..0e6748f69596 100644
  	tx_done.msdu_id = msdu_id;
  	tx_done.status = HTT_TX_COMPL_STATE_DISCARD;
 diff --git a/drivers/net/wireless/ath/ath10k/wmi-tlv.c b/drivers/net/wireless/ath/ath10k/wmi-tlv.c
-index 8c49a26fc571..c4c049e9ce5b 100644
+index cdc1e64d52ad..f0d4a265c710 100644
 --- a/drivers/net/wireless/ath/ath10k/wmi-tlv.c
 +++ b/drivers/net/wireless/ath/ath10k/wmi-tlv.c
 @@ -104,7 +104,7 @@ ath10k_wmi_tlv_iter(struct ath10k *ar, const void *ptr, size_t len,
@@ -1065,6 +1097,52 @@ index 8c49a26fc571..c4c049e9ce5b 100644
  				   tlv_tag, ptr - begin, tlv_len,
  				   wmi_tlv_policies[tlv_tag].min_len);
  			return -EINVAL;
+diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
+index fd612d2905b0..4395caeb6de4 100644
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -9157,7 +9157,7 @@ static int ath10k_wmi_mgmt_tx_clean_up_pending(int msdu_id, void *ptr,
+ 	struct sk_buff *msdu;
+ 
+ 	ath10k_dbg(ar, ATH10K_DBG_WMI,
+-		   "force cleanup mgmt msdu_id %hu\n", msdu_id);
++		   "force cleanup mgmt msdu_id %u\n", msdu_id);
+ 
+ 	msdu = pkt_addr->vaddr;
+ 	dma_unmap_single(ar->dev, pkt_addr->paddr,
+diff --git a/drivers/net/wireless/mediatek/mt76/mt76x0/debugfs.c b/drivers/net/wireless/mediatek/mt76/mt76x0/debugfs.c
+index e7a77a886068..c8abacfa79ce 100644
+--- a/drivers/net/wireless/mediatek/mt76/mt76x0/debugfs.c
++++ b/drivers/net/wireless/mediatek/mt76/mt76x0/debugfs.c
+@@ -107,13 +107,13 @@ mt76x0_eeprom_param_read(struct seq_file *file, void *data)
+ 	seq_printf(file, "RSSI offset 5GHz: %hhx %hhx %hhx\n",
+ 		   dev->ee->rssi_offset_5ghz[0], dev->ee->rssi_offset_5ghz[1],
+ 		   dev->ee->rssi_offset_5ghz[2]);
+-	seq_printf(file, "Temperature offset: %hhx\n", dev->ee->temp_off);
++	seq_printf(file, "Temperature offset: %x\n", dev->ee->temp_off);
+ 	seq_printf(file, "LNA gain 2Ghz: %hhx\n", dev->ee->lna_gain_2ghz);
+ 	seq_printf(file, "LNA gain 5Ghz: %hhx %hhx %hhx\n",
+ 		   dev->ee->lna_gain_5ghz[0], dev->ee->lna_gain_5ghz[1],
+ 		   dev->ee->lna_gain_5ghz[2]);
+ 	seq_printf(file, "Power Amplifier type %hhx\n", dev->ee->pa_type);
+-	seq_printf(file, "Reg channels: %hhu-%hhu\n", dev->ee->reg.start,
++	seq_printf(file, "Reg channels: %hhu-%u\n", dev->ee->reg.start,
+ 		   dev->ee->reg.start + dev->ee->reg.num - 1);
+ 
+ 	seq_puts(file, "Per channel power:\n");
+diff --git a/drivers/net/wireless/mediatek/mt76/mt76x0/eeprom.c b/drivers/net/wireless/mediatek/mt76/mt76x0/eeprom.c
+index 36da1e6bc21a..10d0f086865a 100644
+--- a/drivers/net/wireless/mediatek/mt76/mt76x0/eeprom.c
++++ b/drivers/net/wireless/mediatek/mt76/mt76x0/eeprom.c
+@@ -211,7 +211,7 @@ mt76x0_set_country_reg(struct mt76x0_dev *dev, u8 *eeprom)
+ 
+ 	if (idx != -1)
+ 		dev_info(dev->mt76.dev,
+-			 "EEPROM country region %02hhx (channels %hhd-%hhd)\n",
++			 "EEPROM country region %02hhx (channels %hhd-%d)\n",
+ 			 val, chan_bounds[idx].start,
+ 			 chan_bounds[idx].start + chan_bounds[idx].num - 1);
+ 	else
 diff --git a/drivers/net/wireless/mediatek/mt7601u/debugfs.c b/drivers/net/wireless/mediatek/mt7601u/debugfs.c
 index 991a6a729b1e..b8f59c1fd6fe 100644
 --- a/drivers/net/wireless/mediatek/mt7601u/debugfs.c
@@ -1123,10 +1201,10 @@ index dbe72f116017..d46d7e0650d7 100644
  	off += scnprintf(strbuf + off, size - off, "\n");
  
 diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index cae9b0595692..bd0d36922fbc 100644
+index fde08a997557..14d53a262bd4 100644
 --- a/drivers/platform/x86/thinkpad_acpi.c
 +++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -7414,7 +7414,7 @@ static void volume_exit_software_mute(void)
+@@ -7424,7 +7424,7 @@ static void volume_exit_software_mute(void)
  static int volume_alsa_set_volume(const u8 vol)
  {
  	dbg_printk(TPACPI_DBG_MIXER,
@@ -1136,10 +1214,10 @@ index cae9b0595692..bd0d36922fbc 100644
  }
  
 diff --git a/drivers/scsi/libfc/fc_lport.c b/drivers/scsi/libfc/fc_lport.c
-index 21be672679fb..3f6e9f0789e1 100644
+index be83590ed955..2563fbca4a3d 100644
 --- a/drivers/scsi/libfc/fc_lport.c
 +++ b/drivers/scsi/libfc/fc_lport.c
-@@ -1758,7 +1758,7 @@ void fc_lport_flogi_resp(struct fc_seq *sp, struct fc_frame *fp,
+@@ -1741,7 +1741,7 @@ void fc_lport_flogi_resp(struct fc_seq *sp, struct fc_frame *fp,
  
  	if (mfs < FC_SP_MIN_MAX_PAYLOAD || mfs > FC_SP_MAX_MAX_PAYLOAD) {
  		FC_LPORT_DBG(lport, "FLOGI bad mfs:%hu response, "
@@ -1149,7 +1227,7 @@ index 21be672679fb..3f6e9f0789e1 100644
  		goto err;
  	}
 diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index cff83b9457f7..7ace3d993f7f 100644
+index aa96bccb5a96..db9be649bc03 100644
 --- a/drivers/scsi/qedi/qedi_main.c
 +++ b/drivers/scsi/qedi/qedi_main.c
 @@ -1964,7 +1964,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
@@ -1171,7 +1249,7 @@ index cff83b9457f7..7ace3d993f7f 100644
  	case ISCSI_BOOT_TGT_NIC_ASSOC:
  		rc = snprintf(buf, 3, "0\n");
 diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index 7943b762c12d..4de9be61c66a 100644
+index 3aee9464a7bf..c574c6b52b8d 100644
 --- a/drivers/scsi/scsi_sysfs.c
 +++ b/drivers/scsi/scsi_sysfs.c
 @@ -370,12 +370,12 @@ static DEVICE_ATTR(eh_deadline, S_IRUGO | S_IWUSR, show_shost_eh_deadline, store
@@ -1190,10 +1268,10 @@ index 7943b762c12d..4de9be61c66a 100644
  
  static ssize_t
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 8e223799347a..b0d79b6c7e41 100644
+index 94bad43c41ff..18f42fdcd987 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4230,7 +4230,7 @@ int iscsit_close_connection(
+@@ -4227,7 +4227,7 @@ int iscsit_close_connection(
  
  	spin_lock_bh(&sess->conn_lock);
  	atomic_dec(&sess->nconn);
@@ -1203,10 +1281,10 @@ index 8e223799347a..b0d79b6c7e41 100644
  		sess->sess_ops->InitiatorName);
  	/*
 diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index 99501785cdc1..85dd7b72bff2 100644
+index 9e74f8bc2963..88ec2be97314 100644
 --- a/drivers/target/iscsi/iscsi_target_login.c
 +++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -759,7 +759,7 @@ void iscsi_post_login_handler(
+@@ -758,7 +758,7 @@ void iscsi_post_login_handler(
  
  		list_add_tail(&conn->conn_list, &sess->sess_conn_list);
  		atomic_inc(&sess->nconn);
@@ -1215,7 +1293,7 @@ index 99501785cdc1..85dd7b72bff2 100644
  			" from node: %s\n", atomic_read(&sess->nconn),
  			sess->sess_ops->InitiatorName);
  		spin_unlock_bh(&sess->conn_lock);
-@@ -807,7 +807,7 @@ void iscsi_post_login_handler(
+@@ -806,7 +806,7 @@ void iscsi_post_login_handler(
  	spin_lock_bh(&sess->conn_lock);
  	list_add_tail(&conn->conn_list, &sess->sess_conn_list);
  	atomic_inc(&sess->nconn);
@@ -1238,7 +1316,7 @@ index 29a37b242d30..f7d03988afde 100644
  	pr_debug("SessionType: %s\n", (sess_ops->SessionType) ?
  			"Discovery" : "Normal");
 diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 5ccef7d597fa..1536dea92db4 100644
+index f6b1549f4142..7338f9a083d2 100644
 --- a/drivers/target/target_core_configfs.c
 +++ b/drivers/target/target_core_configfs.c
 @@ -2470,7 +2470,7 @@ static ssize_t target_tg_pt_gp_alua_access_state_store(struct config_item *item,
@@ -1249,7 +1327,7 @@ index 5ccef7d597fa..1536dea92db4 100644
 +			" tg_pt_gp ID: %d\n", tg_pt_gp->tg_pt_gp_valid_id);
  		return -EINVAL;
  	}
- 	if (!(dev->dev_flags & DF_CONFIGURED)) {
+ 	if (!target_dev_configured(dev)) {
 @@ -2522,7 +2522,7 @@ static ssize_t target_tg_pt_gp_alua_access_status_store(
  
  	if (!tg_pt_gp->tg_pt_gp_valid_id) {
@@ -1304,10 +1382,10 @@ index 10db5656fd5d..bf0c12a2d230 100644
  				dest_rtpi);
  
 diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
-index 125b58eff936..dc66b3badb19 100644
+index cddb453a1ba5..6cf00d9f512b 100644
 --- a/drivers/vfio/pci/vfio_pci.c
 +++ b/drivers/vfio/pci/vfio_pci.c
-@@ -1432,11 +1432,11 @@ static void __init vfio_pci_fill_ids(void)
+@@ -1443,11 +1443,11 @@ static void __init vfio_pci_fill_ids(void)
  		rc = pci_add_dynid(&vfio_pci_driver, vendor, device,
  				   subvendor, subdevice, class, class_mask, 0);
  		if (rc)
@@ -1351,7 +1429,7 @@ index 6b61df117fd4..563e2f6268c3 100644
  }
  
 diff --git a/fs/cifs/smb1ops.c b/fs/cifs/smb1ops.c
-index 646dcd149de1..6df84b8b2e2f 100644
+index 378151e09e91..47db8eb6cbcf 100644
 --- a/fs/cifs/smb1ops.c
 +++ b/fs/cifs/smb1ops.c
 @@ -308,7 +308,7 @@ coalesce_t2(char *second_buf, struct smb_hdr *target_hdr)
@@ -1389,6 +1467,19 @@ index 44a39a099b54..b34b18ade932 100644
  			(long long)ofs, (long long)cnt, val);
  	BUG_ON(ofs < 0);
  	BUG_ON(cnt < 0);
+diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+index 8a76f9d14bc6..78c640653788 100644
+--- a/fs/reiserfs/journal.c
++++ b/fs/reiserfs/journal.c
+@@ -2555,7 +2555,7 @@ static int journal_read(struct super_block *sb)
+ 	journal->j_first_unflushed_offset = journal->j_start;
+ 	if (replay_count > 0) {
+ 		reiserfs_info(sb,
+-			      "replayed %d transactions in %lu seconds\n",
++			      "replayed %d transactions in %llu seconds\n",
+ 			      replay_count, ktime_get_seconds() - start);
+ 	}
+ 	/* needed to satisfy the locking in _update_journal_header_block */
 diff --git a/include/linux/usb/wusb.h b/include/linux/usb/wusb.h
 index 9e4a3213f2c2..625366d3499e 100644
 --- a/include/linux/usb/wusb.h
@@ -1420,7 +1511,7 @@ index 07148b497451..469f051bc817 100644
  		result = kernel_write(file, buf, len, &pos);
  		if (result < 0)
 diff --git a/lib/test_printf.c b/lib/test_printf.c
-index cea592f402ed..f973daf69b89 100644
+index 53527ea822b5..959df007a7ae 100644
 --- a/lib/test_printf.c
 +++ b/lib/test_printf.c
 @@ -146,9 +146,9 @@ test_number(void)
@@ -1524,10 +1615,10 @@ index 88a7579c23bd..a603df334b33 100644
  		}
  
 diff --git a/net/l2tp/l2tp_core.c b/net/l2tp/l2tp_core.c
-index 40261cb68e83..889f8120b901 100644
+index 82cdf9020b53..9e20f536ca0d 100644
 --- a/net/l2tp/l2tp_core.c
 +++ b/net/l2tp/l2tp_core.c
-@@ -373,7 +373,7 @@ static void l2tp_recv_queue_skb(struct l2tp_session *session, struct sk_buff *sk
+@@ -372,7 +372,7 @@ static void l2tp_recv_queue_skb(struct l2tp_session *session, struct sk_buff *sk
  		if (L2TP_SKB_CB(skbp)->ns > ns) {
  			__skb_queue_before(&session->reorder_q, skbp, skb);
  			l2tp_dbg(session, L2TP_MSG_SEQ,
@@ -1536,7 +1627,7 @@ index 40261cb68e83..889f8120b901 100644
  				 session->name, ns, L2TP_SKB_CB(skbp)->ns,
  				 skb_queue_len(&session->reorder_q));
  			atomic_long_inc(&session->stats.rx_oos_packets);
-@@ -409,7 +409,7 @@ static void l2tp_recv_dequeue_skb(struct l2tp_session *session, struct sk_buff *
+@@ -408,7 +408,7 @@ static void l2tp_recv_dequeue_skb(struct l2tp_session *session, struct sk_buff *
  		session->nr++;
  		session->nr &= session->nr_max;
  
@@ -1546,19 +1637,19 @@ index 40261cb68e83..889f8120b901 100644
  	}
  
 diff --git a/net/l2tp/l2tp_debugfs.c b/net/l2tp/l2tp_debugfs.c
-index e87686f7d63c..ea4120f1243c 100644
+index 9821a1458555..bfc6349d4a80 100644
 --- a/net/l2tp/l2tp_debugfs.c
 +++ b/net/l2tp/l2tp_debugfs.c
-@@ -192,7 +192,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
+@@ -189,7 +189,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
  		   session->pwtype == L2TP_PWTYPE_PPP ? "PPP" :
  		   "");
  	if (session->send_seq || session->recv_seq)
 -		seq_printf(m, "   nr %hu, ns %hu\n", session->nr, session->ns);
 +		seq_printf(m, "   nr %u, ns %u\n", session->nr, session->ns);
  	seq_printf(m, "   refcnt %d\n", refcount_read(&session->ref_count));
- 	seq_printf(m, "   config %d/%d/%c/%c/%s/%s %08x %u\n",
- 		   session->mtu, session->mru,
-@@ -203,7 +203,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
+ 	seq_printf(m, "   config 0/0/%c/%c/-/%s %08x %u\n",
+ 		   session->recv_seq ? 'R' : '-',
+@@ -197,7 +197,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
  		   session->lns_mode ? "LNS" : "LAC",
  		   session->debug,
  		   jiffies_to_msecs(session->reorder_timeout));
@@ -1567,7 +1658,7 @@ index e87686f7d63c..ea4120f1243c 100644
  		   session->l2specific_type, l2tp_get_l2specific_len(session));
  	if (session->cookie_len) {
  		seq_printf(m, "   cookie %02x%02x%02x%02x",
-@@ -226,7 +226,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
+@@ -220,7 +220,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
  		seq_printf(m, "\n");
  	}
  
@@ -1577,10 +1668,10 @@ index e87686f7d63c..ea4120f1243c 100644
  		   atomic_long_read(&session->stats.tx_packets),
  		   atomic_long_read(&session->stats.tx_bytes),
 diff --git a/net/l2tp/l2tp_ppp.c b/net/l2tp/l2tp_ppp.c
-index cf6cca260e7b..98f0cf03eab2 100644
+index 04d9946dcdba..269a0344c60b 100644
 --- a/net/l2tp/l2tp_ppp.c
 +++ b/net/l2tp/l2tp_ppp.c
-@@ -1729,7 +1729,7 @@ static void pppol2tp_seq_session_show(struct seq_file *m, void *v)
+@@ -1583,7 +1583,7 @@ static void pppol2tp_seq_session_show(struct seq_file *m, void *v)
  		   session->lns_mode ? "LNS" : "LAC",
  		   session->debug,
  		   jiffies_to_msecs(session->reorder_timeout));
@@ -1605,7 +1696,7 @@ index 005589c6d0f6..2b9e46c7a616 100644
  			return 0;
  		}
 diff --git a/net/netfilter/xt_AUDIT.c b/net/netfilter/xt_AUDIT.c
-index f368ee6741db..29143f3abdb0 100644
+index af883f1b64f9..85bcb9e889d9 100644
 --- a/net/netfilter/xt_AUDIT.c
 +++ b/net/netfilter/xt_AUDIT.c
 @@ -120,7 +120,7 @@ static int audit_tg_check(const struct xt_tgchk_param *par)
@@ -1653,10 +1744,10 @@ index 4ad5fe27e08b..ffa54436bbec 100644
  	}
  
 diff --git a/net/netfilter/xt_TPROXY.c b/net/netfilter/xt_TPROXY.c
-index d76550a8b642..45ccfa646ecc 100644
+index ad7420cdc439..f941f4281cbd 100644
 --- a/net/netfilter/xt_TPROXY.c
 +++ b/net/netfilter/xt_TPROXY.c
-@@ -182,7 +182,7 @@ tproxy_tg6_v1(struct sk_buff *skb, const struct xt_action_param *par)
+@@ -173,7 +173,7 @@ tproxy_tg6_v1(struct sk_buff *skb, const struct xt_action_param *par)
  		   targets on the same rule yet */
  		skb->mark = (skb->mark & ~tgi->mark_mask) ^ tgi->mark_value;
  
@@ -1665,7 +1756,7 @@ index d76550a8b642..45ccfa646ecc 100644
  			 tproto, &iph->saddr, ntohs(hp->source),
  			 laddr, ntohs(lport), skb->mark);
  
-@@ -190,7 +190,7 @@ tproxy_tg6_v1(struct sk_buff *skb, const struct xt_action_param *par)
+@@ -181,7 +181,7 @@ tproxy_tg6_v1(struct sk_buff *skb, const struct xt_action_param *par)
  		return NF_ACCEPT;
  	}
  
@@ -1675,10 +1766,10 @@ index d76550a8b642..45ccfa646ecc 100644
  		 &iph->daddr, ntohs(hp->dest), skb->mark);
  
 diff --git a/net/rxrpc/rxkad.c b/net/rxrpc/rxkad.c
-index 47cb019c521a..04d51bf97abc 100644
+index cea16838d588..c7937eb54a45 100644
 --- a/net/rxrpc/rxkad.c
 +++ b/net/rxrpc/rxkad.c
-@@ -307,7 +307,7 @@ static int rxkad_secure_packet(struct rxrpc_call *call,
+@@ -308,7 +308,7 @@ static int rxkad_secure_packet(struct rxrpc_call *call,
  		break;
  	}
  
@@ -1688,10 +1779,10 @@ index 47cb019c521a..04d51bf97abc 100644
  }
  
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 2b5ee5fbd652..a6b429bfa151 100644
+index ad9a9b8e9979..e45b6510dc84 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -5553,7 +5553,7 @@ static int selinux_nlmsg_perm(struct sock *sk, struct sk_buff *skb)
+@@ -5565,7 +5565,7 @@ static int selinux_nlmsg_perm(struct sock *sk, struct sk_buff *skb)
  	if (err) {
  		if (err == -EINVAL) {
  			pr_warn_ratelimited("SELinux: unrecognized netlink"

@@ -5,13 +5,33 @@ Subject: [PATCH] {CONSTIFY} security: constify security_kernel_module_request
  argument
 
 ---
- include/linux/lsm_audit.h | 2 +-
- include/linux/lsm_hooks.h | 2 +-
- include/linux/security.h  | 4 ++--
- security/security.c       | 2 +-
- security/selinux/hooks.c  | 2 +-
- 5 files changed, 6 insertions(+), 6 deletions(-)
+ include/linux/integrity.h              | 4 ++--
+ include/linux/lsm_audit.h              | 2 +-
+ include/linux/lsm_hooks.h              | 2 +-
+ include/linux/security.h               | 4 ++--
+ security/integrity/digsig_asymmetric.c | 2 +-
+ security/security.c                    | 2 +-
+ security/selinux/hooks.c               | 2 +-
+ 7 files changed, 9 insertions(+), 9 deletions(-)
 
+diff --git a/include/linux/integrity.h b/include/linux/integrity.h
+index 54c853ec2fd1..c46459ecfa6f 100644
+--- a/include/linux/integrity.h
++++ b/include/linux/integrity.h
+@@ -46,11 +46,11 @@ static inline void integrity_load_keys(void)
+ 
+ #ifdef CONFIG_INTEGRITY_ASYMMETRIC_KEYS
+ 
+-extern int integrity_kernel_module_request(char *kmod_name);
++extern int integrity_kernel_module_request(const char *kmod_name);
+ 
+ #else
+ 
+-static inline int integrity_kernel_module_request(char *kmod_name)
++static inline int integrity_kernel_module_request(const char *kmod_name)
+ {
+ 	return 0;
+ }
 diff --git a/include/linux/lsm_audit.h b/include/linux/lsm_audit.h
 index 915330abf6e5..747eafda8a6b 100644
 --- a/include/linux/lsm_audit.h
@@ -26,32 +46,32 @@ index 915330abf6e5..747eafda8a6b 100644
  		struct file *file;
  		struct lsm_ibpkey_audit *ibpkey;
 diff --git a/include/linux/lsm_hooks.h b/include/linux/lsm_hooks.h
-index 8f1131c8dd54..786dc397cf84 100644
+index 97a020c616ad..e1486c6eedd5 100644
 --- a/include/linux/lsm_hooks.h
 +++ b/include/linux/lsm_hooks.h
-@@ -1581,7 +1581,7 @@ union security_list_options {
+@@ -1585,7 +1585,7 @@ union security_list_options {
  	void (*cred_getsecid)(const struct cred *c, u32 *secid);
  	int (*kernel_act_as)(struct cred *new, u32 secid);
  	int (*kernel_create_files_as)(struct cred *new, struct inode *inode);
 -	int (*kernel_module_request)(char *kmod_name);
 +	int (*kernel_module_request)(const char *kmod_name);
+ 	int (*kernel_load_data)(enum kernel_load_data_id id);
  	int (*kernel_read_file)(struct file *file, enum kernel_read_file_id id);
  	int (*kernel_post_read_file)(struct file *file, char *buf, loff_t size,
- 				     enum kernel_read_file_id id);
 diff --git a/include/linux/security.h b/include/linux/security.h
-index 63030c85ee19..a4bcc6e4b760 100644
+index 75f4156c84d7..dea141ec8817 100644
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -319,7 +319,7 @@ void security_transfer_creds(struct cred *new, const struct cred *old);
+@@ -340,7 +340,7 @@ void security_transfer_creds(struct cred *new, const struct cred *old);
  void security_cred_getsecid(const struct cred *c, u32 *secid);
  int security_kernel_act_as(struct cred *new, u32 secid);
  int security_kernel_create_files_as(struct cred *new, struct inode *inode);
 -int security_kernel_module_request(char *kmod_name);
 +int security_kernel_module_request(const char *kmod_name);
+ int security_kernel_load_data(enum kernel_load_data_id id);
  int security_kernel_read_file(struct file *file, enum kernel_read_file_id id);
  int security_kernel_post_read_file(struct file *file, char *buf, loff_t size,
- 				   enum kernel_read_file_id id);
-@@ -904,7 +904,7 @@ static inline int security_kernel_create_files_as(struct cred *cred,
+@@ -925,7 +925,7 @@ static inline int security_kernel_create_files_as(struct cred *cred,
  	return 0;
  }
  
@@ -60,24 +80,37 @@ index 63030c85ee19..a4bcc6e4b760 100644
  {
  	return 0;
  }
+diff --git a/security/integrity/digsig_asymmetric.c b/security/integrity/digsig_asymmetric.c
+index 6dc075144508..cd0b3c13d69a 100644
+--- a/security/integrity/digsig_asymmetric.c
++++ b/security/integrity/digsig_asymmetric.c
+@@ -131,7 +131,7 @@ int asymmetric_verify(struct key *keyring, const char *sig,
+  * and avoid possible deadlock if modprobe and/or it's dependencies
+  * also signed with digsig.
+  */
+-int integrity_kernel_module_request(char *kmod_name)
++int integrity_kernel_module_request(const char *kmod_name)
+ {
+ 	if (strncmp(kmod_name, "crypto-pkcs1pad(rsa,", 20) == 0)
+ 		return -EINVAL;
 diff --git a/security/security.c b/security/security.c
-index 68f46d849abe..c4981336fe1f 100644
+index 736e78da1ab9..1bef76cee1ec 100644
 --- a/security/security.c
 +++ b/security/security.c
-@@ -1028,7 +1028,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
+@@ -1033,7 +1033,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
  	return call_int_hook(kernel_create_files_as, 0, new, inode);
  }
  
 -int security_kernel_module_request(char *kmod_name)
 +int security_kernel_module_request(const char *kmod_name)
  {
- 	return call_int_hook(kernel_module_request, 0, kmod_name);
- }
+ 	int ret;
+ 
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index a6b429bfa151..0827fe9d995d 100644
+index e45b6510dc84..6afc7695db1f 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -4012,7 +4012,7 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
+@@ -4010,7 +4010,7 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
  	return ret;
  }
  

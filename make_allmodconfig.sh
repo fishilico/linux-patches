@@ -364,6 +364,7 @@ then
     echo 'CONFIG_RCU_BOOST_DELAY=1' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_DEBUG_PREEMPT=y' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_PREEMPT_TRACER=y' >> "$KBUILD_OUTPUT/.config"
+    echo 'CONFIG_RCU_CPU_STALL_TIMEOUT=21' >> "$KBUILD_OUTPUT/.config"
 
     # CEC_GPIO depends on PREEMPT, and selects CEC_PING, which enables CEC_PIN_ERROR_INJ
     echo 'CONFIG_CEC_GPIO=m' >> "$KBUILD_OUTPUT/.config"

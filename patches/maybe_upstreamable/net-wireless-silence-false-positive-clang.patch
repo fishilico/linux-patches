@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 19 Aug 2018 14:46:51 +0200
+Subject: [PATCH] {MAYBE UPS} net/wireless: silence false-positive clang
+ -Wsometimes-uninitialized
+
+---
+ net/wireless/util.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/net/wireless/util.c b/net/wireless/util.c
+index e0825a019e9f..89d0febf4518 100644
+--- a/net/wireless/util.c
++++ b/net/wireless/util.c
+@@ -1204,9 +1204,10 @@ static u32 cfg80211_calculate_bitrate_he(struct rate_info *rate)
+ 	else if (rate->bw == RATE_INFO_BW_HE_RU &&
+ 		 rate->he_ru_alloc == NL80211_RATE_INFO_HE_RU_ALLOC_26)
+ 		result = rates_26[rate->he_gi];
+-	else if (WARN(1, "invalid HE MCS: bw:%d, ru:%d\n",
+-		      rate->bw, rate->he_ru_alloc))
++	else {WARN(1, "invalid HE MCS: bw:%d, ru:%d\n",
++		      rate->bw, rate->he_ru_alloc);
+ 		return 0;
++	}
+ 
+ 	/* now scale to the appropriate MCS */
+ 	tmp = result;
+-- 

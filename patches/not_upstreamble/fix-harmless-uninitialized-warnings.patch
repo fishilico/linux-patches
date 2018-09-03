@@ -35,10 +35,10 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  27 files changed, 41 insertions(+), 19 deletions(-)
 
 diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
-index 8771766d46b6..df760ec0e44e 100644
+index 34a5c1715148..2fcfebb37e65 100644
 --- a/arch/x86/kernel/hw_breakpoint.c
 +++ b/arch/x86/kernel/hw_breakpoint.c
-@@ -352,6 +352,7 @@ int arch_validate_hwbkpt_settings(struct perf_event *bp)
+@@ -357,6 +357,7 @@ int hw_breakpoint_arch_parse(struct perf_event *bp,
  #endif
  	default:
  		WARN_ON_ONCE(1);
@@ -75,10 +75,10 @@ index 925e17104f90..2891d1e7abfa 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i915_request.c
-index 8928894dd9c7..452179492b86 100644
+index 5c2c93cbab12..37f5e2729cf0 100644
 --- a/drivers/gpu/drm/i915/i915_request.c
 +++ b/drivers/gpu/drm/i915/i915_request.c
-@@ -1164,7 +1164,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
+@@ -1178,7 +1178,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
@@ -101,10 +101,10 @@ index 4d8681e84e68..18f862ad3e05 100644
  	struct qxl_rect *rects;
  	int stride = qxl_fb->base.pitches[0];
 diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-index c9d5cc237124..d7f02160e21b 100644
+index 1f134570b759..f768f83b8b13 100644
 --- a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
 +++ b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-@@ -4217,6 +4217,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
+@@ -4243,6 +4243,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
  		goto out_err;
  
  	vmw_query_bo_switch_commit(dev_priv, sw_context);
@@ -127,10 +127,10 @@ index 645f2e3975db..e5aa6d1abcf5 100644
  	return iio_push_to_buffers_with_timestamp(indio_dev, spd->buffer,
  						  calculated_time);
 diff --git a/drivers/md/bcache/alloc.c b/drivers/md/bcache/alloc.c
-index 7fa2631b422c..eb8fb6a26acd 100644
+index 7a28232d868b..6334e35d9607 100644
 --- a/drivers/md/bcache/alloc.c
 +++ b/drivers/md/bcache/alloc.c
-@@ -327,7 +327,7 @@ static int bch_allocator_thread(void *arg)
+@@ -328,7 +328,7 @@ static int bch_allocator_thread(void *arg)
  		 * the free list:
  		 */
  		while (!fifo_empty(&ca->free_inc)) {
@@ -168,7 +168,7 @@ index 829a61dbd65f..cb958e350926 100644
  
  	return qcom_coincell_chgr_config(&chgr, rset, vset, enable);
 diff --git a/drivers/misc/sgi-xp/xpc_partition.c b/drivers/misc/sgi-xp/xpc_partition.c
-index 7284413dabfd..2f5e80aa15df 100644
+index 0c3ef6f1df54..4a5f169f77a1 100644
 --- a/drivers/misc/sgi-xp/xpc_partition.c
 +++ b/drivers/misc/sgi-xp/xpc_partition.c
 @@ -70,7 +70,7 @@ xpc_get_rsvd_page_pa(int nasid)
@@ -181,10 +181,10 @@ index 7284413dabfd..2f5e80aa15df 100644
  	enum xp_retval (*get_partition_rsvd_page_pa)
  		(void *, u64 *, unsigned long *, size_t *) =
 diff --git a/drivers/net/ethernet/sun/niu.c b/drivers/net/ethernet/sun/niu.c
-index 88c12474a0c3..bc69400dad96 100644
+index 9319d84bf49f..c6435d9ddc22 100644
 --- a/drivers/net/ethernet/sun/niu.c
 +++ b/drivers/net/ethernet/sun/niu.c
-@@ -7480,6 +7480,7 @@ static int niu_add_ethtool_tcam_entry(struct niu *np,
+@@ -7464,6 +7464,7 @@ static int niu_add_ethtool_tcam_entry(struct niu *np,
  					class = CLASS_CODE_USER_PROG4;
  					break;
  				default:
@@ -285,10 +285,10 @@ index 3b2ae342e649..f9b057d441e7 100644
  	ret = 0;
  	subid_le = cpu_to_le64(subid_cpu);
 diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
-index fe0d1f9571bb..202b795867fa 100644
+index 7642b6712c39..de4967930a5a 100644
 --- a/fs/ocfs2/localalloc.c
 +++ b/fs/ocfs2/localalloc.c
-@@ -844,6 +844,7 @@ static int ocfs2_local_alloc_find_clear_bits(struct ocfs2_super *osb,
+@@ -843,6 +843,7 @@ static int ocfs2_local_alloc_find_clear_bits(struct ocfs2_super *osb,
  
  	if (!alloc->id1.bitmap1.i_total) {
  		bitoff = -1;
@@ -297,7 +297,7 @@ index fe0d1f9571bb..202b795867fa 100644
  	}
  
 diff --git a/fs/xfs/libxfs/xfs_dir2_node.c b/fs/xfs/libxfs/xfs_dir2_node.c
-index 2daf874969ab..625bf8109c2f 100644
+index f1bb3434f51c..b39c7607bd53 100644
 --- a/fs/xfs/libxfs/xfs_dir2_node.c
 +++ b/fs/xfs/libxfs/xfs_dir2_node.c
 @@ -431,12 +431,12 @@ xfs_dir2_leafn_add(
@@ -325,7 +325,7 @@ index 2daf874969ab..625bf8109c2f 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index 0d968e8143aa..93b16c9796e6 100644
+index a8f6db735d5d..360ae59891e3 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
 @@ -2052,7 +2052,7 @@ xfs_difree_finobt(
@@ -338,7 +338,7 @@ index 0d968e8143aa..93b16c9796e6 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 174122ee1656..e34b3808c3a2 100644
+index 747560fc781f..b3ceadfc63d9 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
 @@ -1073,7 +1073,7 @@ xlog_verify_tail(
@@ -377,10 +377,10 @@ index 52517f28e6f4..56f62474ea91 100644
  
  	VM_BUG_ON_PAGE(!PageLocked(page), page);
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index a59187c016e0..e50139633ea7 100644
+index 7fb9957359a3..62c07fcb4463 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1307,7 +1307,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
+@@ -1402,7 +1402,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
  {
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;
@@ -390,10 +390,10 @@ index a59187c016e0..e50139633ea7 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index fa1f1e63a264..be2a620a5b99 100644
+index cd332e3e1134..e4e2144c3fad 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2415,7 +2415,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
+@@ -2420,7 +2420,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
  	bool tdls_peer;
  	bool multicast;
  	u16 info_id = 0;

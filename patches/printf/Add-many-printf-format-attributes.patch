@@ -63,10 +63,10 @@ index d4e6cd4577e5..6cf61035d2af 100644
  	va_list args;
  	va_start(args, str);
 diff --git a/drivers/acpi/acpica/acutils.h b/drivers/acpi/acpica/acutils.h
-index 2733cd4e418c..31539f72a464 100644
+index 3374d41582b5..a479ca42d2a0 100644
 --- a/drivers/acpi/acpica/acutils.h
 +++ b/drivers/acpi/acpica/acutils.h
-@@ -684,18 +684,18 @@ void acpi_ut_delete_address_lists(void);
+@@ -686,18 +686,18 @@ void acpi_ut_delete_address_lists(void);
  /*
   * utxferror - various error/warning output functions
   */
@@ -115,7 +115,7 @@ index aabdc25effd9..7d438ddf6dad 100644
  #ifdef ACPI_APPLICATION
  	/*
 diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 30cc9c877ebb..5477d72e9a1b 100644
+index eb9443d5bae1..f460512ef35c 100644
 --- a/drivers/base/cpu.c
 +++ b/drivers/base/cpu.c
 @@ -409,7 +409,7 @@ static void device_create_release(struct device *dev)
@@ -128,10 +128,10 @@ index 30cc9c877ebb..5477d72e9a1b 100644
  		    const struct attribute_group **groups,
  		    const char *fmt, va_list args)
 diff --git a/drivers/clk/clkdev.c b/drivers/clk/clkdev.c
-index 7513411140b6..bf89ec03019a 100644
+index 9ab3db8b3988..1bd1c0313fc5 100644
 --- a/drivers/clk/clkdev.c
 +++ b/drivers/clk/clkdev.c
-@@ -250,7 +250,7 @@ struct clk_lookup_alloc {
+@@ -247,7 +247,7 @@ struct clk_lookup_alloc {
  	char	con_id[MAX_CON_ID];
  };
  
@@ -140,7 +140,7 @@ index 7513411140b6..bf89ec03019a 100644
  vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	va_list ap)
  {
-@@ -274,7 +274,7 @@ vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
+@@ -271,7 +271,7 @@ vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	return &cla->cl;
  }
  
@@ -149,7 +149,7 @@ index 7513411140b6..bf89ec03019a 100644
  vclkdev_create(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	va_list ap)
  {
-@@ -390,7 +390,8 @@ void clkdev_drop(struct clk_lookup *cl)
+@@ -387,7 +387,8 @@ void clkdev_drop(struct clk_lookup *cl)
  }
  EXPORT_SYMBOL(clkdev_drop);
  
@@ -292,10 +292,10 @@ index 9195f9fd628f..bf4928dc69fc 100644
  {
  	va_list args;
 diff --git a/drivers/isdn/hysdn/hysdn_boot.c b/drivers/isdn/hysdn/hysdn_boot.c
-index 4a0425378f37..bc47b649cb3a 100644
+index ba177c3a621b..5404e58d3cb6 100644
 --- a/drivers/isdn/hysdn/hysdn_boot.c
 +++ b/drivers/isdn/hysdn/hysdn_boot.c
-@@ -153,7 +153,7 @@ pof_handle_data(hysdn_card *card, int datlen)
+@@ -155,7 +155,7 @@ pof_handle_data(hysdn_card *card, int datlen)
  
  	default:
  		if (card->debug_flags & LOG_POF_RECORD)
@@ -304,7 +304,7 @@ index 4a0425378f37..bc47b649cb3a 100644
  				     datlen, boot->pof_recoffset);
  
  		break;	/* simply skip record */
-@@ -215,7 +215,7 @@ pof_write_buffer(hysdn_card *card, int datlen)
+@@ -217,7 +217,7 @@ pof_write_buffer(hysdn_card *card, int datlen)
  		boot->pof_recoffset = 0;	/* no starting offset */
  
  		if (card->debug_flags & LOG_POF_RECORD)
@@ -473,15 +473,15 @@ index 5d3b76ca74d8..55350cf98ca9 100644
  	if (!par->spi) {
  		dev_err(par->info->device,
 diff --git a/drivers/staging/fbtft/fbtft-io.c b/drivers/staging/fbtft/fbtft-io.c
-index f4a591919f62..0e9220bd2fe9 100644
+index b5051d3d46a6..4a31f14636e2 100644
 --- a/drivers/staging/fbtft/fbtft-io.c
 +++ b/drivers/staging/fbtft/fbtft-io.c
 @@ -14,7 +14,7 @@ int fbtft_write_spi(struct fbtft_par *par, void *buf, size_t len)
  	struct spi_message m;
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--		"%s(len=%d): ", __func__, len);
-+		"%s(len=%zu): ", __func__, len);
+-			  "%s(len=%d): ", __func__, len);
++			  "%s(len=%zu): ", __func__, len);
  
  	if (!par->spi) {
  		dev_err(par->info->device,
@@ -489,48 +489,49 @@ index f4a591919f62..0e9220bd2fe9 100644
  	u64 val, dc, tmp;
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--		"%s(len=%d): ", __func__, len);
-+		"%s(len=%zu): ", __func__, len);
+-			  "%s(len=%d): ", __func__, len);
++			  "%s(len=%zu): ", __func__, len);
  
  	if (!par->extra) {
  		dev_err(par->info->device, "%s: error: par->extra is NULL\n",
-@@ -109,14 +109,14 @@ int fbtft_read_spi(struct fbtft_par *par, void *buf, size_t len)
+@@ -109,7 +109,7 @@ int fbtft_read_spi(struct fbtft_par *par, void *buf, size_t len)
  		txbuf[0] = par->startbyte | 0x3;
  		t.tx_buf = txbuf;
  		fbtft_par_dbg_hex(DEBUG_READ, par, par->info->device, u8,
--			txbuf, len, "%s(len=%d) txbuf => ", __func__, len);
-+			txbuf, len, "%s(len=%zu) txbuf => ", __func__, len);
+-				  txbuf, len, "%s(len=%d) txbuf => ",
++				  txbuf, len, "%s(len=%zu) txbuf => ",
+ 				  __func__, len);
  	}
  
- 	spi_message_init(&m);
+@@ -117,7 +117,7 @@ int fbtft_read_spi(struct fbtft_par *par, void *buf, size_t len)
  	spi_message_add_tail(&t, &m);
  	ret = spi_sync(par->spi, &m);
  	fbtft_par_dbg_hex(DEBUG_READ, par, par->info->device, u8, buf, len,
--		"%s(len=%d) buf <= ", __func__, len);
-+		"%s(len=%zu) buf <= ", __func__, len);
+-			  "%s(len=%d) buf <= ", __func__, len);
++			  "%s(len=%zu) buf <= ", __func__, len);
  
  	return ret;
  }
-@@ -135,7 +135,7 @@ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
+@@ -136,7 +136,7 @@ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
  #endif
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--		"%s(len=%d): ", __func__, len);
-+		"%s(len=%zu): ", __func__, len);
+-			  "%s(len=%d): ", __func__, len);
++			  "%s(len=%zu): ", __func__, len);
  
  	while (len--) {
  		data = *(u8 *)buf;
-@@ -185,7 +185,7 @@ int fbtft_write_gpio16_wr(struct fbtft_par *par, void *buf, size_t len)
+@@ -186,7 +186,7 @@ int fbtft_write_gpio16_wr(struct fbtft_par *par, void *buf, size_t len)
  #endif
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--		"%s(len=%d): ", __func__, len);
-+		"%s(len=%zu): ", __func__, len);
+-			  "%s(len=%d): ", __func__, len);
++			  "%s(len=%zu): ", __func__, len);
  
  	while (len) {
  		data = *(u16 *)buf;
 diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index c7cb4a7896f4..e93339bc2719 100644
+index 798a8fe98e95..8dfb3f6b4bf5 100644
 --- a/drivers/staging/fbtft/fbtft.h
 +++ b/drivers/staging/fbtft/fbtft.h
 @@ -240,7 +240,7 @@ struct fbtft_par {
@@ -543,15 +544,15 @@ index c7cb4a7896f4..e93339bc2719 100644
  					struct device *dev,
  					struct fbtft_platform_data *pdata);
 diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
-index ec8477674b7d..429db96dd811 100644
+index 50e97da993e7..c6059ab443e9 100644
 --- a/drivers/staging/fbtft/fbtft_device.c
 +++ b/drivers/staging/fbtft/fbtft_device.c
-@@ -1243,7 +1243,7 @@ static int write_gpio16_wr_slow(struct fbtft_par *par, void *buf, size_t len)
+@@ -1240,7 +1240,7 @@ static int write_gpio16_wr_slow(struct fbtft_par *par, void *buf, size_t len)
  #endif
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--		"%s(len=%d): ", __func__, len);
-+		"%s(len=%zu): ", __func__, len);
+-			  "%s(len=%d): ", __func__, len);
++			  "%s(len=%zu): ", __func__, len);
  
  	while (len) {
  		data = *(u16 *)buf;
@@ -642,10 +643,10 @@ index 78a010e19ed4..3d491785dabd 100644
  struct event_filter;
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index e7478cb58079..e1e184a4753a 100644
+index 2a8058764aa6..762b9b6f7bc0 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
-@@ -1836,8 +1836,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
+@@ -1833,8 +1833,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
   * will be called a second time.  Currently, we assume that a printk
   * can't format message larger than 1024 bytes, so we don't either.
   */
@@ -657,7 +658,7 @@ index e7478cb58079..e1e184a4753a 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index f8f86231ad90..7ab71f039340 100644
+index 3b8c0e24ab30..6a6b01b54841 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
 @@ -760,15 +760,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
@@ -682,10 +683,10 @@ index f8f86231ad90..7ab71f039340 100644
  			   unsigned long ip, const char *fmt, ...);
  void trace_printk_seq(struct trace_seq *s);
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 1c8e30fda46a..07a7a5cacbc7 100644
+index 6e6cc64faa38..1a2b7965facb 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
-@@ -296,8 +296,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
+@@ -297,8 +297,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
  }
  EXPORT_SYMBOL(trace_raw_output_prep);
  
@@ -696,7 +697,7 @@ index 1c8e30fda46a..07a7a5cacbc7 100644
  {
  	struct trace_seq *s = &iter->seq;
  
-@@ -307,7 +307,7 @@ static int trace_output_raw(struct trace_iterator *iter, char *name,
+@@ -308,7 +308,7 @@ static int trace_output_raw(struct trace_iterator *iter, char *name,
  	return trace_handle_return(s);
  }
  
@@ -796,10 +797,10 @@ index 539bcdd30bb8..ff941ebf346d 100644
  /********** External variable definitions. **********/
  
 diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
-index 229c12349803..869d1d5dbc0f 100644
+index 7e96793050c9..f9ebde6a89ab 100644
 --- a/sound/soc/soc-dapm.c
 +++ b/sound/soc/soc-dapm.c
-@@ -140,7 +140,8 @@ static void pop_wait(u32 pop_time)
+@@ -134,7 +134,8 @@ static void pop_wait(u32 pop_time)
  		schedule_timeout_uninterruptible(msecs_to_jiffies(pop_time));
  }
  

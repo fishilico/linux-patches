@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 19 Aug 2018 14:41:32 +0200
+Subject: [PATCH] {MAYBE UPS} fs/cifs: do not use maybe-uninitialized
+ resp_buftype
+
+As rsp is NULL, this is not so important.
+---
+ fs/cifs/smb2pdu.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/fs/cifs/smb2pdu.c b/fs/cifs/smb2pdu.c
+index 5740aa809be6..e08d28be7b08 100644
+--- a/fs/cifs/smb2pdu.c
++++ b/fs/cifs/smb2pdu.c
+@@ -2319,7 +2319,8 @@ SMB2_open(const unsigned int xid, struct cifs_open_parms *oparms, __le16 *path,
+ 		*oplock = rsp->OplockLevel;
+ creat_exit:
+ 	SMB2_open_free(&rqst);
+-	free_rsp_buf(resp_buftype, rsp);
++	if (rsp)
++		free_rsp_buf(resp_buftype, rsp);
+ 	return rc;
+ }
+ 
+@@ -2578,7 +2579,8 @@ SMB2_close_flags(const unsigned int xid, struct cifs_tcon *tcon,
+ 
+ close_exit:
+ 	SMB2_close_free(&rqst);
+-	free_rsp_buf(resp_buftype, rsp);
++	if (rsp)
++		free_rsp_buf(resp_buftype, rsp);
+ 	return rc;
+ }
+ 
+@@ -2749,7 +2751,8 @@ query_info(const unsigned int xid, struct cifs_tcon *tcon,
+ 
+ qinf_exit:
+ 	SMB2_query_info_free(&rqst);
+-	free_rsp_buf(resp_buftype, rsp);
++	if (rsp)
++		free_rsp_buf(resp_buftype, rsp);
+ 	return rc;
+ }
+ 
+-- 

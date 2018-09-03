@@ -4,23 +4,26 @@ Date: Tue, 27 Dec 2016 19:09:50 +0100
 Subject: [PATCH] {FRAMA-C} Add arch/framac
 
 ---
- arch/framac/Kconfig                    |  76 +++++++++++++++
+ arch/framac/Kconfig                    |  57 +++++++++++
+ arch/framac/Kconfig.debug              |   1 +
  arch/framac/Makefile                   |  27 ++++++
  arch/framac/extra/Makefile             |  13 +++
  arch/framac/extra/gen_lds_vars.sh      |  27 ++++++
- arch/framac/extra/lds_vars.c           | 126 +++++++++++++++++++++++++
+ arch/framac/extra/lds_vars.c           | 128 +++++++++++++++++++++++++
  arch/framac/include/abstract_structs.h |  73 ++++++++++++++
  arch/framac/include/asm/Kbuild         |  88 +++++++++++++++++
  arch/framac/include/asm/byteorder.h    |   6 ++
  arch/framac/include/asm/dma-mapping.h  |  11 +++
  arch/framac/include/asm/elf.h          |  33 +++++++
  arch/framac/include/asm/irqflags.h     |  15 +++
- arch/framac/include/asm/pgtable.h      |  74 +++++++++++++++
+ arch/framac/include/asm/pgtable.h      |  76 +++++++++++++++
  arch/framac/include/asm/processor.h    |  40 ++++++++
  arch/framac/include/asm/ptrace.h       |  23 +++++
  arch/framac/include/asm/sigcontext.h   |  10 ++
  arch/framac/include/asm/thread_info.h  |  68 +++++++++++++
+ arch/framac/include/asm/tlb.h          |   6 ++
  arch/framac/include/asm/uaccess.h      |  22 +++++
+ arch/framac/include/uapi/asm/Kbuild    |   0
  arch/framac/kernel/Makefile            |  12 +++
  arch/framac/kernel/asm-offsets.c       |  13 +++
  arch/framac/kernel/dma.c               |  57 +++++++++++
@@ -38,8 +41,9 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/delay.c                |  27 ++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 +++
- 34 files changed, 1038 insertions(+)
+ 37 files changed, 1030 insertions(+)
  create mode 100644 arch/framac/Kconfig
+ create mode 100644 arch/framac/Kconfig.debug
  create mode 100644 arch/framac/Makefile
  create mode 100644 arch/framac/extra/Makefile
  create mode 100644 arch/framac/extra/gen_lds_vars.sh
@@ -55,7 +59,9 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  create mode 100644 arch/framac/include/asm/ptrace.h
  create mode 100644 arch/framac/include/asm/sigcontext.h
  create mode 100644 arch/framac/include/asm/thread_info.h
+ create mode 100644 arch/framac/include/asm/tlb.h
  create mode 100644 arch/framac/include/asm/uaccess.h
+ create mode 100644 arch/framac/include/uapi/asm/Kbuild
  create mode 100644 arch/framac/kernel/Makefile
  create mode 100644 arch/framac/kernel/asm-offsets.c
  create mode 100644 arch/framac/kernel/dma.c
@@ -76,10 +82,10 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
 
 diff --git a/arch/framac/Kconfig b/arch/framac/Kconfig
 new file mode 100644
-index 000000000000..0dca998fe315
+index 000000000000..1fe61f9cdc25
 --- /dev/null
 +++ b/arch/framac/Kconfig
-@@ -0,0 +1,76 @@
+@@ -0,0 +1,57 @@
 +comment "Linux Kernel Configuration for Frama-C"
 +
 +config FRAMA_C
@@ -137,28 +143,16 @@ index 000000000000..0dca998fe315
 +	  update arch/framac/lds_var.c.
 +
 +endmenu
-+
-+source "mm/Kconfig"
-+source "init/Kconfig"
-+source "kernel/Kconfig.freezer"
-+source "drivers/Kconfig"
-+source "fs/Kconfig"
-+
-+menu "Executable File Formats"
-+source "fs/Kconfig.binfmt"
-+endmenu
-+
-+source "net/Kconfig"
-+source "security/Kconfig"
-+source "crypto/Kconfig"
-+source "lib/Kconfig"
-+
-+menu "Kernel hacking"
-+source "lib/Kconfig.debug"
-+endmenu
+diff --git a/arch/framac/Kconfig.debug b/arch/framac/Kconfig.debug
+new file mode 100644
+index 000000000000..22a162cd99e8
+--- /dev/null
++++ b/arch/framac/Kconfig.debug
+@@ -0,0 +1 @@
++# dummy file, do not delete
 diff --git a/arch/framac/Makefile b/arch/framac/Makefile
 new file mode 100644
-index 000000000000..399e1b3ab6ce
+index 000000000000..72a97e56ee97
 --- /dev/null
 +++ b/arch/framac/Makefile
 @@ -0,0 +1,27 @@
@@ -181,7 +175,7 @@ index 000000000000..399e1b3ab6ce
 +KBUILD_CFLAGS += -fno-builtin -ffreestanding
 +# Always include abstract structure definitions
 +KBUILD_CFLAGS += -include abstract_structs.h
-+LDFLAGS += -melf_i386
++KBUILD_LDFLAGS += -melf_i386
 +
 +# XXX: needed?
 +KBUILD_CFLAGS += $(cflags-y)
@@ -243,10 +237,10 @@ index 000000000000..6259dfb9a576
 +done
 diff --git a/arch/framac/extra/lds_vars.c b/arch/framac/extra/lds_vars.c
 new file mode 100644
-index 000000000000..f60265849364
+index 000000000000..4a7d8ddc80c5
 --- /dev/null
 +++ b/arch/framac/extra/lds_vars.c
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,128 @@
 +/**
 + * Define references to unsized arrays used in the code which come from the
 + * linker script.
@@ -330,6 +324,7 @@ index 000000000000..f60265849364
 +struct pci_fixup __end_pci_fixups_suspend_late[1];
 +struct builtin_fw __start_builtin_fw[1];
 +struct builtin_fw __end_builtin_fw[1];
++#ifdef CONFIG_MODULES
 +const struct kernel_symbol __start___ksymtab[1];
 +const struct kernel_symbol __stop___ksymtab[1];
 +const struct kernel_symbol __start___ksymtab_gpl[1];
@@ -340,6 +335,7 @@ index 000000000000..f60265849364
 +const struct kernel_symbol __stop___ksymtab_unused_gpl[1];
 +const struct kernel_symbol __start___ksymtab_gpl_future[1];
 +const struct kernel_symbol __stop___ksymtab_gpl_future[1];
++#endif
 +const s32 __start___kcrctab[1];
 +/* __stop___kcrctab not found */
 +const s32 __start___kcrctab_gpl[1];
@@ -637,10 +633,10 @@ index 000000000000..2cf4035657f4
 +#endif /* _ASM_FRAMA_C_IRQFLAGS_H */
 diff --git a/arch/framac/include/asm/pgtable.h b/arch/framac/include/asm/pgtable.h
 new file mode 100644
-index 000000000000..27aba4123cd1
+index 000000000000..5c432aca510d
 --- /dev/null
 +++ b/arch/framac/include/asm/pgtable.h
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,76 @@
 +#ifndef _ASM_FRAMA_C_PGTABLE_H
 +#define _ASM_FRAMA_C_PGTABLE_H
 +
@@ -710,6 +706,8 @@ index 000000000000..27aba4123cd1
 +{
 +	return (pte_t) { swp.val };
 +}
++
++#define check_pgt_cache() do { } while (0)
 +
 +#include <asm-generic/pgtable-nopud.h>
 +#include <asm-generic/pgtable.h>
@@ -880,6 +878,18 @@ index 000000000000..5ef8cb601217
 +#endif /* __KERNEL__ */
 +
 +#endif /* _ASM_FRAMA_C_THREAD_INFO_H */
+diff --git a/arch/framac/include/asm/tlb.h b/arch/framac/include/asm/tlb.h
+new file mode 100644
+index 000000000000..e3b1d5fbe605
+--- /dev/null
++++ b/arch/framac/include/asm/tlb.h
+@@ -0,0 +1,6 @@
++#ifndef _FRAMAC_TLB_H
++#define _FRAMAC_TLB_H
++
++#define tlb_flush(tlb) ((void *)(tlb))
++
++#endif
 diff --git a/arch/framac/include/asm/uaccess.h b/arch/framac/include/asm/uaccess.h
 new file mode 100644
 index 000000000000..3d2ed0e0dd34
@@ -908,6 +918,9 @@ index 000000000000..3d2ed0e0dd34
 +#include <asm-generic/uaccess.h>
 +
 +#endif
+diff --git a/arch/framac/include/uapi/asm/Kbuild b/arch/framac/include/uapi/asm/Kbuild
+new file mode 100644
+index 000000000000..e69de29bb2d1
 diff --git a/arch/framac/kernel/Makefile b/arch/framac/kernel/Makefile
 new file mode 100644
 index 000000000000..3127d15767e3

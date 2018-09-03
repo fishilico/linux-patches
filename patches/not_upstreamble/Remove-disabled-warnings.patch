@@ -17,10 +17,10 @@ list of disabled warnings.
  8 files changed, 53 insertions(+), 43 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 863f58503bee..19ef06034e8b 100644
+index 2b458801ba74..f17937ff5ad2 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -388,7 +388,7 @@ PYTHON3		= python3
+@@ -402,7 +402,7 @@ PYTHON3		= python3
  CHECK		= sparse
  
  CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
@@ -29,7 +29,7 @@ index 863f58503bee..19ef06034e8b 100644
  NOSTDINC_FLAGS  =
  CFLAGS_MODULE   =
  AFLAGS_MODULE   =
-@@ -415,11 +415,15 @@ LINUXINCLUDE    := \
+@@ -429,11 +429,15 @@ LINUXINCLUDE    := \
  		$(USERINCLUDE)
  
  KBUILD_AFLAGS   := -D__ASSEMBLY__
@@ -46,7 +46,7 @@ index 863f58503bee..19ef06034e8b 100644
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
  KBUILD_CFLAGS_KERNEL :=
-@@ -594,8 +598,8 @@ endif
+@@ -612,8 +616,8 @@ endif
  all: vmlinux
  
  CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage \
@@ -57,7 +57,7 @@ index 863f58503bee..19ef06034e8b 100644
  export CFLAGS_GCOV
  
  # The arch Makefile can set ARCH_{CPP,A,C}FLAGS to override the default
-@@ -642,24 +646,24 @@ include/config/auto.conf: ;
+@@ -657,24 +661,24 @@ endif # may-sync-config
  endif # $(dot-config)
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
@@ -90,7 +90,7 @@ index 863f58503bee..19ef06034e8b 100644
  
  # Tell gcc to never replace conditional load with a non-conditional one
  KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
-@@ -689,11 +693,11 @@ KBUILD_CFLAGS += $(stackp-flags-y)
+@@ -704,11 +708,11 @@ KBUILD_CFLAGS += $(stackp-flags-y)
  
  ifeq ($(cc-name),clang)
  KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
@@ -106,7 +106,7 @@ index 863f58503bee..19ef06034e8b 100644
  # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
  # source of a reference will be _MergedGlobals and not on of the whitelisted names.
  # See modpost pattern 2
-@@ -703,10 +707,10 @@ else
+@@ -718,10 +722,10 @@ else
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
@@ -119,7 +119,7 @@ index 863f58503bee..19ef06034e8b 100644
  ifdef CONFIG_FRAME_POINTER
  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
  else
-@@ -774,7 +778,7 @@ NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
+@@ -805,7 +809,7 @@ NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
  KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -129,7 +129,7 @@ index 863f58503bee..19ef06034e8b 100644
  # disable invalid "can't wrap" optimizations for signed / pointers
  KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
 diff --git a/arch/arc/Makefile b/arch/arc/Makefile
-index 6c1b20dd76ad..1c7f345ff8e4 100644
+index fb026196aaab..de933d0c05ee 100644
 --- a/arch/arc/Makefile
 +++ b/arch/arc/Makefile
 @@ -71,7 +71,7 @@ ifndef CONFIG_CC_OPTIMIZE_FOR_SIZE
@@ -142,10 +142,10 @@ index 6c1b20dd76ad..1c7f345ff8e4 100644
  
  # small data is default for elf32 tool-chain. If not usable, disable it
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index a08e82856563..39e823b1d749 100644
+index 94859241bc3e..7043552e5477 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
-@@ -238,7 +238,7 @@ endif
+@@ -233,7 +233,7 @@ endif
  # Speed up the build
  KBUILD_CFLAGS += -pipe
  # Workaround for a gcc prelease that unfortunately was shipped in a suse release
@@ -155,7 +155,7 @@ index a08e82856563..39e823b1d749 100644
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  
 diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
-index 169c2feda14a..172a01a136e8 100644
+index 28764dacf018..eae1b6e77944 100644
 --- a/arch/x86/boot/compressed/Makefile
 +++ b/arch/x86/boot/compressed/Makefile
 @@ -35,8 +35,8 @@ KBUILD_CFLAGS += $(cflags-y)
@@ -170,7 +170,7 @@ index 169c2feda14a..172a01a136e8 100644
  KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
  GCOV_PROFILE := n
 diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
-index 4c6adae23e18..6a5f2c5aeb92 100644
+index 5794f102f9b8..0bdf8d0cd61e 100644
 --- a/drivers/gpu/drm/i915/Makefile
 +++ b/drivers/gpu/drm/i915/Makefile
 @@ -12,21 +12,21 @@
@@ -207,7 +207,7 @@ index 4c6adae23e18..6a5f2c5aeb92 100644
  subdir-ccflags-y += \
  	$(call as-instr,movntdqa (%eax)$(comma)%xmm0,-DCONFIG_AS_MOVNTDQA)
 diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
-index 502d41fc9ea5..96a1edf106df 100644
+index 5eea61b9584f..70b26dc7d8c3 100644
 --- a/drivers/misc/cxl/Makefile
 +++ b/drivers/misc/cxl/Makefile
 @@ -1,5 +1,5 @@

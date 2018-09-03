@@ -17,10 +17,10 @@ clang reports:
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-index ef6a8d39db2f..739cdc0f4ece 100644
+index ff1ffb46198a..98b127803e4c 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-@@ -454,7 +454,7 @@ static void stmmac_get_tx_hwtstamp(struct stmmac_priv *priv,
+@@ -470,7 +470,7 @@ static void stmmac_get_tx_hwtstamp(struct stmmac_priv *priv,
  				   struct dma_desc *p, struct sk_buff *skb)
  {
  	struct skb_shared_hwtstamps shhwtstamp;
@@ -29,7 +29,7 @@ index ef6a8d39db2f..739cdc0f4ece 100644
  
  	if (!priv->hwts_tx_en)
  		return;
-@@ -493,7 +493,7 @@ static void stmmac_get_rx_hwtstamp(struct stmmac_priv *priv, struct dma_desc *p,
+@@ -509,7 +509,7 @@ static void stmmac_get_rx_hwtstamp(struct stmmac_priv *priv, struct dma_desc *p,
  {
  	struct skb_shared_hwtstamps *shhwtstamp = NULL;
  	struct dma_desc *desc = p;
@@ -38,20 +38,20 @@ index ef6a8d39db2f..739cdc0f4ece 100644
  
  	if (!priv->hwts_rx_en)
  		return;
-@@ -539,7 +539,7 @@ static int stmmac_hwtstamp_ioctl(struct net_device *dev, struct ifreq *ifr)
+@@ -555,7 +555,7 @@ static int stmmac_hwtstamp_ioctl(struct net_device *dev, struct ifreq *ifr)
  	u32 ts_master_en = 0;
  	u32 ts_event_en = 0;
  	u32 value = 0;
 -	u32 sec_inc;
 +	u32 sec_inc = 0 /* BUG */;
+ 	bool xmac;
  
- 	if (!(priv->dma_cap.time_stamp || priv->adv_ts)) {
- 		netdev_alert(priv->dev, "No support for HW time stamping\n");
+ 	xmac = priv->plat->has_gmac4 || priv->plat->has_xgmac;
 diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_ptp.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_ptp.c
-index 0cb0e39a2be9..344840cd4c09 100644
+index 2293e21f789f..b11bcb3c6ca2 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_ptp.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_ptp.c
-@@ -103,7 +103,7 @@ static int stmmac_get_time(struct ptp_clock_info *ptp, struct timespec64 *ts)
+@@ -105,7 +105,7 @@ static int stmmac_get_time(struct ptp_clock_info *ptp, struct timespec64 *ts)
  	struct stmmac_priv *priv =
  	    container_of(ptp, struct stmmac_priv, ptp_clock_ops);
  	unsigned long flags;

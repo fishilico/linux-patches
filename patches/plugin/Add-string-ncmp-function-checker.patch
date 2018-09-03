@@ -12,37 +12,20 @@ This plugins helped to detect the following bugs:
 It has also detected some bugs reported and fixed by other people:
 - 99243b922c9d ("dm table: fix "nvme" test")
 ---
- arch/Kconfig                                  |   6 +
  drivers/nvme/target/core.c                    |   4 +-
  drivers/staging/fbtft/fbtft_device.c          |   3 +-
  scripts/Makefile.gcc-plugins                  |   2 +
+ scripts/gcc-plugins/Kconfig                   |   5 +
  scripts/gcc-plugins/string_ncmp_size_plugin.c | 236 ++++++++++++++++++
  sound/soc/intel/boards/bxt_rt298.c            |   9 +-
- 6 files changed, 251 insertions(+), 9 deletions(-)
+ 6 files changed, 250 insertions(+), 9 deletions(-)
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 0ba70cb471fb..27d8867c9347 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -562,6 +562,12 @@ config GCC_PLUGIN_DEREF_CHECKER
- 	help
- 	  Check function calls involving pointers about some consistencies.
- 
-+config GCC_PLUGIN_STRING_NCMP_SIZE
-+	bool "Check calls to strncmp-like functions"
-+	depends on GCC_PLUGINS
-+	help
-+	  Check that calls like strncmp(x, "test", 4) are consistent.
-+
- config HAVE_STACKPROTECTOR
- 	bool
- 	help
 diff --git a/drivers/nvme/target/core.c b/drivers/nvme/target/core.c
-index 9838103f2d62..850473b9e76e 100644
+index ebf3e7a6c49e..44ae0f0692df 100644
 --- a/drivers/nvme/target/core.c
 +++ b/drivers/nvme/target/core.c
-@@ -1015,8 +1015,8 @@ static struct nvmet_subsys *nvmet_find_get_subsys(struct nvmet_port *port,
+@@ -1105,8 +1105,8 @@ static struct nvmet_subsys *nvmet_find_get_subsys(struct nvmet_port *port,
  	if (!port)
  		return NULL;
  
@@ -54,10 +37,10 @@ index 9838103f2d62..850473b9e76e 100644
  			return NULL;
  		return nvmet_disc_subsys;
 diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
-index 429db96dd811..85ea0f57c58c 100644
+index c6059ab443e9..59fee0692cb8 100644
 --- a/drivers/staging/fbtft/fbtft_device.c
 +++ b/drivers/staging/fbtft/fbtft_device.c
-@@ -1458,7 +1458,8 @@ static int __init fbtft_device_init(void)
+@@ -1455,7 +1455,8 @@ static int __init fbtft_device_init(void)
  	}
  
  	/* name=list lists all supported displays */
@@ -68,18 +51,32 @@ index 429db96dd811..85ea0f57c58c 100644
  
  		for (i = 0; i < ARRAY_SIZE(displays); i++)
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index 8d1a65d2e89d..6046d35c4a94 100644
+index eea3ae426bc5..2c18d1af3d53 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
-@@ -14,6 +14,8 @@ endif
+@@ -17,6 +17,8 @@ endif
  
  gcc-plugin-$(CONFIG_GCC_PLUGIN_DEREF_CHECKER) += deref_checker_plugin.so
  
 +gcc-plugin-$(CONFIG_GCC_PLUGIN_STRING_NCMP_SIZE) += string_ncmp_size_plugin.so
 +
  gcc-plugin-$(CONFIG_GCC_PLUGIN_SANCOV)		+= sancov_plugin.so
+ 
  gcc-plugin-$(CONFIG_GCC_PLUGIN_STRUCTLEAK)	+= structleak_plugin.so
- gcc-plugin-cflags-$(CONFIG_GCC_PLUGIN_STRUCTLEAK_VERBOSE)	+= -fplugin-arg-structleak_plugin-verbose
+diff --git a/scripts/gcc-plugins/Kconfig b/scripts/gcc-plugins/Kconfig
+index 61951149910b..0e43304b43ba 100644
+--- a/scripts/gcc-plugins/Kconfig
++++ b/scripts/gcc-plugins/Kconfig
+@@ -150,4 +150,9 @@ config GCC_PLUGIN_DEREF_CHECKER
+ 	help
+ 	  Check function calls involving pointers about some consistencies.
+ 
++config GCC_PLUGIN_STRING_NCMP_SIZE
++	bool "Check calls to strncmp-like functions"
++	help
++	  Check that calls like strncmp(x, "test", 4) are consistent.
++
+ endif
 diff --git a/scripts/gcc-plugins/string_ncmp_size_plugin.c b/scripts/gcc-plugins/string_ncmp_size_plugin.c
 new file mode 100644
 index 000000000000..a9d72ba2197e
@@ -323,7 +320,7 @@ index 000000000000..a9d72ba2197e
 +	return 0;
 +}
 diff --git a/sound/soc/intel/boards/bxt_rt298.c b/sound/soc/intel/boards/bxt_rt298.c
-index b68c289558a8..ca522fe2759a 100644
+index 27308337ab12..d2a0749436b1 100644
 --- a/sound/soc/intel/boards/bxt_rt298.c
 +++ b/sound/soc/intel/boards/bxt_rt298.c
 @@ -579,14 +579,11 @@ static int broxton_audio_probe(struct platform_device *pdev)

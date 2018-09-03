@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 19 Aug 2018 18:47:55 +0200
+Subject: [PATCH] {For LLVMLinux} net/core/filter: do not fail a BUILD_BUG_ON
+ because of a non-constant expr
+
+---
+ net/core/filter.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/net/core/filter.c b/net/core/filter.c
+index c25eb36f1320..1cdabb5c4adf 100644
+--- a/net/core/filter.c
++++ b/net/core/filter.c
+@@ -7281,7 +7281,16 @@ static u32 sk_reuseport_convert_ctx_access(enum bpf_access_type type,
+ 		break;
+ 
+ 	case offsetof(struct sk_reuseport_md, ip_protocol):
++#ifndef __clang__
++/* clang uses sizeof((unsigned long)SK_FL_PROTO_MASK) == 8, which prevents
++ * build-time computation of hweight_long(SK_FL_PROTO_MASK), contrary to gcc
++ * which seems to be happy with sizeof(...) == 4 and simplifies a large
++ * construction to count the bits.
++ *
++ * For now, disable the check when building with clang.
++ */
+ 		BUILD_BUG_ON(hweight_long(SK_FL_PROTO_MASK) != BITS_PER_BYTE);
++#endif
+ 		SK_REUSEPORT_LOAD_SK_FIELD_SIZE_OFF(__sk_flags_offset,
+ 						    BPF_W, 0);
+ 		*insn++ = BPF_ALU32_IMM(BPF_AND, si->dst_reg, SK_FL_PROTO_MASK);
+-- 

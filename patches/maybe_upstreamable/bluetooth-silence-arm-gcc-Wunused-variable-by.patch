@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 19 Aug 2018 22:33:12 +0200
+Subject: [PATCH] {MAYBE UPS} bluetooth: silence arm-gcc -Wunused-variable by
+ modifying #ifdef blocks
+
+---
+ drivers/bluetooth/hci_h5.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/bluetooth/hci_h5.c b/drivers/bluetooth/hci_h5.c
+index 8eede1197cd2..1ee3a9abaadc 100644
+--- a/drivers/bluetooth/hci_h5.c
++++ b/drivers/bluetooth/hci_h5.c
+@@ -841,7 +841,7 @@ static void h5_serdev_remove(struct serdev_device *serdev)
+ 	hci_uart_unregister_device(&h5->serdev_hu);
+ }
+ 
+-#ifdef CONFIG_BT_HCIUART_RTL
++#if defined(CONFIG_ACPI) && defined(CONFIG_BT_HCIUART_RTL)
+ static int h5_btrtl_setup(struct h5 *h5)
+ {
+ 	struct btrtl_device_info *btrtl_dev;
+-- 

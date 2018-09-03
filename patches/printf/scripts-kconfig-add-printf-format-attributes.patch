@@ -7,21 +7,19 @@ When building with -Wformat-security and -Wsuggest-attribute=format in
 HOSTCFLAGS, gcc complains about several functions misssing a printf
 format attribute. Add them.
 ---
- scripts/kconfig/confdata.c        | 13 ++++++++-----
+ scripts/kconfig/confdata.c        |  6 ++++--
  scripts/kconfig/lkc.h             |  6 ++++--
- scripts/kconfig/lkc_proto.h       |  2 +-
  scripts/kconfig/lxdialog/dialog.h |  4 ++--
- scripts/kconfig/mconf.c           |  3 ++-
  scripts/kconfig/menu.c            |  3 ++-
- scripts/kconfig/nconf.c           |  9 ++++++---
+ scripts/kconfig/nconf.c           |  6 ++++--
  scripts/kconfig/zconf.y           | 12 ++++++++----
- 8 files changed, 33 insertions(+), 19 deletions(-)
+ 6 files changed, 24 insertions(+), 13 deletions(-)
 
 diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 39e20974f4a3..1b049bb46111 100644
+index 91d0a5c014ac..429f39193828 100644
 --- a/scripts/kconfig/confdata.c
 +++ b/scripts/kconfig/confdata.c
-@@ -32,7 +32,8 @@ static int conf_lineno, conf_warnings;
+@@ -90,7 +90,8 @@ static int conf_lineno, conf_warnings;
  
  const char conf_defname[] = "arch/$(ARCH)/defconfig";
  
@@ -31,25 +29,7 @@ index 39e20974f4a3..1b049bb46111 100644
  {
  	va_list ap;
  	va_start(ap, fmt);
-@@ -43,21 +44,23 @@ static void conf_warning(const char *fmt, ...)
- 	conf_warnings++;
- }
- 
--static void conf_default_message_callback(const char *fmt, va_list ap)
-+static __attribute__ ((format(printf, 1, 0)))
-+void conf_default_message_callback(const char *fmt, va_list ap)
- {
- 	printf("#\n# ");
- 	vprintf(fmt, ap);
- 	printf("\n#\n");
- }
- 
--static void (*conf_message_callback) (const char *fmt, va_list ap) =
-+static void (*__attribute__ ((format(printf, 1, 0))) conf_message_callback) (const char *fmt, va_list ap) =
- 	conf_default_message_callback;
--void conf_set_message_callback(void (*fn) (const char *fmt, va_list ap))
-+void conf_set_message_callback(__attribute__ ((format(printf, 1, 0))) void (*fn) (const char *fmt, va_list ap))
- {
+@@ -115,7 +116,8 @@ void conf_set_message_callback(void (*fn)(const char *s))
  	conf_message_callback = fn;
  }
  
@@ -58,9 +38,9 @@ index 39e20974f4a3..1b049bb46111 100644
 +conf_message(const char *fmt, ...)
  {
  	va_list ap;
- 
+ 	char buf[4096];
 diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
-index ed3ff88e60ba..10bd2b23c129 100644
+index 9eb7c837cd8f..eb4f2f0b9998 100644
 --- a/scripts/kconfig/lkc.h
 +++ b/scripts/kconfig/lkc.h
 @@ -82,7 +82,8 @@ static inline void xfwrite(const void *str, size_t len, size_t count, FILE *out)
@@ -73,7 +53,7 @@ index ed3ff88e60ba..10bd2b23c129 100644
  struct menu *menu_add_menu(void);
  void menu_end_menu(void);
  void menu_add_entry(struct symbol *sym);
-@@ -116,7 +117,8 @@ struct gstr {
+@@ -115,7 +116,8 @@ struct gstr {
  struct gstr str_new(void);
  void str_free(struct gstr *gs);
  void str_append(struct gstr *gs, const char *s);
@@ -83,19 +63,6 @@ index ed3ff88e60ba..10bd2b23c129 100644
  const char *str_get(struct gstr *gs);
  
  /* symbol.c */
-diff --git a/scripts/kconfig/lkc_proto.h b/scripts/kconfig/lkc_proto.h
-index a8b7a330587e..ed0c61ef3a17 100644
---- a/scripts/kconfig/lkc_proto.h
-+++ b/scripts/kconfig/lkc_proto.h
-@@ -10,7 +10,7 @@ int conf_write(const char *name);
- int conf_write_autoconf(void);
- bool conf_get_changed(void);
- void conf_set_changed_callback(void (*fn)(void));
--void conf_set_message_callback(void (*fn)(const char *fmt, va_list ap));
-+void conf_set_message_callback(__attribute__ ((format(printf, 1, 0))) void (*fn)(const char *fmt, va_list ap));
- 
- /* menu.c */
- extern struct menu rootmenu;
 diff --git a/scripts/kconfig/lxdialog/dialog.h b/scripts/kconfig/lxdialog/dialog.h
 index 0b00be5abaa6..865c57589792 100644
 --- a/scripts/kconfig/lxdialog/dialog.h
@@ -111,22 +78,8 @@ index 0b00be5abaa6..865c57589792 100644
  void item_set_tag(char tag);
  void item_set_data(void *p);
  void item_set_selected(int val);
-diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
-index 5294ed159b98..d45c8aa0ee62 100644
---- a/scripts/kconfig/mconf.c
-+++ b/scripts/kconfig/mconf.c
-@@ -772,7 +772,8 @@ static void show_helptext(const char *title, const char *text)
- 	show_textbox(title, text, 0, 0);
- }
- 
--static void conf_message_callback(const char *fmt, va_list ap)
-+static __attribute__ ((format(printf, 1, 0)))
-+void conf_message_callback(const char *fmt, va_list ap)
- {
- 	char buf[PATH_MAX+1];
- 
 diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
-index 379a119dcd1e..fda78d82f67e 100644
+index 4cf15d449c05..7166c95fd0fd 100644
 --- a/scripts/kconfig/menu.c
 +++ b/scripts/kconfig/menu.c
 @@ -28,7 +28,8 @@ void menu_warn(struct menu *menu, const char *fmt, ...)
@@ -140,7 +93,7 @@ index 379a119dcd1e..fda78d82f67e 100644
  	va_list ap;
  	va_start(ap, fmt);
 diff --git a/scripts/kconfig/nconf.c b/scripts/kconfig/nconf.c
-index 97b78445584b..fe588299a669 100644
+index 1ef232ae5ab9..8a194deb2ab3 100644
 --- a/scripts/kconfig/nconf.c
 +++ b/scripts/kconfig/nconf.c
 @@ -522,7 +522,8 @@ static int get_mext_match(const char *match_str, match_f flag)
@@ -163,18 +116,8 @@ index 97b78445584b..fe588299a669 100644
  {
  	va_list ap;
  	int index = items_num-1;
-@@ -1210,7 +1212,8 @@ static void conf(struct menu *menu)
- 	}
- }
- 
--static void conf_message_callback(const char *fmt, va_list ap)
-+static __attribute__ ((format(printf, 1, 0)))
-+void conf_message_callback(const char *fmt, va_list ap)
- {
- 	char buf[1024];
- 
 diff --git a/scripts/kconfig/zconf.y b/scripts/kconfig/zconf.y
-index 4b68272ebdb9..31a13a6e0cac 100644
+index 22fceb264cf5..a88cc23c6204 100644
 --- a/scripts/kconfig/zconf.y
 +++ b/scripts/kconfig/zconf.y
 @@ -22,8 +22,10 @@ int cdebug = PRINTD;

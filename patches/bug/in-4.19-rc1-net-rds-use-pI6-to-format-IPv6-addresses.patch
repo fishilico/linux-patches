@@ -1,0 +1,83 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 18 Aug 2018 12:45:52 +0200
+Subject: [PATCH] {BUG in 4.19-rc1} net/rds: use %pI6 to format IPv6 addresses
+
+From net/rds/rds.h:
+
+    struct rds_connection {
+        /* ... */
+        struct in6_addr c_laddr;
+        struct in6_addr c_faddr;
+        /* ... */
+    }
+
+So use %pI6
+
+This bug has been found with a GCC plugin.
+---
+ net/rds/cong.c       | 6 +++---
+ net/rds/connection.c | 4 ++--
+ net/rds/ib_frmr.c    | 2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/net/rds/cong.c b/net/rds/cong.c
+index ccdff09a79c8..d444834f4243 100644
+--- a/net/rds/cong.c
++++ b/net/rds/cong.c
+@@ -252,7 +252,7 @@ void rds_cong_queue_updates(struct rds_cong_map *map)
+ 
+ void rds_cong_map_updated(struct rds_cong_map *map, uint64_t portmask)
+ {
+-	rdsdebug("waking map %p for %pI4\n",
++	rdsdebug("waking map %p for %pI6\n",
+ 	  map, &map->m_addr);
+ 	rds_stats_inc(s_cong_update_received);
+ 	atomic_inc(&rds_cong_generation);
+@@ -301,7 +301,7 @@ void rds_cong_set_bit(struct rds_cong_map *map, __be16 port)
+ 	unsigned long i;
+ 	unsigned long off;
+ 
+-	rdsdebug("setting congestion for %pI4:%u in map %p\n",
++	rdsdebug("setting congestion for %pI6:%u in map %p\n",
+ 	  &map->m_addr, ntohs(port), map);
+ 
+ 	i = be16_to_cpu(port) / RDS_CONG_MAP_PAGE_BITS;
+@@ -315,7 +315,7 @@ void rds_cong_clear_bit(struct rds_cong_map *map, __be16 port)
+ 	unsigned long i;
+ 	unsigned long off;
+ 
+-	rdsdebug("clearing congestion for %pI4:%u in map %p\n",
++	rdsdebug("clearing congestion for %pI6:%u in map %p\n",
+ 	  &map->m_addr, ntohs(port), map);
+ 
+ 	i = be16_to_cpu(port) / RDS_CONG_MAP_PAGE_BITS;
+diff --git a/net/rds/connection.c b/net/rds/connection.c
+index 3bd2f4a5a30d..e107bfd470b3 100644
+--- a/net/rds/connection.c
++++ b/net/rds/connection.c
+@@ -470,8 +470,8 @@ void rds_conn_destroy(struct rds_connection *conn)
+ 	struct rds_conn_path *cp;
+ 	int npaths = (conn->c_trans->t_mp_capable ? RDS_MPATH_WORKERS : 1);
+ 
+-	rdsdebug("freeing conn %p for %pI4 -> "
+-		 "%pI4\n", conn, &conn->c_laddr,
++	rdsdebug("freeing conn %p for %pI6 -> "
++		 "%pI6\n", conn, &conn->c_laddr,
+ 		 &conn->c_faddr);
+ 
+ 	/* Ensure conn will not be scheduled for reconnect */
+diff --git a/net/rds/ib_frmr.c b/net/rds/ib_frmr.c
+index 6431a023ac89..6e019b38edbc 100644
+--- a/net/rds/ib_frmr.c
++++ b/net/rds/ib_frmr.c
+@@ -274,7 +274,7 @@ void rds_ib_mr_cqe_handler(struct rds_ib_connection *ic, struct ib_wc *wc)
+ 		frmr->fr_state = FRMR_IS_STALE;
+ 		if (rds_conn_up(ic->conn))
+ 			rds_ib_conn_error(ic->conn,
+-					  "frmr completion <%pI4,%pI4> status %u(%s), vendor_err 0x%x, disconnecting and reconnecting\n",
++					  "frmr completion <%pI6,%pI6> status %u(%s), vendor_err 0x%x, disconnecting and reconnecting\n",
+ 					  &ic->conn->c_laddr,
+ 					  &ic->conn->c_faddr,
+ 					  wc->status,
+-- 

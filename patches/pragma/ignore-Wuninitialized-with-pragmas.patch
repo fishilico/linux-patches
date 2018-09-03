@@ -17,7 +17,7 @@ Subject: [PATCH] {PRAGMA} ignore -Wuninitialized with pragmas
  10 files changed, 59 insertions(+)
 
 diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index be9450f5ad1c..8253de65a0e3 100644
+index 75f6b47169e6..844bbac606dc 100644
 --- a/drivers/block/drbd/drbd_receiver.c
 +++ b/drivers/block/drbd/drbd_receiver.c
 @@ -938,10 +938,13 @@ static int conn_connect(struct drbd_connection *connection)
@@ -35,10 +35,10 @@ index be9450f5ad1c..8253de65a0e3 100644
  	clear_bit(DISCONNECT_SENT, &connection->flags);
  	if (conn_request_state(connection, NS(conn, C_WF_CONNECTION), CS_VERBOSE) < SS_SUCCESS)
 diff --git a/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c b/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c
-index 9897213f2618..00b3ac640bce 100644
+index 0a2c0daaffef..d272c0f0b929 100644
 --- a/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c
 +++ b/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c
-@@ -1645,10 +1645,13 @@ static int sh_mobile_ceu_probe(struct platform_device *pdev)
+@@ -1641,10 +1641,13 @@ static int sh_mobile_ceu_probe(struct platform_device *pdev)
  	void __iomem *base;
  	unsigned int irq;
  	int err;
@@ -163,10 +163,10 @@ index d9f131ecf708..ebf8f11a7e38 100644
  # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
  #endif
 diff --git a/kernel/kthread.c b/kernel/kthread.c
-index afed01301ce7..aee613b1569c 100644
+index 9254cf9f0696..0bf3834d5d1c 100644
 --- a/kernel/kthread.c
 +++ b/kernel/kthread.c
-@@ -942,10 +942,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
+@@ -944,10 +944,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
   */
  void kthread_flush_work(struct kthread_work *work)
  {
@@ -180,7 +180,7 @@ index afed01301ce7..aee613b1569c 100644
  	struct kthread_worker *worker;
  	bool noop = false;
  
-@@ -1149,10 +1152,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
+@@ -1151,10 +1154,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
   */
  void kthread_flush_worker(struct kthread_worker *worker)
  {
@@ -195,10 +195,10 @@ index afed01301ce7..aee613b1569c 100644
  	kthread_queue_work(worker, &fwork.work);
  	wait_for_completion(&fwork.done);
 diff --git a/kernel/smp.c b/kernel/smp.c
-index 084c8b3a2681..ddff57bc8a07 100644
+index d86eec5f51c1..10f737a91153 100644
 --- a/kernel/smp.c
 +++ b/kernel/smp.c
-@@ -777,12 +777,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
+@@ -779,12 +779,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
  
  int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par, bool phys)
  {
@@ -215,7 +215,7 @@ index 084c8b3a2681..ddff57bc8a07 100644
  	INIT_WORK_ONSTACK(&sscs.work, smp_call_on_cpu_callback);
  
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 78b192071ef7..26ddb0c60e9c 100644
+index 60e80198c3df..33ab6d150e81 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
 @@ -2642,11 +2642,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,

@@ -29,19 +29,14 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  include/linux/syscalls.h        |  7 +++++++
  include/uapi/linux/limits.h     |  4 ++++
  include/uapi/linux/types.h      |  2 +-
- init/do_mounts.c                |  2 +-
- init/do_mounts_initrd.c         |  2 +-
- init/do_mounts_md.c             |  2 +-
- init/do_mounts_rd.c             |  2 +-
- init/initramfs.c                |  2 +-
  kernel/signal.c                 |  2 +-
  kernel/time/time.c              |  8 ++++++++
  lib/hexdump.c                   | 13 +++++++++++--
  lib/rhashtable.c                |  5 +++++
- 26 files changed, 146 insertions(+), 18 deletions(-)
+ 21 files changed, 141 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index bc4ed2ed40a2..a565ed854d35 100644
+index e35a234b0a8f..0a2a7b4e783c 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -51,7 +51,7 @@
@@ -54,10 +49,10 @@ index bc4ed2ed40a2..a565ed854d35 100644
  # define __protected_read_by(x)  __attribute__((require_context(x,1,999,"read")))
  # define __protected_write_by(x) __attribute__((require_context(x,1,999,"write")))
 diff --git a/drivers/input/joystick/analog.c b/drivers/input/joystick/analog.c
-index c79dbcb4d146..16adcc207803 100644
+index 2b445c8d3fcd..3e39b6f4da06 100644
 --- a/drivers/input/joystick/analog.c
 +++ b/drivers/input/joystick/analog.c
-@@ -139,7 +139,11 @@ struct analog_port {
+@@ -135,7 +135,11 @@ struct analog_port {
   * Time macros.
   */
  
@@ -137,7 +132,7 @@ index 43d1fd50d433..97415a0bdcb4 100644
  
  /* Force a compilation error if a constant expression is not a power of 2 */
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index d7ac43e17d71..c3eb9323e5a4 100644
+index 1d419c9c4894..cbf87be1e5ce 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
@@ -169,7 +164,7 @@ index d7ac43e17d71..c3eb9323e5a4 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index a8ba6b04152c..36debcef8bca 100644
+index 3525c179698c..35bbc6f677f2 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -3,7 +3,7 @@
@@ -182,10 +177,10 @@ index a8ba6b04152c..36debcef8bca 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __safe		__attribute__((safe))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index bf53d893ad02..7935a728ac85 100644
+index 147bdec42215..86002a9186c0 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -823,9 +823,14 @@ set_cpu_active(unsigned int cpu, bool active)
+@@ -835,9 +835,14 @@ set_cpu_active(unsigned int cpu, bool active)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -201,10 +196,10 @@ index bf53d893ad02..7935a728ac85 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 093e20e28f13..f0c68c0fee52 100644
+index 022ccde3cf8e..3e0667c91d10 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -182,7 +182,9 @@ struct ablkcipher_request {
+@@ -187,7 +187,9 @@ struct ablkcipher_request {
  	struct scatterlist *src;
  	struct scatterlist *dst;
  
@@ -215,7 +210,7 @@ index 093e20e28f13..f0c68c0fee52 100644
  };
  
  struct blkcipher_desc {
-@@ -600,7 +602,12 @@ struct crypto_tfm {
+@@ -605,7 +607,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -272,7 +267,7 @@ index b94fa61b51fb..ffd6208aabbd 100644
  		/*
  		 * This little trick makes sure that
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index c2b743e41888..975997f963cf 100644
+index 32db7a87d57e..b4945f66751e 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -16,6 +16,9 @@
@@ -293,7 +288,7 @@ index c2b743e41888..975997f963cf 100644
  #define SIZE_MAX	(~(size_t)0)
  #define PHYS_ADDR_MAX	(~(phys_addr_t)0)
  
-@@ -246,6 +250,10 @@ extern int _cond_resched(void);
+@@ -279,6 +283,10 @@ extern int _cond_resched(void);
   *
   * Return: an absolute value of x.
   */
@@ -304,7 +299,7 @@ index c2b743e41888..975997f963cf 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -260,6 +268,7 @@ extern int _cond_resched(void);
+@@ -293,6 +301,7 @@ extern int _cond_resched(void);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -344,7 +339,7 @@ index db2f3f454a1b..5124ce3698dc 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index c133ccfa002e..008069f575a8 100644
+index e72ca8dd6241..7789e67bd82c 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -137,6 +137,8 @@ typedef int __bitwise pci_power_t;
@@ -365,10 +360,10 @@ index c133ccfa002e..008069f575a8 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 8b5f8fbf2205..c77fb4fc5a89 100644
+index 3bcb02e3e878..140faf79289c 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -231,6 +231,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -232,6 +232,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
   * done within __do_sys_*().
   */
  #ifndef __SYSCALL_DEFINEx
@@ -381,7 +376,7 @@ index 8b5f8fbf2205..c77fb4fc5a89 100644
  #define __SYSCALL_DEFINEx(x, name, ...)					\
  	__diag_push();							\
  	__diag_ignore(GCC, 8, "-Wattribute-alias",			\
-@@ -249,6 +255,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -250,6 +256,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  	}								\
  	__diag_pop();							\
  	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
@@ -418,76 +413,11 @@ index 2fce8b6876e9..357ff7b0ecdd 100644
  #define __bitwise__ __attribute__((bitwise))
  #else
  #define __bitwise__
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 25d40cb6421f..f772b3092942 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -3,7 +3,7 @@
-  * to be __user pointers not __kernel pointers.  To limit the sparse
-  * noise, turn off sparse checking for this file.
-  */
--#ifdef __CHECKER__
-+#if defined(__CHECKER__) && !defined(__FRAMAC__)
- #undef __CHECKER__
- #warning "Sparse checking disabled for this file"
- #endif
-diff --git a/init/do_mounts_initrd.c b/init/do_mounts_initrd.c
-index 1a9a3b8ec18f..5497f0336f3e 100644
---- a/init/do_mounts_initrd.c
-+++ b/init/do_mounts_initrd.c
-@@ -4,7 +4,7 @@
-  * to be __user pointers not __kernel pointers.  To limit the sparse
-  * noise, turn off sparse checking for this file.
-  */
--#ifdef __CHECKER__
-+#if defined(__CHECKER__) && !defined(__FRAMAC__)
- #undef __CHECKER__
- #warning "Sparse checking disabled for this file"
- #endif
-diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
-index 7d85d172bc7e..806ceaaf9899 100644
---- a/init/do_mounts_md.c
-+++ b/init/do_mounts_md.c
-@@ -4,7 +4,7 @@
-  * to be __user pointers not __kernel pointers.  To limit the sparse
-  * noise, turn off sparse checking for this file.
-  */
--#ifdef __CHECKER__
-+#if defined(__CHECKER__) && !defined(__FRAMAC__)
- #undef __CHECKER__
- #warning "Sparse checking disabled for this file"
- #endif
-diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
-index 035a5f0ab26b..0dfc2f98921c 100644
---- a/init/do_mounts_rd.c
-+++ b/init/do_mounts_rd.c
-@@ -4,7 +4,7 @@
-  * to be __user pointers not __kernel pointers.  To limit the sparse
-  * noise, turn off sparse checking for this file.
-  */
--#ifdef __CHECKER__
-+#if defined(__CHECKER__) && !defined(__FRAMAC__)
- #undef __CHECKER__
- #warning "Sparse checking disabled for this file"
- #endif
-diff --git a/init/initramfs.c b/init/initramfs.c
-index 13643c46ebab..24c229ed58c1 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -4,7 +4,7 @@
-  * to be __user pointers not __kernel pointers.  To limit the sparse
-  * noise, turn off sparse checking for this file.
-  */
--#ifdef __CHECKER__
-+#if defined(__CHECKER__) && !defined(__FRAMAC__)
- #undef __CHECKER__
- #warning "Sparse checking disabled for this file"
- #endif
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 8d8a940422a8..a1d216a79347 100644
+index 5843c541fda9..20327e37aba8 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1120,7 +1120,7 @@ static void print_fatal_signal(int signr)
+@@ -1161,7 +1161,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  
@@ -497,10 +427,10 @@ index 8d8a940422a8..a1d216a79347 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index 2b41e8e2d31d..d3c7530a6ae5 100644
+index ccdb351277ee..c1c0add3db40 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
-@@ -426,17 +426,21 @@ EXPORT_SYMBOL(mktime64);
+@@ -424,17 +424,21 @@ EXPORT_SYMBOL(mktime64);
  void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
@@ -522,7 +452,7 @@ index 2b41e8e2d31d..d3c7530a6ae5 100644
  		nsec += NSEC_PER_SEC;
  		--sec;
  	}
-@@ -517,17 +521,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
+@@ -515,17 +519,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
  void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
@@ -590,10 +520,10 @@ index 81b70ed37209..89d1a3f19bba 100644
  			if (linebuflen < lx + 2)
  				goto overflow2;
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index a3c37860dcee..047998ce2b53 100644
+index 762a84f38bb6..949bad2de6f7 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -829,7 +829,12 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
+@@ -818,7 +818,12 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
  		}
  
  next:
