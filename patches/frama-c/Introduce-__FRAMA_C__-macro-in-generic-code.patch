@@ -27,13 +27,13 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  include/linux/mfd/wl1273-core.h |  2 ++
  include/linux/pci.h             |  3 +++
  include/linux/syscalls.h        |  7 +++++++
- include/uapi/linux/limits.h     |  4 ++++
+ include/uapi/linux/limits.h     |  8 ++++++--
  include/uapi/linux/types.h      |  2 +-
  kernel/signal.c                 |  2 +-
  kernel/time/time.c              |  8 ++++++++
  lib/hexdump.c                   | 13 +++++++++++--
  lib/rhashtable.c                |  5 +++++
- 21 files changed, 141 insertions(+), 13 deletions(-)
+ 21 files changed, 143 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
 index e35a234b0a8f..0a2a7b4e783c 100644
@@ -385,18 +385,26 @@ index 3bcb02e3e878..140faf79289c 100644
  
  /*
 diff --git a/include/uapi/linux/limits.h b/include/uapi/linux/limits.h
-index c3547f07605c..ecda73784a29 100644
+index c3547f07605c..52132e03273b 100644
 --- a/include/uapi/linux/limits.h
 +++ b/include/uapi/linux/limits.h
-@@ -10,7 +10,11 @@
- #define MAX_CANON        255	/* size of the canonical input queue */
- #define MAX_INPUT        255	/* size of the type-ahead buffer */
- #define NAME_MAX         255	/* # chars in a file name */
+@@ -4,13 +4,17 @@
+ 
+ #define NR_OPEN	        1024
+ 
+-#define NGROUPS_MAX    65536	/* supplemental group IDs are available */
 +#ifdef __FRAMAC__
 +#include <libc/limits.h>
 +#else
- #define PATH_MAX        4096	/* # chars in a path name including nul */
+ #define ARG_MAX       131072	/* # bytes of args + environ for exec() */
++#define PATH_MAX        4096	/* # chars in a path name including nul */
 +#endif /* __FRAMAC__ */
++#define NGROUPS_MAX    65536	/* supplemental group IDs are available */
+ #define LINK_MAX         127	/* # links a file may have */
+ #define MAX_CANON        255	/* size of the canonical input queue */
+ #define MAX_INPUT        255	/* size of the type-ahead buffer */
+ #define NAME_MAX         255	/* # chars in a file name */
+-#define PATH_MAX        4096	/* # chars in a path name including nul */
  #define PIPE_BUF        4096	/* # bytes in atomic write to a pipe */
  #define XATTR_NAME_MAX   255	/* # chars in an extended attribute name */
  #define XATTR_SIZE_MAX 65536	/* size of an extended attribute value (64k) */
@@ -520,10 +528,10 @@ index 81b70ed37209..89d1a3f19bba 100644
  			if (linebuflen < lx + 2)
  				goto overflow2;
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index 762a84f38bb6..949bad2de6f7 100644
+index 2ff320471314..36a8d96b63cc 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -818,7 +818,12 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
+@@ -817,7 +817,12 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
  		}
  
  next:
