@@ -383,10 +383,10 @@ index b5b69d5f1a41..9744f1ad6806 100644
  	}
  }
 diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index 9518ffd8b8ba..8bdb5aad884b 100644
+index 4e680d753941..715d2136bec7 100644
 --- a/drivers/target/iscsi/iscsi_target_auth.c
 +++ b/drivers/target/iscsi/iscsi_target_auth.c
-@@ -67,10 +67,10 @@ static int chap_gen_challenge(
+@@ -46,10 +46,10 @@ static int chap_gen_challenge(
  	/*
  	 * Set CHAP_C, and copy the generated challenge into c_str.
  	 */
@@ -399,10 +399,10 @@ index 9518ffd8b8ba..8bdb5aad884b 100644
  			challenge_asciihex);
  	return 0;
  }
-@@ -414,10 +414,10 @@ static int chap_server_compute_md5(
+@@ -403,10 +403,10 @@ static int chap_server_compute_md5(
  	 * Convert response from binary hex to ascii hext.
  	 */
- 	chap_binaryhex_to_asciihex(response, digest, MD5_SIGNATURE_SIZE);
+ 	bin2hex(response, digest, MD5_SIGNATURE_SIZE);
 -	*nr_out_len += sprintf(nr_out_ptr + *nr_out_len, "CHAP_R=0x%s",
 +	*nr_out_len += sprintf(nr_out_ptr + *nr_out_len, "CHAP_R=0x %s", /* Silence false positive "0x%s" warning, but this introduces a bug */
  			response);
