@@ -37,10 +37,10 @@ This plugin helped to detect the following bugs:
  net/ipv4/sysctl_net_ipv4.c                    |   2 +-
  scripts/Makefile.gcc-plugins                  |   5 +
  scripts/gcc-plugins/Kconfig                   |   6 +
- scripts/gcc-plugins/printk_format_plugin.c    | 822 ++++++++++++++++++
+ scripts/gcc-plugins/printk_format_plugin.c    | 824 ++++++++++++++++++
  security/apparmor/mount.c                     |  10 +-
  sound/soc/sh/dma-sh7760.c                     |   2 +-
- 31 files changed, 914 insertions(+), 35 deletions(-)
+ 31 files changed, 916 insertions(+), 35 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
@@ -325,7 +325,7 @@ index 0a5dd5595dd3..4b62dca25f62 100644
  	}
  
 diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index 084c839cd3e9..5b4a13a25fd6 100644
+index 03c9c4391fb8..e095d0b17b42 100644
 --- a/drivers/scsi/qedi/qedi_main.c
 +++ b/drivers/scsi/qedi/qedi_main.c
 @@ -1928,7 +1928,8 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
@@ -453,7 +453,7 @@ index 7fb9f7c667b1..3965d9a31643 100644
  }
  
 diff --git a/fs/overlayfs/inode.c b/fs/overlayfs/inode.c
-index b6ac545b5a32..6bc32bbbae40 100644
+index 3b7ed5d2279c..bea2a9b8edb4 100644
 --- a/fs/overlayfs/inode.c
 +++ b/fs/overlayfs/inode.c
 @@ -640,8 +640,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
@@ -496,10 +496,10 @@ index a39a562c1c10..dff4bc0d344d 100644
  reiserfs-objs += procfs.o
  endif
 diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-index b92f422f2fa8..9134321dda45 100644
+index 891ed2f91467..9613706b1a6d 100644
 --- a/net/ipv4/sysctl_net_ipv4.c
 +++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -321,7 +321,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
+@@ -322,7 +322,7 @@ static int proc_tcp_fastopen_key(struct ctl_table *table, int write,
  	}
  
  bad_key:
@@ -541,10 +541,10 @@ index cb0c889e13aa..f0eeb08a4b83 100644
  endif
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..2facb79e7606
+index 000000000000..57631aed7ba0
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,822 @@
+@@ -0,0 +1,824 @@
 +/*
 + * Copyright 2016-2018 by Nicolas Iooss
 + *
@@ -556,7 +556,7 @@ index 000000000000..2facb79e7606
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info printk_format_plugin_info = {
-+	.version	= "20180819",
++	.version	= "20181014",
 +	.help		= "Printk format checker\n",
 +};
 +
@@ -740,6 +740,8 @@ index 000000000000..2facb79e7606
 +		if (is_8bit_int_type(subtype))
 +			return true;
 +		if (TREE_CODE(subtype) == ARRAY_TYPE && is_8bit_int_type(TREE_TYPE(subtype)))
++			return true;
++		if (TREE_CODE(subtype) == VOID_TYPE)
 +			return true;
 +		break;
 +	case 'h':
