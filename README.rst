@@ -5,7 +5,7 @@ Here are some patches to GNU/Linux which aims to:
 
 * Fix some bugs in the kernel.
 * Make it possible to compile the kernel with many compiler warnings flags, because several compiler warnings are useful but can't be used in vanilla kernel code because of "false-positives". The compiler-flag configuration is in ``make_allmodconfig.sh`` script.
-* Enable using clang to compile the kernel, which reports different warnings from gcc, by using LLVMLinux patches (http://llvm.linuxfoundation.org/index.php/Main_Page).
+* Enable using clang to compile the kernel, which reports different warnings from gcc, by using LLVMLinux patches (http://llvm.linuxfoundation.org/index.php/Main_Page). NB: according to https://github.com/ClangBuiltLinux/linux/issues/219 LLVMLinux seems to be now deprecated. A list of issues of building Linux with clang is available at https://github.com/ClangBuiltLinux/linux/issues.
 
 How to build a kernel with these patches?
 -----------------------------------------
