@@ -36,7 +36,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  21 files changed, 143 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index e35a234b0a8f..0a2a7b4e783c 100644
+index 1e47db57b9d2..3e197cf040db 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -51,7 +51,7 @@
@@ -132,7 +132,7 @@ index 43d1fd50d433..97415a0bdcb4 100644
  
  /* Force a compilation error if a constant expression is not a power of 2 */
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 1d419c9c4894..cbf87be1e5ce 100644
+index 195e585207ab..b040566eea09 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
@@ -164,10 +164,10 @@ index 1d419c9c4894..cbf87be1e5ce 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index db192becfec4..836bab7c9fae 100644
+index 3439d7d0249a..44be116d4e02 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
-@@ -3,7 +3,7 @@
+@@ -4,7 +4,7 @@
  
  #ifndef __ASSEMBLY__
  
@@ -196,7 +196,7 @@ index 147bdec42215..86002a9186c0 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 022ccde3cf8e..3e0667c91d10 100644
+index 69913c7f9605..7406140c006d 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
 @@ -187,7 +187,9 @@ struct ablkcipher_request {
@@ -210,7 +210,7 @@ index 022ccde3cf8e..3e0667c91d10 100644
  };
  
  struct blkcipher_desc {
-@@ -605,7 +607,12 @@ struct crypto_tfm {
+@@ -671,7 +673,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -308,7 +308,7 @@ index 32db7a87d57e..b4945f66751e 100644
  /**
   * reciprocal_scale - "scale" a value into range [0, ep_ro)
 diff --git a/include/linux/math64.h b/include/linux/math64.h
-index 837f2f2d1d34..f137e5a246ae 100644
+index bb2c84afb80c..9a4ed3a11c71 100644
 --- a/include/linux/math64.h
 +++ b/include/linux/math64.h
 @@ -148,9 +148,11 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
@@ -339,7 +339,7 @@ index db2f3f454a1b..5124ce3698dc 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 6925828f9f25..4f14caa3f066 100644
+index 11c71c4ecf75..408b315b0112 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -137,6 +137,8 @@ typedef int __bitwise pci_power_t;
@@ -360,7 +360,7 @@ index 6925828f9f25..4f14caa3f066 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 3bcb02e3e878..140faf79289c 100644
+index 3da370add6f8..ad919b17b89e 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -232,6 +232,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
@@ -422,10 +422,10 @@ index 2fce8b6876e9..357ff7b0ecdd 100644
  #else
  #define __bitwise__
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 5843c541fda9..20327e37aba8 100644
+index 9a32bc2088c9..12bf8f75b7d6 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1161,7 +1161,7 @@ static void print_fatal_signal(int signr)
+@@ -1168,7 +1168,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  
@@ -435,10 +435,10 @@ index 5843c541fda9..20327e37aba8 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index ccdb351277ee..c1c0add3db40 100644
+index ad204cf6d001..ecd69ff2f60d 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
-@@ -424,17 +424,21 @@ EXPORT_SYMBOL(mktime64);
+@@ -403,17 +403,21 @@ EXPORT_SYMBOL(mktime64);
  void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
@@ -460,7 +460,7 @@ index ccdb351277ee..c1c0add3db40 100644
  		nsec += NSEC_PER_SEC;
  		--sec;
  	}
-@@ -515,17 +519,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
+@@ -494,17 +498,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
  void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {

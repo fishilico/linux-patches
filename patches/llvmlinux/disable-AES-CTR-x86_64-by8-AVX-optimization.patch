@@ -19,26 +19,26 @@ and LLVM bug https://llvm.org/bugs/show_bug.cgi?id=18918
  2 files changed, 10 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
-index a450ad573dcb..ac8557d2d01f 100644
+index a4b0007a54e1..ae71a59ce999 100644
 --- a/arch/x86/crypto/Makefile
 +++ b/arch/x86/crypto/Makefile
-@@ -107,7 +107,10 @@ ifeq ($(avx2_supported),yes)
+@@ -104,7 +104,10 @@ ifeq ($(avx2_supported),yes)
  endif
  
- aesni-intel-y := aesni-intel_asm.o aesni-intel_glue.o fpu.o
+ aesni-intel-y := aesni-intel_asm.o aesni-intel_glue.o
 -aesni-intel-$(CONFIG_64BIT) += aesni-intel_avx-x86_64.o aes_ctrby8_avx-x86_64.o
 +aesni-intel-$(CONFIG_64BIT) += aesni-intel_avx-x86_64.o
-+ifneq ($(cc-name),clang)
++ifndef CONFIG_CC_IS_CLANG
 +	aesni-intel-$(CONFIG_64BIT) += aes_ctrby8_avx-x86_64.o
 +endif
  ghash-clmulni-intel-y := ghash-clmulni-intel_asm.o ghash-clmulni-intel_glue.o
  sha1-ssse3-y := sha1_ssse3_asm.o sha1_ssse3_glue.o
  poly1305-x86_64-y := poly1305-sse2-x86_64.o poly1305_glue.o
 diff --git a/arch/x86/crypto/aesni-intel_glue.c b/arch/x86/crypto/aesni-intel_glue.c
-index acbe7e8336d8..53759f2d8aeb 100644
+index 661f7daf43da..0ed845faa169 100644
 --- a/arch/x86/crypto/aesni-intel_glue.c
 +++ b/arch/x86/crypto/aesni-intel_glue.c
-@@ -178,7 +178,7 @@ asmlinkage void aesni_gcm_finalize(void *ctx,
+@@ -175,7 +175,7 @@ asmlinkage void aesni_gcm_finalize(void *ctx,
  				   struct gcm_context_data *gdata,
  				   u8 *auth_tag, unsigned long auth_tag_len);
  
@@ -47,7 +47,7 @@ index acbe7e8336d8..53759f2d8aeb 100644
  asmlinkage void aes_ctr_enc_128_avx_by8(const u8 *in, u8 *iv,
  		void *keys, u8 *out, unsigned int num_bytes);
  asmlinkage void aes_ctr_enc_192_avx_by8(const u8 *in, u8 *iv,
-@@ -239,7 +239,7 @@ static void aesni_gcm_dec_avx(void *ctx,
+@@ -236,7 +236,7 @@ static void aesni_gcm_dec_avx(void *ctx,
  }
  #endif
  
@@ -56,7 +56,7 @@ index acbe7e8336d8..53759f2d8aeb 100644
  /*
   * asmlinkage void aesni_gcm_precomp_avx_gen4()
   * gcm_data *my_ctx_data, context data
-@@ -528,7 +528,7 @@ static void ctr_crypt_final(struct crypto_aes_ctx *ctx,
+@@ -525,7 +525,7 @@ static void ctr_crypt_final(struct crypto_aes_ctx *ctx,
  	crypto_inc(ctrblk, AES_BLOCK_SIZE);
  }
  
@@ -65,7 +65,7 @@ index acbe7e8336d8..53759f2d8aeb 100644
  static void aesni_ctr_enc_avx_tfm(struct crypto_aes_ctx *ctx, u8 *out,
  			      const u8 *in, unsigned int len, u8 *iv)
  {
-@@ -1440,14 +1440,14 @@ static int __init aesni_init(void)
+@@ -1417,14 +1417,14 @@ static int __init aesni_init(void)
  	if (!x86_match_cpu(aesni_cpu_id))
  		return -ENODEV;
  #ifdef CONFIG_X86_64
@@ -82,7 +82,7 @@ index acbe7e8336d8..53759f2d8aeb 100644
  	if (boot_cpu_has(X86_FEATURE_AVX)) {
  		pr_info("AVX version of gcm_enc/dec engaged.\n");
  		aesni_gcm_enc_tfm = aesni_gcm_enc_avx;
-@@ -1460,7 +1460,7 @@ static int __init aesni_init(void)
+@@ -1437,7 +1437,7 @@ static int __init aesni_init(void)
  		aesni_gcm_dec_tfm = aesni_gcm_dec;
  	}
  	aesni_ctr_enc_tfm = aesni_ctr_enc;

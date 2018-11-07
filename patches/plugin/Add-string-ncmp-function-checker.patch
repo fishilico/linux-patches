@@ -12,30 +12,14 @@ This plugins helped to detect the following bugs:
 It has also detected some bugs reported and fixed by other people:
 - 99243b922c9d ("dm table: fix "nvme" test")
 ---
- drivers/nvme/target/core.c                    |   4 +-
  drivers/staging/fbtft/fbtft_device.c          |   3 +-
  scripts/Makefile.gcc-plugins                  |   2 +
  scripts/gcc-plugins/Kconfig                   |   5 +
- scripts/gcc-plugins/string_ncmp_size_plugin.c | 236 ++++++++++++++++++
+ scripts/gcc-plugins/string_ncmp_size_plugin.c | 237 ++++++++++++++++++
  sound/soc/intel/boards/bxt_rt298.c            |   9 +-
- 6 files changed, 250 insertions(+), 9 deletions(-)
+ 5 files changed, 249 insertions(+), 7 deletions(-)
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
-diff --git a/drivers/nvme/target/core.c b/drivers/nvme/target/core.c
-index b5ec96abd048..f2352a1a51a1 100644
---- a/drivers/nvme/target/core.c
-+++ b/drivers/nvme/target/core.c
-@@ -1105,8 +1105,8 @@ static struct nvmet_subsys *nvmet_find_get_subsys(struct nvmet_port *port,
- 	if (!port)
- 		return NULL;
- 
--	if (!strncmp(NVME_DISC_SUBSYS_NAME, subsysnqn,
--			NVMF_NQN_SIZE)) {
-+	BUILD_BUG_ON(NVMF_NQN_SIZE < sizeof(NVME_DISC_SUBSYS_NAME));
-+	if (!strcmp(NVME_DISC_SUBSYS_NAME, subsysnqn)) {
- 		if (!kref_get_unless_zero(&nvmet_disc_subsys->ref))
- 			return NULL;
- 		return nvmet_disc_subsys;
 diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
 index c6059ab443e9..59fee0692cb8 100644
 --- a/drivers/staging/fbtft/fbtft_device.c
@@ -51,7 +35,7 @@ index c6059ab443e9..59fee0692cb8 100644
  
  		for (i = 0; i < ARRAY_SIZE(displays); i++)
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index eea3ae426bc5..2c18d1af3d53 100644
+index 935a79df5b99..df8a87673417 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
 @@ -17,6 +17,8 @@ endif
@@ -64,10 +48,10 @@ index eea3ae426bc5..2c18d1af3d53 100644
  
  gcc-plugin-$(CONFIG_GCC_PLUGIN_STRUCTLEAK)	+= structleak_plugin.so
 diff --git a/scripts/gcc-plugins/Kconfig b/scripts/gcc-plugins/Kconfig
-index 61951149910b..0e43304b43ba 100644
+index 1f967b0959f0..a1c04ab62b57 100644
 --- a/scripts/gcc-plugins/Kconfig
 +++ b/scripts/gcc-plugins/Kconfig
-@@ -150,4 +150,9 @@ config GCC_PLUGIN_DEREF_CHECKER
+@@ -201,4 +201,9 @@ config GCC_PLUGIN_DEREF_CHECKER
  	help
  	  Check function calls involving pointers about some consistencies.
  
@@ -79,10 +63,10 @@ index 61951149910b..0e43304b43ba 100644
  endif
 diff --git a/scripts/gcc-plugins/string_ncmp_size_plugin.c b/scripts/gcc-plugins/string_ncmp_size_plugin.c
 new file mode 100644
-index 000000000000..a9d72ba2197e
+index 000000000000..d3465cb2cf67
 --- /dev/null
 +++ b/scripts/gcc-plugins/string_ncmp_size_plugin.c
-@@ -0,0 +1,236 @@
+@@ -0,0 +1,237 @@
 +/*
 + * Copyright 2016-2018 by Nicolas Iooss
 + * Licensed under the GPL v2, or (at your option) v3
@@ -186,7 +170,8 @@ index 000000000000..a9d72ba2197e
 +		/* Check that it is not a function which would be interesting
 +		 * Here is the list of known functions which are not.
 +		 */
-+		if (!identifier_is(fnident, "memcmp_extent_buffer") &&
++		if (!identifier_is(fnident, "kasan_memcmp") &&
++		    !identifier_is(fnident, "memcmp_extent_buffer") &&
 +		    !identifier_is(fnident, "memcmp_node_keys") &&
 +		    !identifier_is(fnident, "memcmp_pages") &&
 +		    !identifier_is(fnident, "memcmpb") &&
@@ -201,8 +186,8 @@ index 000000000000..a9d72ba2197e
 +			if (strcasestr(name, "memcmp") || strcasestr(name, "strncmp")) {
 +				warning_at(
 +					gimple_location(stmt), 0,
-+					G_("Call to %qF may be interesting to analyze in the string length analyzer plugin\n"),
-+					fndecl);
++					G_("Call to %qF may be interesting to analyze in the string length analyzer plugin. If not, please add it to %s.\n"),
++					fndecl, __FILE__);
 +			}
 +		}
 +		return;

@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 4 Nov 2018 22:05:10 +0100
+Subject: [PATCH] {NOT UPSTREAMABLE} scripts/dtc: do not use yaml with 'gcc
+ -m32'
+
+When testing HOSTCC="gcc -m32", linking dtc fails:
+
+      HOSTLD  scripts/dtc/dtc
+    /usr/bin/ld: skipping incompatible /usr/lib/gcc/x86_64-pc-linux-gnu/8.2.1/../../../libyaml.so when searching for -lyaml
+    /usr/bin/ld: skipping incompatible /usr/lib/libyaml.so when searching for -lyaml
+    /usr/bin/ld: cannot find -lyaml
+    collect2: error: ld returned 1 exit status
+---
+ scripts/dtc/Makefile | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/scripts/dtc/Makefile b/scripts/dtc/Makefile
+index 056d5da6c477..8256f64d7f46 100644
+--- a/scripts/dtc/Makefile
++++ b/scripts/dtc/Makefile
+@@ -14,9 +14,14 @@ HOST_EXTRACFLAGS := -I$(src)/libfdt
+ ifeq ($(wildcard /usr/include/yaml.h),)
+ HOST_EXTRACFLAGS += -DNO_YAML
+ else
++# Do not require libyaml when using gcc -m32
++ifdef CONFIG_X86_32
++HOST_EXTRACFLAGS += -DNO_YAML
++else
+ dtc-objs	+= yamltree.o
+ HOSTLDLIBS_dtc	:= -lyaml
+ endif
++endif
+ 
+ # Generated files need one more search path to include headers in source tree
+ HOSTCFLAGS_dtc-lexer.lex.o := -I$(src)
+-- 

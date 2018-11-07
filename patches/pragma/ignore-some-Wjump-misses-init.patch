@@ -14,7 +14,7 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
  7 files changed, 49 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 2addcb8730e1..17577ed31eeb 100644
+index 014f6a698cb7..79cd0204f00f 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
 @@ -431,6 +431,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
@@ -40,10 +40,10 @@ index 2addcb8730e1..17577ed31eeb 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index c53692738073..225627278bff 100644
+index 3491615723bd..42a7ce4c9e5a 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -4741,6 +4741,12 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -5100,6 +5100,12 @@ static int do_check(struct bpf_verifier_env *env)
  	int insn_processed = 0;
  	bool do_print_state = false;
  
@@ -56,7 +56,7 @@ index c53692738073..225627278bff 100644
  	state = kzalloc(sizeof(struct bpf_verifier_state), GFP_KERNEL);
  	if (!state)
  		return -ENOMEM;
-@@ -5065,6 +5071,9 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -5425,6 +5431,9 @@ static int do_check(struct bpf_verifier_env *env)
  	verbose(env, "\n");
  	env->prog->aux->stack_depth = env->subprog_info[0].stack_depth;
  	return 0;
@@ -79,10 +79,10 @@ index 5140d0fd91bf..2ff320471314 100644
  			iter->skip++;
  			iter->p = p;
 diff --git a/mm/mmap.c b/mm/mmap.c
-index f7cd9cb966c0..bf7f373b17ed 100644
+index 6c04292e16a7..bc24d12ff9dc 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -701,6 +701,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+@@ -725,6 +725,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
  	long adjust_next = 0;
  	int remove_next = 0;
  
@@ -94,7 +94,7 @@ index f7cd9cb966c0..bf7f373b17ed 100644
  	if (next && !insert) {
  		struct vm_area_struct *exporter = NULL, *importer = NULL;
  
-@@ -974,6 +979,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+@@ -998,6 +1003,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
  	validate_mm(mm);
  
  	return 0;
@@ -105,7 +105,7 @@ index f7cd9cb966c0..bf7f373b17ed 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index f817f336595d..a84d0f0f7623 100644
+index 946de0e24c87..6a44a5009de9 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
 @@ -1767,6 +1767,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
@@ -131,7 +131,7 @@ index f817f336595d..a84d0f0f7623 100644
  		for (; i < nfrags; i++)
  			skb_frag_unref(skb, i);
 diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
-index 791523b067ce..3e23190d2a5d 100644
+index 5821329828e2..d25726306033 100644
 --- a/net/ipv4/fib_trie.c
 +++ b/net/ipv4/fib_trie.c
 @@ -1341,6 +1341,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
@@ -156,10 +156,10 @@ index 791523b067ce..3e23190d2a5d 100644
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
-index b2c3406a2cf2..e0787987ff6a 100644
+index 4b28fd44576d..2e8fd094cc08 100644
 --- a/net/sched/cls_u32.c
 +++ b/net/sched/cls_u32.c
-@@ -113,6 +113,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
+@@ -112,6 +112,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
  static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  			struct tcf_result *res)
  {
@@ -171,7 +171,7 @@ index b2c3406a2cf2..e0787987ff6a 100644
  	struct {
  		struct tc_u_knode *knode;
  		unsigned int	  off;
-@@ -261,6 +266,9 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
+@@ -260,6 +265,9 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  deadloop:
  	net_warn_ratelimited("cls_u32: dead loop\n");
  	return -1;

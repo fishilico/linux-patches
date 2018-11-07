@@ -124,10 +124,10 @@ index 0e8a69ab909f..98c76f1be5f6 100644
  
  #ifdef CONFIG_BRCM_TRACING
 diff --git a/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h b/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
-index 5dfc9295a7e0..91b1d33cbb81 100644
+index 32984c1f39a1..a32ecb4568ba 100644
 --- a/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
 +++ b/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
-@@ -34,6 +34,10 @@
+@@ -30,6 +30,10 @@
  
  #define MAX_MSG_LEN	110
  
@@ -138,7 +138,7 @@ index 5dfc9295a7e0..91b1d33cbb81 100644
  DECLARE_EVENT_CLASS(iwlwifi_msg_event,
  	TP_PROTO(struct va_format *vaf),
  	TP_ARGS(vaf),
-@@ -47,6 +51,9 @@ DECLARE_EVENT_CLASS(iwlwifi_msg_event,
+@@ -43,6 +47,9 @@ DECLARE_EVENT_CLASS(iwlwifi_msg_event,
  	),
  	TP_printk("%s", __get_str(msg))
  );
@@ -148,7 +148,7 @@ index 5dfc9295a7e0..91b1d33cbb81 100644
  
  DEFINE_EVENT(iwlwifi_msg_event, iwlwifi_err,
  	TP_PROTO(struct va_format *vaf),
-@@ -68,6 +75,10 @@ DEFINE_EVENT(iwlwifi_msg_event, iwlwifi_crit,
+@@ -64,6 +71,10 @@ DEFINE_EVENT(iwlwifi_msg_event, iwlwifi_crit,
  	TP_ARGS(vaf)
  );
  
@@ -159,7 +159,7 @@ index 5dfc9295a7e0..91b1d33cbb81 100644
  TRACE_EVENT(iwlwifi_dbg,
  	TP_PROTO(u32 level, bool in_interrupt, const char *function,
  		 struct va_format *vaf),
-@@ -88,6 +99,9 @@ TRACE_EVENT(iwlwifi_dbg,
+@@ -84,6 +95,9 @@ TRACE_EVENT(iwlwifi_dbg,
  	),
  	TP_printk("%s", __get_str(msg))
  );
@@ -170,10 +170,10 @@ index 5dfc9295a7e0..91b1d33cbb81 100644
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 8b2e002d52eb..a1f2091528fb 100644
+index f6d549a29a5c..80a5acac203d 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -506,6 +506,11 @@ struct warn_args {
+@@ -510,6 +510,11 @@ struct warn_args {
  	va_list args;
  };
  
@@ -185,7 +185,7 @@ index 8b2e002d52eb..a1f2091528fb 100644
  void __warn(const char *file, int line, void *caller, unsigned taint,
  	    struct pt_regs *regs, struct warn_args *args)
  {
-@@ -550,6 +555,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -554,6 +559,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  	/* Just a warning, don't kill lockdep. */
  	add_taint(taint, LOCKDEP_STILL_OK);
  }
@@ -196,10 +196,10 @@ index 8b2e002d52eb..a1f2091528fb 100644
  #ifdef WANT_WARN_ON_SLOWPATH
  void warn_slowpath_fmt(const char *file, int line, const char *fmt, ...)
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 2a14733fa997..3a56db717f98 100644
+index dbbae6575cb5..9772d715fcef 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
-@@ -1934,8 +1934,15 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+@@ -1937,8 +1937,15 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
  			va_list va;
  
  			va_copy(va, *((struct va_format *)ptr)->va);

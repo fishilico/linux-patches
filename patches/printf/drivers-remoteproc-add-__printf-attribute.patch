@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 4 Nov 2018 10:42:12 +0100
+Subject: [PATCH] {PRINTF} drivers/remoteproc: add __printf attribute
+
+---
+ drivers/remoteproc/remoteproc_core.c     | 4 ++--
+ drivers/remoteproc/remoteproc_internal.h | 2 +-
+ include/linux/remoteproc.h               | 4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remoteproc_core.c
+index d4434947a199..db18a1336b2f 100644
+--- a/drivers/remoteproc/remoteproc_core.c
++++ b/drivers/remoteproc/remoteproc_core.c
+@@ -844,7 +844,7 @@ static int rproc_handle_carveout(struct rproc *rproc,
+ 	 * Check carveout rsc already part of a registered carveout,
+ 	 * Search by name, then check the da and length
+ 	 */
+-	carveout = rproc_find_carveout_by_name(rproc, rsc->name);
++	carveout = rproc_find_carveout_by_name(rproc, "%s", rsc->name);
+ 
+ 	if (carveout) {
+ 		if (carveout->rsc_offset != FW_RSC_ADDR_ANY) {
+@@ -866,7 +866,7 @@ static int rproc_handle_carveout(struct rproc *rproc,
+ 	/* Register carveout in in list */
+ 	carveout = rproc_mem_entry_init(dev, 0, 0, rsc->len, rsc->da,
+ 					rproc_alloc_carveout,
+-					rproc_release_carveout, rsc->name);
++					rproc_release_carveout, "%s", rsc->name);
+ 	if (!carveout) {
+ 		dev_err(dev, "Can't allocate memory entry structure\n");
+ 		return -ENOMEM;
+diff --git a/drivers/remoteproc/remoteproc_internal.h b/drivers/remoteproc/remoteproc_internal.h
+index f6cad243d7ca..2328520586e4 100644
+--- a/drivers/remoteproc/remoteproc_internal.h
++++ b/drivers/remoteproc/remoteproc_internal.h
+@@ -61,7 +61,7 @@ int rproc_elf_load_rsc_table(struct rproc *rproc, const struct firmware *fw);
+ struct resource_table *rproc_elf_find_loaded_rsc_table(struct rproc *rproc,
+ 						       const struct firmware *fw);
+ struct rproc_mem_entry *
+-rproc_find_carveout_by_name(struct rproc *rproc, const char *name, ...);
++rproc_find_carveout_by_name(struct rproc *rproc, const char *name, ...) __printf(2, 3);
+ 
+ static inline
+ int rproc_fw_sanity_check(struct rproc *rproc, const struct firmware *fw)
+diff --git a/include/linux/remoteproc.h b/include/linux/remoteproc.h
+index 507a2b524208..dcf755cf8788 100644
+--- a/include/linux/remoteproc.h
++++ b/include/linux/remoteproc.h
+@@ -582,11 +582,11 @@ rproc_mem_entry_init(struct device *dev,
+ 		     void *va, dma_addr_t dma, int len, u32 da,
+ 		     int (*alloc)(struct rproc *, struct rproc_mem_entry *),
+ 		     int (*release)(struct rproc *, struct rproc_mem_entry *),
+-		     const char *name, ...);
++		     const char *name, ...) __printf(8, 9);
+ 
+ struct rproc_mem_entry *
+ rproc_of_resm_mem_entry_init(struct device *dev, u32 of_resm_idx, int len,
+-			     u32 da, const char *name, ...);
++			     u32 da, const char *name, ...) __printf(5, 6);
+ 
+ int rproc_boot(struct rproc *rproc);
+ void rproc_shutdown(struct rproc *rproc);
+-- 

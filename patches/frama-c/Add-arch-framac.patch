@@ -1311,18 +1311,18 @@ index 000000000000..eb072c016176
 +obj-y += init.o
 diff --git a/arch/framac/mm/init.c b/arch/framac/mm/init.c
 new file mode 100644
-index 000000000000..6d32fff63ca2
+index 000000000000..0636eb11b193
 --- /dev/null
 +++ b/arch/framac/mm/init.c
 @@ -0,0 +1,14 @@
 +#include <linux/mm.h>
-+#include <linux/bootmem.h>
 +
 +unsigned long empty_zero_page;
++unsigned long empty_zero_page_content[PAGE_SIZE / sizeof(unsigned long)];
 +
 +void __init mem_init(void)
 +{
-+    empty_zero_page = (unsigned long)alloc_bootmem_pages(PAGE_SIZE);
++    empty_zero_page = (unsigned long)&empty_zero_page_content;
 +    memset((void *)empty_zero_page, 0, PAGE_SIZE);
 +}
 +

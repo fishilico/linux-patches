@@ -33,7 +33,6 @@ This fixes errors like:
  drivers/clk/ti/adpll.c                       |   3 +-
  drivers/iommu/omap-iommu-debug.c             |   3 +-
  drivers/misc/pti.c                           |   3 +-
- drivers/mtd/maps/gpio-addr-flash.c           |   3 +-
  drivers/net/appletalk/ipddp.c                |   4 +-
  drivers/net/hamradio/6pack.c                 |  14 +-
  drivers/net/hamradio/baycom_epp.c            |   5 +-
@@ -54,7 +53,7 @@ This fixes errors like:
  net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
- 28 files changed, 167 insertions(+), 276 deletions(-)
+ 27 files changed, 166 insertions(+), 274 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 75bc18646df6..10d4e7064572 100644
@@ -172,10 +171,10 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 47bebfe6efa7..b2aab7e5b09d 100644
+index 71d4b9d4d43f..2d6bd18366a6 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
-@@ -485,15 +485,6 @@ static noinline int vmalloc_fault(unsigned long address)
+@@ -416,15 +416,6 @@ static noinline int vmalloc_fault(unsigned long address)
  }
  NOKPROBE_SYMBOL(vmalloc_fault);
  
@@ -191,7 +190,7 @@ index 47bebfe6efa7..b2aab7e5b09d 100644
  /*
   * No vm86 mode in 64-bit mode:
   */
-@@ -595,7 +586,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+@@ -526,7 +517,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  	address |= 0xffffffffUL << 32;
  	if ((address >= (u64)_stext && address <= (u64)_etext) ||
  	    (address >= MODULES_VADDR && address <= MODULES_END)) {
@@ -293,20 +292,6 @@ index 41f2a9f6851d..66126653303e 100644
  		mc->channel, thread_name_p);
  	pti_write_to_aperture(&mccontrol, control_frame, strlen(control_frame));
  }
-diff --git a/drivers/mtd/maps/gpio-addr-flash.c b/drivers/mtd/maps/gpio-addr-flash.c
-index 9d9723693217..f6a13ebd9a79 100644
---- a/drivers/mtd/maps/gpio-addr-flash.c
-+++ b/drivers/mtd/maps/gpio-addr-flash.c
-@@ -25,8 +25,7 @@
- #include <linux/slab.h>
- #include <linux/types.h>
- 
--#define pr_devinit(fmt, args...) \
--	({ static const char __fmt[] = fmt; printk(__fmt, ## args); })
-+#define pr_devinit(fmt, args...) printk((fmt), ## args)
- 
- #define DRIVER_NAME "gpio-addr-flash"
- #define PFX DRIVER_NAME ": "
 diff --git a/drivers/net/appletalk/ipddp.c b/drivers/net/appletalk/ipddp.c
 index 3d27616d9c85..8ddb64921ddd 100644
 --- a/drivers/net/appletalk/ipddp.c
@@ -330,10 +315,10 @@ index 3d27616d9c85..8ddb64921ddd 100644
  	/* Initialize the device structure. */
  	dev->netdev_ops = &ipddp_netdev_ops;
 diff --git a/drivers/net/hamradio/6pack.c b/drivers/net/hamradio/6pack.c
-index d79a69dd2146..8287d66e6a5f 100644
+index 17e6dcd2eb42..f0d0ee6bb3e9 100644
 --- a/drivers/net/hamradio/6pack.c
 +++ b/drivers/net/hamradio/6pack.c
-@@ -785,33 +785,25 @@ static struct tty_ldisc_ops sp_ldisc = {
+@@ -764,33 +764,25 @@ static struct tty_ldisc_ops sp_ldisc = {
  
  /* Initialize 6pack control device -- register 6pack line discipline */
  
@@ -394,10 +379,10 @@ index 0d2122d9b115..e5e935572563 100644
  	}
  	parport_unregister_driver(&baycom_epp_par_driver);
 diff --git a/drivers/net/hamradio/mkiss.c b/drivers/net/hamradio/mkiss.c
-index 13e4c1eff353..c94dd2546e68 100644
+index 802233d41b25..b7206e02367f 100644
 --- a/drivers/net/hamradio/mkiss.c
 +++ b/drivers/net/hamradio/mkiss.c
-@@ -973,33 +973,25 @@ static struct tty_ldisc_ops ax_ldisc = {
+@@ -952,33 +952,25 @@ static struct tty_ldisc_ops ax_ldisc = {
  	.write_wakeup	= mkiss_write_wakeup
  };
  
@@ -602,10 +587,10 @@ index 7971997cdead..560281a2716c 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 1145109968ef..fd7370d5d308 100644
+index a221f1cdf704..87c54ed84dc7 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1522,9 +1522,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1535,9 +1535,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  }
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
@@ -615,7 +600,7 @@ index 1145109968ef..fd7370d5d308 100644
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -1726,7 +1723,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -1739,7 +1736,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -1270,10 +1255,10 @@ index 7d6ff983ba2c..ac1f82bca8d7 100644
  	rc = proto_register(&dn_proto, 1);
  	if (rc != 0)
 diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
-index 1beeea9549fa..a666e6d62433 100644
+index b99e73a7e7e0..6b141b987d37 100644
 --- a/net/llc/af_llc.c
 +++ b/net/llc/af_llc.c
-@@ -1204,13 +1204,6 @@ static const struct proto_ops llc_ui_ops = {
+@@ -1201,13 +1201,6 @@ static const struct proto_ops llc_ui_ops = {
  	.sendpage    = sock_no_sendpage,
  };
  
@@ -1287,7 +1272,7 @@ index 1beeea9549fa..a666e6d62433 100644
  static int __init llc2_init(void)
  {
  	int rc = proto_register(&llc_proto, 0);
-@@ -1223,17 +1216,17 @@ static int __init llc2_init(void)
+@@ -1220,17 +1213,17 @@ static int __init llc2_init(void)
  	llc_ui_sap_last_autoport = LLC_SAP_DYN_START;
  	rc = llc_proc_init();
  	if (rc != 0) {
@@ -1309,10 +1294,10 @@ index 1beeea9549fa..a666e6d62433 100644
  	}
  	llc_add_pack(LLC_DEST_SAP, llc_sap_handler);
 diff --git a/security/apparmor/lib.c b/security/apparmor/lib.c
-index 974affe50531..a6df12ffd1d8 100644
+index 76491e7f4177..8ab3da2d595e 100644
 --- a/security/apparmor/lib.c
 +++ b/security/apparmor/lib.c
-@@ -223,16 +223,16 @@ void aa_perm_mask_to_str(char *str, size_t str_size, const char *chrs, u32 mask)
+@@ -225,16 +225,16 @@ void aa_perm_mask_to_str(char *str, size_t str_size, const char *chrs, u32 mask)
  void aa_audit_perm_names(struct audit_buffer *ab, const char * const *names,
  			 u32 mask)
  {

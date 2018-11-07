@@ -44,19 +44,20 @@ In order to fix this in a quick & dirty way, link the module with the
 library which provides these functions, in a very very ugly way.
 ---
  drivers/gpu/drm/amd/amdgpu/Makefile | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ scripts/Makefile.build              | 2 +-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/amd/amdgpu/Makefile b/drivers/gpu/drm/amd/amdgpu/Makefile
-index bfd332c95b61..47baeace0239 100644
+index 138cb787d27e..637a121dc1fc 100644
 --- a/drivers/gpu/drm/amd/amdgpu/Makefile
 +++ b/drivers/gpu/drm/amd/amdgpu/Makefile
-@@ -180,4 +180,13 @@ amdgpu-y += $(AMD_DISPLAY_FILES)
+@@ -186,4 +186,13 @@ amdgpu-y += $(AMD_DISPLAY_FILES)
  
  endif
  
 +# TEST
 +# TODO: filter on architecture and clang
-+ifeq ($(cc-name),clang)
++ifdef CONFIG_CC_IS_CLANG
 +CLANGVER = $(shell $(CC) --version | sed -n 's/^clang version \(\S\+\).*/\1/p')
 +ifeq ($(CONFIG_X86_64),y)
 +ROOTDIR := ../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../..
@@ -64,4 +65,17 @@ index bfd332c95b61..47baeace0239 100644
 +endif
 +endif
  obj-$(CONFIG_DRM_AMDGPU)+= amdgpu.o
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index a8e7ba9f73e8..1aaec676b2f1 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -484,7 +484,7 @@ targets += $(obj)/lib-ksyms.o
+ endif
+ 
+ quiet_cmd_link_multi-m = LD [M]  $@
+-cmd_link_multi-m = $(LD) $(ld_flags) -r -o $@ $(filter %.o,$^) $(cmd_secanalysis)
++cmd_link_multi-m = $(LD) $(ld_flags) -r -o $@ $(filter %.o %.a,$^) $(cmd_secanalysis)
+ 
+ $(multi-used-m): FORCE
+ 	$(call if_changed,link_multi-m)
 -- 
