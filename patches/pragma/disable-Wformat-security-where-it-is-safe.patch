@@ -140,7 +140,6 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  drivers/scsi/scsi_logging.c                   |  3 ++
  drivers/scsi/smartpqi/smartpqi_init.c         |  3 ++
  drivers/scsi/st.c                             |  3 ++
- drivers/staging/most/core.c                   |  7 +++-
  drivers/staging/most/dim2/dim2.c              |  3 ++
  drivers/staging/speakup/keyhelp.c             |  6 ++++
  drivers/staging/speakup/kobjects.c            |  6 ++++
@@ -202,7 +201,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  sound/soc/omap/mcbsp.c                        |  3 ++
  sound/usb/midi.c                              |  3 ++
  sound/usb/mixer_quirks.c                      |  3 ++
- 198 files changed, 914 insertions(+), 29 deletions(-)
+ 197 files changed, 908 insertions(+), 28 deletions(-)
 
 diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
 index 2d668cff8ef4..e5c12c5cb9ca 100644
@@ -296,10 +295,10 @@ index 36d2696c9563..b4e0f6bf4fd0 100644
  		pr_emerg(HW_ERR "Fake kernel panic: %s\n", msg);
  }
 diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd.c b/arch/x86/kernel/cpu/mcheck/mce_amd.c
-index dd33c357548f..b2b4f0c9b100 100644
+index e12454e21b8a..ae5a71fa6030 100644
 --- a/arch/x86/kernel/cpu/mcheck/mce_amd.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce_amd.c
-@@ -1168,9 +1168,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
+@@ -1167,9 +1167,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
  		per_cpu(threshold_banks, cpu)[bank]->blocks = b;
  	}
  
@@ -313,7 +312,7 @@ index dd33c357548f..b2b4f0c9b100 100644
  	if (err)
  		goto out_free;
  recurse:
-@@ -1203,13 +1207,21 @@ static int __threshold_add_blocks(struct threshold_bank *b)
+@@ -1202,13 +1206,21 @@ static int __threshold_add_blocks(struct threshold_bank *b)
  	struct threshold_block *tmp = NULL;
  	int err = 0;
  
@@ -335,7 +334,7 @@ index dd33c357548f..b2b4f0c9b100 100644
  		if (err) {
  			list_for_each_entry_safe_reverse(pos, tmp, head, miscj)
  				kobject_del(&pos->kobj);
-@@ -1238,7 +1250,11 @@ static int threshold_create_bank(unsigned int cpu, unsigned int bank)
+@@ -1237,7 +1249,11 @@ static int threshold_create_bank(unsigned int cpu, unsigned int bank)
  		if (nb && nb->bank4) {
  			/* yes, use it */
  			b = nb->bank4;
@@ -1974,7 +1973,7 @@ index 54224d1822e3..a67ff090faf8 100644
  	return pci_register_driver(&yellowfin_driver);
  }
 diff --git a/drivers/net/ethernet/qlogic/qed/qed_debug.c b/drivers/net/ethernet/qlogic/qed/qed_debug.c
-index 78a638ec7c0a..9161fb7e39df 100644
+index 979f1e4bc18b..5e166b641d2d 100644
 --- a/drivers/net/ethernet/qlogic/qed/qed_debug.c
 +++ b/drivers/net/ethernet/qlogic/qed/qed_debug.c
 @@ -6760,10 +6760,17 @@ static enum dbg_status qed_parse_mcp_trace_buf(struct qed_hwfn *p_hwfn,
@@ -2316,7 +2315,7 @@ index 9a10029caf83..e75f8f21b7f3 100644
  			tap_free_minor(macvtap_major, &vlantap->tap);
  			return notifier_from_errno(PTR_ERR(classdev));
 diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index ab33d1777132..57b43e225ed2 100644
+index 23ee3967c166..f0609648b786 100644
 --- a/drivers/net/phy/phy_device.c
 +++ b/drivers/net/phy/phy_device.c
 @@ -1043,7 +1043,10 @@ EXPORT_SYMBOL(phy_init_hw);
@@ -2955,25 +2954,6 @@ index 307df2fa39a3..977d71547c05 100644
  	return l;
  }
  static DEVICE_ATTR_RO(default_density);
-diff --git a/drivers/staging/most/core.c b/drivers/staging/most/core.c
-index 6a18cf73c85e..00c72c6bd2dc 100644
---- a/drivers/staging/most/core.c
-+++ b/drivers/staging/most/core.c
-@@ -350,8 +350,13 @@ static ssize_t set_datatype_show(struct device *dev,
- 	struct most_channel *c = to_channel(dev);
- 
- 	for (i = 0; i < ARRAY_SIZE(ch_data_type); i++) {
--		if (c->cfg.data_type & ch_data_type[i].most_ch_data_type)
-+		if (c->cfg.data_type & ch_data_type[i].most_ch_data_type) {
-+/* ch_data_type is an array of const strings */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			return snprintf(buf, PAGE_SIZE, ch_data_type[i].name);
-+#pragma GCC diagnostic pop
-+		}
- 	}
- 	return snprintf(buf, PAGE_SIZE, "unconfigured\n");
- }
 diff --git a/drivers/staging/most/dim2/dim2.c b/drivers/staging/most/dim2/dim2.c
 index 31fbc1a75b06..022d0d88160d 100644
 --- a/drivers/staging/most/dim2/dim2.c
@@ -3557,7 +3537,7 @@ index a8956a3c9e05..6751b01b4e0b 100644
  		goto out;
  	}
 diff --git a/fs/btrfs/relocation.c b/fs/btrfs/relocation.c
-index 924116f654a1..1b5215fd939c 100644
+index a3f75b8926d4..938a1a77be12 100644
 --- a/fs/btrfs/relocation.c
 +++ b/fs/btrfs/relocation.c
 @@ -2426,7 +2426,11 @@ void merge_reloc_roots(struct reloc_control *rc)
@@ -3573,7 +3553,7 @@ index 924116f654a1..1b5215fd939c 100644
  			free_reloc_roots(&reloc_roots);
  
 diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
-index cbc9d0d2c12d..e7c5b8c991fb 100644
+index 645fc81e2a94..aaae2052aa6d 100644
 --- a/fs/btrfs/super.c
 +++ b/fs/btrfs/super.c
 @@ -254,7 +254,11 @@ void __btrfs_abort_transaction(struct btrfs_trans_handle *trans,
@@ -3773,7 +3753,7 @@ index d1a5d885ce13..46fe313724df 100644
  }
  
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index 1971ca325fb4..3491615723bd 100644
+index 6dd419550aba..ea58307fa026 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
 @@ -2900,7 +2900,10 @@ static int check_helper_call(struct bpf_verifier_env *env, int func_id, int insn
@@ -3907,10 +3887,10 @@ index 087d18d771b5..9254cf9f0696 100644
  		return p;
  	kthread_bind(p, cpu);
 diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index 08fcfe440c63..bc0eb954ad66 100644
+index 9864a35c8bb5..4da61d340532 100644
 --- a/kernel/trace/bpf_trace.c
 +++ b/kernel/trace/bpf_trace.c
-@@ -268,7 +268,10 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
+@@ -270,7 +270,10 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
  	      ? __BPF_ARG2_TP((long)arg3, ##__VA_ARGS__)		\
  	      : __BPF_ARG2_TP((u32)arg3, ##__VA_ARGS__)))
  
@@ -4011,10 +3991,10 @@ index 5c169aa688fd..77f2eba4334e 100644
  		 * We should not pass a shadow pointer to generic
  		 * function, because generic functions may try to
 diff --git a/mm/shmem.c b/mm/shmem.c
-index d44991ea5ed4..8592c800a2cd 100644
+index cddc72ac44d8..8ccc4817319b 100644
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
-@@ -3713,9 +3713,12 @@ static ssize_t shmem_enabled_show(struct kobject *kobj,
+@@ -3744,9 +3744,12 @@ static ssize_t shmem_enabled_show(struct kobject *kobj,
  	for (i = 0, count = 0; i < ARRAY_SIZE(values); i++) {
  		const char *fmt = shmem_huge == values[i] ? "[%s] " : "%s ";
  
@@ -4146,10 +4126,10 @@ index 2526be6b3d90..9e0e0b35b923 100644
  			result = PTR_ERR(task);
  			goto out;
 diff --git a/net/netfilter/nf_tables_api.c b/net/netfilter/nf_tables_api.c
-index 42487d01a3ed..6899ff48aa8b 100644
+index 2e61aab6ed73..110fed234cf3 100644
 --- a/net/netfilter/nf_tables_api.c
 +++ b/net/netfilter/nf_tables_api.c
-@@ -3071,7 +3071,11 @@ static int nf_tables_set_alloc_name(struct nft_ctx *ctx, struct nft_set *set,
+@@ -3062,7 +3062,11 @@ static int nf_tables_set_alloc_name(struct nft_ctx *ctx, struct nft_set *set,
  		free_page((unsigned long)inuse);
  	}
  
@@ -4162,10 +4142,10 @@ index 42487d01a3ed..6899ff48aa8b 100644
  		return -ENOMEM;
  
 diff --git a/net/netfilter/nft_compat.c b/net/netfilter/nft_compat.c
-index 9d0ede474224..734329e74d84 100644
+index 7334e0b80a5e..8a20cf72a746 100644
 --- a/net/netfilter/nft_compat.c
 +++ b/net/netfilter/nft_compat.c
-@@ -680,9 +680,14 @@ static int nfnl_compat_get_rcu(struct net *net, struct sock *nfnl,
+@@ -681,9 +681,14 @@ static int nfnl_compat_get_rcu(struct net *net, struct sock *nfnl,
  		return -EINVAL;
  
  	rcu_read_unlock();
