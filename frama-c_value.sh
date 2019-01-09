@@ -20,6 +20,7 @@ frama-c -save frama-linux.sav 2>&1 \
     -cpp-command 'cat %1 > %2' \
     -machdep gcc_x86_32 \
     -main _start \
+    -c11 \
     -val -context-depth=2 -val-show-progress \
     $(find "$KBUILD_OUTPUT" \
         \( \
