@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 3 Jan 2019 10:03:31 +0100
+Subject: [PATCH] {PRAGMA} lib/test_ubsan: disable -Wvla with pragmas
+
+Disabling this warning in lib/Makefile does not seem to work.
+---
+ lib/test_ubsan.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/lib/test_ubsan.c b/lib/test_ubsan.c
+index 280f4979d00e..5333c2d479d0 100644
+--- a/lib/test_ubsan.c
++++ b/lib/test_ubsan.c
+@@ -42,6 +42,8 @@ static void test_ubsan_divrem_overflow(void)
+ 	val /= val2;
+ }
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wvla"
+ static void test_ubsan_vla_bound_not_positive(void)
+ {
+ 	volatile int size = -1;
+@@ -49,6 +51,7 @@ static void test_ubsan_vla_bound_not_positive(void)
+ 
+ 	(void)buf;
+ }
++#pragma GCC diagnostic pop
+ 
+ static void test_ubsan_shift_out_of_bounds(void)
+ {
+@@ -58,6 +61,8 @@ static void test_ubsan_shift_out_of_bounds(void)
+ 	val2 <<= val;
+ }
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wvla"
+ static void test_ubsan_out_of_bounds(void)
+ {
+ 	volatile int i = 4, j = 5;
+@@ -65,6 +70,7 @@ static void test_ubsan_out_of_bounds(void)
+ 
+ 	arr[j] = i;
+ }
++#pragma GCC diagnostic pop
+ 
+ static void test_ubsan_load_invalid_value(void)
+ {
+-- 

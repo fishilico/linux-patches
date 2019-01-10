@@ -46,10 +46,10 @@ index 915330abf6e5..747eafda8a6b 100644
  		struct file *file;
  		struct lsm_ibpkey_audit *ibpkey;
 diff --git a/include/linux/lsm_hooks.h b/include/linux/lsm_hooks.h
-index aaeb7fa24dc4..38739fb1c22d 100644
+index 9a0bdf91e646..fcad9dd6cf0f 100644
 --- a/include/linux/lsm_hooks.h
 +++ b/include/linux/lsm_hooks.h
-@@ -1585,7 +1585,7 @@ union security_list_options {
+@@ -1587,7 +1587,7 @@ union security_list_options {
  	void (*cred_getsecid)(const struct cred *c, u32 *secid);
  	int (*kernel_act_as)(struct cred *new, u32 secid);
  	int (*kernel_create_files_as)(struct cred *new, struct inode *inode);
@@ -59,10 +59,10 @@ index aaeb7fa24dc4..38739fb1c22d 100644
  	int (*kernel_read_file)(struct file *file, enum kernel_read_file_id id);
  	int (*kernel_post_read_file)(struct file *file, char *buf, loff_t size,
 diff --git a/include/linux/security.h b/include/linux/security.h
-index d170a5b031f3..f3fd0a7d0c68 100644
+index dbfb5a66babb..d2ce7d3d4c1a 100644
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -340,7 +340,7 @@ void security_transfer_creds(struct cred *new, const struct cred *old);
+@@ -316,7 +316,7 @@ void security_transfer_creds(struct cred *new, const struct cred *old);
  void security_cred_getsecid(const struct cred *c, u32 *secid);
  int security_kernel_act_as(struct cred *new, u32 secid);
  int security_kernel_create_files_as(struct cred *new, struct inode *inode);
@@ -71,7 +71,7 @@ index d170a5b031f3..f3fd0a7d0c68 100644
  int security_kernel_load_data(enum kernel_load_data_id id);
  int security_kernel_read_file(struct file *file, enum kernel_read_file_id id);
  int security_kernel_post_read_file(struct file *file, char *buf, loff_t size,
-@@ -925,7 +925,7 @@ static inline int security_kernel_create_files_as(struct cred *cred,
+@@ -898,7 +898,7 @@ static inline int security_kernel_create_files_as(struct cred *cred,
  	return 0;
  }
  
@@ -94,10 +94,10 @@ index d775e03fbbcc..8d835e2ba60e 100644
  	if (strncmp(kmod_name, "crypto-pkcs1pad(rsa,", 20) == 0)
  		return -EINVAL;
 diff --git a/security/security.c b/security/security.c
-index 04d173eb93f6..d030918b42ac 100644
+index f1b8d2587639..d21fbb52eeb3 100644
 --- a/security/security.c
 +++ b/security/security.c
-@@ -1044,7 +1044,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
+@@ -1057,7 +1057,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
  	return call_int_hook(kernel_create_files_as, 0, new, inode);
  }
  
@@ -107,10 +107,10 @@ index 04d173eb93f6..d030918b42ac 100644
  	int ret;
  
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 1691ee4b885e..d66db89ba445 100644
+index 16d5f6eaf24e..bede53a7d3d8 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -4015,7 +4015,7 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
+@@ -3801,7 +3801,7 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
  	return ret;
  }
  

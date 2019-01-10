@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 1 Jan 2019 19:50:27 +0100
+Subject: [PATCH] {MAYBE UPS} staging: olpc_dcon: use a const pointer
+
+gcc warns about this when compiling for 32-bit x86.
+---
+ drivers/staging/olpc_dcon/olpc_dcon_xo_1.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/olpc_dcon/olpc_dcon_xo_1.c b/drivers/staging/olpc_dcon/olpc_dcon_xo_1.c
+index 80b8d4153414..a54286498a47 100644
+--- a/drivers/staging/olpc_dcon/olpc_dcon_xo_1.c
++++ b/drivers/staging/olpc_dcon/olpc_dcon_xo_1.c
+@@ -45,7 +45,7 @@ static int dcon_init_xo_1(struct dcon_priv *dcon)
+ {
+ 	unsigned char lob;
+ 	int ret, i;
+-	struct dcon_gpio *pin = &gpios_asis[0];
++	const struct dcon_gpio *pin = &gpios_asis[0];
+ 
+ 	for (i = 0; i < ARRAY_SIZE(gpios_asis); i++) {
+ 		gpios[i] = devm_gpiod_get(&dcon->client->dev, pin[i].name,
+-- 

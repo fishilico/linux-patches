@@ -8,20 +8,20 @@ Subject: [PATCH] {PRAGMA} crypto: poly1305: ignore documented structure abuse
  1 file changed, 8 insertions(+)
 
 diff --git a/arch/x86/crypto/poly1305_glue.c b/arch/x86/crypto/poly1305_glue.c
-index f012b7e28ad1..c8d9ed729679 100644
+index 88cc01506c84..dff3b8908a1c 100644
 --- a/arch/x86/crypto/poly1305_glue.c
 +++ b/arch/x86/crypto/poly1305_glue.c
 @@ -89,8 +89,16 @@ static unsigned int poly1305_simd_blocks(struct poly1305_desc_ctx *dctx,
  			}
  			memcpy(sctx->u + 5, sctx->u, sizeof(sctx->u));
- 			poly1305_simd_mult(sctx->u + 5, dctx->r);
+ 			poly1305_simd_mult(sctx->u + 5, dctx->r.r);
 +/* See the comment in struct poly1305_simd_desc_ctx definition to understand why this is ok */
 +#ifdef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Warray-bounds-pointer-arithmetic"
 +#endif
  			memcpy(sctx->u + 10, sctx->u + 5, sizeof(sctx->u));
- 			poly1305_simd_mult(sctx->u + 10, dctx->r);
+ 			poly1305_simd_mult(sctx->u + 10, dctx->r.r);
 +#ifdef __clang__
 +#pragma GCC diagnostic pop
 +#endif

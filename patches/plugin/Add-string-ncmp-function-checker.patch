@@ -12,30 +12,15 @@ This plugins helped to detect the following bugs:
 It has also detected some bugs reported and fixed by other people:
 - 99243b922c9d ("dm table: fix "nvme" test")
 ---
- drivers/staging/fbtft/fbtft_device.c          |   3 +-
  scripts/Makefile.gcc-plugins                  |   2 +
  scripts/gcc-plugins/Kconfig                   |   5 +
  scripts/gcc-plugins/string_ncmp_size_plugin.c | 237 ++++++++++++++++++
  sound/soc/intel/boards/bxt_rt298.c            |   9 +-
- 5 files changed, 249 insertions(+), 7 deletions(-)
+ 4 files changed, 247 insertions(+), 6 deletions(-)
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
-diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
-index c6059ab443e9..59fee0692cb8 100644
---- a/drivers/staging/fbtft/fbtft_device.c
-+++ b/drivers/staging/fbtft/fbtft_device.c
-@@ -1455,7 +1455,8 @@ static int __init fbtft_device_init(void)
- 	}
- 
- 	/* name=list lists all supported displays */
--	if (strncmp(name, "list", FBTFT_GPIO_NAME_SIZE) == 0) {
-+	BUILD_BUG_ON(FBTFT_GPIO_NAME_SIZE < sizeof("list"));
-+	if (strcmp(name, "list") == 0) {
- 		pr_info("Supported displays:\n");
- 
- 		for (i = 0; i < ARRAY_SIZE(displays); i++)
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index 935a79df5b99..df8a87673417 100644
+index 10e8cc1ac806..6977ca060307 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
 @@ -17,6 +17,8 @@ endif
@@ -48,10 +33,10 @@ index 935a79df5b99..df8a87673417 100644
  
  gcc-plugin-$(CONFIG_GCC_PLUGIN_STRUCTLEAK)	+= structleak_plugin.so
 diff --git a/scripts/gcc-plugins/Kconfig b/scripts/gcc-plugins/Kconfig
-index 1f967b0959f0..a1c04ab62b57 100644
+index a41029ffea30..6ea0ab6225e9 100644
 --- a/scripts/gcc-plugins/Kconfig
 +++ b/scripts/gcc-plugins/Kconfig
-@@ -201,4 +201,9 @@ config GCC_PLUGIN_DEREF_CHECKER
+@@ -205,4 +205,9 @@ config GCC_PLUGIN_DEREF_CHECKER
  	help
  	  Check function calls involving pointers about some consistencies.
  

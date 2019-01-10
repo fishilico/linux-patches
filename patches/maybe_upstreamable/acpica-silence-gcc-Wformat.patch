@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 28 Dec 2018 13:13:16 +0100
+Subject: [PATCH] {MAYBE UPS} acpica: silence gcc -Wformat
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc 8.2.1 reports:
+
+    In file included from include/linux/printk.h:7,
+                     from include/linux/kernel.h:14,
+                     from include/acpi/platform/aclinux.h:53,
+                     from include/acpi/platform/acenv.h:152,
+                     from include/acpi/acpi.h:22,
+                     from drivers/acpi/acpica/nsaccess.c:8:
+    drivers/acpi/acpica/nsaccess.c: In function ‘acpi_ns_lookup’:
+    include/linux/kern_levels.h:5:18: error: format ‘%s’ expects
+    argument of type ‘char *’, but argument 2 has type ‘acpi_name *’
+    {aka ‘unsigned int *’} [-Werror=format=]
+     #define KERN_SOH "\001"  /* ASCII Start Of Header */
+                      ^~~~~~
+    include/linux/kern_levels.h:11:18: note: in expansion of macro ‘KERN_SOH’
+     #define KERN_ERR KERN_SOH "3" /* error conditions */
+                      ^~~~~~~~
+    include/acpi/platform/aclinux.h:156:33: note: in expansion of macro ‘KERN_ERR’
+     #define ACPI_MSG_BIOS_ERROR     KERN_ERR "ACPI BIOS Error (bug): "
+                                     ^~~~~~~~
+    drivers/acpi/acpica/nsaccess.c:567:21: note: in expansion of macro ‘ACPI_MSG_BIOS_ERROR’
+          acpi_os_printf(ACPI_MSG_BIOS_ERROR
+                         ^~~~~~~~~~~~~~~~~~~
+    drivers/acpi/acpica/nsaccess.c:568:42: note: format string is defined here
+                  "Object does not exist: %4.4s\n",
+                                          ~~~~^
+                                          %4.4n
+---
+ drivers/acpi/acpica/nsaccess.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/acpi/acpica/nsaccess.c b/drivers/acpi/acpica/nsaccess.c
+index 75192b958544..daa9367a4d30 100644
+--- a/drivers/acpi/acpica/nsaccess.c
++++ b/drivers/acpi/acpica/nsaccess.c
+@@ -566,7 +566,7 @@ acpi_ns_lookup(union acpi_generic_state *scope_info,
+ 				if (flags & ACPI_NS_PREFIX_MUST_EXIST) {
+ 					acpi_os_printf(ACPI_MSG_BIOS_ERROR
+ 						       "Object does not exist: %4.4s\n",
+-						       &simple_name);
++						       (char *)&simple_name);
+ 				}
+ #endif
+ 				/* Name not found in ACPI namespace */
+-- 

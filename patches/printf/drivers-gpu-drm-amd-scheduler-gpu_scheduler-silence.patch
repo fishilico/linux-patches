@@ -9,16 +9,16 @@ Subject: [PATCH] {PRINTF} drivers/gpu/drm/amd/scheduler/gpu_scheduler: silence
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/scheduler/sched_main.c b/drivers/gpu/drm/scheduler/sched_main.c
-index 44fe587aaef9..953920b14b24 100644
+index dbb69063b3d5..9044df0b45ca 100644
 --- a/drivers/gpu/drm/scheduler/sched_main.c
 +++ b/drivers/gpu/drm/scheduler/sched_main.c
-@@ -613,7 +613,7 @@ int drm_sched_init(struct drm_gpu_scheduler *sched,
+@@ -692,7 +692,7 @@ int drm_sched_init(struct drm_gpu_scheduler *sched,
  	atomic64_set(&sched->job_id_count, 0);
  
  	/* Each scheduler will run on a seperate kernel thread */
 -	sched->thread = kthread_run(drm_sched_main, sched, sched->name);
 +	sched->thread = kthread_run(drm_sched_main, sched, "%s", sched->name); /* not a vulnerability because ring->name is initialized by callers of amdgpu_ring_init with strings without %s */
  	if (IS_ERR(sched->thread)) {
- 		DRM_ERROR("Failed to create scheduler for %s.\n", name);
- 		return PTR_ERR(sched->thread);
+ 		ret = PTR_ERR(sched->thread);
+ 		sched->thread = NULL;
 -- 

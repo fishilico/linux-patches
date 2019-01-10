@@ -6,15 +6,14 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
 ---
  fs/ext4/ialloc.c      | 8 ++++++++
  kernel/bpf/verifier.c | 9 +++++++++
- lib/rhashtable.c      | 1 +
  mm/mmap.c             | 8 ++++++++
  net/core/skbuff.c     | 8 ++++++++
  net/ipv4/fib_trie.c   | 7 +++++++
  net/sched/cls_u32.c   | 8 ++++++++
- 7 files changed, 49 insertions(+)
+ 6 files changed, 48 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 014f6a698cb7..79cd0204f00f 100644
+index 7ff14a1adba3..62f09f9838fc 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
 @@ -431,6 +431,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
@@ -40,12 +39,12 @@ index 014f6a698cb7..79cd0204f00f 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index 265e783e7004..e28cf185854c 100644
+index f5a6808daf26..9124320728fe 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -5179,6 +5179,12 @@ static int do_check(struct bpf_verifier_env *env)
- 	int insn_processed = 0;
- 	bool do_print_state = false;
+@@ -5816,6 +5816,12 @@ static int do_check(struct bpf_verifier_env *env)
+ 
+ 	env->prev_linfo = NULL;
  
 +/* Variable "opcode" is not initialized but not used when the goto process_bpf_exit branch is taken */
 +#ifndef __clang__
@@ -56,7 +55,7 @@ index 265e783e7004..e28cf185854c 100644
  	state = kzalloc(sizeof(struct bpf_verifier_state), GFP_KERNEL);
  	if (!state)
  		return -ENOMEM;
-@@ -5507,6 +5513,9 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -6151,6 +6157,9 @@ static int do_check(struct bpf_verifier_env *env)
  	verbose(env, "\n");
  	env->prog->aux->stack_depth = env->subprog_info[0].stack_depth;
  	return 0;
@@ -66,20 +65,8 @@ index 265e783e7004..e28cf185854c 100644
  }
  
  static int check_map_prealloc(struct bpf_map *map)
-diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index 5140d0fd91bf..2ff320471314 100644
---- a/lib/rhashtable.c
-+++ b/lib/rhashtable.c
-@@ -817,6 +817,7 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
- 		}
- 
- next:
-+#pragma GCC diagnostic pop
- 		if (!rht_is_a_nulls(p)) {
- 			iter->skip++;
- 			iter->p = p;
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 6c04292e16a7..bc24d12ff9dc 100644
+index f901065c4c64..c1b777eb785b 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
 @@ -725,6 +725,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
@@ -105,10 +92,10 @@ index 6c04292e16a7..bc24d12ff9dc 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index a8217e221e19..3f5a1ecd312b 100644
+index 37317ffec146..733b1dbfbf7e 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -1767,6 +1767,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1772,6 +1772,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  	    unlikely((err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC))))
  		return err;
  
@@ -120,7 +107,7 @@ index a8217e221e19..3f5a1ecd312b 100644
  	i = 0;
  	if (offset >= len)
  		goto drop_pages;
-@@ -1783,6 +1788,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1788,6 +1793,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  
  drop_pages:
  		skb_shinfo(skb)->nr_frags = i;
@@ -156,7 +143,7 @@ index 5821329828e2..d25726306033 100644
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
-index 4b28fd44576d..2e8fd094cc08 100644
+index dcea21004604..78f2c37fde30 100644
 --- a/net/sched/cls_u32.c
 +++ b/net/sched/cls_u32.c
 @@ -112,6 +112,11 @@ static inline unsigned int u32_hash_fold(__be32 key,

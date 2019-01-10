@@ -14,8 +14,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
 ---
  drivers/block/drbd/drbd_int.h   |  2 +-
  drivers/input/joystick/analog.c |  6 +++++-
- include/asm-generic/uaccess.h   | 16 ++++++++++++++++
- include/linux/build_bug.h       | 14 ++++++++++++++
+ include/asm-generic/uaccess.h   | 15 +++++++++++++++
  include/linux/compiler.h        | 21 +++++++++++++++++++++
  include/linux/compiler_types.h  |  2 +-
  include/linux/cpumask.h         |  5 +++++
@@ -30,13 +29,12 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  include/uapi/linux/limits.h     |  8 ++++++--
  include/uapi/linux/types.h      |  2 +-
  kernel/signal.c                 |  2 +-
- kernel/time/time.c              |  8 ++++++++
- lib/hexdump.c                   | 13 +++++++++++--
- lib/rhashtable.c                |  5 +++++
- 21 files changed, 143 insertions(+), 15 deletions(-)
+ kernel/time/time.c              |  4 ++++
+ lib/hexdump.c                   | 10 +++++++++-
+ 19 files changed, 117 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 1e47db57b9d2..3e197cf040db 100644
+index 000a2f4c0e92..8b41e474392d 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -51,7 +51,7 @@
@@ -66,10 +64,10 @@ index 2b445c8d3fcd..3e39b6f4da06 100644
  #include <linux/i8253.h>
  
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
-index 6b2e63df2739..99bf0f4654cf 100644
+index d82c78a79da5..7a1a1c867dd0 100644
 --- a/include/asm-generic/uaccess.h
 +++ b/include/asm-generic/uaccess.h
-@@ -74,6 +74,21 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
+@@ -74,6 +74,20 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
  	__pu_err;						\
  })
  
@@ -80,18 +78,17 @@ index 6b2e63df2739..99bf0f4654cf 100644
 +#define put_user(x, ptr)					\
 +({								\
 +	void *__p = (ptr);					\
-+	__typeof__(*(ptr)) __x = (x);				\
 +	int __pu_err = -EFAULT;					\
 +	might_fault();						\
-+	if (access_ok(VERIFY_WRITE, __p, sizeof(*ptr)))		\
-+		__put_user_fn(sizeof(*(ptr)), (ptr), &__x);	\
++	if (access_ok(__p, sizeof(*ptr)))		\
++		__pu_err = __put_user((x), ((__typeof__(*(ptr)) __user *)__p));;	\
 +	__pu_err;						\
 +})
 +#else
  #define put_user(x, ptr)					\
  ({								\
  	void __user *__p = (ptr);				\
-@@ -82,6 +97,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
+@@ -82,6 +96,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
  		__put_user((x), ((__typeof__(*(ptr)) __user *)__p)) :	\
  		-EFAULT;					\
  })
@@ -99,38 +96,6 @@ index 6b2e63df2739..99bf0f4654cf 100644
  
  #ifndef __put_user_fn
  
-diff --git a/include/linux/build_bug.h b/include/linux/build_bug.h
-index 43d1fd50d433..97415a0bdcb4 100644
---- a/include/linux/build_bug.h
-+++ b/include/linux/build_bug.h
-@@ -5,6 +5,19 @@
- #include <linux/compiler.h>
- 
- #ifdef __CHECKER__
-+#ifdef __FRAMAC__
-+/* Use normal BUG_ON instead of BUILD_BUG_ON when analyzing code with Frama-C */
-+#include <asm/bug.h>
-+#define __BUILD_BUG_ON_NOT_POWER_OF_2(n)	\
-+	BUILD_BUG_ON(((n) & ((n) - 1)) != 0)
-+#define BUILD_BUG_ON_NOT_POWER_OF_2(n) BUILD_BUG_ON((n) == 0 || (((n) & ((n) - 1)) != 0))
-+#define BUILD_BUG_ON_ZERO(e) (0)
-+#define BUILD_BUG_ON_NULL(e) ((void *)0)
-+#define BUILD_BUG_ON_INVALID(e) ((void)0)
-+#define BUILD_BUG_ON_MSG(cond, msg) BUG_ON(cond)
-+#define BUILD_BUG_ON(condition) BUG_ON(condition)
-+#define BUILD_BUG() BUG()
-+#else /* __FRAMAC__ */
- #define __BUILD_BUG_ON_NOT_POWER_OF_2(n) (0)
- #define BUILD_BUG_ON_NOT_POWER_OF_2(n) (0)
- #define BUILD_BUG_ON_ZERO(e) (0)
-@@ -12,6 +25,7 @@
- #define BUILD_BUG_ON_MSG(cond, msg) (0)
- #define BUILD_BUG_ON(condition) (0)
- #define BUILD_BUG() (0)
-+#endif /* __FRAMAC__ */
- #else /* __CHECKER__ */
- 
- /* Force a compilation error if a constant expression is not a power of 2 */
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
 index de008180baa4..86b453da87df 100644
 --- a/include/linux/compiler.h
@@ -196,10 +161,10 @@ index 147bdec42215..86002a9186c0 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 69913c7f9605..7406140c006d 100644
+index 5615e8822db3..2c2ba6b48862 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -187,7 +187,9 @@ struct ablkcipher_request {
+@@ -179,7 +179,9 @@ struct ablkcipher_request {
  	struct scatterlist *src;
  	struct scatterlist *dst;
  
@@ -210,7 +175,7 @@ index 69913c7f9605..7406140c006d 100644
  };
  
  struct blkcipher_desc {
-@@ -671,7 +673,12 @@ struct crypto_tfm {
+@@ -776,7 +778,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -267,7 +232,7 @@ index b94fa61b51fb..ffd6208aabbd 100644
  		/*
  		 * This little trick makes sure that
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 32db7a87d57e..b4945f66751e 100644
+index 346f64b5ed5b..3cd458dd2415 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -16,6 +16,9 @@
@@ -339,7 +304,7 @@ index db2f3f454a1b..5124ce3698dc 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 11c71c4ecf75..408b315b0112 100644
+index 65f1d8c2f082..7e4161da463a 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -137,6 +137,8 @@ typedef int __bitwise pci_power_t;
@@ -360,7 +325,7 @@ index 11c71c4ecf75..408b315b0112 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 3da370add6f8..ad919b17b89e 100644
+index b767a425df8d..8dc84892db70 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -232,6 +232,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
@@ -422,7 +387,7 @@ index 2fce8b6876e9..357ff7b0ecdd 100644
  #else
  #define __bitwise__
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 9a32bc2088c9..12bf8f75b7d6 100644
+index e1d7ad8e6ab1..dac0743c23b6 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1168,7 +1168,7 @@ static void print_fatal_signal(int signr)
@@ -435,32 +400,10 @@ index 9a32bc2088c9..12bf8f75b7d6 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index ad204cf6d001..ecd69ff2f60d 100644
+index 2edb5088a70b..7a7b970a55e6 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
-@@ -403,17 +403,21 @@ EXPORT_SYMBOL(mktime64);
- void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec)
- {
- 	while (nsec >= NSEC_PER_SEC) {
-+#ifndef __FRAMAC__
- 		/*
- 		 * The following asm() prevents the compiler from
- 		 * optimising this loop into a modulo operation. See
- 		 * also __iter_div_u64_rem() in include/linux/time.h
- 		 */
- 		asm("" : "+rm"(nsec));
-+#endif
- 		nsec -= NSEC_PER_SEC;
- 		++sec;
- 	}
- 	while (nsec < 0) {
-+#ifndef __FRAMAC__
- 		asm("" : "+rm"(nsec));
-+#endif
- 		nsec += NSEC_PER_SEC;
- 		--sec;
- 	}
-@@ -494,17 +498,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
+@@ -455,17 +455,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
  void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
@@ -483,7 +426,7 @@ index ad204cf6d001..ecd69ff2f60d 100644
  		--sec;
  	}
 diff --git a/lib/hexdump.c b/lib/hexdump.c
-index 81b70ed37209..89d1a3f19bba 100644
+index 81b70ed37209..5d623c883793 100644
 --- a/lib/hexdump.c
 +++ b/lib/hexdump.c
 @@ -114,7 +114,9 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
@@ -496,7 +439,7 @@ index 81b70ed37209..89d1a3f19bba 100644
  
  	if (rowsize != 16 && rowsize != 32)
  		rowsize = 16;
-@@ -135,13 +137,18 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+@@ -135,6 +137,10 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
  	if (!len)
  		goto nil;
  
@@ -507,16 +450,7 @@ index 81b70ed37209..89d1a3f19bba 100644
  	if (groupsize == 8) {
  		const u64 *ptr8 = buf;
  
- 		for (j = 0; j < ngroups; j++) {
- 			ret = snprintf(linebuf + lx, linebuflen - lx,
- 				       "%s%16.16llx", j ? " " : "",
--				       get_unaligned(ptr8 + j));
-+				       get_unaligned(ptr8 + j)
-+				       );
- 			if (ret >= linebuflen - lx)
- 				goto overflow1;
- 			lx += ret;
-@@ -168,7 +175,9 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+@@ -168,7 +174,9 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
  				goto overflow1;
  			lx += ret;
  		}
@@ -527,21 +461,4 @@ index 81b70ed37209..89d1a3f19bba 100644
  		for (j = 0; j < len; j++) {
  			if (linebuflen < lx + 2)
  				goto overflow2;
-diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index 2ff320471314..36a8d96b63cc 100644
---- a/lib/rhashtable.c
-+++ b/lib/rhashtable.c
-@@ -817,7 +817,12 @@ static void *__rhashtable_walk_find_next(struct rhashtable_iter *iter)
- 		}
- 
- next:
-+#if !defined(__FRAMAC__) && !defined(__clang__)
-+/* Frama-C does not like this pragma:
-+ * lib/rhashtable.c:728:[kernel] user error: syntax error
-+ */
- #pragma GCC diagnostic pop
-+#endif
- 		if (!rht_is_a_nulls(p)) {
- 			iter->skip++;
- 			iter->p = p;
 -- 

@@ -8,10 +8,10 @@ Subject: [PATCH] {BUG new in 4.4} uninitialized variables
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/net/tipc/node.c b/net/tipc/node.c
-index 488019766433..487821589404 100644
+index db2a6c3e0be9..27e12b7384cb 100644
 --- a/net/tipc/node.c
 +++ b/net/tipc/node.c
-@@ -805,7 +805,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
+@@ -818,7 +818,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
  {
  	struct tipc_link_entry *le = &n->links[bearer_id];
  	struct tipc_link *l = le->link;
@@ -20,12 +20,12 @@ index 488019766433..487821589404 100644
  	struct sk_buff_head xmitq;
  	int old_bearer_id = bearer_id;
  
-@@ -825,6 +825,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
+@@ -838,6 +838,7 @@ static void tipc_node_link_down(struct tipc_node *n, int bearer_id, bool delete)
  	} else {
  		/* Defuse pending tipc_node_link_up() */
  		tipc_link_fsm_evt(l, LINK_RESET_EVT);
 +		maddr = NULL; /* BUG? */
  	}
+ 	trace_tipc_node_link_down(n, true, "node link down or deleted!");
  	tipc_node_write_unlock(n);
- 	if (delete)
 -- 
