@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
 Date: Fri, 26 Aug 2016 13:12:46 +0200
-Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
+Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
 
 - Define specific macros compatible with Frama-C compiler
 - In kernel/signal: disable x86-specific bits
@@ -24,6 +24,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  include/linux/kernel.h          |  9 +++++++++
  include/linux/math64.h          |  2 ++
  include/linux/mfd/wl1273-core.h |  2 ++
+ include/linux/overflow.h        |  2 +-
  include/linux/pci.h             |  3 +++
  include/linux/syscalls.h        |  7 +++++++
  include/uapi/linux/limits.h     |  8 ++++++--
@@ -31,7 +32,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMA_C__ macro in generic code
  kernel/signal.c                 |  2 +-
  kernel/time/time.c              |  4 ++++
  lib/hexdump.c                   | 10 +++++++++-
- 19 files changed, 117 insertions(+), 14 deletions(-)
+ 20 files changed, 118 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
 index 000a2f4c0e92..8b41e474392d 100644
@@ -303,6 +304,19 @@ index db2f3f454a1b..5124ce3698dc 100644
  
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
+diff --git a/include/linux/overflow.h b/include/linux/overflow.h
+index 40b48e2133cb..0262548f9fc5 100644
+--- a/include/linux/overflow.h
++++ b/include/linux/overflow.h
+@@ -37,7 +37,7 @@
+ #define type_min(T) ((T)((T)-type_max(T)-(T)1))
+ 
+ 
+-#ifdef COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW
++#if !defined(__FRAMAC__) && defined(COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW)
+ /*
+  * For simplicity and code hygiene, the fallback code below insists on
+  * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
 index 65f1d8c2f082..7e4161da463a 100644
 --- a/include/linux/pci.h
