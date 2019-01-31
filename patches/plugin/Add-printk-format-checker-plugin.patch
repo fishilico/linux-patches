@@ -44,9 +44,8 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/Kconfig                 |   6 +
  scripts/gcc-plugins/printk_format_plugin.c  | 831 ++++++++++++++++++++
  security/apparmor/mount.c                   |  10 +-
- sound/soc/sh/dma-sh7760.c                   |   2 +-
  sound/soc/ti/omap-mcbsp-st.c                |   3 +
- 33 files changed, 931 insertions(+), 33 deletions(-)
+ 32 files changed, 930 insertions(+), 32 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
@@ -1434,19 +1433,6 @@ index 8c3787399356..88d7e85a25ad 100644
  				 ", shared");
  	if (flags & MS_RELATIME)
  		audit_log_format(ab, ", relatime");
-diff --git a/sound/soc/sh/dma-sh7760.c b/sound/soc/sh/dma-sh7760.c
-index 922fb6aa3ed1..e8b83b4d5c08 100644
---- a/sound/soc/sh/dma-sh7760.c
-+++ b/sound/soc/sh/dma-sh7760.c
-@@ -202,7 +202,7 @@ static int camelot_prepare(struct snd_pcm_substream *substream)
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	struct camelot_pcm *cam = &cam_pcm_data[rtd->cpu_dai->id];
- 
--	pr_debug("PCM data: addr 0x%08ulx len %d\n",
-+	pr_debug("PCM data: addr 0x%08x len %d\n", /* BUG! Why is there an (u32) cast? */
- 		 (u32)runtime->dma_addr, runtime->dma_bytes);
-  
- 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 diff --git a/sound/soc/ti/omap-mcbsp-st.c b/sound/soc/ti/omap-mcbsp-st.c
 index 1a3fe854e856..5029a7ef66f2 100644
 --- a/sound/soc/ti/omap-mcbsp-st.c
