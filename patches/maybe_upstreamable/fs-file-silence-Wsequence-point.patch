@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 23 Mar 2019 11:38:37 +0100
+Subject: [PATCH] {MAYBE UPS} fs/file: silence -Wsequence-point
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When testing Frama-C, gcc complains:
+
+    fs/file.c: In function ‘dup_fd’:
+    fs/file.c:351:99: error: operation on ‘new_fds’ may be undefined
+    [-Werror=sequence-point]
+       rcu_assign_pointer(*new_fds++, f);
+---
+ fs/file.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/fs/file.c b/fs/file.c
+index 3da91a112bab..e1db9c53402d 100644
+--- a/fs/file.c
++++ b/fs/file.c
+@@ -348,7 +348,8 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
+ 			 */
+ 			__clear_open_fd(open_files - i, new_fdt);
+ 		}
+-		rcu_assign_pointer(*new_fds++, f);
++		rcu_assign_pointer(*new_fds, f);
++		new_fds++;
+ 	}
+ 	spin_unlock(&oldf->file_lock);
+ 
+-- 

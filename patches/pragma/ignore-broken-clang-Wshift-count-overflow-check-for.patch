@@ -5,14 +5,37 @@ Subject: [PATCH] {PRAGMA} ignore broken clang -Wshift-count-overflow check for
  ternary
 
 ---
- include/linux/dma-mapping.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ include/asm-generic/bitops/const_hweight.h | 7 +++++++
+ include/linux/dma-mapping.h                | 8 ++++++++
+ 2 files changed, 15 insertions(+)
 
+diff --git a/include/asm-generic/bitops/const_hweight.h b/include/asm-generic/bitops/const_hweight.h
+index 149faeeeeaf2..001f12033690 100644
+--- a/include/asm-generic/bitops/const_hweight.h
++++ b/include/asm-generic/bitops/const_hweight.h
+@@ -23,10 +23,17 @@
+ /*
+  * Generic interface.
+  */
++#ifdef __clang__
++#define hweight8(w)  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wshift-count-overflow\"") (__builtin_constant_p(w) ? __const_hweight8(w)  : __arch_hweight8(w)) _Pragma("GCC diagnostic pop")
++#define hweight16(w) _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wshift-count-overflow\"") (__builtin_constant_p(w) ? __const_hweight16(w) : __arch_hweight16(w)) _Pragma("GCC diagnostic pop")
++#define hweight32(w) _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wshift-count-overflow\"") (__builtin_constant_p(w) ? __const_hweight32(w) : __arch_hweight32(w)) _Pragma("GCC diagnostic pop")
++#define hweight64(w) _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wshift-count-overflow\"") (__builtin_constant_p(w) ? __const_hweight64(w) : __arch_hweight64(w)) _Pragma("GCC diagnostic pop")
++#else
+ #define hweight8(w)  (__builtin_constant_p(w) ? __const_hweight8(w)  : __arch_hweight8(w))
+ #define hweight16(w) (__builtin_constant_p(w) ? __const_hweight16(w) : __arch_hweight16(w))
+ #define hweight32(w) (__builtin_constant_p(w) ? __const_hweight32(w) : __arch_hweight32(w))
+ #define hweight64(w) (__builtin_constant_p(w) ? __const_hweight64(w) : __arch_hweight64(w))
++#endif
+ 
+ /*
+  * Interface for known constant arguments
 diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index d20f3991019b..07c560b64660 100644
+index 917312ddee91..9c2c1e0f5f98 100644
 --- a/include/linux/dma-mapping.h
 +++ b/include/linux/dma-mapping.h
-@@ -137,7 +137,15 @@ struct dma_map_ops {
+@@ -138,7 +138,15 @@ struct dma_map_ops {
  extern const struct dma_map_ops dma_virt_ops;
  extern const struct dma_map_ops dma_dummy_ops;
  

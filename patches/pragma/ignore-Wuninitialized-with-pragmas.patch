@@ -4,17 +4,16 @@ Date: Sat, 21 Mar 2015 15:59:39 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wuninitialized with pragmas
 
 ---
- drivers/block/drbd/drbd_receiver.c                  |  3 +++
- .../platform/soc_camera/sh_mobile_ceu_camera.c      |  3 +++
- drivers/net/wimax/i2400m/driver.c                   |  3 +++
- include/linux/ceph/osdmap.h                         |  9 +++++++++
- include/linux/completion.h                          | 13 +++++++++++++
- include/linux/kthread.h                             |  8 ++++++++
- include/linux/wait.h                                |  8 ++++++++
- kernel/kthread.c                                    |  6 ++++++
- kernel/smp.c                                        |  3 +++
- kernel/workqueue.c                                  |  3 +++
- 10 files changed, 59 insertions(+)
+ drivers/block/drbd/drbd_receiver.c |  3 +++
+ drivers/net/wimax/i2400m/driver.c  |  3 +++
+ include/linux/ceph/osdmap.h        |  9 +++++++++
+ include/linux/completion.h         | 13 +++++++++++++
+ include/linux/kthread.h            |  8 ++++++++
+ include/linux/wait.h               |  8 ++++++++
+ kernel/kthread.c                   |  6 ++++++
+ kernel/smp.c                       |  3 +++
+ kernel/workqueue.c                 |  3 +++
+ 9 files changed, 56 insertions(+)
 
 diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
 index c7ad88d91a09..9b5491eda1fc 100644
@@ -34,24 +33,6 @@ index c7ad88d91a09..9b5491eda1fc 100644
  
  	clear_bit(DISCONNECT_SENT, &connection->flags);
  	if (conn_request_state(connection, NS(conn, C_WF_CONNECTION), CS_VERBOSE) < SS_SUCCESS)
-diff --git a/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c b/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c
-index 6803f744e307..4ff7f30cf991 100644
---- a/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c
-+++ b/drivers/media/platform/soc_camera/sh_mobile_ceu_camera.c
-@@ -1641,10 +1641,13 @@ static int sh_mobile_ceu_probe(struct platform_device *pdev)
- 	void __iomem *base;
- 	unsigned int irq;
- 	int err;
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wuninitialized"
- 	struct bus_wait wait = {
- 		.completion = COMPLETION_INITIALIZER_ONSTACK(wait.completion),
- 		.notifier.notifier_call = bus_notify,
- 	};
-+#pragma GCC diagnostic pop
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	irq = platform_get_irq(pdev, 0);
 diff --git a/drivers/net/wimax/i2400m/driver.c b/drivers/net/wimax/i2400m/driver.c
 index 9c78090e72f8..2b7c3e22b7bb 100644
 --- a/drivers/net/wimax/i2400m/driver.c
@@ -121,10 +102,10 @@ index 519e94915d18..cfad3b3d1644 100644
  # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
  # define DECLARE_COMPLETION_ONSTACK_MAP(work, map) DECLARE_COMPLETION(work)
 diff --git a/include/linux/kthread.h b/include/linux/kthread.h
-index c1961761311d..753d9cc72a32 100644
+index 2c89e60bc752..df1d1bc4ad70 100644
 --- a/include/linux/kthread.h
 +++ b/include/linux/kthread.h
-@@ -139,8 +139,16 @@ struct kthread_delayed_work {
+@@ -140,8 +140,16 @@ struct kthread_delayed_work {
  #ifdef CONFIG_LOCKDEP
  # define KTHREAD_WORKER_INIT_ONSTACK(worker)				\
  	({ kthread_init_worker(&worker); worker; })
@@ -142,7 +123,7 @@ index c1961761311d..753d9cc72a32 100644
  # define DEFINE_KTHREAD_WORKER_ONSTACK(worker) DEFINE_KTHREAD_WORKER(worker)
  #endif
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index ed7c122cb31f..8de939ecf7e2 100644
+index 5f3efabc36f4..bbfa8fb03333 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
 @@ -70,8 +70,16 @@ extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *n
@@ -163,10 +144,10 @@ index ed7c122cb31f..8de939ecf7e2 100644
  # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
  #endif
 diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 9254cf9f0696..0bf3834d5d1c 100644
+index be2b101d8d07..3abcbe0c21ad 100644
 --- a/kernel/kthread.c
 +++ b/kernel/kthread.c
-@@ -944,10 +944,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
+@@ -952,10 +952,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
   */
  void kthread_flush_work(struct kthread_work *work)
  {
@@ -180,7 +161,7 @@ index 9254cf9f0696..0bf3834d5d1c 100644
  	struct kthread_worker *worker;
  	bool noop = false;
  
-@@ -1151,10 +1154,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
+@@ -1159,10 +1162,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
   */
  void kthread_flush_worker(struct kthread_worker *worker)
  {
@@ -215,10 +196,10 @@ index f4cf1b0bb3b8..fc6519a07ec6 100644
  	INIT_WORK_ONSTACK(&sscs.work, smp_call_on_cpu_callback);
  
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index fc5d23d752a5..52fdd3004027 100644
+index 4026d1871407..f6ac50a3123c 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -2665,11 +2665,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
+@@ -2761,11 +2761,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
   */
  void flush_workqueue(struct workqueue_struct *wq)
  {

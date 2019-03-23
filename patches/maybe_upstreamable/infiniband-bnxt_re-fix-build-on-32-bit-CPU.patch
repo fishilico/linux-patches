@@ -11,16 +11,16 @@ over-sized left shifts (-Wshift-count-overflow).
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/infiniband/hw/bnxt_re/qplib_fp.c b/drivers/infiniband/hw/bnxt_re/qplib_fp.c
-index b98b054148cd..be71005a205b 100644
+index 71c34d5b0ac0..22684851c977 100644
 --- a/drivers/infiniband/hw/bnxt_re/qplib_fp.c
 +++ b/drivers/infiniband/hw/bnxt_re/qplib_fp.c
-@@ -289,10 +289,10 @@ static void bnxt_qplib_service_nq(unsigned long data)
+@@ -291,10 +291,10 @@ static void bnxt_qplib_service_nq(unsigned long data)
  			q_handle = le32_to_cpu(nqsrqe->srq_handle_low);
  			q_handle |= (u64)le32_to_cpu(nqsrqe->srq_handle_high)
  				     << 32;
 -			bnxt_qplib_arm_srq((struct bnxt_qplib_srq *)q_handle,
 +			bnxt_qplib_arm_srq((struct bnxt_qplib_srq *)(uintptr_t)q_handle,
- 					   DBR_DBR_TYPE_SRQ_ARMENA);
+ 					   DBC_DBC_TYPE_SRQ_ARMENA);
  			if (!nq->srqn_handler(nq,
 -					      (struct bnxt_qplib_srq *)q_handle,
 +					      (struct bnxt_qplib_srq *)(uintptr_t)q_handle,

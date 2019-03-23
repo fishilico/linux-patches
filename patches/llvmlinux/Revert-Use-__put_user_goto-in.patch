@@ -12,10 +12,10 @@ clang does not support it yet.
  1 file changed, 31 insertions(+), 22 deletions(-)
 
 diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index 780f2b42c8ef..06d1002b019b 100644
+index 15343bbb646d..ca0c3865bc3c 100644
 --- a/arch/x86/include/asm/uaccess.h
 +++ b/arch/x86/include/asm/uaccess.h
-@@ -186,14 +186,19 @@ __typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
+@@ -182,14 +182,19 @@ __typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
  
  
  #ifdef CONFIG_X86_32
@@ -43,7 +43,7 @@ index 780f2b42c8ef..06d1002b019b 100644
  
  #define __put_user_asm_ex_u64(x, addr)					\
  	asm volatile("\n"						\
-@@ -208,8 +213,8 @@ __typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
+@@ -204,8 +209,8 @@ __typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
  	asm volatile("call __put_user_8" : "=a" (__ret_pu)	\
  		     : "A" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
  #else
@@ -54,7 +54,7 @@ index 780f2b42c8ef..06d1002b019b 100644
  #define __put_user_asm_ex_u64(x, addr)	\
  	__put_user_asm_ex(x, addr, "q", "", "er")
  #define __put_user_x8(x, ptr, __ret_pu) __put_user_x(8, x, ptr, __ret_pu)
-@@ -270,21 +275,23 @@ extern void __put_user_8(void);
+@@ -266,21 +271,23 @@ extern void __put_user_8(void);
  	__builtin_expect(__ret_pu, 0);				\
  })
  
@@ -83,7 +83,7 @@ index 780f2b42c8ef..06d1002b019b 100644
  		break;							\
  	default:							\
  		__put_user_bad();					\
-@@ -429,12 +436,9 @@ do {									\
+@@ -425,12 +432,9 @@ do {									\
  
  #define __put_user_nocheck(x, ptr, size)			\
  ({								\
@@ -98,7 +98,7 @@ index 780f2b42c8ef..06d1002b019b 100644
  	__uaccess_end();					\
  	__builtin_expect(__pu_err, 0);				\
  })
-@@ -717,8 +721,13 @@ static __must_check inline bool user_access_begin(const void __user *ptr, size_t
+@@ -713,8 +717,13 @@ static __must_check inline bool user_access_begin(const void __user *ptr, size_t
  #define user_access_begin(a,b)	user_access_begin(a,b)
  #define user_access_end()	__uaccess_end()
  

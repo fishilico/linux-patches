@@ -16,14 +16,14 @@ Signed-off-by: Richard Yao <ryao@gentoo.org>
 Sent-upstream: http://lists.openwall.net/linux-kernel/2014/08/02/34
 ---
  fs/namespace.c | 20 ++++++++++++++++----
- fs/pnode.h     | 17 +++++++++--------
- 2 files changed, 25 insertions(+), 12 deletions(-)
+ fs/pnode.h     |  2 ++
+ 2 files changed, 18 insertions(+), 4 deletions(-)
 
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 678ef175d63a..dce761b0f23c 100644
+index c9cab307fa77..bf9bf270c2ed 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1061,6 +1061,14 @@ static struct mount *clone_mnt(struct mount *old, struct dentry *root,
+@@ -1084,6 +1084,14 @@ static struct mount *clone_mnt(struct mount *old, struct dentry *root,
  	if (flag & CL_MAKE_SHARED)
  		set_mnt_shared(mnt);
  
@@ -38,7 +38,7 @@ index 678ef175d63a..dce761b0f23c 100644
  	/* stick the duplicate mount on the same expiry list
  	 * as the original if that was on one */
  	if (flag & CL_EXPIRE) {
-@@ -2151,11 +2159,13 @@ static bool has_locked_children(struct mount *mnt, struct dentry *dentry)
+@@ -2226,11 +2234,13 @@ static bool has_locked_children(struct mount *mnt, struct dentry *dentry)
   * do loopback mount.
   */
  static int do_loopback(struct path *path, const char *old_name,
@@ -53,7 +53,7 @@ index 678ef175d63a..dce761b0f23c 100644
  	int err;
  	if (!old_name || !*old_name)
  		return -EINVAL;
-@@ -2189,9 +2199,10 @@ static int do_loopback(struct path *path, const char *old_name,
+@@ -2264,9 +2274,10 @@ static int do_loopback(struct path *path, const char *old_name,
  		goto out2;
  
  	if (recurse)
@@ -66,7 +66,7 @@ index 678ef175d63a..dce761b0f23c 100644
  
  	if (IS_ERR(mnt)) {
  		err = PTR_ERR(mnt);
-@@ -2836,7 +2847,8 @@ long do_mount(const char *dev_name, const char __user *dir_name,
+@@ -2933,7 +2944,8 @@ long do_mount(const char *dev_name, const char __user *dir_name,
  		retval = do_remount(&path, flags, sb_flags, mnt_flags,
  				    data_page);
  	else if (flags & MS_BIND)
@@ -77,31 +77,16 @@ index 678ef175d63a..dce761b0f23c 100644
  		retval = do_change_type(&path, flags);
  	else if (flags & MS_MOVE)
 diff --git a/fs/pnode.h b/fs/pnode.h
-index dc87e65becd2..a1167aea0ed3 100644
+index 3960a83666cf..86d36c17f8fd 100644
 --- a/fs/pnode.h
 +++ b/fs/pnode.h
-@@ -21,14 +21,15 @@
- #define CLEAR_MNT_MARK(m) ((m)->mnt.mnt_flags &= ~MNT_MARKED)
- #define IS_MNT_LOCKED(m) ((m)->mnt.mnt_flags & MNT_LOCKED)
+@@ -29,6 +29,8 @@
+ #define CL_SHARED_TO_SLAVE	0x20
+ #define CL_COPY_MNT_NS_FILE	0x40
  
--#define CL_EXPIRE    		0x01
--#define CL_SLAVE     		0x02
--#define CL_COPY_UNBINDABLE	0x04
--#define CL_MAKE_SHARED 		0x08
--#define CL_PRIVATE 		0x10
--#define CL_SHARED_TO_SLAVE	0x20
--#define CL_UNPRIVILEGED		0x40
--#define CL_COPY_MNT_NS_FILE	0x80
-+#define CL_EXPIRE		0x001
-+#define CL_SLAVE		0x002
-+#define CL_COPY_UNBINDABLE	0x004
-+#define CL_MAKE_SHARED		0x008
-+#define CL_PRIVATE		0x010
-+#define CL_SHARED_TO_SLAVE	0x020
-+#define CL_UNPRIVILEGED		0x040
-+#define CL_COPY_MNT_NS_FILE	0x080
 +#define CL_MAKE_RDONLY		0x100
- 
++
  #define CL_COPY_ALL		(CL_COPY_UNBINDABLE | CL_COPY_MNT_NS_FILE)
  
+ static inline void set_mnt_shared(struct mount *mnt)
 -- 

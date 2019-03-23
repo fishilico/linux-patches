@@ -12,27 +12,29 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
   code as the one used to define syscalls)
 - Use string functions from Frama-C
 ---
- drivers/block/drbd/drbd_int.h   |  2 +-
- drivers/input/joystick/analog.c |  6 +++++-
- include/asm-generic/uaccess.h   | 15 +++++++++++++++
- include/linux/compiler.h        | 21 +++++++++++++++++++++
- include/linux/compiler_types.h  |  2 +-
- include/linux/cpumask.h         |  5 +++++
- include/linux/crypto.h          | 11 +++++++++--
- include/linux/delay.h           | 15 ++++++++++++---
- include/linux/flex_array.h      |  5 ++++-
- include/linux/kernel.h          |  9 +++++++++
- include/linux/math64.h          |  2 ++
- include/linux/mfd/wl1273-core.h |  2 ++
- include/linux/overflow.h        |  2 +-
- include/linux/pci.h             |  3 +++
- include/linux/syscalls.h        |  7 +++++++
- include/uapi/linux/limits.h     |  8 ++++++--
- include/uapi/linux/types.h      |  2 +-
- kernel/signal.c                 |  2 +-
- kernel/time/time.c              |  4 ++++
- lib/hexdump.c                   | 10 +++++++++-
- 20 files changed, 118 insertions(+), 15 deletions(-)
+ drivers/block/drbd/drbd_int.h   |   2 +-
+ drivers/input/joystick/analog.c |   6 +-
+ include/asm-generic/uaccess.h   |  15 ++++
+ include/linux/compiler.h        |  21 +++++
+ include/linux/compiler_types.h  |   2 +-
+ include/linux/cpumask.h         |   5 ++
+ include/linux/crypto.h          |  11 ++-
+ include/linux/delay.h           |  15 +++-
+ include/linux/flex_array.h      | 152 ++++++++++++++++++++++++++++++++
+ include/linux/kernel.h          |   5 ++
+ include/linux/limits.h          |   4 +
+ include/linux/math64.h          |   2 +
+ include/linux/mfd/wl1273-core.h |   2 +
+ include/linux/overflow.h        |   2 +-
+ include/linux/pci.h             |   3 +
+ include/linux/syscalls.h        |   7 ++
+ include/uapi/linux/limits.h     |   8 +-
+ include/uapi/linux/types.h      |   2 +-
+ kernel/signal.c                 |   2 +-
+ kernel/time/time.c              |   4 +
+ lib/hexdump.c                   |  10 ++-
+ 21 files changed, 266 insertions(+), 14 deletions(-)
+ create mode 100644 include/linux/flex_array.h
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
 index 000a2f4c0e92..8b41e474392d 100644
@@ -65,10 +67,10 @@ index 2b445c8d3fcd..3e39b6f4da06 100644
  #include <linux/i8253.h>
  
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
-index d82c78a79da5..7a1a1c867dd0 100644
+index b3d2241e03f8..d4a4e3da9484 100644
 --- a/include/asm-generic/uaccess.h
 +++ b/include/asm-generic/uaccess.h
-@@ -74,6 +74,20 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
+@@ -73,6 +73,20 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
  	__pu_err;						\
  })
  
@@ -89,7 +91,7 @@ index d82c78a79da5..7a1a1c867dd0 100644
  #define put_user(x, ptr)					\
  ({								\
  	void __user *__p = (ptr);				\
-@@ -82,6 +96,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
+@@ -81,6 +95,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
  		__put_user((x), ((__typeof__(*(ptr)) __user *)__p)) :	\
  		-EFAULT;					\
  })
@@ -162,7 +164,7 @@ index 147bdec42215..86002a9186c0 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 5615e8822db3..2c2ba6b48862 100644
+index cd7670dbb361..7f2f2f4f50f6 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
 @@ -179,7 +179,9 @@ struct ablkcipher_request {
@@ -176,7 +178,7 @@ index 5615e8822db3..2c2ba6b48862 100644
  };
  
  struct blkcipher_desc {
-@@ -776,7 +778,12 @@ struct crypto_tfm {
+@@ -768,7 +770,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -191,7 +193,7 @@ index 5615e8822db3..2c2ba6b48862 100644
  
  struct crypto_ablkcipher {
 diff --git a/include/linux/delay.h b/include/linux/delay.h
-index b78bab4395d8..7eff042dcd06 100644
+index 8e6828094c1e..0afdf9074c4d 100644
 --- a/include/linux/delay.h
 +++ b/include/linux/delay.h
 @@ -40,9 +40,18 @@ extern unsigned long loops_per_jiffy;
@@ -217,44 +219,168 @@ index b78bab4395d8..7eff042dcd06 100644
  
  #ifndef ndelay
 diff --git a/include/linux/flex_array.h b/include/linux/flex_array.h
-index b94fa61b51fb..ffd6208aabbd 100644
---- a/include/linux/flex_array.h
+new file mode 100644
+index 000000000000..ffd6208aabbd
+--- /dev/null
 +++ b/include/linux/flex_array.h
-@@ -25,7 +25,10 @@ struct flex_array {
- 			int total_nr_elements;
- 			int elems_per_part;
- 			struct reciprocal_value reciprocal_elems;
--			struct flex_array_part *parts[];
+@@ -0,0 +1,152 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _FLEX_ARRAY_H
++#define _FLEX_ARRAY_H
++
++#include <linux/types.h>
++#include <linux/reciprocal_div.h>
++#include <asm/page.h>
++
++#define FLEX_ARRAY_PART_SIZE PAGE_SIZE
++#define FLEX_ARRAY_BASE_SIZE PAGE_SIZE
++
++struct flex_array_part;
++
++/*
++ * This is meant to replace cases where an array-like
++ * structure has gotten too big to fit into kmalloc()
++ * and the developer is getting tempted to use
++ * vmalloc().
++ */
++
++struct flex_array {
++	union {
++		struct {
++			int element_size;
++			int total_nr_elements;
++			int elems_per_part;
++			struct reciprocal_value reciprocal_elems;
 +			struct flex_array_part *parts[0]; /* Add [0] to silent Frama-C errors:
 +include/linux/flex_array.h:20:[kernel] user error: field  is declared with incomplete type struct __anonstruct_14
 +include/linux/flex_array.h:20:[kernel] user error: field  is declared with incomplete type union __anonunion_13
 +*/
- 		};
- 		/*
- 		 * This little trick makes sure that
++		};
++		/*
++		 * This little trick makes sure that
++		 * sizeof(flex_array) == PAGE_SIZE
++		 */
++		char padding[FLEX_ARRAY_BASE_SIZE];
++	};
++};
++
++/* Number of bytes left in base struct flex_array, excluding metadata */
++#define FLEX_ARRAY_BASE_BYTES_LEFT					\
++	(FLEX_ARRAY_BASE_SIZE - offsetof(struct flex_array, parts))
++
++/* Number of pointers in base to struct flex_array_part pages */
++#define FLEX_ARRAY_NR_BASE_PTRS						\
++	(FLEX_ARRAY_BASE_BYTES_LEFT / sizeof(struct flex_array_part *))
++
++/* Number of elements of size that fit in struct flex_array_part */
++#define FLEX_ARRAY_ELEMENTS_PER_PART(size)				\
++	(FLEX_ARRAY_PART_SIZE / size)
++
++/*
++ * Defines a statically allocated flex array and ensures its parameters are
++ * valid.
++ */
++#define DEFINE_FLEX_ARRAY(__arrayname, __element_size, __total)		\
++	struct flex_array __arrayname = { { {				\
++		.element_size = (__element_size),			\
++		.total_nr_elements = (__total),				\
++	} } };								\
++	static inline void __arrayname##_invalid_parameter(void)	\
++	{								\
++		BUILD_BUG_ON((__total) > FLEX_ARRAY_NR_BASE_PTRS *	\
++			FLEX_ARRAY_ELEMENTS_PER_PART(__element_size));	\
++	}
++
++/**
++ * flex_array_alloc() - Creates a flexible array.
++ * @element_size:	individual object size.
++ * @total:		maximum number of objects which can be stored.
++ * @flags:		GFP flags
++ *
++ * Return:		Returns an object of structure flex_array.
++ */
++struct flex_array *flex_array_alloc(int element_size, unsigned int total,
++		gfp_t flags);
++
++/**
++ * flex_array_prealloc() - Ensures that memory for the elements indexed in the
++ * range defined by start and nr_elements has been allocated.
++ * @fa:			array to allocate memory to.
++ * @start:		start address
++ * @nr_elements:	number of elements to be allocated.
++ * @flags:		GFP flags
++ *
++ */
++int flex_array_prealloc(struct flex_array *fa, unsigned int start,
++		unsigned int nr_elements, gfp_t flags);
++
++/**
++ * flex_array_free() - Removes all elements of a flexible array.
++ * @fa:		array to be freed.
++ */
++void flex_array_free(struct flex_array *fa);
++
++/**
++ * flex_array_free_parts() - Removes all elements of a flexible array, but
++ * leaves the array itself in place.
++ * @fa:		array to be emptied.
++ */
++void flex_array_free_parts(struct flex_array *fa);
++
++/**
++ * flex_array_put() - Stores data into a flexible array.
++ * @fa:		array where element is to be stored.
++ * @element_nr:	position to copy, must be less than the maximum specified when
++ *		the array was created.
++ * @src:	data source to be copied into the array.
++ * @flags:	GFP flags
++ *
++ * Return:	Returns zero on success, a negative error code otherwise.
++ */
++int flex_array_put(struct flex_array *fa, unsigned int element_nr, void *src,
++		gfp_t flags);
++
++/**
++ * flex_array_clear() - Clears an individual element in the array, sets the
++ * given element to FLEX_ARRAY_FREE.
++ * @element_nr:	element position to clear.
++ * @fa:		array to which element to be cleared belongs.
++ *
++ * Return:	Returns zero on success, -EINVAL otherwise.
++ */
++int flex_array_clear(struct flex_array *fa, unsigned int element_nr);
++
++/**
++ * flex_array_get() - Retrieves data into a flexible array.
++ *
++ * @element_nr:	Element position to retrieve data from.
++ * @fa:		array from which data is to be retrieved.
++ *
++ * Return:	Returns a pointer to the data element, or NULL if that
++ *		particular element has never been allocated.
++ */
++void *flex_array_get(struct flex_array *fa, unsigned int element_nr);
++
++/**
++ * flex_array_shrink() - Reduces the allocated size of an array.
++ * @fa:		array to shrink.
++ *
++ * Return:	Returns number of pages of memory actually freed.
++ *
++ */
++int flex_array_shrink(struct flex_array *fa);
++
++#define flex_array_put_ptr(fa, nr, src, gfp) \
++	flex_array_put(fa, nr, (void *)&(src), gfp)
++
++void *flex_array_get_ptr(struct flex_array *fa, unsigned int element_nr);
++
++#endif /* _FLEX_ARRAY_H */
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 346f64b5ed5b..3cd458dd2415 100644
+index 381c08216abf..fc01a9869698 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
-@@ -16,6 +16,9 @@
- #include <asm/byteorder.h>
- #include <uapi/linux/kernel.h>
- 
-+#ifdef __FRAMAC__
-+#include <libc/limits.h>
-+#else
- #define USHRT_MAX	((u16)(~0U))
- #define SHRT_MAX	((s16)(USHRT_MAX>>1))
- #define SHRT_MIN	((s16)(-SHRT_MAX - 1))
-@@ -28,6 +31,7 @@
- #define LLONG_MAX	((long long)(~0ULL>>1))
- #define LLONG_MIN	(-LLONG_MAX - 1)
- #define ULLONG_MAX	(~0ULL)
-+#endif /* __FRAMAC__ */
- #define SIZE_MAX	(~(size_t)0)
- #define PHYS_ADDR_MAX	(~(phys_addr_t)0)
- 
-@@ -279,6 +283,10 @@ extern int _cond_resched(void);
+@@ -260,6 +260,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
   *
   * Return: an absolute value of x.
   */
@@ -265,7 +391,7 @@ index 346f64b5ed5b..3cd458dd2415 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -293,6 +301,7 @@ extern int _cond_resched(void);
+@@ -274,6 +278,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -273,6 +399,28 @@ index 346f64b5ed5b..3cd458dd2415 100644
  
  /**
   * reciprocal_scale - "scale" a value into range [0, ep_ro)
+diff --git a/include/linux/limits.h b/include/linux/limits.h
+index 76afcd24ff8c..20cc3cfb6725 100644
+--- a/include/linux/limits.h
++++ b/include/linux/limits.h
+@@ -5,6 +5,9 @@
+ #include <uapi/linux/limits.h>
+ #include <linux/types.h>
+ 
++#ifdef __FRAMAC__
++#include <libc/limits.h>
++#else
+ #define USHRT_MAX	((unsigned short)~0U)
+ #define SHRT_MAX	((short)(USHRT_MAX >> 1))
+ #define SHRT_MIN	((short)(-SHRT_MAX - 1))
+@@ -17,6 +20,7 @@
+ #define LLONG_MAX	((long long)(~0ULL >> 1))
+ #define LLONG_MIN	(-LLONG_MAX - 1)
+ #define ULLONG_MAX	(~0ULL)
++#endif /* __FRAMAC__ */
+ #define SIZE_MAX	(~(size_t)0)
+ #define PHYS_ADDR_MAX	(~(phys_addr_t)0)
+ 
 diff --git a/include/linux/math64.h b/include/linux/math64.h
 index bb2c84afb80c..9a4ed3a11c71 100644
 --- a/include/linux/math64.h
@@ -318,7 +466,7 @@ index 40b48e2133cb..0262548f9fc5 100644
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 65f1d8c2f082..7e4161da463a 100644
+index 77448215ef5b..dd4841af0f14 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -137,6 +137,8 @@ typedef int __bitwise pci_power_t;
@@ -339,10 +487,10 @@ index 65f1d8c2f082..7e4161da463a 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index b767a425df8d..8dc84892db70 100644
+index 20b2a55ba229..2e77007a32db 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -232,6 +232,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -233,6 +233,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
   * done within __do_sys_*().
   */
  #ifndef __SYSCALL_DEFINEx
@@ -355,7 +503,7 @@ index b767a425df8d..8dc84892db70 100644
  #define __SYSCALL_DEFINEx(x, name, ...)					\
  	__diag_push();							\
  	__diag_ignore(GCC, 8, "-Wattribute-alias",			\
-@@ -250,6 +256,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -251,6 +257,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  	}								\
  	__diag_pop();							\
  	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
@@ -364,7 +512,7 @@ index b767a425df8d..8dc84892db70 100644
  
  /*
 diff --git a/include/uapi/linux/limits.h b/include/uapi/linux/limits.h
-index c3547f07605c..52132e03273b 100644
+index 6bcbe3068761..5bfdfa419121 100644
 --- a/include/uapi/linux/limits.h
 +++ b/include/uapi/linux/limits.h
 @@ -4,13 +4,17 @@
@@ -401,10 +549,10 @@ index 2fce8b6876e9..357ff7b0ecdd 100644
  #else
  #define __bitwise__
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 57b7771e20d7..f564b6745244 100644
+index b7953934aa99..432cc83e79a1 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1209,7 +1209,7 @@ static void print_fatal_signal(int signr)
+@@ -1211,7 +1211,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  
@@ -414,10 +562,10 @@ index 57b7771e20d7..f564b6745244 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index 2edb5088a70b..7a7b970a55e6 100644
+index c3f756f8534b..c9e6d125cefe 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
-@@ -455,17 +455,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
+@@ -519,17 +519,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
  void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {

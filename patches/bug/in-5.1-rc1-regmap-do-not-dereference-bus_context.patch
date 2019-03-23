@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 17 Mar 2019 15:30:09 +0100
+Subject: [PATCH] {BUG in 5.1-rc1} regmap: do not dereference bus_context
+
+It is used as a single pointer in other functions.
+
+Found with deref checker plugin.
+---
+ drivers/base/regmap/regmap-slimbus.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/base/regmap/regmap-slimbus.c b/drivers/base/regmap/regmap-slimbus.c
+index 0968059f1ef5..765be5408660 100644
+--- a/drivers/base/regmap/regmap-slimbus.c
++++ b/drivers/base/regmap/regmap-slimbus.c
+@@ -63,7 +63,7 @@ struct regmap *__devm_regmap_init_slimbus(struct slim_device *slimbus,
+ 	if (IS_ERR(bus))
+ 		return ERR_CAST(bus);
+ 
+-	return __devm_regmap_init(&slimbus->dev, bus, &slimbus, config,
++	return __devm_regmap_init(&slimbus->dev, bus, /* BUG */slimbus, config,
+ 				  lock_key, lock_name);
+ }
+ EXPORT_SYMBOL_GPL(__devm_regmap_init_slimbus);
+-- 

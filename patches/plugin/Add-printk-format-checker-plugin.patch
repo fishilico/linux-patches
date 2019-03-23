@@ -13,46 +13,47 @@ It has also detected some bugs reported and fixed by other people:
 - 7d129adff3af ("rtlwifi: rtl8192de: Fix misleading REG_MCUFWDL
   information")
 ---
- drivers/android/binder.c                    |   2 +-
- drivers/block/rbd.c                         |   6 +
- drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c     |   2 +-
- drivers/hwtracing/intel_th/pti.c            |   3 +
- drivers/i3c/master.c                        |   3 +
- drivers/md/bcache/sysfs.c                   |   3 +
- drivers/misc/ioc4.c                         |   4 +-
- drivers/net/ethernet/ti/davinci_emac.c      |   2 +-
- drivers/net/ethernet/ti/netcp_ethss.c       |   4 +-
- drivers/net/wireless/ath/ath10k/wmi.c       |   2 +-
- drivers/of/unittest.c                       |   6 +
- drivers/platform/x86/asus-laptop.c          |   4 +-
- drivers/rtc/rtc-ds1307.c                    |   3 +
- drivers/scsi/bnx2fc/bnx2fc_fcoe.c           |   2 +-
- drivers/scsi/fcoe/fcoe.c                    |   2 +-
- drivers/scsi/fcoe/fcoe_transport.c          |   4 +-
- drivers/scsi/hpsa.c                         |   2 +-
- drivers/scsi/qedf/qedf_main.c               |   2 +-
- drivers/scsi/qedi/qedi_main.c               |   7 +-
- drivers/scsi/smartpqi/smartpqi_init.c       |   2 +-
- drivers/staging/rtlwifi/phydm/phydm_debug.c |   2 +-
- drivers/target/iscsi/iscsi_target_auth.c    |   8 +-
- drivers/target/target_core_pr.c             |   2 +-
- fs/nfsd/nfsctl.c                            |   9 +-
- fs/overlayfs/inode.c                        |   3 +
- fs/reiserfs/Makefile                        |  16 +
- net/ipv4/sysctl_net_ipv4.c                  |   2 +-
- scripts/Makefile.gcc-plugins                |   5 +
- scripts/gcc-plugins/Kconfig                 |   6 +
- scripts/gcc-plugins/printk_format_plugin.c  | 831 ++++++++++++++++++++
- security/apparmor/mount.c                   |  10 +-
- sound/soc/ti/omap-mcbsp-st.c                |   3 +
- 32 files changed, 930 insertions(+), 32 deletions(-)
+ drivers/android/binder.c                      |   2 +-
+ drivers/block/rbd.c                           |   6 +
+ drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c       |   2 +-
+ drivers/hwtracing/intel_th/pti.c              |   3 +
+ drivers/i3c/master.c                          |   3 +
+ drivers/md/bcache/sysfs.c                     |   3 +
+ drivers/misc/ioc4.c                           |   4 +-
+ drivers/net/ethernet/ti/davinci_emac.c        |   2 +-
+ drivers/net/ethernet/ti/netcp_ethss.c         |   4 +-
+ drivers/net/wireless/ath/ath10k/wmi.c         |   2 +-
+ .../wireless/intel/iwlwifi/mvm/debugfs-vif.c  |   6 +-
+ drivers/of/unittest.c                         |   6 +
+ drivers/platform/x86/asus-laptop.c            |   4 +-
+ drivers/rtc/rtc-ds1307.c                      |   3 +
+ drivers/scsi/bnx2fc/bnx2fc_fcoe.c             |   2 +-
+ drivers/scsi/fcoe/fcoe.c                      |   2 +-
+ drivers/scsi/fcoe/fcoe_transport.c            |   4 +-
+ drivers/scsi/hpsa.c                           |   2 +-
+ drivers/scsi/qedf/qedf_main.c                 |   2 +-
+ drivers/scsi/qedi/qedi_main.c                 |   7 +-
+ drivers/scsi/smartpqi/smartpqi_init.c         |   2 +-
+ drivers/staging/rtlwifi/phydm/phydm_debug.c   |   2 +-
+ drivers/target/iscsi/iscsi_target_auth.c      |   8 +-
+ drivers/target/target_core_pr.c               |   2 +-
+ fs/nfsd/nfsctl.c                              |   9 +-
+ fs/overlayfs/inode.c                          |   3 +
+ fs/reiserfs/Makefile                          |  16 +
+ net/ipv4/sysctl_net_ipv4.c                    |   2 +-
+ scripts/Makefile.gcc-plugins                  |   5 +
+ scripts/gcc-plugins/Kconfig                   |   6 +
+ scripts/gcc-plugins/printk_format_plugin.c    | 831 ++++++++++++++++++
+ security/apparmor/mount.c                     |  10 +-
+ sound/soc/ti/omap-mcbsp-st.c                  |   3 +
+ 33 files changed, 934 insertions(+), 34 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
-index 4d2b2ad1ee0e..8198563b30bf 100644
+index 8685882da64c..64cf1840c8fb 100644
 --- a/drivers/android/binder.c
 +++ b/drivers/android/binder.c
-@@ -5782,7 +5782,7 @@ static void print_binder_transaction_log_entry(struct seq_file *m,
+@@ -5968,7 +5968,7 @@ static void print_binder_transaction_log_entry(struct seq_file *m,
  	 * done printing the fields of the entry
  	 */
  	smp_rmb();
@@ -62,10 +63,10 @@ index 4d2b2ad1ee0e..8198563b30bf 100644
  }
  
 diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index 1e92b61d0bd5..6199b7fe9389 100644
+index 4ba967d65cf9..00e66e7065e2 100644
 --- a/drivers/block/rbd.c
 +++ b/drivers/block/rbd.c
-@@ -1496,9 +1496,15 @@ rbd_osd_req_create(struct rbd_obj_request *obj_req, unsigned int num_ops)
+@@ -1538,9 +1538,15 @@ __rbd_osd_req_create(struct rbd_obj_request *obj_req,
  	ceph_oloc_copy(&req->r_base_oloc, &rbd_dev->header_oloc);
  	req->r_base_oloc.pool = rbd_dev->layout.pool_id;
  
@@ -82,7 +83,7 @@ index 1e92b61d0bd5..6199b7fe9389 100644
  	return req;
  
 diff --git a/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c b/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
-index 4d67b3c96702..2b3684630324 100644
+index 885bf88afa3e..e4d6f5c4573e 100644
 --- a/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
 +++ b/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
 @@ -186,7 +186,7 @@ static int _dpu_debugfs_show_regset32(struct seq_file *s, void *data)
@@ -95,7 +96,7 @@ index 4d67b3c96702..2b3684630324 100644
  	}
  	seq_puts(s, "\n");
 diff --git a/drivers/hwtracing/intel_th/pti.c b/drivers/hwtracing/intel_th/pti.c
-index 56694339cb06..877e6005b04b 100644
+index 0da6b787f553..3a2f73f2ceb6 100644
 --- a/drivers/hwtracing/intel_th/pti.c
 +++ b/drivers/hwtracing/intel_th/pti.c
 @@ -258,8 +258,11 @@ static ssize_t lpp_dest_show(struct device *dev, struct device_attribute *attr,
@@ -127,10 +128,10 @@ index 2dc628d4f1ae..953de6d7575d 100644
  			goto out;
  
 diff --git a/drivers/md/bcache/sysfs.c b/drivers/md/bcache/sysfs.c
-index 557a8a3270a1..0c76759311b7 100644
+index 17bae9c14ca0..c57dc7ebd36b 100644
 --- a/drivers/md/bcache/sysfs.c
 +++ b/drivers/md/bcache/sysfs.c
-@@ -141,9 +141,12 @@ static ssize_t bch_snprint_string_list(char *buf,
+@@ -143,9 +143,12 @@ static ssize_t bch_snprint_string_list(char *buf,
  	char *out = buf;
  	size_t i;
  
@@ -166,7 +167,7 @@ index ec0832278170..e596d235642a 100644
  			       __func__, module_name(is->is_owner),
  			       pci_name(idd->idd_pdev));
 diff --git a/drivers/net/ethernet/ti/davinci_emac.c b/drivers/net/ethernet/ti/davinci_emac.c
-index 840820402cd0..449f6f3b5222 100644
+index 57450b174fc4..1eaae69e5b55 100644
 --- a/drivers/net/ethernet/ti/davinci_emac.c
 +++ b/drivers/net/ethernet/ti/davinci_emac.c
 @@ -327,7 +327,7 @@ struct emac_priv {
@@ -201,10 +202,10 @@ index 5174d318901e..a21a36de7d47 100644
  			phy_start(slave->phy);
  		}
 diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
-index 96cc06605b70..6877a7772ada 100644
+index 9bba323867e5..0589f9c8870d 100644
 --- a/drivers/net/wireless/ath/ath10k/wmi.c
 +++ b/drivers/net/wireless/ath/ath10k/wmi.c
-@@ -7285,7 +7285,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
+@@ -7362,7 +7362,7 @@ ath10k_wmi_op_gen_peer_set_param(struct ath10k *ar, u32 vdev_id,
  	ether_addr_copy(cmd->peer_macaddr.addr, peer_addr);
  
  	ath10k_dbg(ar, ATH10K_DBG_WMI,
@@ -213,8 +214,32 @@ index 96cc06605b70..6877a7772ada 100644
  		   vdev_id, peer_addr, param_id, param_value);
  	return skb;
  }
+diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/debugfs-vif.c b/drivers/net/wireless/intel/iwlwifi/mvm/debugfs-vif.c
+index 2453ceabf00d..ee082ff3f097 100644
+--- a/drivers/net/wireless/intel/iwlwifi/mvm/debugfs-vif.c
++++ b/drivers/net/wireless/intel/iwlwifi/mvm/debugfs-vif.c
+@@ -582,7 +582,7 @@ static ssize_t iwl_dbgfs_low_latency_read(struct file *file,
+ {
+ 	struct ieee80211_vif *vif = file->private_data;
+ 	struct iwl_mvm_vif *mvmvif = iwl_mvm_vif_from_mac80211(vif);
+-	char format[] = "traffic=%d\ndbgfs=%d\nvcmd=%d\nvif_type=%d\n"
++	const char format[] = "traffic=%d\ndbgfs=%d\nvcmd=%d\nvif_type=%d\n"
+ 			"dbgfs_force_enable=%d\ndbgfs_force=%d\nactual=%d\n";
+ 
+ 	/*
+@@ -592,7 +592,9 @@ static ssize_t iwl_dbgfs_low_latency_read(struct file *file,
+ 	char buf[sizeof(format) + 1] = {};
+ 	int len;
+ 
+-	len = scnprintf(buf, sizeof(buf) - 1, format,
++	len = scnprintf(buf, sizeof(buf) - 1,
++			"traffic=%d\ndbgfs=%d\nvcmd=%d\nvif_type=%d\n"
++			"dbgfs_force_enable=%d\ndbgfs_force=%d\nactual=%d\n",
+ 			!!(mvmvif->low_latency & LOW_LATENCY_TRAFFIC),
+ 			!!(mvmvif->low_latency & LOW_LATENCY_DEBUGFS),
+ 			!!(mvmvif->low_latency & LOW_LATENCY_VCMD),
 diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 84427384654d..2430a099125c 100644
+index cccde756b510..fb1e18a0b54d 100644
 --- a/drivers/of/unittest.c
 +++ b/drivers/of/unittest.c
 @@ -263,7 +263,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
@@ -258,10 +283,10 @@ index 700c48ddfa7c..4a9bff451974 100644
  
  	return len;
 diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
-index 74b31dce484f..50c2de181e0c 100644
+index 07530fe1da2a..2135872cf63b 100644
 --- a/drivers/rtc/rtc-ds1307.c
 +++ b/drivers/rtc/rtc-ds1307.c
-@@ -1079,8 +1079,11 @@ static ssize_t frequency_test_show(struct device *dev,
+@@ -1100,8 +1100,11 @@ static ssize_t frequency_test_show(struct device *dev,
  
  	regmap_read(ds1307->regmap, M41TXX_REG_CONTROL, &ctrl_reg);
  
@@ -274,7 +299,7 @@ index 74b31dce484f..50c2de181e0c 100644
  
  static DEVICE_ATTR_RW(frequency_test);
 diff --git a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
-index 2e4e7159ebf9..4647329e8526 100644
+index a75e74ad1698..3716feb444cb 100644
 --- a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
 +++ b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
 @@ -1138,7 +1138,7 @@ static int bnx2fc_vport_create(struct fc_vport *vport, bool disabled)
@@ -287,7 +312,7 @@ index 2e4e7159ebf9..4647329e8526 100644
  		return rc;
  	}
 diff --git a/drivers/scsi/fcoe/fcoe.c b/drivers/scsi/fcoe/fcoe.c
-index cd19be3f3405..a48cf5ec6f9e 100644
+index 8ba8862d3292..c6e04107683f 100644
 --- a/drivers/scsi/fcoe/fcoe.c
 +++ b/drivers/scsi/fcoe/fcoe.c
 @@ -2677,7 +2677,7 @@ static int fcoe_vport_create(struct fc_vport *vport, bool disabled)
@@ -300,7 +325,7 @@ index cd19be3f3405..a48cf5ec6f9e 100644
  		return rc;
  	}
 diff --git a/drivers/scsi/fcoe/fcoe_transport.c b/drivers/scsi/fcoe/fcoe_transport.c
-index f4909cd206d3..f36d09b8357f 100644
+index 29fe3426f9f2..a9ebd564bb18 100644
 --- a/drivers/scsi/fcoe/fcoe_transport.c
 +++ b/drivers/scsi/fcoe/fcoe_transport.c
 @@ -270,7 +270,7 @@ int fcoe_validate_vport_create(struct fc_vport *vport)
@@ -322,10 +347,10 @@ index f4909cd206d3..f36d09b8357f 100644
  			rc = -EINVAL;
  			break;
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index ff67ef5d5347..1531c89665a2 100644
+index f044e7d10d63..602c47090cf4 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
-@@ -6739,7 +6739,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
+@@ -6742,7 +6742,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
  			c->Request.CDB[9] = 0;
  			break;
  		default:
@@ -335,7 +360,7 @@ index ff67ef5d5347..1531c89665a2 100644
  		}
  	} else if (cmd_type == TYPE_MSG) {
 diff --git a/drivers/scsi/qedf/qedf_main.c b/drivers/scsi/qedf/qedf_main.c
-index 9bbc19fc190b..48c6e8993c62 100644
+index 9f9431a4cc0e..1bc8e882dd60 100644
 --- a/drivers/scsi/qedf/qedf_main.c
 +++ b/drivers/scsi/qedf/qedf_main.c
 @@ -1576,7 +1576,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
@@ -380,7 +405,7 @@ index 88c4978f0a48..95b827ee61cf 100644
  	return rc;
  }
 diff --git a/drivers/scsi/smartpqi/smartpqi_init.c b/drivers/scsi/smartpqi/smartpqi_init.c
-index 963dd3e7f27a..411f4a919328 100644
+index 365545c6df42..d4ecd81ebfe9 100644
 --- a/drivers/scsi/smartpqi/smartpqi_init.c
 +++ b/drivers/scsi/smartpqi/smartpqi_init.c
 @@ -501,7 +501,7 @@ static int pqi_build_raid_path_request(struct pqi_ctrl_info *ctrl_info,
@@ -436,7 +461,7 @@ index 4e680d753941..715d2136bec7 100644
  out:
  	kzfree(desc);
 diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index e90bedb6694e..1fdc0660d0ea 100644
+index 645d7434383d..f7be4825dee9 100644
 --- a/drivers/target/target_core_pr.c
 +++ b/drivers/target/target_core_pr.c
 @@ -63,7 +63,7 @@ void core_pr_dump_initiator_port(
@@ -449,7 +474,7 @@ index e90bedb6694e..1fdc0660d0ea 100644
  
  enum register_type {
 diff --git a/fs/nfsd/nfsctl.c b/fs/nfsd/nfsctl.c
-index 72a7681f4046..f23be4264fc8 100644
+index f2feb2d11bae..c798a06f4400 100644
 --- a/fs/nfsd/nfsctl.c
 +++ b/fs/nfsd/nfsctl.c
 @@ -540,7 +540,6 @@ static ssize_t
@@ -532,7 +557,7 @@ index ba0fc4b18465..191b8c4163cb 100644
  	       (char *)tbl.data, ret);
  	kfree(tbl.data);
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index 35042d96cf5d..037e4cf60c89 100644
+index 5f7df50cfe7a..b74fe31ff37f 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
 @@ -10,6 +10,11 @@ ifdef CONFIG_GCC_PLUGIN_LATENT_ENTROPY
@@ -548,10 +573,10 @@ index 35042d96cf5d..037e4cf60c89 100644
  
  gcc-plugin-$(CONFIG_GCC_PLUGIN_STRUCTLEAK)	+= structleak_plugin.so
 diff --git a/scripts/gcc-plugins/Kconfig b/scripts/gcc-plugins/Kconfig
-index d45f7f36b859..13e0b947649c 100644
+index 74271dba4f94..2e93879ef650 100644
 --- a/scripts/gcc-plugins/Kconfig
 +++ b/scripts/gcc-plugins/Kconfig
-@@ -194,4 +194,10 @@ config GCC_PLUGIN_ARM_SSP_PER_TASK
+@@ -226,4 +226,10 @@ config GCC_PLUGIN_ARM_SSP_PER_TASK
  	bool
  	depends on GCC_PLUGINS && ARM
  

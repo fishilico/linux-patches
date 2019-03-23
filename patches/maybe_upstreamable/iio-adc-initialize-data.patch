@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 17 Mar 2019 19:19:09 +0100
+Subject: [PATCH] {MAYBE UPS} iio/adc: initialize data
+
+clang reports:
+
+    drivers/iio/adc/stmpe-adc.c:204:13: error: variable 'data' is used
+    uninitialized whenever 'if' condition is false
+    [-Werror,-Wsometimes-uninitialized]
+            } else if (info->channel == STMPE_TEMP_CHANNEL) {
+                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/iio/adc/stmpe-adc.c:210:34: note: uninitialized use occurs here
+            info->value = (u32) be16_to_cpu(data);
+                                            ^~~~
+    include/linux/byteorder/generic.h:97:21: note: expanded from macro
+    'be16_to_cpu'
+    #define be16_to_cpu __be16_to_cpu
+                        ^
+    include/uapi/linux/byteorder/little_endian.h:42:59: note: expanded
+    from macro '__be16_to_cpu'
+    #define __be16_to_cpu(x) __swab16((__force __u16)(__be16)(x))
+                                                              ^
+    include/uapi/linux/swab.h:104:40: note: expanded from macro '__swab16'
+            ((__u16)(__builtin_constant_p((__u16)(x)) ?     \
+                                                  ^
+    drivers/iio/adc/stmpe-adc.c:204:9: note: remove the 'if' if its
+    condition is always true
+            } else if (info->channel == STMPE_TEMP_CHANNEL) {
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/iio/adc/stmpe-adc.c:185:10: note: initialize the variable
+    'data' to silence this warning
+            u16 data;
+                    ^
+                     = 0
+---
+ drivers/iio/adc/stmpe-adc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/iio/adc/stmpe-adc.c b/drivers/iio/adc/stmpe-adc.c
+index 37f4b74a5d32..a21fc5e56c4e 100644
+--- a/drivers/iio/adc/stmpe-adc.c
++++ b/drivers/iio/adc/stmpe-adc.c
+@@ -182,7 +182,7 @@ static int stmpe_read_raw(struct iio_dev *indio_dev,
+ static irqreturn_t stmpe_adc_isr(int irq, void *dev_id)
+ {
+ 	struct stmpe_adc *info = (struct stmpe_adc *)dev_id;
+-	u16 data;
++	u16 data = 0;
+ 
+ 	if (info->channel > STMPE_TEMP_CHANNEL)
+ 		return IRQ_NONE;
+-- 

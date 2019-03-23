@@ -8,7 +8,6 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  drivers/acpi/acpica/acutils.h          |  6 +++---
  drivers/acpi/acpica/nsrepair2.c        |  2 +-
  drivers/acpi/acpica/utdebug.c          |  2 +-
- drivers/base/cpu.c                     |  2 +-
  drivers/clk/clkdev.c                   |  7 ++++---
  drivers/iio/industrialio-trigger.c     |  3 ++-
  drivers/isdn/capi/capiutil.c           |  4 ++--
@@ -45,8 +44,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  scripts/unifdef.c                      |  2 +-
  security/tomoyo/common.c               |  3 ++-
  security/tomoyo/common.h               |  4 ++--
- sound/soc/soc-dapm.c                   |  3 ++-
- 42 files changed, 90 insertions(+), 75 deletions(-)
+ 40 files changed, 87 insertions(+), 73 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index a93d44e58f9c..73349d9a27be 100644
@@ -63,7 +61,7 @@ index a93d44e58f9c..73349d9a27be 100644
  	va_list args;
  	va_start(args, str);
 diff --git a/drivers/acpi/acpica/acutils.h b/drivers/acpi/acpica/acutils.h
-index 3374d41582b5..a479ca42d2a0 100644
+index 9022537567e9..0d6dfcf3d59a 100644
 --- a/drivers/acpi/acpica/acutils.h
 +++ b/drivers/acpi/acpica/acutils.h
 @@ -686,18 +686,18 @@ void acpi_ut_delete_address_lists(void);
@@ -89,7 +87,7 @@ index 3374d41582b5..a479ca42d2a0 100644
  			      u32 line_number,
  			      char *pathname,
 diff --git a/drivers/acpi/acpica/nsrepair2.c b/drivers/acpi/acpica/nsrepair2.c
-index a3bd6280882c..69043ba8846b 100644
+index d5804a6d1d65..613b57f4918b 100644
 --- a/drivers/acpi/acpica/nsrepair2.c
 +++ b/drivers/acpi/acpica/nsrepair2.c
 @@ -271,7 +271,7 @@ acpi_ns_repair_FDE(struct acpi_evaluate_info *info,
@@ -102,7 +100,7 @@ index a3bd6280882c..69043ba8846b 100644
  					      ACPI_FDE_DWORD_BUFFER_SIZE));
  
 diff --git a/drivers/acpi/acpica/utdebug.c b/drivers/acpi/acpica/utdebug.c
-index aabdc25effd9..7d438ddf6dad 100644
+index 01b1b36c8a8e..262722b4eacc 100644
 --- a/drivers/acpi/acpica/utdebug.c
 +++ b/drivers/acpi/acpica/utdebug.c
 @@ -158,7 +158,7 @@ acpi_debug_print(u32 requested_debug_level,
@@ -114,24 +112,11 @@ index aabdc25effd9..7d438ddf6dad 100644
  
  #ifdef ACPI_APPLICATION
  	/*
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index eb9443d5bae1..f460512ef35c 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -409,7 +409,7 @@ static void device_create_release(struct device *dev)
- 	kfree(dev);
- }
- 
--static struct device *
-+static __printf(4, 0) struct device *
- __cpu_device_create(struct device *parent, void *drvdata,
- 		    const struct attribute_group **groups,
- 		    const char *fmt, va_list args)
 diff --git a/drivers/clk/clkdev.c b/drivers/clk/clkdev.c
-index 9ab3db8b3988..1bd1c0313fc5 100644
+index 8c4435c53f09..488bd6ebad5f 100644
 --- a/drivers/clk/clkdev.c
 +++ b/drivers/clk/clkdev.c
-@@ -247,7 +247,7 @@ struct clk_lookup_alloc {
+@@ -153,7 +153,7 @@ struct clk_lookup_alloc {
  	char	con_id[MAX_CON_ID];
  };
  
@@ -140,7 +125,7 @@ index 9ab3db8b3988..1bd1c0313fc5 100644
  vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	va_list ap)
  {
-@@ -271,7 +271,7 @@ vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
+@@ -177,7 +177,7 @@ vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	return &cla->cl;
  }
  
@@ -149,7 +134,7 @@ index 9ab3db8b3988..1bd1c0313fc5 100644
  vclkdev_create(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	va_list ap)
  {
-@@ -387,7 +387,8 @@ void clkdev_drop(struct clk_lookup *cl)
+@@ -293,7 +293,8 @@ void clkdev_drop(struct clk_lookup *cl)
  }
  EXPORT_SYMBOL(clkdev_drop);
  
@@ -447,7 +432,7 @@ index 65fdf22b0ba9..3349670b09de 100644
  	if (level <= event_log_level) {
  		unsigned long flags = 0;
 diff --git a/drivers/staging/fbtft/fb_agm1264k-fl.c b/drivers/staging/fbtft/fb_agm1264k-fl.c
-index f6f30f5bf15a..fac9562a9b90 100644
+index 8f27bd8da17d..d4dca3ce4db0 100644
 --- a/drivers/staging/fbtft/fb_agm1264k-fl.c
 +++ b/drivers/staging/fbtft/fb_agm1264k-fl.c
 @@ -406,7 +406,7 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
@@ -457,10 +442,10 @@ index f6f30f5bf15a..fac9562a9b90 100644
 -			  "%s(len=%d): ", __func__, len);
 +			  "%s(len=%zu): ", __func__, len);
  
- 	gpio_set_value(par->RW, 0); /* set write mode */
+ 	gpiod_set_value(par->RW, 0); /* set write mode */
  
 diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
-index 5d3b76ca74d8..55350cf98ca9 100644
+index 70b37fc7fb66..398bdbf53c9a 100644
 --- a/drivers/staging/fbtft/fb_ra8875.c
 +++ b/drivers/staging/fbtft/fb_ra8875.c
 @@ -24,7 +24,7 @@ static int write_spi(struct fbtft_par *par, void *buf, size_t len)
@@ -473,7 +458,7 @@ index 5d3b76ca74d8..55350cf98ca9 100644
  	if (!par->spi) {
  		dev_err(par->info->device,
 diff --git a/drivers/staging/fbtft/fbtft-io.c b/drivers/staging/fbtft/fbtft-io.c
-index b5051d3d46a6..4a31f14636e2 100644
+index 38cdad6203ea..0863d257d762 100644
 --- a/drivers/staging/fbtft/fbtft-io.c
 +++ b/drivers/staging/fbtft/fbtft-io.c
 @@ -14,7 +14,7 @@ int fbtft_write_spi(struct fbtft_par *par, void *buf, size_t len)
@@ -531,10 +516,10 @@ index b5051d3d46a6..4a31f14636e2 100644
  	while (len) {
  		data = *(u16 *)buf;
 diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index ac427baa464a..99a37b3320c9 100644
+index 7fdd3b0851ef..d4e2d8d3cb04 100644
 --- a/drivers/staging/fbtft/fbtft.h
 +++ b/drivers/staging/fbtft/fbtft.h
-@@ -240,7 +240,7 @@ struct fbtft_par {
+@@ -239,7 +239,7 @@ struct fbtft_par {
  /* fbtft-core.c */
  int fbtft_write_buf_dc(struct fbtft_par *par, void *buf, size_t len, int dc);
  void fbtft_dbg_hex(const struct device *dev, int groupsize,
@@ -544,10 +529,10 @@ index ac427baa464a..99a37b3320c9 100644
  					struct device *dev,
  					struct fbtft_platform_data *pdata);
 diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
-index 046f9d355ecb..9d99be41d629 100644
+index 5f6cd0816d58..44e1410eb3fe 100644
 --- a/drivers/staging/fbtft/fbtft_device.c
 +++ b/drivers/staging/fbtft/fbtft_device.c
-@@ -1240,7 +1240,7 @@ static int write_gpio16_wr_slow(struct fbtft_par *par, void *buf, size_t len)
+@@ -965,7 +965,7 @@ static int write_gpio16_wr_slow(struct fbtft_par *par, void *buf, size_t len)
  #endif
  
  	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
@@ -585,7 +570,7 @@ index e17ca8156171..306c1196fedb 100644
  	va_list ap;
  
 diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
-index eb1f21af7556..4d9270272af8 100644
+index 1b59fb61f67d..b284524b5655 100644
 --- a/include/acpi/acpiosxf.h
 +++ b/include/acpi/acpiosxf.h
 @@ -330,11 +330,12 @@ acpi_status acpi_os_enter_sleep(u8 sleep_state, u32 rega_value, u32 regb_value);
@@ -643,10 +628,10 @@ index 8a62731673f7..b809229827d3 100644
  struct event_filter;
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index 632d36059556..58d64df395e7 100644
+index c89ea48c70a6..f538785b6606 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
-@@ -1833,8 +1833,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
+@@ -1846,8 +1846,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
   * will be called a second time.  Currently, we assume that a printk
   * can't format message larger than 1024 bytes, so we don't either.
   */
@@ -658,10 +643,10 @@ index 632d36059556..58d64df395e7 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 08900828d282..57eb213fe0d6 100644
+index d80cee49e0eb..e092dead1f47 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -800,15 +800,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -849,15 +849,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -761,7 +746,7 @@ index db00e3e30a59..67d4e1b13f3d 100644
  {
  	va_list ap;
 diff --git a/security/tomoyo/common.c b/security/tomoyo/common.c
-index c598aa00d5e3..d493f384e287 100644
+index 57988d95d33d..f26d86e276e1 100644
 --- a/security/tomoyo/common.c
 +++ b/security/tomoyo/common.c
 @@ -193,7 +193,8 @@ const char *tomoyo_yesno(const unsigned int value)
@@ -775,10 +760,10 @@ index c598aa00d5e3..d493f384e287 100644
  	va_list args;
  	const int pos = strlen(buffer);
 diff --git a/security/tomoyo/common.h b/security/tomoyo/common.h
-index 539bcdd30bb8..ff941ebf346d 100644
+index 050473df5809..a52664824cd5 100644
 --- a/security/tomoyo/common.h
 +++ b/security/tomoyo/common.h
-@@ -944,7 +944,7 @@ bool tomoyo_str_starts(char **src, const char *find);
+@@ -954,7 +954,7 @@ bool tomoyo_str_starts(char **src, const char *find);
  char *tomoyo_encode(const char *str);
  char *tomoyo_encode2(const char *str, int str_len);
  char *tomoyo_init_log(struct tomoyo_request_info *r, int len, const char *fmt,
@@ -787,7 +772,7 @@ index 539bcdd30bb8..ff941ebf346d 100644
  char *tomoyo_read_token(struct tomoyo_acl_param *param);
  char *tomoyo_realpath_from_path(const struct path *path);
  char *tomoyo_realpath_nofollow(const char *pathname);
-@@ -1057,7 +1057,7 @@ void tomoyo_warn_oom(const char *function);
+@@ -1068,7 +1068,7 @@ void tomoyo_warn_oom(const char *function);
  void tomoyo_write_log(struct tomoyo_request_info *r, const char *fmt, ...)
  	__printf(2, 3);
  void tomoyo_write_log2(struct tomoyo_request_info *r, int len, const char *fmt,
@@ -796,18 +781,4 @@ index 539bcdd30bb8..ff941ebf346d 100644
  
  /********** External variable definitions. **********/
  
-diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
-index 20bad755888b..3eb69686069d 100644
---- a/sound/soc/soc-dapm.c
-+++ b/sound/soc/soc-dapm.c
-@@ -157,7 +157,8 @@ static void pop_wait(u32 pop_time)
- 		schedule_timeout_uninterruptible(msecs_to_jiffies(pop_time));
- }
- 
--static void pop_dbg(struct device *dev, u32 pop_time, const char *fmt, ...)
-+static __printf(3, 4) void pop_dbg(struct device *dev, u32 pop_time,
-+				   const char *fmt, ...)
- {
- 	va_list args;
- 	char *buf;
 -- 

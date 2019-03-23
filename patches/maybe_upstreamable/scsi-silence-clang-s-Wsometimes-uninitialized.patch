@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 17 Mar 2019 19:17:19 +0100
+Subject: [PATCH] {MAYBE UPS} scsi: silence clang's -Wsometimes-uninitialized
+
+clang reports:
+
+    drivers/scsi/gdth.c:3668:6: error: variable 'paddr' is used
+    uninitialized whenever 'if' condition is false
+    [-Werror,-Wsometimes-uninitialized]
+            if (gen.data_len + gen.sense_len > 0) {
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/scsi/gdth.c:3707:4: note: uninitialized use occurs here
+                            paddr);
+                            ^~~~~
+    drivers/scsi/gdth.c:3668:2: note: remove the 'if' if its condition
+    is always true
+            if (gen.data_len + gen.sense_len > 0) {
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/scsi/gdth.c:3652:18: note: initialize the variable 'paddr'
+    to silence this warning
+            dma_addr_t paddr;
+                            ^
+                             = 0
+
+This is not really a bug, as buf is kept NULL.
+---
+ drivers/scsi/gdth.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+index 0fcc0e73780a..ab95ea264037 100644
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -3649,7 +3649,7 @@ static int ioc_general(void __user *arg, char *cmnd)
+ 	gdth_ioctl_general gen;
+ 	gdth_ha_str *ha;
+ 	char *buf = NULL;
+-	dma_addr_t paddr;
++	dma_addr_t paddr = 0;
+ 	int rval;
+ 
+ 	if (copy_from_user(&gen, arg, sizeof(gdth_ioctl_general)))
+-- 

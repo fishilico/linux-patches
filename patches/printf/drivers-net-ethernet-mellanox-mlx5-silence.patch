@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 15 Mar 2019 22:56:46 +0100
+Subject: [PATCH] {PRINTF} drivers/net/ethernet/mellanox/mlx5: silence
+ -Wformat-security
+
+---
+ drivers/net/ethernet/mellanox/mlx5/core/en/reporter_tx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_tx.c b/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_tx.c
+index 9d38e62cdf24..0da4168d6781 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_tx.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_tx.c
+@@ -118,7 +118,7 @@ static int mlx5_tx_health_report(struct devlink_health_reporter *tx_reporter,
+ 				 struct mlx5e_tx_err_ctx *err_ctx)
+ {
+ 	if (IS_ERR_OR_NULL(tx_reporter)) {
+-		netdev_err(err_ctx->sq->channel->netdev, err_str);
++		netdev_err(err_ctx->sq->channel->netdev, "%s", err_str);
+ 		return err_ctx->recover(err_ctx->sq);
+ 	}
+ 
+-- 

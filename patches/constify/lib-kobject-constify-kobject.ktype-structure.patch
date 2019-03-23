@@ -70,7 +70,7 @@ index ff4c25098119..d264eb193f26 100644
  
  The arguments are the same as the individual kobject_init() and
 diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index e06a57936cc9..521705f85019 100644
+index 0a58e969f8b7..3de96740f15e 100644
 --- a/drivers/base/bus.c
 +++ b/drivers/base/bus.c
 @@ -157,14 +157,14 @@ static void bus_release(struct kobject *kobj)
@@ -91,10 +91,10 @@ index e06a57936cc9..521705f85019 100644
  	if (ktype == &bus_ktype)
  		return 1;
 diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 0073b09bb99f..d2d5d97b7ecf 100644
+index 4aeaa0c92bda..9d11bbe31584 100644
 --- a/drivers/base/core.c
 +++ b/drivers/base/core.c
-@@ -952,7 +952,7 @@ static struct kobj_type device_ktype = {
+@@ -1097,7 +1097,7 @@ static struct kobj_type device_ktype = {
  
  static int dev_uevent_filter(struct kset *kset, struct kobject *kobj)
  {
@@ -142,10 +142,10 @@ index 1ab0d624fb36..a7f660fc31e9 100644
  	return kobj->ktype;
  }
 diff --git a/include/linux/module.h b/include/linux/module.h
-index f5bc4c046461..32975ed5264e 100644
+index 5bf5dcd91009..a5c729563180 100644
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
-@@ -791,7 +791,7 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
+@@ -807,7 +807,7 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
  
  #ifdef CONFIG_SYSFS
  extern struct kset *module_kset;
@@ -177,7 +177,7 @@ index ce89f757e6da..e814a1302a9c 100644
  	.sysfs_ops =	&module_sysfs_ops,
  };
 diff --git a/lib/kobject.c b/lib/kobject.c
-index b72e00fd7d09..ad225131a0fd 100644
+index aa89edcd2b63..53d68458f652 100644
 --- a/lib/kobject.c
 +++ b/lib/kobject.c
 @@ -65,7 +65,7 @@ void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
@@ -225,7 +225,7 @@ index b72e00fd7d09..ad225131a0fd 100644
  	.release	= dynamic_kobj_release,
  	.sysfs_ops	= &kobj_sysfs_ops,
  };
-@@ -893,7 +893,7 @@ void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
+@@ -893,7 +893,7 @@ static void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
  		kobject_get_ownership(kobj->parent, uid, gid);
  }
  
@@ -235,10 +235,10 @@ index b72e00fd7d09..ad225131a0fd 100644
  	.release	= kset_release,
  	.get_ownership	= kset_get_ownership,
 diff --git a/mm/slub.c b/mm/slub.c
-index 21c9c308573e..24eddf74f82a 100644
+index 4557d33f1f8f..bdaabd38004e 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -5642,7 +5642,7 @@ static struct kobj_type slab_ktype = {
+@@ -5640,7 +5640,7 @@ static struct kobj_type slab_ktype = {
  
  static int uevent_filter(struct kset *kset, struct kobject *kobj)
  {
