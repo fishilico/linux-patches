@@ -5,7 +5,6 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  reported by clang
 
 ---
- arch/x86/kernel/hw_breakpoint.c                       | 1 +
  drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c | 4 ++++
  drivers/gpu/drm/i915/i915_request.c                   | 2 +-
  drivers/gpu/drm/qxl/qxl_draw.c                        | 2 +-
@@ -30,20 +29,8 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  mm/filemap.c                                          | 2 +-
  net/mac80211/mlme.c                                   | 2 +-
  net/mac80211/tx.c                                     | 2 +-
- 25 files changed, 36 insertions(+), 17 deletions(-)
+ 24 files changed, 35 insertions(+), 17 deletions(-)
 
-diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
-index ff9bfd40429e..7a92c32336ab 100644
---- a/arch/x86/kernel/hw_breakpoint.c
-+++ b/arch/x86/kernel/hw_breakpoint.c
-@@ -354,6 +354,7 @@ int hw_breakpoint_arch_parse(struct perf_event *bp,
- #endif
- 	default:
- 		WARN_ON_ONCE(1);
-+		align = 0;
- 	}
- 
- 	/*
 diff --git a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 index 77c14671866c..25690300ada9 100644
 --- a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
