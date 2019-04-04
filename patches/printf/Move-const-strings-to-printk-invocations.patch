@@ -48,12 +48,11 @@ This fixes errors like:
  fs/ntfs/super.c                              |   7 +-
  kernel/power/suspend_test.c                  |  33 +---
  net/802/psnap.c                              |   5 +-
- net/appletalk/ddp.c                          |   5 +-
  net/core/net-sysfs.c                         |  49 +++---
  net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
- 27 files changed, 166 insertions(+), 274 deletions(-)
+ 26 files changed, 165 insertions(+), 270 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 75bc18646df6..10d4e7064572 100644
@@ -1042,31 +1041,8 @@ index db6baf7cf6e9..f834c827338e 100644
  		return -EBUSY;
  	}
  
-diff --git a/net/appletalk/ddp.c b/net/appletalk/ddp.c
-index 795fbc6c06aa..ac83211e092c 100644
---- a/net/appletalk/ddp.c
-+++ b/net/appletalk/ddp.c
-@@ -1904,9 +1904,6 @@ static unsigned char ddp_snap_id[] = { 0x08, 0x00, 0x07, 0x80, 0x9B };
- EXPORT_SYMBOL(atrtr_get_dev);
- EXPORT_SYMBOL(atalk_find_dev_addr);
- 
--static const char atalk_err_snap[] __initconst =
--	KERN_CRIT "Unable to register DDP with SNAP.\n";
--
- /* Called by proto.c on kernel start up */
- static int __init atalk_init(void)
- {
-@@ -1922,7 +1919,7 @@ static int __init atalk_init(void)
- 
- 	ddp_dl = register_snap_client(ddp_snap_id, atalk_rcv);
- 	if (!ddp_dl)
--		printk(atalk_err_snap);
-+		printk(KERN_CRIT "Unable to register DDP with SNAP.\n");
- 
- 	dev_add_pack(&ltalk_packet_type);
- 	dev_add_pack(&ppptalk_packet_type);
 diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 4ff661f6f989..4b5f0dd580d5 100644
+index f8f94303a1f5..a51e00119ecf 100644
 --- a/net/core/net-sysfs.c
 +++ b/net/core/net-sysfs.c
 @@ -30,11 +30,6 @@
