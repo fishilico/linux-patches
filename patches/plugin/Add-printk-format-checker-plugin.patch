@@ -45,8 +45,9 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/Kconfig                   |   6 +
  scripts/gcc-plugins/printk_format_plugin.c    | 831 ++++++++++++++++++
  security/apparmor/mount.c                     |  10 +-
+ sound/soc/stm/stm32_sai_sub.c                 |   2 +-
  sound/soc/ti/omap-mcbsp-st.c                  |   3 +
- 33 files changed, 934 insertions(+), 34 deletions(-)
+ 34 files changed, 935 insertions(+), 35 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
@@ -1458,6 +1459,19 @@ index 8c3787399356..88d7e85a25ad 100644
  				 ", shared");
  	if (flags & MS_RELATIME)
  		audit_log_format(ab, ", relatime");
+diff --git a/sound/soc/stm/stm32_sai_sub.c b/sound/soc/stm/stm32_sai_sub.c
+index d7045aa520de..25a2fb0b1e5d 100644
+--- a/sound/soc/stm/stm32_sai_sub.c
++++ b/sound/soc/stm/stm32_sai_sub.c
+@@ -524,7 +524,7 @@ static int stm32_sai_set_sysclk(struct snd_soc_dai *cpu_dai,
+ 
+ 		ret = clk_set_rate_exclusive(sai->sai_mclk, freq);
+ 		if (ret) {
+-			dev_err(cpu_dai->dev,
++			dev_err(cpu_dai->dev, "%s",
+ 				ret == -EBUSY ?
+ 				"Active streams have incompatible rates" :
+ 				"Could not set mclk rate\n");
 diff --git a/sound/soc/ti/omap-mcbsp-st.c b/sound/soc/ti/omap-mcbsp-st.c
 index 1a3fe854e856..5029a7ef66f2 100644
 --- a/sound/soc/ti/omap-mcbsp-st.c
