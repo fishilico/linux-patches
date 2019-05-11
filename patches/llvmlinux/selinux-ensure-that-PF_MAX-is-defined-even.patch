@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 11 May 2019 11:22:10 +0200
+Subject: [PATCH] {For LLVMLinux} selinux: ensure that PF_MAX is defined even
+ with clang
+
+clang reports:
+
+    security/selinux/include/classmap.h:249:5: error: 'PF_MAX' is not
+    defined, evaluates to 0 [-Werror,-Wundef]
+    #if PF_MAX > 45
+        ^
+---
+ security/selinux/include/classmap.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/security/selinux/include/classmap.h b/security/selinux/include/classmap.h
+index 201f7e588a29..dc8a949c643f 100644
+--- a/security/selinux/include/classmap.h
++++ b/security/selinux/include/classmap.h
+@@ -246,6 +246,10 @@ struct security_class_mapping secclass_map[] = {
+ 	{ NULL }
+   };
+ 
++#if defined(__clang__) && !defined(PF_MAX)
++#define PF_MAX 45
++#endif
++
+ #if PF_MAX > 45
+ #error New address family defined, please update secclass_map.
+ #endif
+-- 

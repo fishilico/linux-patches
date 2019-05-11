@@ -17,7 +17,7 @@ list of disabled warnings.
  8 files changed, 49 insertions(+), 44 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 2b99679148dc..a7fe7b02693c 100644
+index 26c92f892d24..7ad2df423728 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -413,7 +413,7 @@ PYTHON3		= python3
@@ -52,7 +52,7 @@ index 2b99679148dc..a7fe7b02693c 100644
  export CFLAGS_GCOV
  
  # The arch Makefiles can override CC_FLAGS_FTRACE. We may also append it later.
-@@ -674,10 +673,10 @@ endif # may-sync-config
+@@ -674,11 +673,11 @@ endif # may-sync-config
  endif # $(dot-config)
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
@@ -60,14 +60,16 @@ index 2b99679148dc..a7fe7b02693c 100644
 -KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
 -KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
 -KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
+-KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 +#KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
 +#KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
 +#KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
 +#KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
++#KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
  KBUILD_CFLAGS	+= -Os
-@@ -686,7 +685,7 @@ KBUILD_CFLAGS   += -O2
+@@ -687,7 +686,7 @@ KBUILD_CFLAGS   += -O2
  endif
  
  ifdef CONFIG_CC_DISABLE_WARN_MAYBE_UNINITIALIZED
@@ -76,16 +78,14 @@ index 2b99679148dc..a7fe7b02693c 100644
  endif
  
  # Tell gcc to never replace conditional load with a non-conditional one
-@@ -717,11 +716,11 @@ KBUILD_CFLAGS += $(stackp-flags-y)
+@@ -718,10 +717,10 @@ KBUILD_CFLAGS += $(stackp-flags-y)
  
  ifdef CONFIG_CC_IS_CLANG
  KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
 -KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
 -KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
--KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
 +#KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
 +#KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
  # Quiet clang warning: comparison of unsigned expression < 0 is always false
 -KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
 +#KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
