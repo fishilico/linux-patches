@@ -167,6 +167,7 @@ then
     disable_in_kcflags 'duplicate-decl-specifier' # "const typeof(var)" creates false positives in many places
     disable_in_kcflags 'empty-translation-unit' # scripts/mod/empty.c is empty
     disable_in_kcflags 'extended-offsetof' # Use offsetof(type, field.subfield)
+    disable_in_kcflags 'extra-semi-stmt' # Many ';' with no effect
     disable_in_kcflags 'format-invalid-specifier' # clang doesn't know about %Zu
     disable_in_kcflags 'format-zero-length' # The kernel uses "" format string
     disable_in_kcflags 'format-non-iso' # "%Lx" is not ISO C
@@ -285,6 +286,7 @@ then
     disable_in_hostcflags 'comma' # There are legimitate uses like "while ((n = read(...)), n > 0)"
     disable_in_hostcflags 'covered-switch-default' # Some switch one enums cover all values
     disable_in_hostcflags 'disabled-macro-expansion' # Linux has recursive macros
+    disable_in_hostcflags 'extra-semi-stmt' # # Many ';' with no effect in scripts/kconfig and scripts/dtc
     disable_in_hostcflags 'documentation'
     disable_in_hostcflags 'documentation-unknown-command'
     disable_in_hostcflags 'gnu-conditional-omitted-operand' # "value ? : default" construction
