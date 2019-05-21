@@ -4,16 +4,39 @@ Date: Sat, 4 Jul 2015 11:50:02 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
 
 ---
+ drivers/hid/intel-ish-hid/ishtp/bus.c              |  7 +++++++
  drivers/infiniband/hw/hfi1/trace_dbg.h             |  7 +++++++
  .../broadcom/brcm80211/brcmfmac/tracepoint.h       | 14 ++++++++++++++
  .../brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h  | 14 ++++++++++++++
  .../net/wireless/intel/iwlwifi/iwl-devtrace-msg.h  | 14 ++++++++++++++
  kernel/panic.c                                     |  8 ++++++++
  lib/vsprintf.c                                     |  7 +++++++
- 6 files changed, 64 insertions(+)
+ 7 files changed, 71 insertions(+)
 
+diff --git a/drivers/hid/intel-ish-hid/ishtp/bus.c b/drivers/hid/intel-ish-hid/ishtp/bus.c
+index fb8ca12955b4..12a439503aeb 100644
+--- a/drivers/hid/intel-ish-hid/ishtp/bus.c
++++ b/drivers/hid/intel-ish-hid/ishtp/bus.c
+@@ -875,10 +875,17 @@ EXPORT_SYMBOL(ishtp_get_pci_device);
+  *
+  * Return: void *.
+  */
++#ifndef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
+ void *ishtp_trace_callback(struct ishtp_cl_device *cl_device)
+ {
+ 	return cl_device->ishtp_dev->print_log;
+ }
++#ifndef __clang__
++#pragma GCC diagnostic pop
++#endif
+ EXPORT_SYMBOL(ishtp_trace_callback);
+ 
+ /**
 diff --git a/drivers/infiniband/hw/hfi1/trace_dbg.h b/drivers/infiniband/hw/hfi1/trace_dbg.h
-index e62171fb7379..e5c4b5981595 100644
+index de7a87392b8d..fd51336704bb 100644
 --- a/drivers/infiniband/hw/hfi1/trace_dbg.h
 +++ b/drivers/infiniband/hw/hfi1/trace_dbg.h
 @@ -63,6 +63,10 @@
@@ -170,10 +193,10 @@ index 32984c1f39a1..a32ecb4568ba 100644
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 0ae0d7332f12..ec642cc25912 100644
+index b4543a31a495..efa33070d9ab 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -541,6 +541,11 @@ struct warn_args {
+@@ -545,6 +545,11 @@ struct warn_args {
  	va_list args;
  };
  
@@ -185,7 +208,7 @@ index 0ae0d7332f12..ec642cc25912 100644
  void __warn(const char *file, int line, void *caller, unsigned taint,
  	    struct pt_regs *regs, struct warn_args *args)
  {
-@@ -585,6 +590,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -589,6 +594,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  	/* Just a warning, don't kill lockdep. */
  	add_taint(taint, LOCKDEP_STILL_OK);
  }
@@ -196,23 +219,22 @@ index 0ae0d7332f12..ec642cc25912 100644
  #ifdef WANT_WARN_ON_SLOWPATH
  void warn_slowpath_fmt(const char *file, int line, const char *fmt, ...)
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 7a1e3bdfff9d..cb451320e3d4 100644
+index 1c13e2f5bdc4..89db503c1fd2 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
-@@ -2035,8 +2035,15 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
- 			va_list va;
+@@ -1600,7 +1600,14 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
+ 		return buf;
  
- 			va_copy(va, *((struct va_format *)ptr)->va);
+ 	va_copy(va, *va_fmt->va);
 +#ifndef __clang__
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 +#endif
- 			buf += vsnprintf(buf, end > buf ? end - buf : 0,
- 					 ((struct va_format *)ptr)->fmt, va);
+ 	buf += vsnprintf(buf, end > buf ? end - buf : 0, va_fmt->fmt, va);
 +#ifndef __clang__
 +#pragma GCC diagnostic pop
 +#endif
- 			va_end(va);
- 			return buf;
- 		}
+ 	va_end(va);
+ 
+ 	return buf;
 -- 

@@ -5,11 +5,11 @@ Subject: [PATCH] {PRINTF} fixup! x86, relocs: add printf attribute to die()
 
 I am not sure of what the developers want on u64 casts.
 ---
- arch/x86/tools/relocs.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ arch/x86/tools/relocs.c | 28 +++++++++++++---------------
+ 1 file changed, 13 insertions(+), 15 deletions(-)
 
 diff --git a/arch/x86/tools/relocs.c b/arch/x86/tools/relocs.c
-index 9192b77a0df7..4151bb96e6be 100644
+index 3e7c86934d1d..b439c96e5762 100644
 --- a/arch/x86/tools/relocs.c
 +++ b/arch/x86/tools/relocs.c
 @@ -1,5 +1,6 @@
@@ -19,16 +19,40 @@ index 9192b77a0df7..4151bb96e6be 100644
  
  #define ElfW(type)		_ElfW(ELF_BITS, type)
  #define _ElfW(bits, type)	__ElfW(bits, type)
-@@ -401,7 +402,7 @@ static void read_shdrs(FILE *fp)
+@@ -389,7 +390,7 @@ static void read_ehdr(FILE *fp)
+ 		Elf_Shdr shdr;
+ 
+ 		if (fseek(fp, ehdr.e_shoff, SEEK_SET) < 0)
+-			die("Seek to %d failed: %s\n", ehdr.e_shoff, strerror(errno));
++			die("Seek to %llu failed: %s\n", (__u64)ehdr.e_shoff, strerror(errno));
+ 
+ 		if (fread(&shdr, sizeof(shdr), 1, fp) != 1)
+ 			die("Cannot read initial ELF section header: %s\n", strerror(errno));
+@@ -412,18 +413,18 @@ static void read_shdrs(FILE *fp)
+ 
+ 	secs = calloc(shnum, sizeof(struct section));
+ 	if (!secs) {
+-		die("Unable to allocate %d section headers\n",
+-		    shnum);
++		die("Unable to allocate %llu section headers\n",
++		    (__u64)shnum);
  	}
  	if (fseek(fp, ehdr.e_shoff, SEEK_SET) < 0) {
  		die("Seek to %llu failed: %s\n",
 -			(unsigned long long)ehdr.e_shoff, strerror(errno));
 +			(__u64)ehdr.e_shoff, strerror(errno));
  	}
- 	for (i = 0; i < ehdr.e_shnum; i++) {
+ 	for (i = 0; i < shnum; i++) {
  		struct section *sec = &secs[i];
-@@ -435,12 +436,11 @@ static void read_strtabs(FILE *fp)
+ 		if (fread(&shdr, sizeof(shdr), 1, fp) != 1)
+-			die("Cannot read ELF section headers %d/%d: %s\n",
+-			    i, shnum, strerror(errno));
++			die("Cannot read ELF section headers %d/%llu: %s\n",
++			    i, (__u64)shnum, strerror(errno));
+ 		sec->shdr.sh_name      = elf_word_to_cpu(shdr.sh_name);
+ 		sec->shdr.sh_type      = elf_word_to_cpu(shdr.sh_type);
+ 		sec->shdr.sh_flags     = elf_xword_to_cpu(shdr.sh_flags);
+@@ -451,12 +452,11 @@ static void read_strtabs(FILE *fp)
  		sec->strtab = malloc(sec->shdr.sh_size);
  		if (!sec->strtab) {
  			die("malloc of %llu bytes for strtab failed\n",
@@ -43,7 +67,7 @@ index 9192b77a0df7..4151bb96e6be 100644
  		}
  		if (fread(sec->strtab, 1, sec->shdr.sh_size, fp)
  		    != sec->shdr.sh_size) {
-@@ -461,12 +461,11 @@ static void read_symtabs(FILE *fp)
+@@ -477,12 +477,11 @@ static void read_symtabs(FILE *fp)
  		sec->symtab = malloc(sec->shdr.sh_size);
  		if (!sec->symtab) {
  			die("malloc of %llu bytes for symtab failed\n",
@@ -58,7 +82,7 @@ index 9192b77a0df7..4151bb96e6be 100644
  		}
  		if (fread(sec->symtab, 1, sec->shdr.sh_size, fp)
  		    != sec->shdr.sh_size) {
-@@ -495,12 +494,11 @@ static void read_relocs(FILE *fp)
+@@ -511,12 +510,11 @@ static void read_relocs(FILE *fp)
  		sec->reltab = malloc(sec->shdr.sh_size);
  		if (!sec->reltab) {
  			die("malloc of %llu bytes for relocs failed\n",

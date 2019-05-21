@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 18 May 2019 12:19:35 +0200
+Subject: [PATCH] {MAYBE UPS} samples/vfs/test-statx: remove unused attribute
+
+statx is used, and clang does not like it:
+
+    samples/vfs/test-statx.c:199:16: warning: implicit conversion
+    changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+        for (offset = from; offset < to; offset++) {
+                    ~ ^~~~
+---
+ samples/vfs/test-statx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/samples/vfs/test-statx.c b/samples/vfs/test-statx.c
+index e91f918e84c4..a27fe6885f67 100644
+--- a/samples/vfs/test-statx.c
++++ b/samples/vfs/test-statx.c
+@@ -40,7 +40,7 @@
+ #define __NR_statx -1
+ #endif
+ 
+-static __attribute__((unused))
++static
+ ssize_t statx(int dfd, const char *filename, unsigned flags,
+ 	      unsigned int mask, struct statx *buffer)
+ {
+-- 

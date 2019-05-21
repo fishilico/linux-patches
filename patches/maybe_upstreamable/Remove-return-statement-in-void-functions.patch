@@ -36,10 +36,10 @@ index d8a6a5864c2e..0ea8e3203a32 100644
  
  int __class_register(struct class *cls, struct lock_class_key *key)
 diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 36855c1f8daf..0202a1395a72 100644
+index b16645b417d9..4bd2ab5eed04 100644
 --- a/fs/fs-writeback.c
 +++ b/fs/fs-writeback.c
-@@ -2395,7 +2395,7 @@ EXPORT_SYMBOL(writeback_inodes_sb_nr);
+@@ -2400,7 +2400,7 @@ EXPORT_SYMBOL(writeback_inodes_sb_nr);
   */
  void writeback_inodes_sb(struct super_block *sb, enum wb_reason reason)
  {
@@ -49,10 +49,10 @@ index 36855c1f8daf..0202a1395a72 100644
  EXPORT_SYMBOL(writeback_inodes_sb);
  
 diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
-index 6be86c1c5c58..cd547f59e35f 100644
+index 480e5b2a5748..097e23fd4ab3 100644
 --- a/include/asm-generic/tlb.h
 +++ b/include/asm-generic/tlb.h
-@@ -193,7 +193,7 @@ static inline bool __tlb_remove_page(struct mmu_gather *tlb, struct page *page)
+@@ -424,7 +424,7 @@ static inline bool __tlb_remove_page(struct mmu_gather *tlb, struct page *page)
   */
  static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
  {
@@ -60,7 +60,7 @@ index 6be86c1c5c58..cd547f59e35f 100644
 +	tlb_remove_page_size(tlb, page, PAGE_SIZE);
  }
  
- #ifndef tlb_remove_check_page_size_change
+ static inline void tlb_change_page_size(struct mmu_gather *tlb,
 diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
 index 8ae9a95ebf5b..024154a86c8c 100644
 --- a/include/linux/clockchips.h
@@ -88,7 +88,7 @@ index f2565a103158..cd7670dbb361 100644
  
  int alg_test(const char *driver, const char *alg, u32 type, u32 mask);
 diff --git a/include/linux/device.h b/include/linux/device.h
-index 4e6987e11f68..e243221c6b0a 100644
+index e85264fb6616..5ebf048c7471 100644
 --- a/include/linux/device.h
 +++ b/include/linux/device.h
 @@ -498,7 +498,7 @@ static inline int __must_check class_create_file(struct class *class,
@@ -110,7 +110,7 @@ index 4e6987e11f68..e243221c6b0a 100644
  
  extern int __must_check devm_device_add_groups(struct device *dev,
 diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 75e60be91e5f..917312ddee91 100644
+index 6309a721394b..cd35b064411c 100644
 --- a/include/linux/dma-mapping.h
 +++ b/include/linux/dma-mapping.h
 @@ -585,21 +585,21 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
@@ -195,10 +195,10 @@ index 8ddf79e9207a..3bb6fe1e0a4f 100644
  }
  
 diff --git a/include/linux/rhashtable.h b/include/linux/rhashtable.h
-index ae9c0f71f311..0e29e280cba1 100644
+index f7714d3b46bd..2b1ac703ca32 100644
 --- a/include/linux/rhashtable.h
 +++ b/include/linux/rhashtable.h
-@@ -1137,7 +1137,7 @@ static inline int rhashtable_replace_fast(
+@@ -1249,7 +1249,7 @@ static inline int rhashtable_replace_fast(
  static inline void rhltable_walk_enter(struct rhltable *hlt,
  				       struct rhashtable_iter *iter)
  {
@@ -207,7 +207,7 @@ index ae9c0f71f311..0e29e280cba1 100644
  }
  
  /**
-@@ -1153,12 +1153,12 @@ static inline void rhltable_free_and_destroy(struct rhltable *hlt,
+@@ -1265,12 +1265,12 @@ static inline void rhltable_free_and_destroy(struct rhltable *hlt,
  							     void *arg),
  					     void *arg)
  {
@@ -223,10 +223,10 @@ index ae9c0f71f311..0e29e280cba1 100644
  
  #endif /* _LINUX_RHASHTABLE_H */
 diff --git a/lib/rhashtable.c b/lib/rhashtable.c
-index 97f59abc3e92..ca51ade293c7 100644
+index 6529fe1b45c1..e7c0186645be 100644
 --- a/lib/rhashtable.c
 +++ b/lib/rhashtable.c
-@@ -1175,7 +1175,7 @@ EXPORT_SYMBOL_GPL(rhashtable_free_and_destroy);
+@@ -1162,7 +1162,7 @@ EXPORT_SYMBOL_GPL(rhashtable_free_and_destroy);
  
  void rhashtable_destroy(struct rhashtable *ht)
  {

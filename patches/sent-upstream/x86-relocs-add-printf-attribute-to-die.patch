@@ -36,11 +36,11 @@ Sent-upstream: https://patchwork.kernel.org/patch/9604651/
  3 files changed, 20 insertions(+), 16 deletions(-)
 
 diff --git a/arch/x86/tools/relocs.c b/arch/x86/tools/relocs.c
-index b629f6992d9f..9192b77a0df7 100644
+index ce7188cbdae5..3e7c86934d1d 100644
 --- a/arch/x86/tools/relocs.c
 +++ b/arch/x86/tools/relocs.c
-@@ -400,8 +400,8 @@ static void read_shdrs(FILE *fp)
- 		    ehdr.e_shnum);
+@@ -416,8 +416,8 @@ static void read_shdrs(FILE *fp)
+ 		    shnum);
  	}
  	if (fseek(fp, ehdr.e_shoff, SEEK_SET) < 0) {
 -		die("Seek to %d failed: %s\n",
@@ -48,9 +48,9 @@ index b629f6992d9f..9192b77a0df7 100644
 +		die("Seek to %llu failed: %s\n",
 +			(unsigned long long)ehdr.e_shoff, strerror(errno));
  	}
- 	for (i = 0; i < ehdr.e_shnum; i++) {
+ 	for (i = 0; i < shnum; i++) {
  		struct section *sec = &secs[i];
-@@ -434,12 +434,13 @@ static void read_strtabs(FILE *fp)
+@@ -450,12 +450,13 @@ static void read_strtabs(FILE *fp)
  		}
  		sec->strtab = malloc(sec->shdr.sh_size);
  		if (!sec->strtab) {
@@ -68,7 +68,7 @@ index b629f6992d9f..9192b77a0df7 100644
  		}
  		if (fread(sec->strtab, 1, sec->shdr.sh_size, fp)
  		    != sec->shdr.sh_size) {
-@@ -459,12 +460,13 @@ static void read_symtabs(FILE *fp)
+@@ -475,12 +476,13 @@ static void read_symtabs(FILE *fp)
  		}
  		sec->symtab = malloc(sec->shdr.sh_size);
  		if (!sec->symtab) {
@@ -86,7 +86,7 @@ index b629f6992d9f..9192b77a0df7 100644
  		}
  		if (fread(sec->symtab, 1, sec->shdr.sh_size, fp)
  		    != sec->shdr.sh_size) {
-@@ -492,12 +494,13 @@ static void read_relocs(FILE *fp)
+@@ -508,12 +510,13 @@ static void read_relocs(FILE *fp)
  		}
  		sec->reltab = malloc(sec->shdr.sh_size);
  		if (!sec->reltab) {

@@ -37,7 +37,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  create mode 100644 include/linux/flex_array.h
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 000a2f4c0e92..8b41e474392d 100644
+index 549c64df9708..8a16ed4a20d8 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -51,7 +51,7 @@
@@ -67,10 +67,10 @@ index 2b445c8d3fcd..3e39b6f4da06 100644
  #include <linux/i8253.h>
  
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
-index b3d2241e03f8..d4a4e3da9484 100644
+index e935318804f8..33cafe921495 100644
 --- a/include/asm-generic/uaccess.h
 +++ b/include/asm-generic/uaccess.h
-@@ -73,6 +73,20 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
+@@ -129,6 +129,20 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
  	__pu_err;						\
  })
  
@@ -91,7 +91,7 @@ index b3d2241e03f8..d4a4e3da9484 100644
  #define put_user(x, ptr)					\
  ({								\
  	void __user *__p = (ptr);				\
-@@ -81,6 +95,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
+@@ -137,6 +151,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
  		__put_user((x), ((__typeof__(*(ptr)) __user *)__p)) :	\
  		-EFAULT;					\
  })
@@ -100,7 +100,7 @@ index b3d2241e03f8..d4a4e3da9484 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index a1de321d5018..74243f845734 100644
+index 6e136271aaab..1bbf65e5f4c9 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
@@ -132,7 +132,7 @@ index a1de321d5018..74243f845734 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index ba814f18cb4c..816636acba08 100644
+index 19e58b9138a0..70dfdfaf426b 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -4,7 +4,7 @@
@@ -145,10 +145,10 @@ index ba814f18cb4c..816636acba08 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __safe		__attribute__((safe))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 147bdec42215..86002a9186c0 100644
+index 21755471b1c3..874e6599d339 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -835,9 +835,14 @@ set_cpu_active(unsigned int cpu, bool active)
+@@ -834,9 +834,14 @@ set_cpu_active(unsigned int cpu, bool active)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -377,10 +377,10 @@ index 000000000000..ffd6208aabbd
 +
 +#endif /* _FLEX_ARRAY_H */
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 26c3b99d823f..0b12e0adbd8f 100644
+index b7a853d9a376..ee0299c254ce 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
-@@ -260,6 +260,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
+@@ -250,6 +250,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
   *
   * Return: an absolute value of x.
   */
@@ -391,7 +391,7 @@ index 26c3b99d823f..0b12e0adbd8f 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -274,6 +278,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
+@@ -264,6 +268,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -422,7 +422,7 @@ index 76afcd24ff8c..20cc3cfb6725 100644
  #define PHYS_ADDR_MAX	(~(phys_addr_t)0)
  
 diff --git a/include/linux/math64.h b/include/linux/math64.h
-index bb2c84afb80c..9a4ed3a11c71 100644
+index 65bef21cdddb..e6cb757492f3 100644
 --- a/include/linux/math64.h
 +++ b/include/linux/math64.h
 @@ -148,9 +148,11 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
@@ -453,12 +453,12 @@ index db2f3f454a1b..5124ce3698dc 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/overflow.h b/include/linux/overflow.h
-index 40b48e2133cb..0262548f9fc5 100644
+index 659045046468..c60209574fc5 100644
 --- a/include/linux/overflow.h
 +++ b/include/linux/overflow.h
-@@ -37,7 +37,7 @@
- #define type_min(T) ((T)((T)-type_max(T)-(T)1))
- 
+@@ -43,7 +43,7 @@
+ #define is_non_negative(a) ((a) > 0 || (a) == 0)
+ #define is_negative(a) (!(is_non_negative(a)))
  
 -#ifdef COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW
 +#if !defined(__FRAMAC__) && defined(COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW)
@@ -466,7 +466,7 @@ index 40b48e2133cb..0262548f9fc5 100644
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 77448215ef5b..dd4841af0f14 100644
+index 4a5a84d7bdd4..f3aa2cb0b977 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -137,6 +137,8 @@ typedef int __bitwise pci_power_t;
@@ -487,7 +487,7 @@ index 77448215ef5b..dd4841af0f14 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 20b2a55ba229..2e77007a32db 100644
+index 440ae066a368..808bfa4754ff 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -233,6 +233,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
@@ -549,10 +549,10 @@ index 2fce8b6876e9..357ff7b0ecdd 100644
  #else
  #define __bitwise__
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 227ba170298e..6d2754033c69 100644
+index a1eb44dc9ff5..840b63b7e671 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1211,7 +1211,7 @@ static void print_fatal_signal(int signr)
+@@ -1214,7 +1214,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  
@@ -562,7 +562,7 @@ index 227ba170298e..6d2754033c69 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index c3f756f8534b..c9e6d125cefe 100644
+index 7f7d6914ddd5..77e52e82729b 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
 @@ -519,17 +519,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);

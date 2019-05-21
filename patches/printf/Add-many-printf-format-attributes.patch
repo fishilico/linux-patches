@@ -4,47 +4,43 @@ Date: Sun, 28 Jun 2015 15:24:06 +0800
 Subject: [PATCH] {PRINTF} Add many printf format attributes
 
 ---
- arch/x86/boot/tools/build.c            |  3 ++-
- drivers/acpi/acpica/acutils.h          |  6 +++---
- drivers/acpi/acpica/nsrepair2.c        |  2 +-
- drivers/acpi/acpica/utdebug.c          |  2 +-
- drivers/clk/clkdev.c                   |  7 ++++---
- drivers/iio/industrialio-trigger.c     |  3 ++-
- drivers/isdn/capi/capiutil.c           |  4 ++--
- drivers/isdn/hisax/fsm.h               |  2 +-
- drivers/isdn/hisax/hisax.h             |  2 +-
- drivers/isdn/hisax/hisax_isac.c        |  2 +-
- drivers/isdn/hisax/isdnl1.c            |  2 +-
- drivers/isdn/hisax/isdnl2.c            |  2 +-
- drivers/isdn/hisax/tei.c               |  6 +++---
- drivers/isdn/hysdn/hysdn_boot.c        |  4 ++--
- drivers/isdn/hysdn/hysdn_defs.h        |  3 ++-
- drivers/isdn/hysdn/hysdn_procconf.c    | 12 +++++++-----
- drivers/isdn/hysdn/hysdn_proclog.c     |  2 +-
- drivers/isdn/hysdn/hysdn_sched.c       |  2 +-
- drivers/pnp/interface.c                |  2 +-
- drivers/scsi/BusLogic.c                |  6 +++---
- drivers/scsi/esas2r/esas2r_log.c       |  8 ++++----
- drivers/staging/fbtft/fb_agm1264k-fl.c |  2 +-
- drivers/staging/fbtft/fb_ra8875.c      |  2 +-
- drivers/staging/fbtft/fbtft-io.c       | 12 ++++++------
- drivers/staging/fbtft/fbtft.h          |  2 +-
- drivers/staging/fbtft/fbtft_device.c   |  2 +-
- drivers/xen/xenbus/xenbus_client.c     | 10 ++++++----
- include/acpi/acpiosxf.h                |  3 ++-
- include/linux/iio/iio.h                |  2 +-
- include/linux/iio/trigger_consumer.h   |  2 +-
- include/linux/trace_events.h           |  3 ++-
- kernel/audit.c                         |  4 ++--
- kernel/trace/trace.h                   |  8 +++++---
- kernel/trace/trace_output.c            |  6 +++---
- net/dccp/ccid.c                        |  3 ++-
- net/tipc/netlink_compat.c              |  2 +-
- scripts/mod/modpost.h                  |  6 +++---
- scripts/unifdef.c                      |  2 +-
- security/tomoyo/common.c               |  3 ++-
- security/tomoyo/common.h               |  4 ++--
- 40 files changed, 87 insertions(+), 73 deletions(-)
+ arch/x86/boot/tools/build.c          |  3 ++-
+ drivers/acpi/acpica/acutils.h        |  6 +++---
+ drivers/acpi/acpica/nsrepair2.c      |  2 +-
+ drivers/acpi/acpica/utdebug.c        |  2 +-
+ drivers/clk/clkdev.c                 |  7 ++++---
+ drivers/iio/industrialio-trigger.c   |  3 ++-
+ drivers/isdn/capi/capiutil.c         |  4 ++--
+ drivers/isdn/hisax/fsm.h             |  2 +-
+ drivers/isdn/hisax/hisax.h           |  2 +-
+ drivers/isdn/hisax/hisax_isac.c      |  2 +-
+ drivers/isdn/hisax/isdnl1.c          |  2 +-
+ drivers/isdn/hisax/isdnl2.c          |  2 +-
+ drivers/isdn/hisax/tei.c             |  6 +++---
+ drivers/isdn/hysdn/hysdn_boot.c      |  4 ++--
+ drivers/isdn/hysdn/hysdn_defs.h      |  3 ++-
+ drivers/isdn/hysdn/hysdn_procconf.c  | 12 +++++++-----
+ drivers/isdn/hysdn/hysdn_proclog.c   |  2 +-
+ drivers/isdn/hysdn/hysdn_sched.c     |  2 +-
+ drivers/pnp/interface.c              |  2 +-
+ drivers/scsi/BusLogic.c              |  6 +++---
+ drivers/scsi/esas2r/esas2r_log.c     |  8 ++++----
+ drivers/staging/fbtft/fbtft.h        |  2 +-
+ drivers/xen/xenbus/xenbus_client.c   | 10 ++++++----
+ include/acpi/acpiosxf.h              |  3 ++-
+ include/linux/iio/iio.h              |  2 +-
+ include/linux/iio/trigger_consumer.h |  2 +-
+ include/linux/trace_events.h         |  3 ++-
+ kernel/audit.c                       |  4 ++--
+ kernel/trace/trace.h                 |  8 +++++---
+ kernel/trace/trace_output.c          |  6 +++---
+ net/dccp/ccid.c                      |  3 ++-
+ net/tipc/netlink_compat.c            |  2 +-
+ scripts/mod/modpost.h                |  6 +++---
+ scripts/unifdef.c                    |  2 +-
+ security/tomoyo/common.c             |  3 ++-
+ security/tomoyo/common.h             |  4 ++--
+ 36 files changed, 78 insertions(+), 64 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index a93d44e58f9c..73349d9a27be 100644
@@ -87,7 +83,7 @@ index 9022537567e9..0d6dfcf3d59a 100644
  			      u32 line_number,
  			      char *pathname,
 diff --git a/drivers/acpi/acpica/nsrepair2.c b/drivers/acpi/acpica/nsrepair2.c
-index d5804a6d1d65..613b57f4918b 100644
+index 8d776256b213..ee496ad56b84 100644
 --- a/drivers/acpi/acpica/nsrepair2.c
 +++ b/drivers/acpi/acpica/nsrepair2.c
 @@ -271,7 +271,7 @@ acpi_ns_repair_FDE(struct acpi_evaluate_info *info,
@@ -113,10 +109,10 @@ index 01b1b36c8a8e..262722b4eacc 100644
  #ifdef ACPI_APPLICATION
  	/*
 diff --git a/drivers/clk/clkdev.c b/drivers/clk/clkdev.c
-index 6e787cc9e5b9..6db8e7ac0cff 100644
+index 2afc8df8acff..023c166e2f2c 100644
 --- a/drivers/clk/clkdev.c
 +++ b/drivers/clk/clkdev.c
-@@ -155,7 +155,7 @@ struct clk_lookup_alloc {
+@@ -156,7 +156,7 @@ struct clk_lookup_alloc {
  	char	con_id[MAX_CON_ID];
  };
  
@@ -125,7 +121,7 @@ index 6e787cc9e5b9..6db8e7ac0cff 100644
  vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	va_list ap)
  {
-@@ -179,7 +179,7 @@ vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
+@@ -180,7 +180,7 @@ vclkdev_alloc(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	return &cla->cl;
  }
  
@@ -134,7 +130,7 @@ index 6e787cc9e5b9..6db8e7ac0cff 100644
  vclkdev_create(struct clk_hw *hw, const char *con_id, const char *dev_fmt,
  	va_list ap)
  {
-@@ -295,7 +295,8 @@ void clkdev_drop(struct clk_lookup *cl)
+@@ -296,7 +296,8 @@ void clkdev_drop(struct clk_lookup *cl)
  }
  EXPORT_SYMBOL(clkdev_drop);
  
@@ -145,10 +141,10 @@ index 6e787cc9e5b9..6db8e7ac0cff 100644
  						const char *dev_id, ...)
  {
 diff --git a/drivers/iio/industrialio-trigger.c b/drivers/iio/industrialio-trigger.c
-index ce66699c7fcc..33c81a41861f 100644
+index e5b538379ed1..6fc7addb4b66 100644
 --- a/drivers/iio/industrialio-trigger.c
 +++ b/drivers/iio/industrialio-trigger.c
-@@ -516,7 +516,8 @@ static void iio_trig_subirqunmask(struct irq_data *d)
+@@ -519,7 +519,8 @@ static void iio_trig_subirqunmask(struct irq_data *d)
  	trig->subirqs[d->irq - trig->subirq_base].enabled = true;
  }
  
@@ -431,116 +427,19 @@ index 65fdf22b0ba9..3349670b09de 100644
  {
  	if (level <= event_log_level) {
  		unsigned long flags = 0;
-diff --git a/drivers/staging/fbtft/fb_agm1264k-fl.c b/drivers/staging/fbtft/fb_agm1264k-fl.c
-index 8f27bd8da17d..d4dca3ce4db0 100644
---- a/drivers/staging/fbtft/fb_agm1264k-fl.c
-+++ b/drivers/staging/fbtft/fb_agm1264k-fl.c
-@@ -406,7 +406,7 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- static int write(struct fbtft_par *par, void *buf, size_t len)
- {
- 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--			  "%s(len=%d): ", __func__, len);
-+			  "%s(len=%zu): ", __func__, len);
- 
- 	gpiod_set_value(par->RW, 0); /* set write mode */
- 
-diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
-index 70b37fc7fb66..398bdbf53c9a 100644
---- a/drivers/staging/fbtft/fb_ra8875.c
-+++ b/drivers/staging/fbtft/fb_ra8875.c
-@@ -24,7 +24,7 @@ static int write_spi(struct fbtft_par *par, void *buf, size_t len)
- 	struct spi_message m;
- 
- 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--			  "%s(len=%d): ", __func__, len);
-+			  "%s(len=%zu): ", __func__, len);
- 
- 	if (!par->spi) {
- 		dev_err(par->info->device,
-diff --git a/drivers/staging/fbtft/fbtft-io.c b/drivers/staging/fbtft/fbtft-io.c
-index 38cdad6203ea..0863d257d762 100644
---- a/drivers/staging/fbtft/fbtft-io.c
-+++ b/drivers/staging/fbtft/fbtft-io.c
-@@ -14,7 +14,7 @@ int fbtft_write_spi(struct fbtft_par *par, void *buf, size_t len)
- 	struct spi_message m;
- 
- 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--			  "%s(len=%d): ", __func__, len);
-+			  "%s(len=%zu): ", __func__, len);
- 
- 	if (!par->spi) {
- 		dev_err(par->info->device,
-@@ -47,7 +47,7 @@ int fbtft_write_spi_emulate_9(struct fbtft_par *par, void *buf, size_t len)
- 	u64 val, dc, tmp;
- 
- 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--			  "%s(len=%d): ", __func__, len);
-+			  "%s(len=%zu): ", __func__, len);
- 
- 	if (!par->extra) {
- 		dev_err(par->info->device, "%s: error: par->extra is NULL\n",
-@@ -109,7 +109,7 @@ int fbtft_read_spi(struct fbtft_par *par, void *buf, size_t len)
- 		txbuf[0] = par->startbyte | 0x3;
- 		t.tx_buf = txbuf;
- 		fbtft_par_dbg_hex(DEBUG_READ, par, par->info->device, u8,
--				  txbuf, len, "%s(len=%d) txbuf => ",
-+				  txbuf, len, "%s(len=%zu) txbuf => ",
- 				  __func__, len);
- 	}
- 
-@@ -117,7 +117,7 @@ int fbtft_read_spi(struct fbtft_par *par, void *buf, size_t len)
- 	spi_message_add_tail(&t, &m);
- 	ret = spi_sync(par->spi, &m);
- 	fbtft_par_dbg_hex(DEBUG_READ, par, par->info->device, u8, buf, len,
--			  "%s(len=%d) buf <= ", __func__, len);
-+			  "%s(len=%zu) buf <= ", __func__, len);
- 
- 	return ret;
- }
-@@ -136,7 +136,7 @@ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
- #endif
- 
- 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--			  "%s(len=%d): ", __func__, len);
-+			  "%s(len=%zu): ", __func__, len);
- 
- 	while (len--) {
- 		data = *(u8 *)buf;
-@@ -186,7 +186,7 @@ int fbtft_write_gpio16_wr(struct fbtft_par *par, void *buf, size_t len)
- #endif
- 
- 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--			  "%s(len=%d): ", __func__, len);
-+			  "%s(len=%zu): ", __func__, len);
- 
- 	while (len) {
- 		data = *(u16 *)buf;
 diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index 7fdd3b0851ef..d4e2d8d3cb04 100644
+index 9b6bdb62093d..8a3e3ec21d8a 100644
 --- a/drivers/staging/fbtft/fbtft.h
 +++ b/drivers/staging/fbtft/fbtft.h
-@@ -239,7 +239,7 @@ struct fbtft_par {
- /* fbtft-core.c */
+@@ -240,7 +240,7 @@ struct fbtft_par {
  int fbtft_write_buf_dc(struct fbtft_par *par, void *buf, size_t len, int dc);
+ __printf(5, 6)
  void fbtft_dbg_hex(const struct device *dev, int groupsize,
 -		   void *buf, size_t len, const char *fmt, ...);
 +		   void *buf, size_t len, const char *fmt, ...) __printf(5, 6);
  struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
  					struct device *dev,
  					struct fbtft_platform_data *pdata);
-diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
-index 5f6cd0816d58..44e1410eb3fe 100644
---- a/drivers/staging/fbtft/fbtft_device.c
-+++ b/drivers/staging/fbtft/fbtft_device.c
-@@ -965,7 +965,7 @@ static int write_gpio16_wr_slow(struct fbtft_par *par, void *buf, size_t len)
- #endif
- 
- 	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
--			  "%s(len=%d): ", __func__, len);
-+			  "%s(len=%zu): ", __func__, len);
- 
- 	while (len) {
- 		data = *(u16 *)buf;
 diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
 index e17ca8156171..306c1196fedb 100644
 --- a/drivers/xen/xenbus/xenbus_client.c
@@ -588,7 +487,7 @@ index 1b59fb61f67d..b284524b5655 100644
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
 diff --git a/include/linux/iio/iio.h b/include/linux/iio/iio.h
-index a74cb177dc6f..bcc67704517f 100644
+index bb10c1bee301..523eb9b1274f 100644
 --- a/include/linux/iio/iio.h
 +++ b/include/linux/iio/iio.h
 @@ -694,7 +694,7 @@ void iio_device_free(struct iio_dev *indio_dev);
@@ -628,7 +527,7 @@ index 8a62731673f7..b809229827d3 100644
  struct event_filter;
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index c89ea48c70a6..f538785b6606 100644
+index b96bf69183f4..0b679b19a7da 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
 @@ -1846,8 +1846,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
@@ -643,10 +542,10 @@ index c89ea48c70a6..f538785b6606 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index d80cee49e0eb..e092dead1f47 100644
+index 1974ce818ddb..a6b900875d3d 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -849,15 +849,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -846,15 +846,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -706,7 +605,7 @@ index 90f77d08cc37..f39d321c8af2 100644
  	struct kmem_cache *slab;
  	va_list args;
 diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
-index 340a6e7c43a7..4ca86d5bbc35 100644
+index c6a04c09d075..7bfe7fb1022e 100644
 --- a/net/tipc/netlink_compat.c
 +++ b/net/tipc/netlink_compat.c
 @@ -117,7 +117,7 @@ static void tipc_tlv_init(struct sk_buff *skb, u16 type)
@@ -746,7 +645,7 @@ index db00e3e30a59..67d4e1b13f3d 100644
  {
  	va_list ap;
 diff --git a/security/tomoyo/common.c b/security/tomoyo/common.c
-index 57988d95d33d..f26d86e276e1 100644
+index dd3d5942e669..c54e1f20f394 100644
 --- a/security/tomoyo/common.c
 +++ b/security/tomoyo/common.c
 @@ -193,7 +193,8 @@ const char *tomoyo_yesno(const unsigned int value)

@@ -8,11 +8,11 @@ This reverts commit 2a418cf3f5f1caf911af288e978d61c9844b0695.
 
 clang does not support asm goto yet.
 ---
- arch/x86/include/asm/uaccess.h | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ arch/x86/include/asm/uaccess.h | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index 1954dd5552a2..15343bbb646d 100644
+index c82abd6e4ca3..8eb4abfe3284 100644
 --- a/arch/x86/include/asm/uaccess.h
 +++ b/arch/x86/include/asm/uaccess.h
 @@ -280,7 +280,7 @@ do {									\
@@ -24,14 +24,15 @@ index 1954dd5552a2..15343bbb646d 100644
  		break;							\
  	default:							\
  		__put_user_bad();					\
-@@ -427,10 +427,8 @@ do {									\
+@@ -427,11 +427,8 @@ do {									\
  ({								\
  	__label__ __pu_label;					\
  	int __pu_err = -EFAULT;					\
--	__typeof__(*(ptr)) __pu_val;				\
--	__pu_val = x;						\
+-	__typeof__(*(ptr)) __pu_val = (x);			\
+-	__typeof__(ptr) __pu_ptr = (ptr);			\
+-	__typeof__(size) __pu_size = (size);			\
  	__uaccess_begin();					\
--	__put_user_size(__pu_val, (ptr), (size), __pu_label);	\
+-	__put_user_size(__pu_val, __pu_ptr, __pu_size, __pu_label);	\
 +	__put_user_size((x), (ptr), (size), __pu_label);	\
  	__pu_err = 0;						\
  __pu_label:							\

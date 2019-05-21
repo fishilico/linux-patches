@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 12 May 2019 23:34:11 +0200
+Subject: [PATCH] {CONSTIFY} drivers/infiniband/hw/hfi1: constify formats
+
+---
+ drivers/infiniband/hw/hfi1/trace_dbg.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/infiniband/hw/hfi1/trace_dbg.h b/drivers/infiniband/hw/hfi1/trace_dbg.h
+index fd51336704bb..70480908686e 100644
+--- a/drivers/infiniband/hw/hfi1/trace_dbg.h
++++ b/drivers/infiniband/hw/hfi1/trace_dbg.h
+@@ -93,14 +93,14 @@ DECLARE_EVENT_CLASS(hfi1_trace_template,
+  * actual function to work and can not be in a macro.
+  */
+ #define __hfi1_trace_def(lvl) \
+-void __printf(2, 3) __hfi1_trace_##lvl(const char *funct, char *fmt, ...); \
++void __printf(2, 3) __hfi1_trace_##lvl(const char *funct, const char *fmt, ...); \
+ 									\
+ DEFINE_EVENT(hfi1_trace_template, hfi1_ ##lvl,				\
+ 	TP_PROTO(const char *function, struct va_format *vaf),		\
+ 	TP_ARGS(function, vaf))
+ 
+ #define __hfi1_trace_fn(lvl) \
+-void __printf(2, 3) __hfi1_trace_##lvl(const char *func, char *fmt, ...)\
++void __printf(2, 3) __hfi1_trace_##lvl(const char *func, const char *fmt, ...)\
+ {									\
+ 	struct va_format vaf = {					\
+ 		.fmt = fmt,						\
+-- 

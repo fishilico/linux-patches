@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 12 May 2019 13:54:30 +0200
+Subject: [PATCH] {PRINTF} drivers/staging/fieldbus/anybuss: silence
+ -Wformat-security
+
+---
+ drivers/staging/fieldbus/anybuss/host.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/fieldbus/anybuss/host.c b/drivers/staging/fieldbus/anybuss/host.c
+index f69dc4930457..d8a54b920488 100644
+--- a/drivers/staging/fieldbus/anybuss/host.c
++++ b/drivers/staging/fieldbus/anybuss/host.c
+@@ -1356,7 +1356,7 @@ anybuss_host_common_probe(struct device *dev,
+ 	reset_assert(cd);
+ 	atomic_set(&cd->ind_ab, IND_AB_UPDATED);
+ 	/* fire up the queue thread */
+-	cd->qthread = kthread_run(qthread_fn, cd, dev_name(dev));
++	cd->qthread = kthread_run(qthread_fn, cd, "%s", dev_name(dev));
+ 	if (IS_ERR(cd->qthread)) {
+ 		dev_err(dev, "could not create kthread");
+ 		ret = PTR_ERR(cd->qthread);
+-- 

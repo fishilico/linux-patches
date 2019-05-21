@@ -38,6 +38,7 @@ This fixes errors like:
  drivers/net/hamradio/baycom_epp.c            |   5 +-
  drivers/net/hamradio/mkiss.c                 |  14 +-
  drivers/net/wan/z85230.c                     |   4 +-
+ drivers/net/wireless/intel/iwlwifi/fw/dbg.c  |   8 +-
  drivers/remoteproc/keystone_remoteproc.c     |   5 +-
  drivers/scsi/esas2r/esas2r_log.c             |   6 +-
  drivers/scsi/fnic/fnic_trace.c               |   5 +-
@@ -52,7 +53,7 @@ This fixes errors like:
  net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
- 26 files changed, 165 insertions(+), 270 deletions(-)
+ 27 files changed, 169 insertions(+), 274 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 75bc18646df6..10d4e7064572 100644
@@ -170,10 +171,10 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 667f1da36208..b35110266f4e 100644
+index 46df4c6aae46..86ef167972d5 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
-@@ -417,15 +417,6 @@ static noinline int vmalloc_fault(unsigned long address)
+@@ -416,15 +416,6 @@ static noinline int vmalloc_fault(unsigned long address)
  }
  NOKPROBE_SYMBOL(vmalloc_fault);
  
@@ -189,7 +190,7 @@ index 667f1da36208..b35110266f4e 100644
  /*
   * No vm86 mode in 64-bit mode:
   */
-@@ -527,7 +518,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+@@ -526,7 +517,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  	address |= 0xffffffffUL << 32;
  	if ((address >= (u64)_stext && address <= (u64)_etext) ||
  	    (address >= MODULES_VADDR && address <= MODULES_END)) {
@@ -237,10 +238,10 @@ index 42f879b75f9b..9387220e6fd8 100644
  	/* Test that a 1 KiB IMR @ zero with read/write all will bomb out. */
  	ret = imr_add_range(0, IMR_ALIGN, IMR_READ_ACCESS_ALL,
 diff --git a/drivers/clk/ti/adpll.c b/drivers/clk/ti/adpll.c
-index f9cc28e86505..b5184f313af0 100644
+index fb77c7e10e16..927add5bab7e 100644
 --- a/drivers/clk/ti/adpll.c
 +++ b/drivers/clk/ti/adpll.c
-@@ -816,13 +816,12 @@ static int ti_adpll_init_registers(struct ti_adpll_data *d)
+@@ -817,13 +817,12 @@ static int ti_adpll_init_registers(struct ti_adpll_data *d)
  
  static int ti_adpll_init_inputs(struct ti_adpll_data *d)
  {
@@ -292,7 +293,7 @@ index 41f2a9f6851d..66126653303e 100644
  	pti_write_to_aperture(&mccontrol, control_frame, strlen(control_frame));
  }
 diff --git a/drivers/net/appletalk/ipddp.c b/drivers/net/appletalk/ipddp.c
-index 3d27616d9c85..8ddb64921ddd 100644
+index 51cf5eca9c7f..923540550d4c 100644
 --- a/drivers/net/appletalk/ipddp.c
 +++ b/drivers/net/appletalk/ipddp.c
 @@ -37,8 +37,6 @@
@@ -436,6 +437,34 @@ index 0e56ab0aed9a..7b043be6c9a5 100644
  	return 0;
  }
  module_init(z85230_init_driver);
+diff --git a/drivers/net/wireless/intel/iwlwifi/fw/dbg.c b/drivers/net/wireless/intel/iwlwifi/fw/dbg.c
+index 5f52e40a2903..1204388c9f06 100644
+--- a/drivers/net/wireless/intel/iwlwifi/fw/dbg.c
++++ b/drivers/net/wireless/intel/iwlwifi/fw/dbg.c
+@@ -2469,19 +2469,19 @@ static void iwl_fw_dbg_update_regions(struct iwl_fw_runtime *fwrt,
+ {
+ 	void *iter = (void *)tlv->region_config;
+ 	int i, size = le32_to_cpu(tlv->num_regions);
+-	const char *err_st =
+-		"WRT: ext=%d. Invalid region %s %d for apply point %d\n";
+ 
+ 	for (i = 0; i < size; i++) {
+ 		struct iwl_fw_ini_region_cfg *reg = iter, **active;
+ 		int id = le32_to_cpu(reg->region_id);
+ 		u32 type = le32_to_cpu(reg->region_type);
+ 
+-		if (WARN(id >= ARRAY_SIZE(fwrt->dump.active_regs), err_st, ext,
++		if (WARN(id >= ARRAY_SIZE(fwrt->dump.active_regs),
++			 "WRT: ext=%d. Invalid region %s %d for apply point %d\n", ext,
+ 			 "id", id, pnt))
+ 			break;
+ 
+-		if (WARN(type == 0 || type >= IWL_FW_INI_REGION_NUM, err_st,
++		if (WARN(type == 0 || type >= IWL_FW_INI_REGION_NUM,
++			 "WRT: ext=%d. Invalid region %s %d for apply point %d\n",
+ 			 ext, "type", type, pnt))
+ 			break;
+ 
 diff --git a/drivers/remoteproc/keystone_remoteproc.c b/drivers/remoteproc/keystone_remoteproc.c
 index aaac31134e39..2027c75fe908 100644
 --- a/drivers/remoteproc/keystone_remoteproc.c
@@ -586,10 +615,10 @@ index 7971997cdead..560281a2716c 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 6ed4eb81e674..637aac580783 100644
+index 4079605d437a..91cb31fb10c5 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1569,9 +1569,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1573,9 +1573,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  }
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
@@ -599,7 +628,7 @@ index 6ed4eb81e674..637aac580783 100644
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -1773,7 +1770,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -1807,7 +1804,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -873,7 +902,7 @@ index e60be7bb55b0..d5e4fbbed620 100644
  
  NILFS_FEATURE_RO_ATTR(revision);
 diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
-index bb7159f697f2..8cd599fd47db 100644
+index 887ea8b3b000..967adef33153 100644
 --- a/fs/ntfs/super.c
 +++ b/fs/ntfs/super.c
 @@ -676,7 +676,6 @@ static bool is_boot_sector_ntfs(const struct super_block *sb,
@@ -1042,7 +1071,7 @@ index db6baf7cf6e9..f834c827338e 100644
  	}
  
 diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 8f8b7b6c2945..15dad0b3b94e 100644
+index d9c4360257ce..55f6cc62e529 100644
 --- a/net/core/net-sysfs.c
 +++ b/net/core/net-sysfs.c
 @@ -30,11 +30,6 @@
@@ -1211,7 +1240,7 @@ index 8f8b7b6c2945..15dad0b3b94e 100644
  	read_unlock(&dev_base_lock);
  	return ret;
 diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
-index bdccc46a2921..9519f1a702f8 100644
+index c1fa4785c4c2..601afd4f03df 100644
 --- a/net/decnet/af_decnet.c
 +++ b/net/decnet/af_decnet.c
 @@ -2348,14 +2348,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");

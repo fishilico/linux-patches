@@ -91,7 +91,7 @@ index 0a58e969f8b7..3de96740f15e 100644
  	if (ktype == &bus_ktype)
  		return 1;
 diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 4aeaa0c92bda..9d11bbe31584 100644
+index fd7511e04e62..d858812700df 100644
 --- a/drivers/base/core.c
 +++ b/drivers/base/core.c
 @@ -1097,7 +1097,7 @@ static struct kobj_type device_ktype = {
@@ -104,7 +104,7 @@ index 4aeaa0c92bda..9d11bbe31584 100644
  	if (ktype == &device_ktype) {
  		struct device *dev = kobj_to_dev(kobj);
 diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index 1ab0d624fb36..a7f660fc31e9 100644
+index e2ca0a292e21..b673a0bccbe1 100644
 --- a/include/linux/kobject.h
 +++ b/include/linux/kobject.h
 @@ -67,7 +67,7 @@ struct kobject {
@@ -132,7 +132,7 @@ index 1ab0d624fb36..a7f660fc31e9 100644
  			 const char *fmt, ...);
  
  extern void kobject_del(struct kobject *kobj);
-@@ -218,7 +218,7 @@ static inline void kset_put(struct kset *k)
+@@ -219,7 +219,7 @@ static inline void kset_put(struct kset *k)
  	kobject_put(&k->kobj);
  }
  
@@ -142,10 +142,10 @@ index 1ab0d624fb36..a7f660fc31e9 100644
  	return kobj->ktype;
  }
 diff --git a/include/linux/module.h b/include/linux/module.h
-index 5bf5dcd91009..a5c729563180 100644
+index 188998d3dca9..fab47a9ac300 100644
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
-@@ -807,7 +807,7 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
+@@ -831,7 +831,7 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
  
  #ifdef CONFIG_SYSFS
  extern struct kset *module_kset;
@@ -177,7 +177,7 @@ index ce89f757e6da..e814a1302a9c 100644
  	.sysfs_ops =	&module_sysfs_ops,
  };
 diff --git a/lib/kobject.c b/lib/kobject.c
-index aa89edcd2b63..53d68458f652 100644
+index f2ccdbac8ed9..258b789ce335 100644
 --- a/lib/kobject.c
 +++ b/lib/kobject.c
 @@ -65,7 +65,7 @@ void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
@@ -189,7 +189,7 @@ index aa89edcd2b63..53d68458f652 100644
  	struct attribute *attr;
  	int error = 0;
  	int i;
-@@ -338,7 +338,7 @@ EXPORT_SYMBOL(kobject_set_name);
+@@ -346,7 +346,7 @@ EXPORT_SYMBOL(kobject_set_name);
   * to kobject_put(), not by a call to kfree directly to ensure that all of
   * the memory is cleaned up properly.
   */
@@ -198,16 +198,16 @@ index aa89edcd2b63..53d68458f652 100644
  {
  	char *err_str;
  
-@@ -441,7 +441,7 @@ EXPORT_SYMBOL(kobject_add);
-  * kobject_add().  The same type of error handling after a call to
-  * kobject_add() and kobject lifetime rules are the same here.
+@@ -461,7 +461,7 @@ EXPORT_SYMBOL(kobject_add);
+  * same type of error handling after a call to kobject_add() and kobject
+  * lifetime rules are the same here.
   */
 -int kobject_init_and_add(struct kobject *kobj, struct kobj_type *ktype,
 +int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
  			 struct kobject *parent, const char *fmt, ...)
  {
  	va_list args;
-@@ -632,7 +632,7 @@ EXPORT_SYMBOL(kobject_get_unless_zero);
+@@ -661,7 +661,7 @@ EXPORT_SYMBOL(kobject_get_unless_zero);
   */
  static void kobject_cleanup(struct kobject *kobj)
  {
@@ -216,7 +216,7 @@ index aa89edcd2b63..53d68458f652 100644
  	const char *name = kobj->name;
  
  	pr_debug("kobject: '%s' (%p): %s, parent %p\n",
-@@ -716,7 +716,7 @@ static void dynamic_kobj_release(struct kobject *kobj)
+@@ -745,7 +745,7 @@ static void dynamic_kobj_release(struct kobject *kobj)
  	kfree(kobj);
  }
  
@@ -225,7 +225,7 @@ index aa89edcd2b63..53d68458f652 100644
  	.release	= dynamic_kobj_release,
  	.sysfs_ops	= &kobj_sysfs_ops,
  };
-@@ -893,7 +893,7 @@ static void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
+@@ -922,7 +922,7 @@ static void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
  		kobject_get_ownership(kobj->parent, uid, gid);
  }
  
@@ -235,10 +235,10 @@ index aa89edcd2b63..53d68458f652 100644
  	.release	= kset_release,
  	.get_ownership	= kset_get_ownership,
 diff --git a/mm/slub.c b/mm/slub.c
-index 09b16420cd2f..97a192f89324 100644
+index 4045e2e0a872..c385ecc9c285 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -5643,7 +5643,7 @@ static struct kobj_type slab_ktype = {
+@@ -5634,7 +5634,7 @@ static struct kobj_type slab_ktype = {
  
  static int uevent_filter(struct kset *kset, struct kobject *kobj)
  {

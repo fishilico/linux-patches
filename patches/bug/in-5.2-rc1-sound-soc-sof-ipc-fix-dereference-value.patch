@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 12 May 2019 23:39:27 +0200
+Subject: [PATCH] {BUG in 5.2-rc1} sound/soc/sof/ipc: fix dereference value
+
+Found with pointer deref checker
+---
+ sound/soc/sof/ipc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/soc/sof/ipc.c b/sound/soc/sof/ipc.c
+index f0b9d3c53f6f..7968c8d1a3a3 100644
+--- a/sound/soc/sof/ipc.c
++++ b/sound/soc/sof/ipc.c
+@@ -513,7 +513,7 @@ int snd_sof_ipc_stream_posn(struct snd_sof_dev *sdev,
+ 
+ 	/* send IPC to the DSP */
+ 	err = sof_ipc_tx_message(sdev->ipc,
+-				 stream.hdr.cmd, &stream, sizeof(stream), &posn,
++				 stream.hdr.cmd, &stream, sizeof(stream), /* BUG */ posn,
+ 				 sizeof(*posn));
+ 	if (err < 0) {
+ 		dev_err(sdev->dev, "error: failed to get stream %d position\n",
+-- 

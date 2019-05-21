@@ -6,21 +6,21 @@ Subject: [PATCH] {NOT UPSTREAMABLE} Remove disabled warnings
 Remove disabled warnings in Makefile so we have full control of the
 list of disabled warnings.
 ---
- Makefile                               | 35 +++++++++++++-------------
+ Makefile                               | 33 +++++++++++++-------------
  arch/arc/Makefile                      |  2 +-
  arch/x86/Makefile                      |  2 +-
  arch/x86/boot/compressed/Makefile      |  6 ++---
- drivers/gpu/drm/i915/Makefile          | 24 +++++++++---------
+ drivers/gpu/drm/i915/Makefile          | 24 +++++++++----------
  drivers/misc/cxl/Makefile              |  2 +-
- drivers/staging/greybus/tools/Makefile |  8 +++++-
+ drivers/staging/greybus/tools/Makefile |  8 ++++++-
  scripts/Makefile.extrawarn             | 14 +++++------
- 8 files changed, 49 insertions(+), 44 deletions(-)
+ 8 files changed, 48 insertions(+), 43 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 26c92f892d24..7ad2df423728 100644
+index a45f84a7e811..ee72d9e1218a 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -413,7 +413,7 @@ PYTHON3		= python3
+@@ -427,7 +427,7 @@ PYTHON3		= python3
  CHECK		= sparse
  
  CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
@@ -29,7 +29,7 @@ index 26c92f892d24..7ad2df423728 100644
  NOSTDINC_FLAGS :=
  CFLAGS_MODULE   =
  AFLAGS_MODULE   =
-@@ -440,10 +440,9 @@ LINUXINCLUDE    := \
+@@ -454,10 +454,9 @@ LINUXINCLUDE    := \
  		$(USERINCLUDE)
  
  KBUILD_AFLAGS   := -D__ASSEMBLY__ -fno-PIE
@@ -41,7 +41,7 @@ index 26c92f892d24..7ad2df423728 100644
  		   -std=gnu89
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
-@@ -615,8 +614,8 @@ endif
+@@ -621,8 +620,8 @@ endif # KBUILD_EXTMOD
  all: vmlinux
  
  CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage \
@@ -52,24 +52,22 @@ index 26c92f892d24..7ad2df423728 100644
  export CFLAGS_GCOV
  
  # The arch Makefiles can override CC_FLAGS_FTRACE. We may also append it later.
-@@ -674,11 +673,11 @@ endif # may-sync-config
+@@ -689,10 +688,10 @@ endif # may-sync-config
  endif # $(dot-config)
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
 -KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
 -KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
 -KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
--KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
 -KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 +#KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
 +#KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
 +#KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
-+#KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
 +#KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
  KBUILD_CFLAGS	+= -Os
-@@ -687,7 +686,7 @@ KBUILD_CFLAGS   += -O2
+@@ -701,7 +700,7 @@ KBUILD_CFLAGS   += -O2
  endif
  
  ifdef CONFIG_CC_DISABLE_WARN_MAYBE_UNINITIALIZED
@@ -78,21 +76,21 @@ index 26c92f892d24..7ad2df423728 100644
  endif
  
  # Tell gcc to never replace conditional load with a non-conditional one
-@@ -718,10 +717,10 @@ KBUILD_CFLAGS += $(stackp-flags-y)
+@@ -732,10 +731,10 @@ KBUILD_CFLAGS += $(stackp-flags-y)
  
  ifdef CONFIG_CC_IS_CLANG
- KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
--KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
--KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
+ KBUILD_CPPFLAGS += -Qunused-arguments
+-KBUILD_CFLAGS += -Wno-format-invalid-specifier
+-KBUILD_CFLAGS += -Wno-gnu
++#KBUILD_CFLAGS += -Wno-format-invalid-specifier
++#KBUILD_CFLAGS += -Wno-gnu
  # Quiet clang warning: comparison of unsigned expression < 0 is always false
--KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, tautological-compare)
+-KBUILD_CFLAGS += -Wno-tautological-compare
++#KBUILD_CFLAGS += -Wno-tautological-compare
  # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
  # source of a reference will be _MergedGlobals and not on of the whitelisted names.
  # See modpost pattern 2
-@@ -731,10 +730,10 @@ else
+@@ -744,10 +743,10 @@ else
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
@@ -105,8 +103,8 @@ index 26c92f892d24..7ad2df423728 100644
  ifdef CONFIG_FRAME_POINTER
  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
  else
-@@ -821,10 +820,10 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
- KBUILD_CFLAGS += $(call cc-option,-Wvla)
+@@ -843,10 +842,10 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
+ KBUILD_CFLAGS += -Wvla
  
  # disable pointer signed / unsigned warnings in gcc 4.0
 -KBUILD_CFLAGS += -Wno-pointer-sign
@@ -132,7 +130,7 @@ index e2b991f75bc5..16c279441376 100644
  
  # small data is default for elf32 tool-chain. If not usable, disable it
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index a587805c6687..cd811025c77c 100644
+index 56e748a7679f..da082c65dbc5 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
 @@ -209,7 +209,7 @@ KBUILD_LDFLAGS += $(call ld-option, -z max-page-size=0x200000)
@@ -162,7 +160,7 @@ index 6b84afdd7538..38acbca84ed8 100644
  KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
  GCOV_PROFILE := n
 diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
-index 1787e1299b1b..2eab7190dbc4 100644
+index fbcb0904f4a8..80b63499a502 100644
 --- a/drivers/gpu/drm/i915/Makefile
 +++ b/drivers/gpu/drm/i915/Makefile
 @@ -12,22 +12,22 @@
@@ -238,7 +236,7 @@ index ad0ae8053b79..8da8cbb7c72a 100644
  CC	:= $(CROSS_COMPILE)gcc
  
 diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
-index 768306add591..941fee807493 100644
+index 3ab8d1a303cd..6b95451d3926 100644
 --- a/scripts/Makefile.extrawarn
 +++ b/scripts/Makefile.extrawarn
 @@ -11,7 +11,7 @@
@@ -250,22 +248,22 @@ index 768306add591..941fee807493 100644
  
  ifeq ("$(origin W)", "command line")
    export KBUILD_ENABLE_EXTRA_GCC_CHECKS := $(W)
-@@ -66,11 +66,11 @@ KBUILD_CFLAGS += $(warning)
+@@ -67,11 +67,11 @@ KBUILD_CFLAGS += $(warning)
  else
  
  ifdef CONFIG_CC_IS_CLANG
--KBUILD_CFLAGS += $(call cc-disable-warning, initializer-overrides)
--KBUILD_CFLAGS += $(call cc-disable-warning, unused-value)
--KBUILD_CFLAGS += $(call cc-disable-warning, format)
--KBUILD_CFLAGS += $(call cc-disable-warning, sign-compare)
--KBUILD_CFLAGS += $(call cc-disable-warning, format-zero-length)
--KBUILD_CFLAGS += $(call cc-disable-warning, uninitialized)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, initializer-overrides)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, unused-value)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, format)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, sign-compare)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, format-zero-length)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, uninitialized)
+-KBUILD_CFLAGS += -Wno-initializer-overrides
+-KBUILD_CFLAGS += -Wno-unused-value
+-KBUILD_CFLAGS += -Wno-format
+-KBUILD_CFLAGS += -Wno-sign-compare
+-KBUILD_CFLAGS += -Wno-format-zero-length
+-KBUILD_CFLAGS += -Wno-uninitialized
++#KBUILD_CFLAGS += -Wno-initializer-overrides
++#KBUILD_CFLAGS += -Wno-unused-value
++#KBUILD_CFLAGS += -Wno-format
++#KBUILD_CFLAGS += -Wno-sign-compare
++#KBUILD_CFLAGS += -Wno-format-zero-length
++#KBUILD_CFLAGS += -Wno-uninitialized
  endif
  endif
 -- 
