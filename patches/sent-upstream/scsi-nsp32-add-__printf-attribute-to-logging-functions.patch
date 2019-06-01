@@ -24,10 +24,10 @@ Sent-upstream: https://patchwork.kernel.org/patch/9738555/
  1 file changed, 15 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/scsi/nsp32.c b/drivers/scsi/nsp32.c
-index da4d6e1106c4..cec10b84b8ab 100644
+index 70db79254155..9a1604724107 100644
 --- a/drivers/scsi/nsp32.c
 +++ b/drivers/scsi/nsp32.c
-@@ -256,9 +256,11 @@ static        void nsp32_prom_set      (nsp32_hw_data *, int, int);
+@@ -246,9 +246,11 @@ static        void nsp32_prom_set      (nsp32_hw_data *, int, int);
  static        int  nsp32_prom_get      (nsp32_hw_data *, int);
  
  /* debug/warning/info message */
@@ -41,7 +41,7 @@ index da4d6e1106c4..cec10b84b8ab 100644
  #endif
  
  /*
-@@ -319,7 +321,8 @@ static struct scsi_host_template nsp32_template = {
+@@ -309,7 +311,8 @@ static struct scsi_host_template nsp32_template = {
  
  #define NSP32_DEBUG_BUF_LEN		100
  
@@ -51,7 +51,7 @@ index da4d6e1106c4..cec10b84b8ab 100644
  {
  	va_list args;
  	char buf[NSP32_DEBUG_BUF_LEN];
-@@ -336,7 +339,8 @@ static void nsp32_message(const char *func, int line, char *type, char *fmt, ...
+@@ -326,7 +329,8 @@ static void nsp32_message(const char *func, int line, char *type, char *fmt, ...
  }
  
  #ifdef NSP32_DEBUG
@@ -61,7 +61,7 @@ index da4d6e1106c4..cec10b84b8ab 100644
  {
  	va_list args;
  	char buf[NSP32_DEBUG_BUF_LEN];
-@@ -695,7 +699,7 @@ static int nsp32_selection_autoscsi(struct scsi_cmnd *SCpnt)
+@@ -685,7 +689,7 @@ static int nsp32_selection_autoscsi(struct scsi_cmnd *SCpnt)
  	nsp32_write1(base, ACK_WIDTH, data->cur_target->ackwidth);
  
  	nsp32_dbg(NSP32_DEBUG_AUTOSCSI,
@@ -70,7 +70,7 @@ index da4d6e1106c4..cec10b84b8ab 100644
  		  nsp32_read1(base, SYNC_REG), nsp32_read1(base, ACK_WIDTH),
  		  nsp32_read4(base, SGT_ADR), nsp32_read1(base, SCSI_OUT_LATCH_TARGET_ID));
  	nsp32_dbg(NSP32_DEBUG_AUTOSCSI, "msgout_len=%d, msgout=0x%x",
-@@ -886,11 +890,11 @@ static int nsp32_setup_sg_table(struct scsi_cmnd *SCpnt)
+@@ -876,11 +880,11 @@ static int nsp32_setup_sg_table(struct scsi_cmnd *SCpnt)
  
  			if (le32_to_cpu(sgt[i].len) > 0x10000) {
  				nsp32_msg(KERN_ERR,
@@ -84,7 +84,7 @@ index da4d6e1106c4..cec10b84b8ab 100644
  				  i,
  				  le32_to_cpu(sgt[i].addr),
  				  le32_to_cpu(sgt[i].len ));
-@@ -913,7 +917,7 @@ static int nsp32_queuecommand_lck(struct scsi_cmnd *SCpnt, void (*done)(struct s
+@@ -903,7 +907,7 @@ static int nsp32_queuecommand_lck(struct scsi_cmnd *SCpnt, void (*done)(struct s
  
  	nsp32_dbg(NSP32_DEBUG_QUEUECOMMAND,
  		  "enter. target: 0x%x LUN: 0x%llx cmnd: 0x%x cmndlen: 0x%x "
@@ -93,7 +93,7 @@ index da4d6e1106c4..cec10b84b8ab 100644
  		  SCpnt->device->id, SCpnt->device->lun, SCpnt->cmnd[0], SCpnt->cmd_len,
  		  scsi_sg_count(SCpnt), scsi_sglist(SCpnt), scsi_bufflen(SCpnt));
  
-@@ -2741,7 +2745,7 @@ static int nsp32_detect(struct pci_dev *pdev)
+@@ -2731,7 +2735,7 @@ static int nsp32_detect(struct pci_dev *pdev)
  	res = request_region(host->io_port, host->n_io_port, "nsp32");
  	if (res == NULL) {
  		nsp32_msg(KERN_ERR, 
@@ -102,7 +102,7 @@ index da4d6e1106c4..cec10b84b8ab 100644
  			  data->BaseAddress, data->NumAddress);
  		goto free_irq;
          }
-@@ -2893,7 +2897,7 @@ static int nsp32_eh_host_reset(struct scsi_cmnd *SCpnt)
+@@ -2883,7 +2887,7 @@ static int nsp32_eh_host_reset(struct scsi_cmnd *SCpnt)
  	nsp32_hw_data    *data = (nsp32_hw_data *)host->hostdata;
  
  	nsp32_msg(KERN_INFO, "Host Reset");	
@@ -111,7 +111,7 @@ index da4d6e1106c4..cec10b84b8ab 100644
  
  	spin_lock_irq(SCpnt->device->host->host_lock);
  
-@@ -3288,7 +3292,7 @@ static int nsp32_suspend(struct pci_dev *pdev, pm_message_t state)
+@@ -3278,7 +3282,7 @@ static int nsp32_suspend(struct pci_dev *pdev, pm_message_t state)
  {
  	struct Scsi_Host *host = pci_get_drvdata(pdev);
  

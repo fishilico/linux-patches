@@ -332,10 +332,10 @@ index 1b12c172e115..d1834eb041d1 100644
  					base_byte_offset * 8)
  				       +
 diff --git a/drivers/atm/ambassador.c b/drivers/atm/ambassador.c
-index 9287ec958b70..17a48b3c366e 100644
+index c039b8a4fefe..483e81018810 100644
 --- a/drivers/atm/ambassador.c
 +++ b/drivers/atm/ambassador.c
-@@ -688,7 +688,7 @@ static int rx_give (amb_dev * dev, rx_in * rx, unsigned char pool) {
+@@ -673,7 +673,7 @@ static int rx_give (amb_dev * dev, rx_in * rx, unsigned char pool) {
    amb_rxq * rxq = &dev->rxq[pool];
    unsigned long flags;
    
@@ -344,7 +344,7 @@ index 9287ec958b70..17a48b3c366e 100644
    
    spin_lock_irqsave (&rxq->lock, flags);
    
-@@ -713,7 +713,7 @@ static int rx_take (amb_dev * dev, unsigned char pool) {
+@@ -698,7 +698,7 @@ static int rx_take (amb_dev * dev, unsigned char pool) {
    amb_rxq * rxq = &dev->rxq[pool];
    unsigned long flags;
    
@@ -353,7 +353,7 @@ index 9287ec958b70..17a48b3c366e 100644
    
    spin_lock_irqsave (&rxq->lock, flags);
    
-@@ -745,7 +745,7 @@ static int rx_take (amb_dev * dev, unsigned char pool) {
+@@ -730,7 +730,7 @@ static int rx_take (amb_dev * dev, unsigned char pool) {
  static void drain_rx_pool (amb_dev * dev, unsigned char pool) {
    amb_rxq * rxq = &dev->rxq[pool];
    
@@ -362,7 +362,7 @@ index 9287ec958b70..17a48b3c366e 100644
    
    if (test_bit (dead, &dev->flags))
      return;
-@@ -783,7 +783,7 @@ static void fill_rx_pool (amb_dev * dev, unsigned char pool,
+@@ -768,7 +768,7 @@ static void fill_rx_pool (amb_dev * dev, unsigned char pool,
    rx_in rx;
    amb_rxq * rxq;
    
@@ -371,7 +371,7 @@ index 9287ec958b70..17a48b3c366e 100644
    
    if (test_bit (dead, &dev->flags))
      return;
-@@ -793,7 +793,7 @@ static void fill_rx_pool (amb_dev * dev, unsigned char pool,
+@@ -778,7 +778,7 @@ static void fill_rx_pool (amb_dev * dev, unsigned char pool,
      
      struct sk_buff * skb = alloc_skb (rxq->buffer_size, priority);
      if (!skb) {
@@ -380,7 +380,7 @@ index 9287ec958b70..17a48b3c366e 100644
        return;
      }
      if (check_area (skb->data, skb->truesize)) {
-@@ -990,7 +990,7 @@ static int make_rate (unsigned int rate, rounding r,
+@@ -975,7 +975,7 @@ static int make_rate (unsigned int rate, rounding r,
      
    }
    
@@ -389,7 +389,7 @@ index 9287ec958b70..17a48b3c366e 100644
    
    if (bits)
      *bits = /* (1<<14) | */ (exp<<9) | man;
-@@ -1105,7 +1105,7 @@ static int amb_open (struct atm_vcc * atm_vcc)
+@@ -1090,7 +1090,7 @@ static int amb_open (struct atm_vcc * atm_vcc)
      // choose an RX pool (arranged in increasing size)
      for (pool = 0; pool < NUM_RX_POOLS; ++pool)
        if ((unsigned int) rxtp->max_sdu <= dev->rxq[pool].buffer_size) {
@@ -398,7 +398,7 @@ index 9287ec958b70..17a48b3c366e 100644
  		pool, rxtp->max_sdu, dev->rxq[pool].buffer_size);
  	break;
        }
-@@ -2184,7 +2184,7 @@ static void setup_pci_dev(struct pci_dev *pci_dev)
+@@ -2169,7 +2169,7 @@ static void setup_pci_dev(struct pci_dev *pci_dev)
  		pci_lat = (lat < MIN_PCI_LATENCY) ? MIN_PCI_LATENCY : lat;
  
  	if (lat != pci_lat) {
@@ -407,7 +407,7 @@ index 9287ec958b70..17a48b3c366e 100644
  			lat, pci_lat);
  		pci_write_config_byte(pci_dev, PCI_LATENCY_TIMER, pci_lat);
  	}
-@@ -2331,14 +2331,14 @@ static void __init amb_check_args (void) {
+@@ -2316,14 +2316,14 @@ static void __init amb_check_args (void) {
    
    for (pool = 0; pool < NUM_RX_POOLS; ++pool)
      if (rxs[pool] < MIN_QUEUE_SIZE)
@@ -425,10 +425,10 @@ index 9287ec958b70..17a48b3c366e 100644
      else
        max_rx_size = rxs_bs[pool];
 diff --git a/drivers/atm/firestream.c b/drivers/atm/firestream.c
-index b2c06da4f62e..b6997e876c23 100644
+index 2bbab0230aeb..c483e0932304 100644
 --- a/drivers/atm/firestream.c
 +++ b/drivers/atm/firestream.c
-@@ -556,7 +556,7 @@ static int make_rate(unsigned int rate, int r,
+@@ -541,7 +541,7 @@ static int make_rate(unsigned int rate, int r,
  		}
  	}
    
@@ -438,10 +438,10 @@ index b2c06da4f62e..b6997e876c23 100644
  	if (bits)
  		*bits = /* (1<<14) | */ (exp<<9) | man;
 diff --git a/drivers/atm/horizon.c b/drivers/atm/horizon.c
-index 5ddc203206b8..23de2ebafb67 100644
+index e5da51f907a2..2cca7b7906b6 100644
 --- a/drivers/atm/horizon.c
 +++ b/drivers/atm/horizon.c
-@@ -2638,7 +2638,7 @@ static int hrz_proc_read (struct atm_dev * atm_dev, loff_t * pos, char * page) {
+@@ -2623,7 +2623,7 @@ static int hrz_proc_read (struct atm_dev * atm_dev, loff_t * pos, char * page) {
    
    if (!left--)
      return sprintf (page,
@@ -450,7 +450,7 @@ index 5ddc203206b8..23de2ebafb67 100644
  		    rd_regw (dev, TX_FREE_BUFFER_COUNT_OFF),
  		    rd_regw (dev, RX_FREE_BUFFER_COUNT_OFF),
  		    dev->noof_spare_buffers);
-@@ -2726,11 +2726,11 @@ static int hrz_probe(struct pci_dev *pci_dev,
+@@ -2711,11 +2711,11 @@ static int hrz_probe(struct pci_dev *pci_dev,
  	// frobnicate latency (upwards, usually)
  	pci_read_config_byte(pci_dev, PCI_LATENCY_TIMER, &lat);
  	if (pci_lat) {
@@ -464,7 +464,7 @@ index 5ddc203206b8..23de2ebafb67 100644
  		       "increasing", lat, MIN_PCI_LATENCY);
  		pci_write_config_byte(pci_dev, PCI_LATENCY_TIMER, MIN_PCI_LATENCY);
  	}
-@@ -2843,11 +2843,11 @@ static void __init hrz_check_args (void) {
+@@ -2828,11 +2828,11 @@ static void __init hrz_check_args (void) {
  	    vpi_bits = HRZ_MAX_VPI);
    
    if (max_tx_size < 0 || max_tx_size > TX_AAL5_LIMIT)
@@ -638,10 +638,10 @@ index 90164fed08d3..c64d00eefd8e 100644
  	strlcpy(hid->phys, dev_name(&client->dev), sizeof(hid->phys));
  
 diff --git a/drivers/hwmon/smsc47m1.c b/drivers/hwmon/smsc47m1.c
-index 5f92eab24c62..51831bac09fe 100644
+index cc6aca6e436c..4181c80adec5 100644
 --- a/drivers/hwmon/smsc47m1.c
 +++ b/drivers/hwmon/smsc47m1.c
-@@ -694,7 +694,7 @@ static int __init smsc47m1_handle_resources(unsigned short address,
+@@ -681,7 +681,7 @@ static int __init smsc47m1_handle_resources(unsigned short address,
  			if (!devm_request_region(dev, start, len, DRVNAME)) {
  				dev_err(dev,
  					"Region 0x%hx-0x%hx already in use!\n",
@@ -1151,10 +1151,10 @@ index dcf234680535..c7cd9b6213fd 100644
  	off += scnprintf(strbuf + off, size - off, "\n");
  
 diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index 71cfaf26efd1..e4f99df5b9c6 100644
+index 7bde4640ef34..16236f7477ba 100644
 --- a/drivers/platform/x86/thinkpad_acpi.c
 +++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -7494,7 +7494,7 @@ static void volume_exit_software_mute(void)
+@@ -7479,7 +7479,7 @@ static void volume_exit_software_mute(void)
  static int volume_alsa_set_volume(const u8 vol)
  {
  	dbg_printk(TPACPI_DBG_MIXER,
@@ -1199,10 +1199,10 @@ index e5db9a9954dc..e0614898e788 100644
  	case ISCSI_BOOT_TGT_NIC_ASSOC:
  		rc = snprintf(buf, 3, "0\n");
 diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index 3b119ca0cc0c..4d4f8b1031df 100644
+index dbb206c90ecf..14bb23c2fc16 100644
 --- a/drivers/scsi/scsi_sysfs.c
 +++ b/drivers/scsi/scsi_sysfs.c
-@@ -369,12 +369,12 @@ static DEVICE_ATTR(eh_deadline, S_IRUGO | S_IWUSR, show_shost_eh_deadline, store
+@@ -370,12 +370,12 @@ static DEVICE_ATTR(eh_deadline, S_IRUGO | S_IWUSR, show_shost_eh_deadline, store
  
  shost_rd_attr(unique_id, "%u\n");
  shost_rd_attr(cmd_per_lun, "%hd\n");
@@ -1377,10 +1377,10 @@ index db7ef07ae50c..34d7345b1bf1 100644
  	da->tightly_coupled = false;
  
 diff --git a/fs/ntfs/attrib.c b/fs/ntfs/attrib.c
-index 44a39a099b54..b34b18ade932 100644
+index d563abc3e136..31113ce69fec 100644
 --- a/fs/ntfs/attrib.c
 +++ b/fs/ntfs/attrib.c
-@@ -2499,7 +2499,7 @@ int ntfs_attr_set(ntfs_inode *ni, const s64 ofs, const s64 cnt, const u8 val)
+@@ -2485,7 +2485,7 @@ int ntfs_attr_set(ntfs_inode *ni, const s64 ofs, const s64 cnt, const u8 val)
  	pgoff_t idx, end;
  	unsigned start_ofs, end_ofs, size;
  
@@ -1418,10 +1418,10 @@ index 73c132095a7b..283c772d9ee7 100644
  		result = kernel_write(file, buf, len, &pos);
  		if (result < 0)
 diff --git a/lib/test_printf.c b/lib/test_printf.c
-index 93da0a5000ec..cec44804545a 100644
+index 944eb50f3862..08dff4ef588d 100644
 --- a/lib/test_printf.c
 +++ b/lib/test_printf.c
-@@ -149,9 +149,9 @@ test_number(void)
+@@ -150,9 +150,9 @@ test_number(void)
  	test("0x1234abcd  ", "%#-12x", 0x1234abcd);
  	test("  0x1234abcd", "%#12x", 0x1234abcd);
  	test("0|001| 12|+123| 1234|-123|-1234", "%d|%03d|%3d|%+d|% d|%+d|% d", 0, 1, 12, 123, 1234, -123, -1234);
@@ -1470,10 +1470,10 @@ index 80fc3253c336..e62f0f93a1bf 100644
  		vlan->kobj = kobject_create_and_add(vlan_subdir,
  						    bat_priv->mesh_obj);
 diff --git a/net/ipv4/ah4.c b/net/ipv4/ah4.c
-index c01fa791260d..a5eda5d6a09c 100644
+index 9c3afd550612..69b32657bfbd 100644
 --- a/net/ipv4/ah4.c
 +++ b/net/ipv4/ah4.c
-@@ -508,7 +508,7 @@ static int ah_init_state(struct xfrm_state *x)
+@@ -509,7 +509,7 @@ static int ah_init_state(struct xfrm_state *x)
  		pr_info("%s: %s digestsize %u != %hu\n",
  			__func__, x->aalg->alg_name,
  			crypto_ahash_digestsize(ahash),
@@ -1483,10 +1483,10 @@ index c01fa791260d..a5eda5d6a09c 100644
  	}
  
 diff --git a/net/ipv4/esp4.c b/net/ipv4/esp4.c
-index fb065a8937ea..f5c5f306d345 100644
+index b9ae95576084..0b9c3cf00b58 100644
 --- a/net/ipv4/esp4.c
 +++ b/net/ipv4/esp4.c
-@@ -952,7 +952,7 @@ static int esp_init_authenc(struct xfrm_state *x)
+@@ -953,7 +953,7 @@ static int esp_init_authenc(struct xfrm_state *x)
  			pr_info("ESP: %s digestsize %u != %hu\n",
  				x->aalg->alg_name,
  				crypto_aead_authsize(aead),
@@ -1496,10 +1496,10 @@ index fb065a8937ea..f5c5f306d345 100644
  		}
  
 diff --git a/net/ipv6/ah6.c b/net/ipv6/ah6.c
-index 78c974391567..0fda6608d962 100644
+index 68b9e92e469e..ae46edd0e034 100644
 --- a/net/ipv6/ah6.c
 +++ b/net/ipv6/ah6.c
-@@ -718,7 +718,7 @@ static int ah6_init_state(struct xfrm_state *x)
+@@ -706,7 +706,7 @@ static int ah6_init_state(struct xfrm_state *x)
  	    crypto_ahash_digestsize(ahash)) {
  		pr_info("AH: %s digestsize %u != %hu\n",
  			x->aalg->alg_name, crypto_ahash_digestsize(ahash),
@@ -1509,10 +1509,10 @@ index 78c974391567..0fda6608d962 100644
  	}
  
 diff --git a/net/ipv6/esp6.c b/net/ipv6/esp6.c
-index 239d4a65ad6e..3789362b9eba 100644
+index ae6a739c5f52..336c113958ac 100644
 --- a/net/ipv6/esp6.c
 +++ b/net/ipv6/esp6.c
-@@ -853,7 +853,7 @@ static int esp_init_authenc(struct xfrm_state *x)
+@@ -841,7 +841,7 @@ static int esp_init_authenc(struct xfrm_state *x)
  			pr_info("ESP: %s digestsize %u != %hu\n",
  				x->aalg->alg_name,
  				crypto_aead_authsize(aead),
@@ -1686,10 +1686,10 @@ index cbef9ea43dec..59a09121ebd0 100644
  }
  
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index c61787b15f27..08f7cb97b190 100644
+index 3ec702cf46ca..35e8afe15b71 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -5458,7 +5458,7 @@ static int selinux_nlmsg_perm(struct sock *sk, struct sk_buff *skb)
+@@ -5464,7 +5464,7 @@ static int selinux_nlmsg_perm(struct sock *sk, struct sk_buff *skb)
  	if (err) {
  		if (err == -EINVAL) {
  			pr_warn_ratelimited("SELinux: unrecognized netlink"
