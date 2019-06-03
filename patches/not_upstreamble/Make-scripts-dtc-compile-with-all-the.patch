@@ -20,10 +20,10 @@ TODO: send fixes to dtc upstream:
  9 files changed, 51 insertions(+), 48 deletions(-)
 
 diff --git a/scripts/dtc/checks.c b/scripts/dtc/checks.c
-index 4834e44b37b2..4cfd8749d8fd 100644
+index 1ae7a54d4f12..21977aab4b17 100644
 --- a/scripts/dtc/checks.c
 +++ b/scripts/dtc/checks.c
-@@ -46,7 +46,7 @@ typedef void (*check_fn)(struct check *c, struct dt_info *dti, struct node *node
+@@ -31,7 +31,7 @@ typedef void (*check_fn)(struct check *c, struct dt_info *dti, struct node *node
  struct check {
  	const char *name;
  	check_fn fn;
@@ -32,7 +32,7 @@ index 4834e44b37b2..4cfd8749d8fd 100644
  	bool warn, error;
  	enum checkstatus status;
  	bool inprogress;
-@@ -214,7 +214,7 @@ static void check_is_string(struct check *c, struct dt_info *dti,
+@@ -199,7 +199,7 @@ static void check_is_string(struct check *c, struct dt_info *dti,
  			    struct node *node)
  {
  	struct property *prop;
@@ -41,7 +41,7 @@ index 4834e44b37b2..4cfd8749d8fd 100644
  
  	prop = get_property(node, propname);
  	if (!prop)
-@@ -261,7 +261,7 @@ static void check_is_cell(struct check *c, struct dt_info *dti,
+@@ -246,7 +246,7 @@ static void check_is_cell(struct check *c, struct dt_info *dti,
  			  struct node *node)
  {
  	struct property *prop;
@@ -50,7 +50,7 @@ index 4834e44b37b2..4cfd8749d8fd 100644
  
  	prop = get_property(node, propname);
  	if (!prop)
-@@ -318,7 +318,7 @@ ERROR(duplicate_property_names, check_duplicate_property_names, NULL);
+@@ -303,7 +303,7 @@ ERROR(duplicate_property_names, check_duplicate_property_names, NULL);
  static void check_node_name_chars(struct check *c, struct dt_info *dti,
  				  struct node *node)
  {
@@ -59,7 +59,7 @@ index 4834e44b37b2..4cfd8749d8fd 100644
  
  	if (n < strlen(node->name))
  		FAIL(c, dti, node, "Bad character '%c' in node name",
-@@ -378,7 +378,7 @@ static void check_property_name_chars(struct check *c, struct dt_info *dti,
+@@ -363,7 +363,7 @@ static void check_property_name_chars(struct check *c, struct dt_info *dti,
  	struct property *prop;
  
  	for_each_property(node, prop) {
@@ -68,7 +68,7 @@ index 4834e44b37b2..4cfd8749d8fd 100644
  
  		if (n < strlen(prop->name))
  			FAIL_PROP(c, dti, node, prop, "Bad character '%c' in property name",
-@@ -579,7 +579,7 @@ static void check_name_properties(struct check *c, struct dt_info *dti,
+@@ -564,7 +564,7 @@ static void check_name_properties(struct check *c, struct dt_info *dti,
  		/* The name property is correct, and therefore redundant.
  		 * Delete it */
  		*pp = prop->next;
@@ -77,7 +77,7 @@ index 4834e44b37b2..4cfd8749d8fd 100644
  		data_free(prop->val);
  		free(prop);
  	}
-@@ -1815,7 +1815,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
+@@ -1800,7 +1800,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
  
  static void disable_warning_error(struct check *c, bool warn, bool error)
  {
@@ -86,7 +86,7 @@ index 4834e44b37b2..4cfd8749d8fd 100644
  
  	/* Lowering level, also lower it for things this is the prereq
  	 * for */
-@@ -1836,7 +1836,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
+@@ -1821,7 +1821,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
  
  void parse_checks_option(bool warn, bool error, const char *arg)
  {
@@ -95,7 +95,7 @@ index 4834e44b37b2..4cfd8749d8fd 100644
  	const char *name = arg;
  	bool enable = true;
  
-@@ -1863,7 +1863,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
+@@ -1848,7 +1848,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
  
  void process_checks(bool force, struct dt_info *dti)
  {
@@ -105,10 +105,10 @@ index 4834e44b37b2..4cfd8749d8fd 100644
  
  	for (i = 0; i < ARRAY_SIZE(check_table); i++) {
 diff --git a/scripts/dtc/data.c b/scripts/dtc/data.c
-index 4a204145cc7b..ae0ee4673c0d 100644
+index 0a43b6de3264..6c4a19a87d1d 100644
 --- a/scripts/dtc/data.c
 +++ b/scripts/dtc/data.c
-@@ -99,7 +99,7 @@ struct data data_copy_file(FILE *f, size_t maxlen)
+@@ -84,7 +84,7 @@ struct data data_copy_file(FILE *f, size_t maxlen)
  	while (!feof(f) && (d.len < maxlen)) {
  		size_t chunksize, ret;
  
@@ -117,7 +117,7 @@ index 4a204145cc7b..ae0ee4673c0d 100644
  			chunksize = 4096;
  		else
  			chunksize = maxlen - d.len;
-@@ -179,15 +179,15 @@ struct data data_append_integer(struct data d, uint64_t value, int bits)
+@@ -164,15 +164,15 @@ struct data data_append_integer(struct data d, uint64_t value, int bits)
  
  	switch (bits) {
  	case 8:
@@ -150,10 +150,10 @@ index 06c040902444..0dff529d6e51 100644
  	va_list ap;
  
 diff --git a/scripts/dtc/dtc.c b/scripts/dtc/dtc.c
-index 695e1f789fc7..3099cb6b7dca 100644
+index bdb3f5945699..6795e80e2706 100644
 --- a/scripts/dtc/dtc.c
 +++ b/scripts/dtc/dtc.c
-@@ -52,7 +52,7 @@ static void fill_fullpaths(struct node *tree, const char *prefix)
+@@ -37,7 +37,7 @@ static void fill_fullpaths(struct node *tree, const char *prefix)
  
  	unit = strchr(tree->name, '@');
  	if (unit)
@@ -162,7 +162,7 @@ index 695e1f789fc7..3099cb6b7dca 100644
  	else
  		tree->basenamelen = strlen(tree->name);
  
-@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
+@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
  	const char *arg;
  	int opt;
  	FILE *outf = NULL;
@@ -171,7 +171,7 @@ index 695e1f789fc7..3099cb6b7dca 100644
  	long long cmdline_boot_cpuid = -1;
  
  	quiet      = 0;
-@@ -204,19 +204,19 @@ int main(int argc, char *argv[])
+@@ -189,19 +189,19 @@ int main(int argc, char *argv[])
  			outname = optarg;
  			break;
  		case 'V':
@@ -195,7 +195,7 @@ index 695e1f789fc7..3099cb6b7dca 100644
  			break;
  		case 'a':
  			alignsize = strtol(optarg, NULL, 0);
-@@ -328,7 +328,7 @@ int main(int argc, char *argv[])
+@@ -313,7 +313,7 @@ int main(int argc, char *argv[])
  	}
  
  	if (cmdline_boot_cpuid != -1)
@@ -205,10 +205,10 @@ index 695e1f789fc7..3099cb6b7dca 100644
  	fill_fullpaths(dti->dt, "");
  
 diff --git a/scripts/dtc/dtc.h b/scripts/dtc/dtc.h
-index 789e0b1bc057..432f8000f974 100644
+index 357b878607ca..159187dd74fc 100644
 --- a/scripts/dtc/dtc.h
 +++ b/scripts/dtc/dtc.h
-@@ -87,7 +87,7 @@ enum markertype {
+@@ -72,7 +72,7 @@ enum markertype {
  };
  extern const char *markername(enum markertype markertype);
  
@@ -217,7 +217,7 @@ index 789e0b1bc057..432f8000f974 100644
  	enum markertype type;
  	int offset;
  	char *ref;
-@@ -153,7 +153,7 @@ struct bus_type {
+@@ -138,7 +138,7 @@ struct bus_type {
  
  struct property {
  	bool deleted;
@@ -226,7 +226,7 @@ index 789e0b1bc057..432f8000f974 100644
  	struct data val;
  
  	struct property *next;
-@@ -164,7 +164,7 @@ struct property {
+@@ -149,7 +149,7 @@ struct property {
  
  struct node {
  	bool deleted;
@@ -235,7 +235,7 @@ index 789e0b1bc057..432f8000f974 100644
  	struct property *proplist;
  	struct node *children;
  
-@@ -208,16 +208,16 @@ struct node {
+@@ -193,16 +193,16 @@ struct node {
  void add_label(struct label **labels, char *label);
  void delete_labels(struct label **labels);
  
@@ -255,7 +255,7 @@ index 789e0b1bc057..432f8000f974 100644
  struct node *omit_node_if_unused(struct node *node);
  struct node *reference_node(struct node *node);
  struct node *chain_node(struct node *first, struct node *list);
-@@ -225,10 +225,10 @@ struct node *merge_nodes(struct node *old_node, struct node *new_node);
+@@ -210,10 +210,10 @@ struct node *merge_nodes(struct node *old_node, struct node *new_node);
  struct node *add_orphan_node(struct node *old_node, struct node *new_node, char *ref);
  
  void add_property(struct node *node, struct property *prop);
@@ -315,10 +315,10 @@ index 627da2e079c9..36695df2bed6 100644
  
  /**
 diff --git a/scripts/dtc/livetree.c b/scripts/dtc/livetree.c
-index 7a2e6446a17b..81b85afeefeb 100644
+index 3275231d396b..aef4bdc9aca5 100644
 --- a/scripts/dtc/livetree.c
 +++ b/scripts/dtc/livetree.c
-@@ -51,7 +51,7 @@ void delete_labels(struct label **labels)
+@@ -36,7 +36,7 @@ void delete_labels(struct label **labels)
  		label->deleted = 1;
  }
  
@@ -327,7 +327,7 @@ index 7a2e6446a17b..81b85afeefeb 100644
  				struct srcpos *srcpos)
  {
  	struct property *new = xmalloc(sizeof(*new));
-@@ -65,7 +65,7 @@ struct property *build_property(char *name, struct data val,
+@@ -50,7 +50,7 @@ struct property *build_property(char *name, struct data val,
  	return new;
  }
  
@@ -336,7 +336,7 @@ index 7a2e6446a17b..81b85afeefeb 100644
  {
  	struct property *new = xmalloc(sizeof(*new));
  
-@@ -131,7 +131,7 @@ struct node *build_node_delete(struct srcpos *srcpos)
+@@ -116,7 +116,7 @@ struct node *build_node_delete(struct srcpos *srcpos)
  	return new;
  }
  
@@ -345,7 +345,7 @@ index 7a2e6446a17b..81b85afeefeb 100644
  {
  	assert(node->name == NULL);
  
-@@ -290,7 +290,7 @@ void add_property(struct node *node, struct property *prop)
+@@ -275,7 +275,7 @@ void add_property(struct node *node, struct property *prop)
  	*p = prop;
  }
  
@@ -354,7 +354,7 @@ index 7a2e6446a17b..81b85afeefeb 100644
  {
  	struct property *prop = node->proplist;
  
-@@ -323,7 +323,7 @@ void add_child(struct node *parent, struct node *child)
+@@ -308,7 +308,7 @@ void add_child(struct node *parent, struct node *child)
  	*p = child;
  }
  
@@ -363,7 +363,7 @@ index 7a2e6446a17b..81b85afeefeb 100644
  {
  	struct node *node = parent->children;
  
-@@ -606,7 +606,7 @@ cell_t get_node_phandle(struct node *root, struct node *node)
+@@ -591,7 +591,7 @@ cell_t get_node_phandle(struct node *root, struct node *node)
  	static cell_t phandle = 1; /* FIXME: ick, static local */
  	struct data d = empty_data;
  
@@ -372,7 +372,7 @@ index 7a2e6446a17b..81b85afeefeb 100644
  		return node->phandle;
  
  	while (get_node_by_phandle(root, phandle))
-@@ -677,7 +677,7 @@ static int cmp_reserve_info(const void *ax, const void *bx)
+@@ -662,7 +662,7 @@ static int cmp_reserve_info(const void *ax, const void *bx)
  static void sort_reserve_entries(struct dt_info *dti)
  {
  	struct reserve_info *ri, **tbl;
@@ -381,7 +381,7 @@ index 7a2e6446a17b..81b85afeefeb 100644
  
  	for (ri = dti->reservelist;
  	     ri;
-@@ -716,7 +716,7 @@ static int cmp_prop(const void *ax, const void *bx)
+@@ -701,7 +701,7 @@ static int cmp_prop(const void *ax, const void *bx)
  
  static void sort_properties(struct node *node)
  {
@@ -390,7 +390,7 @@ index 7a2e6446a17b..81b85afeefeb 100644
  	struct property *prop, **tbl;
  
  	for_each_property_withdel(node, prop)
-@@ -752,7 +752,7 @@ static int cmp_subnode(const void *ax, const void *bx)
+@@ -737,7 +737,7 @@ static int cmp_subnode(const void *ax, const void *bx)
  
  static void sort_subnodes(struct node *node)
  {
@@ -400,10 +400,10 @@ index 7a2e6446a17b..81b85afeefeb 100644
  
  	for_each_child_withdel(node, subnode)
 diff --git a/scripts/dtc/srcpos.c b/scripts/dtc/srcpos.c
-index 41f83700ee91..d5be034a61d7 100644
+index f5205fb9c1ff..a82157a5ebf2 100644
 --- a/scripts/dtc/srcpos.c
 +++ b/scripts/dtc/srcpos.c
-@@ -42,7 +42,7 @@ static char *get_dirname(const char *path)
+@@ -28,7 +28,7 @@ static char *get_dirname(const char *path)
  	const char *slash = strrchr(path, '/');
  
  	if (slash) {
@@ -413,10 +413,10 @@ index 41f83700ee91..d5be034a61d7 100644
  
  		memcpy(dir, path, len);
 diff --git a/scripts/dtc/treesource.c b/scripts/dtc/treesource.c
-index 1af36628b75f..071012623ad3 100644
+index c9d980c8abfc..48f4dee1688f 100644
 --- a/scripts/dtc/treesource.c
 +++ b/scripts/dtc/treesource.c
-@@ -177,12 +177,12 @@ static const char *delim_end[] = {
+@@ -162,12 +162,12 @@ static const char *delim_end[] = {
  
  static enum markertype guess_value_type(struct property *prop)
  {

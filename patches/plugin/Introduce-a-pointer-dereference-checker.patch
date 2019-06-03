@@ -103,10 +103,10 @@ It has also detected some bugs reported and fixed by other people:
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
-index c16c1829a5e4..bfe0e032070d 100644
+index aa075d8372ea..845eea0891d2 100644
 --- a/arch/arm/boot/compressed/decompress.c
 +++ b/arch/arm/boot/compressed/decompress.c
-@@ -46,8 +46,10 @@ extern int memcmp(const void *cs, const void *ct, size_t count);
+@@ -47,8 +47,10 @@ extern char * strchrnul(const char *, int);
  #endif
  
  #ifdef CONFIG_KERNEL_XZ
@@ -172,7 +172,7 @@ index 5a237e8dbf8d..2e592d3c0045 100644
  
  /* Functions used by the included decompressor code below. */
 diff --git a/arch/x86/boot/compressed/string.c b/arch/x86/boot/compressed/string.c
-index 19dbbcdd1a53..e33d8e015362 100644
+index 81fc1eaa3229..dc0247d6937d 100644
 --- a/arch/x86/boot/compressed/string.c
 +++ b/arch/x86/boot/compressed/string.c
 @@ -10,6 +10,11 @@
@@ -185,7 +185,7 @@ index 19dbbcdd1a53..e33d8e015362 100644
 +#endif
 +
  #ifdef CONFIG_X86_32
- static void *__memcpy(void *dest, const void *src, size_t n)
+ static void *____memcpy(void *dest, const void *src, size_t n)
  {
 diff --git a/arch/x86/boot/string.h b/arch/x86/boot/string.h
 index 164b6ef5de63..34f51d487706 100644
@@ -583,10 +583,10 @@ index 47353fee26c3..8033f4bd455a 100644
  	return 0;
  }
 diff --git a/drivers/misc/ibmasm/lowlevel.c b/drivers/misc/ibmasm/lowlevel.c
-index 5319ea261c05..a1863712df83 100644
+index 6922dc6c10db..bf7f5ec335df 100644
 --- a/drivers/misc/ibmasm/lowlevel.c
 +++ b/drivers/misc/ibmasm/lowlevel.c
-@@ -47,7 +47,7 @@ int ibmasm_send_i2o_message(struct service_processor *sp)
+@@ -33,7 +33,7 @@ int ibmasm_send_i2o_message(struct service_processor *sp)
  	message = get_i2o_message(sp->base_address, mfa);
  
  	memcpy_toio(&message->header, &header, sizeof(struct i2o_header));
@@ -595,7 +595,7 @@ index 5319ea261c05..a1863712df83 100644
  
  	set_mfa_inbound(sp->base_address, mfa);
  
-@@ -74,7 +74,7 @@ irqreturn_t ibmasm_interrupt_handler(int irq, void * dev_id)
+@@ -60,7 +60,7 @@ irqreturn_t ibmasm_interrupt_handler(int irq, void * dev_id)
  	mfa = get_mfa_outbound(base_address);
  	if (valid_mfa(mfa)) {
  		struct i2o_message *msg = get_i2o_message(base_address, mfa);
@@ -605,10 +605,10 @@ index 5319ea261c05..a1863712df83 100644
  		dbg("didn't get a valid MFA\n");
  
 diff --git a/drivers/misc/mic/scif/scif_fd.c b/drivers/misc/mic/scif/scif_fd.c
-index 5c2a57ae4f85..9fc60e5cbf72 100644
+index 3f08646cd78a..8fb09ec14a13 100644
 --- a/drivers/misc/mic/scif/scif_fd.c
 +++ b/drivers/misc/mic/scif/scif_fd.c
-@@ -173,7 +173,11 @@ static long scif_fdioctl(struct file *f, unsigned int cmd, unsigned long arg)
+@@ -164,7 +164,11 @@ static long scif_fdioctl(struct file *f, unsigned int cmd, unsigned long arg)
  		struct list_head *pos, *tmpq;
  
  		/* Finally replace the pointer to the accepted endpoint */
@@ -922,7 +922,7 @@ index b50ec3714fd8..84d663120e37 100644
  	if (usb_urb_dir_out(urb))
  		memcpy(kmalloc_ptr, urb->transfer_buffer,
 diff --git a/drivers/usb/host/xhci-debugfs.c b/drivers/usb/host/xhci-debugfs.c
-index cadc01336bf8..36ac2ecac626 100644
+index 7ba6afc7ef23..2c93ed328e58 100644
 --- a/drivers/usb/host/xhci-debugfs.c
 +++ b/drivers/usb/host/xhci-debugfs.c
 @@ -413,10 +413,12 @@ static struct dentry *xhci_debugfs_create_ring_dir(struct xhci_hcd *xhci,
@@ -967,10 +967,10 @@ index 1ff38d8036e9..9d8197b337cf 100644
  			rc = num;
  		else if (num != kdata.num) {
 diff --git a/drivers/xen/xenbus/xenbus_xs.c b/drivers/xen/xenbus/xenbus_xs.c
-index 49a3874ae6bb..8eb0cbff0e34 100644
+index ddc18da61834..7ca668f55c2a 100644
 --- a/drivers/xen/xenbus/xenbus_xs.c
 +++ b/drivers/xen/xenbus/xenbus_xs.c
-@@ -403,7 +403,9 @@ static char **split(char *strings, unsigned int len, unsigned int *num)
+@@ -406,7 +406,9 @@ static char **split(char *strings, unsigned int len, unsigned int *num)
  		kfree(strings);
  		return ERR_PTR(-ENOMEM);
  	}
@@ -982,10 +982,10 @@ index 49a3874ae6bb..8eb0cbff0e34 100644
  
  	strings = (char *)&ret[*num];
 diff --git a/fs/afs/dir.c b/fs/afs/dir.c
-index 79d93a26759a..a04ee424ee89 100644
+index da9563d62b32..3f00b72566d1 100644
 --- a/fs/afs/dir.c
 +++ b/fs/afs/dir.c
-@@ -185,7 +185,8 @@ static bool afs_dir_check_pages(struct afs_vnode *dvnode, struct afs_read *req)
+@@ -181,7 +181,8 @@ static bool afs_dir_check_pages(struct afs_vnode *dvnode, struct afs_read *req)
  	for (i = 0; i < req->nr_pages; i++) {
  		dbuf = kmap(req->pages[i]);
  		for (j = 0; j < qty; j++) {
@@ -1131,10 +1131,10 @@ index d6e1075d8ec6..94e83430f760 100644
   * str_has_prefix - Test if a string has a given prefix
   * @str: The string to test
 diff --git a/include/sound/pcm.h b/include/sound/pcm.h
-index 18bd8c3ea605..bca1d0b80a4a 100644
+index 1e9bb1c91770..3992d46042e4 100644
 --- a/include/sound/pcm.h
 +++ b/include/sound/pcm.h
-@@ -1089,14 +1089,18 @@ static inline snd_pcm_sframes_t
+@@ -1074,14 +1074,18 @@ static inline snd_pcm_sframes_t
  snd_pcm_lib_writev(struct snd_pcm_substream *substream,
  		   void __user **bufs, snd_pcm_uframes_t frames)
  {
@@ -1155,7 +1155,7 @@ index 18bd8c3ea605..bca1d0b80a4a 100644
  }
  
  static inline snd_pcm_sframes_t
-@@ -1117,14 +1121,18 @@ static inline snd_pcm_sframes_t
+@@ -1102,14 +1106,18 @@ static inline snd_pcm_sframes_t
  snd_pcm_kernel_writev(struct snd_pcm_substream *substream,
  		      void **bufs, snd_pcm_uframes_t frames)
  {
@@ -1230,10 +1230,10 @@ index b8e6306e7e13..391a757fa7a1 100644
  			debug_kfree(knt1);
  			knt1 = kdb_name_table[i];
 diff --git a/kernel/futex.c b/kernel/futex.c
-index 2268b97d5439..d3156e20ebb3 100644
+index 4b5b468c58b6..9cf124d3af5c 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -3781,8 +3781,10 @@ void compat_exit_robust_list(struct task_struct *curr)
+@@ -3768,8 +3768,10 @@ void compat_exit_robust_list(struct task_struct *curr)
  		 * Fetch the next entry in the list before calling
  		 * handle_futex_death:
  		 */
@@ -1484,10 +1484,10 @@ index 2567af2fbd6f..e8159ce360f5 100644
  	return sk;
  }
 diff --git a/net/rxrpc/key.c b/net/rxrpc/key.c
-index e7f6b8823eb6..763e06d2409f 100644
+index 83e3357a65a6..c579aaf95489 100644
 --- a/net/rxrpc/key.c
 +++ b/net/rxrpc/key.c
-@@ -843,7 +843,7 @@ static int rxrpc_preparse_s(struct key_preparsed_payload *prep)
+@@ -839,7 +839,7 @@ static int rxrpc_preparse_s(struct key_preparsed_payload *prep)
  	if (prep->datalen != 8)
  		return -EINVAL;
  
@@ -1497,10 +1497,10 @@ index e7f6b8823eb6..763e06d2409f 100644
  	ci = crypto_alloc_skcipher("pcbc(des)", 0, CRYPTO_ALG_ASYNC);
  	if (IS_ERR(ci)) {
 diff --git a/net/rxrpc/rxkad.c b/net/rxrpc/rxkad.c
-index 59a09121ebd0..e207f3b57246 100644
+index 91f05257be45..d9b9cc977d1a 100644
 --- a/net/rxrpc/rxkad.c
 +++ b/net/rxrpc/rxkad.c
-@@ -898,7 +898,7 @@ static int rxkad_decrypt_ticket(struct rxrpc_connection *conn,
+@@ -894,7 +894,7 @@ static int rxkad_decrypt_ticket(struct rxrpc_connection *conn,
  	ASSERT(conn->server_key->payload.data[0] != NULL);
  	ASSERTCMP((unsigned long) ticket & 7UL, ==, 0);
  
@@ -2008,10 +2008,10 @@ index 9ab5613fe07c..83650caf1aa2 100644
  		if (data) {
  			if (out + sizeof(outle32) + data->size > buf +
 diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-index 1d8452912b14..ee8f017b5a7d 100644
+index 860543a4c840..74cdb5930d20 100644
 --- a/sound/core/pcm_native.c
 +++ b/sound/core/pcm_native.c
-@@ -2837,7 +2837,7 @@ static int snd_pcm_xfern_frames_ioctl(struct snd_pcm_substream *substream,
+@@ -2822,7 +2822,7 @@ static int snd_pcm_xfern_frames_ioctl(struct snd_pcm_substream *substream,
  {
  	struct snd_xfern xfern;
  	struct snd_pcm_runtime *runtime = substream->runtime;
