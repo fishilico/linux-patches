@@ -51,10 +51,10 @@ It has also detected some bugs reported and fixed by other people:
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
-index 6f0712f0767c..242e9c5f2c24 100644
+index 748ac489ef7e..fdd0875bf46a 100644
 --- a/drivers/android/binder.c
 +++ b/drivers/android/binder.c
-@@ -5979,7 +5979,7 @@ static void print_binder_transaction_log_entry(struct seq_file *m,
+@@ -5970,7 +5970,7 @@ static void print_binder_transaction_log_entry(struct seq_file *m,
  	 * done printing the fields of the entry
  	 */
  	smp_rmb();
@@ -329,10 +329,10 @@ index a75e74ad1698..3716feb444cb 100644
  		return rc;
  	}
 diff --git a/drivers/scsi/fcoe/fcoe.c b/drivers/scsi/fcoe/fcoe.c
-index 8ba8862d3292..c6e04107683f 100644
+index 00dd47bcbb1e..d7dcd765aa6e 100644
 --- a/drivers/scsi/fcoe/fcoe.c
 +++ b/drivers/scsi/fcoe/fcoe.c
-@@ -2677,7 +2677,7 @@ static int fcoe_vport_create(struct fc_vport *vport, bool disabled)
+@@ -2665,7 +2665,7 @@ static int fcoe_vport_create(struct fc_vport *vport, bool disabled)
  	if (rc) {
  		fcoe_wwn_to_str(vport->port_name, buf, sizeof(buf));
  		printk(KERN_ERR "fcoe: Failed to create vport, "
@@ -342,10 +342,10 @@ index 8ba8862d3292..c6e04107683f 100644
  		return rc;
  	}
 diff --git a/drivers/scsi/fcoe/fcoe_transport.c b/drivers/scsi/fcoe/fcoe_transport.c
-index 29fe3426f9f2..a9ebd564bb18 100644
+index ba4603d76284..1978de8b5f6d 100644
 --- a/drivers/scsi/fcoe/fcoe_transport.c
 +++ b/drivers/scsi/fcoe/fcoe_transport.c
-@@ -270,7 +270,7 @@ int fcoe_validate_vport_create(struct fc_vport *vport)
+@@ -258,7 +258,7 @@ int fcoe_validate_vport_create(struct fc_vport *vport)
  	fcoe_wwn_to_str(vport->port_name, buf, sizeof(buf));
  	/* Check if the wwpn is not same as that of the lport */
  	if (!memcmp(&n_port->wwpn, &vport->port_name, sizeof(u64))) {
@@ -354,7 +354,7 @@ index 29fe3426f9f2..a9ebd564bb18 100644
  				      "base port WWPN\n", buf);
  		rc = -EINVAL;
  		goto out;
-@@ -279,7 +279,7 @@ int fcoe_validate_vport_create(struct fc_vport *vport)
+@@ -267,7 +267,7 @@ int fcoe_validate_vport_create(struct fc_vport *vport)
  	/* Check if there is any existing vport with same wwpn */
  	list_for_each_entry(vn_port, &n_port->vports, list) {
  		if (!memcmp(&vn_port->wwpn, &vport->port_name, sizeof(u64))) {
@@ -377,10 +377,10 @@ index 1bef1da273c2..bb708ebab2f1 100644
  		}
  	} else if (cmd_type == TYPE_MSG) {
 diff --git a/drivers/scsi/qedf/qedf_main.c b/drivers/scsi/qedf/qedf_main.c
-index 5b07235497c6..e37450e0624f 100644
+index 6ef0f741bf89..d7376f7897f1 100644
 --- a/drivers/scsi/qedf/qedf_main.c
 +++ b/drivers/scsi/qedf/qedf_main.c
-@@ -1707,7 +1707,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
+@@ -1704,7 +1704,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
  	if (rc) {
  		fcoe_wwn_to_str(vport->port_name, buf, sizeof(buf));
  		QEDF_WARN(&(base_qedf->dbg_ctx), "Failed to create vport, "
@@ -390,10 +390,10 @@ index 5b07235497c6..e37450e0624f 100644
  	}
  
 diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index e0614898e788..4f495978cd14 100644
+index 6e47a59822d1..4ffbb8756748 100644
 --- a/drivers/scsi/qedi/qedi_main.c
 +++ b/drivers/scsi/qedi/qedi_main.c
-@@ -1965,7 +1965,8 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+@@ -1962,7 +1962,8 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
  	int rc = 1;
  	u32 ipv6_en, dhcp_en, ip_len;
  	struct nvm_iscsi_block *block;
@@ -403,7 +403,7 @@ index e0614898e788..4f495978cd14 100644
  
  	block = qedi_get_nvram_block(qedi);
  	if (!block)
-@@ -1993,6 +1994,9 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+@@ -1990,6 +1991,9 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
  		ip_len = ipv6_en ? 5 : 8;
  	}
  
@@ -413,7 +413,7 @@ index e0614898e788..4f495978cd14 100644
  	switch (type) {
  	case ISCSI_BOOT_ETH_IP_ADDR:
  		rc = snprintf(buf, ip_len, fmt, ip);
-@@ -2026,6 +2030,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+@@ -2023,6 +2027,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
  		rc = 0;
  		break;
  	}
@@ -422,7 +422,7 @@ index e0614898e788..4f495978cd14 100644
  	return rc;
  }
 diff --git a/drivers/scsi/smartpqi/smartpqi_init.c b/drivers/scsi/smartpqi/smartpqi_init.c
-index 6c24ce0ff8a1..c56a40b74ea2 100644
+index 0c41370445c8..ddd3d56f815c 100644
 --- a/drivers/scsi/smartpqi/smartpqi_init.c
 +++ b/drivers/scsi/smartpqi/smartpqi_init.c
 @@ -494,7 +494,7 @@ static int pqi_build_raid_path_request(struct pqi_ctrl_info *ctrl_info,
@@ -505,7 +505,7 @@ index 62c58cfeb8d8..1a1796ff9116 100644
  }
  
 diff --git a/fs/overlayfs/inode.c b/fs/overlayfs/inode.c
-index b48273e846ad..429becc6669e 100644
+index f7eba21effa5..09497c204c24 100644
 --- a/fs/overlayfs/inode.c
 +++ b/fs/overlayfs/inode.c
 @@ -640,8 +640,11 @@ static int ovl_set_nlink_common(struct dentry *dentry,
@@ -1431,10 +1431,10 @@ index 000000000000..ed3aabeb060b
 +	return 0;
 +}
 diff --git a/security/apparmor/mount.c b/security/apparmor/mount.c
-index 8c3787399356..88d7e85a25ad 100644
+index 17081c8dbefa..8fb937f48363 100644
 --- a/security/apparmor/mount.c
 +++ b/security/apparmor/mount.c
-@@ -53,7 +53,7 @@ static void audit_mnt_flags(struct audit_buffer *ab, unsigned long flags)
+@@ -49,7 +49,7 @@ static void audit_mnt_flags(struct audit_buffer *ab, unsigned long flags)
  	if (flags & MS_NODIRATIME)
  		audit_log_format(ab, ", nodiratime");
  	if (flags & MS_BIND)
@@ -1443,7 +1443,7 @@ index 8c3787399356..88d7e85a25ad 100644
  	if (flags & MS_MOVE)
  		audit_log_format(ab, ", move");
  	if (flags & MS_SILENT)
-@@ -61,16 +61,16 @@ static void audit_mnt_flags(struct audit_buffer *ab, unsigned long flags)
+@@ -57,16 +57,16 @@ static void audit_mnt_flags(struct audit_buffer *ab, unsigned long flags)
  	if (flags & MS_POSIXACL)
  		audit_log_format(ab, ", acl");
  	if (flags & MS_UNBINDABLE)
