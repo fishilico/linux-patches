@@ -68,7 +68,7 @@ It has also detected some bugs reported and fixed by other people:
  drivers/staging/rtl8192u/r819xU_firmware.c    |   2 +-
  .../intel/int340x_thermal/int3402_thermal.c   |   2 +-
  drivers/usb/core/devio.c                      |  12 +-
- drivers/usb/dwc2/hcd.c                        |  16 +-
+ drivers/usb/dwc2/hcd.c                        |  22 +-
  drivers/usb/host/xhci-debugfs.c               |   4 +-
  drivers/xen/privcmd.c                         |  16 +-
  drivers/xen/xenbus/xenbus_xs.c                |   4 +-
@@ -99,7 +99,7 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/deref_checker_plugin.c    | 442 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 70 files changed, 817 insertions(+), 115 deletions(-)
+ 70 files changed, 820 insertions(+), 118 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
@@ -888,35 +888,41 @@ index fa783531ee88..0afec59784bc 100644
  	} else {
  		retval = (connected(ps) ? -EAGAIN : -ENODEV);
 diff --git a/drivers/usb/dwc2/hcd.c b/drivers/usb/dwc2/hcd.c
-index b50ec3714fd8..84d663120e37 100644
+index 2192a2873c7c..4a41a32aa493 100644
 --- a/drivers/usb/dwc2/hcd.c
 +++ b/drivers/usb/dwc2/hcd.c
-@@ -2480,8 +2480,12 @@ static void dwc2_free_dma_aligned_buffer(struct urb *urb)
+@@ -2480,10 +2480,14 @@ static void dwc2_free_dma_aligned_buffer(struct urb *urb)
  		return;
  
  	/* Restore urb->transfer_buffer from the end of the allocated area */
--	memcpy(&stored_xfer_buffer, urb->transfer_buffer +
--	       urb->transfer_buffer_length, sizeof(urb->transfer_buffer));
+-	memcpy(&stored_xfer_buffer,
+-	       PTR_ALIGN(urb->transfer_buffer + urb->transfer_buffer_length,
+-			 dma_get_cache_alignment()),
+-	       sizeof(urb->transfer_buffer));
 +	{
 +		/* Play nice with the pointer deref checker, as the code really wants to copy a pointer with memcpy */
 +		void *p_stored_xfer_buffer = &stored_xfer_buffer;
-+		memcpy(p_stored_xfer_buffer, urb->transfer_buffer +
-+			   urb->transfer_buffer_length, sizeof(urb->transfer_buffer));
++		memcpy(p_stored_xfer_buffer,
++			   PTR_ALIGN(urb->transfer_buffer + urb->transfer_buffer_length,
++				 dma_get_cache_alignment()),
++			   sizeof(urb->transfer_buffer));
 +	}
  
  	if (usb_urb_dir_in(urb)) {
  		if (usb_pipeisoc(urb->pipe))
-@@ -2523,8 +2527,12 @@ static int dwc2_alloc_dma_aligned_buffer(struct urb *urb, gfp_t mem_flags)
+@@ -2526,9 +2530,13 @@ static int dwc2_alloc_dma_aligned_buffer(struct urb *urb, gfp_t mem_flags)
  	 * Position value of original urb->transfer_buffer pointer to the end
  	 * of allocation for later referencing
  	 */
--	memcpy(kmalloc_ptr + urb->transfer_buffer_length,
+-	memcpy(PTR_ALIGN(kmalloc_ptr + urb->transfer_buffer_length,
+-			 dma_get_cache_alignment()),
 -	       &urb->transfer_buffer, sizeof(urb->transfer_buffer));
 +	{
 +		/* Play nice with the pointer deref checker, as the code really wants to copy a pointer with memcpy */
 +		void *p_urb_transient_buffer = &urb->transfer_buffer;
-+		memcpy(kmalloc_ptr + urb->transfer_buffer_length,
-+			   p_urb_transient_buffer, sizeof(urb->transfer_buffer));
++	    memcpy(PTR_ALIGN(kmalloc_ptr + urb->transfer_buffer_length,
++			     dma_get_cache_alignment()),
++		   p_urb_transient_buffer, sizeof(urb->transfer_buffer));
 +	}
  
  	if (usb_urb_dir_out(urb))
@@ -1246,11 +1252,11 @@ index 4b5b468c58b6..9cf124d3af5c 100644
  		 * A pending lock might already be on the list, so
  		 * dont process it twice:
 diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
-index 2398832947c6..27c6cd41818f 100644
+index c4ce08f43bd6..9f8394a3171f 100644
 --- a/kernel/livepatch/core.c
 +++ b/kernel/livepatch/core.c
-@@ -729,9 +729,11 @@ static int klp_init_object_loaded(struct klp_patch *patch,
- 	module_enable_ro(patch->mod, true);
+@@ -735,9 +735,11 @@ static int klp_init_object_loaded(struct klp_patch *patch,
+ 	mutex_unlock(&text_mutex);
  
  	klp_for_each_func(obj, func) {
 +		/* Play nice with the pointer deref checker */
@@ -1263,7 +1269,7 @@ index 2398832947c6..27c6cd41818f 100644
  			return ret;
  
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 1c80521fd436..9c8302c27e5d 100644
+index 83e08b78dbee..14c15f7d8343 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
 @@ -7678,7 +7678,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
