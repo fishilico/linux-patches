@@ -56,10 +56,10 @@ This fixes errors like:
  27 files changed, 169 insertions(+), 274 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
-index 75bc18646df6..10d4e7064572 100644
+index 418a61ecb827..06b14af43421 100644
 --- a/arch/arm/mach-omap2/board-n8x0.c
 +++ b/arch/arm/mach-omap2/board-n8x0.c
-@@ -115,7 +115,6 @@ static struct musb_hdrc_platform_data tusb_data = {
+@@ -112,7 +112,6 @@ static struct musb_hdrc_platform_data tusb_data = {
  static void __init n8x0_usb_init(void)
  {
  	int ret = 0;
@@ -67,7 +67,7 @@ index 75bc18646df6..10d4e7064572 100644
  
  	/* PM companion chip power control pin */
  	ret = gpio_request_one(TUSB6010_GPIO_ENABLE, GPIOF_OUT_INIT_LOW,
-@@ -133,7 +132,7 @@ static void __init n8x0_usb_init(void)
+@@ -130,7 +129,7 @@ static void __init n8x0_usb_init(void)
  	if (ret != 0)
  		goto err;
  
@@ -77,10 +77,10 @@ index 75bc18646df6..10d4e7064572 100644
  	return;
  
 diff --git a/arch/arm/mach-omap2/usb-tusb6010.c b/arch/arm/mach-omap2/usb-tusb6010.c
-index c2a6fbd7f8a9..2ac34bf04e6e 100644
+index a0c4c42e56b9..8b651f5f9cac 100644
 --- a/arch/arm/mach-omap2/usb-tusb6010.c
 +++ b/arch/arm/mach-omap2/usb-tusb6010.c
-@@ -102,9 +102,6 @@ static int tusb_set_sync_mode(unsigned sysclk_ps)
+@@ -99,9 +99,6 @@ static int tusb_set_sync_mode(unsigned sysclk_ps)
  /* tusb driver calls this when it changes the chip's clocking */
  int tusb6010_platform_retime(unsigned is_refclk)
  {
@@ -90,7 +90,7 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  	unsigned	sysclk_ps;
  	int		status;
  
-@@ -115,12 +112,12 @@ int tusb6010_platform_retime(unsigned is_refclk)
+@@ -112,12 +109,12 @@ int tusb6010_platform_retime(unsigned is_refclk)
  
  	status = tusb_set_async_mode(sysclk_ps);
  	if (status < 0) {
@@ -105,7 +105,7 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  done:
  	return status;
  }
-@@ -164,14 +161,12 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+@@ -161,14 +158,12 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
  		unsigned irq, unsigned dmachan)
  {
  	int		status;
@@ -121,7 +121,7 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  		return status;
  	}
  	tusb_resources[0].end = tusb_resources[0].start + 0x9ff;
-@@ -186,7 +181,7 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+@@ -183,7 +178,7 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
  	status = gpmc_cs_request(sync, SZ_16M, (unsigned long *)
  				&tusb_resources[1].start);
  	if (status < 0) {
@@ -130,7 +130,7 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  		return status;
  	}
  	tusb_resources[1].end = tusb_resources[1].start + 0x9ff;
-@@ -200,26 +195,26 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+@@ -197,26 +192,26 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
  	/* IRQ */
  	status = gpio_request_one(irq, GPIOF_IN, "TUSB6010 irq");
  	if (status < 0) {
@@ -161,7 +161,7 @@ index c2a6fbd7f8a9..2ac34bf04e6e 100644
  		return -ENODEV;
  	}
  	tusb_device.dev.platform_data = data;
-@@ -227,7 +222,7 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+@@ -224,7 +219,7 @@ tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
  	/* so far so good ... register the device */
  	status = platform_device_register(&tusb_device);
  	if (status < 0) {
@@ -257,10 +257,10 @@ index fb77c7e10e16..927add5bab7e 100644
  	}
  	of_clk_parent_fill(d->np, d->parent_names, nr_inputs);
 diff --git a/drivers/iommu/omap-iommu-debug.c b/drivers/iommu/omap-iommu-debug.c
-index 4abc0ef522a8..40244f0ccbdf 100644
+index ff31bddba60a..06a5bb64e876 100644
 --- a/drivers/iommu/omap-iommu-debug.c
 +++ b/drivers/iommu/omap-iommu-debug.c
-@@ -33,9 +33,8 @@ static inline bool is_omap_iommu_detached(struct omap_iommu *obj)
+@@ -30,9 +30,8 @@ static inline bool is_omap_iommu_detached(struct omap_iommu *obj)
  #define pr_reg(name)							\
  	do {								\
  		ssize_t bytes;						\
@@ -438,7 +438,7 @@ index 7ad3d24195ba..6cd103cbd4dd 100644
  }
  module_init(z85230_init_driver);
 diff --git a/drivers/net/wireless/intel/iwlwifi/fw/dbg.c b/drivers/net/wireless/intel/iwlwifi/fw/dbg.c
-index 5f52e40a2903..1204388c9f06 100644
+index 33d7bc5500db..d8668342379d 100644
 --- a/drivers/net/wireless/intel/iwlwifi/fw/dbg.c
 +++ b/drivers/net/wireless/intel/iwlwifi/fw/dbg.c
 @@ -2469,19 +2469,19 @@ static void iwl_fw_dbg_update_regions(struct iwl_fw_runtime *fwrt,
