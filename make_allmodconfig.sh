@@ -126,6 +126,7 @@ KCFLAGS="$KCFLAGS -Wmissing-include-dirs"
 KCFLAGS="$KCFLAGS -Wmissing-prototypes"
 KCFLAGS="$KCFLAGS -Wstrict-prototypes"
 KCFLAGS="$KCFLAGS -Wunknown-pragmas"
+disable_in_kcflags 'address-of-packed-member' # Linux takes references to unaligned members of packed structs
 disable_in_kcflags 'aggregate-return' # Linux ktime_get returns a structure
 disable_in_kcflags 'cast-align' # Many struct casts change the alignment
 disable_in_kcflags 'deprecated-declarations'
@@ -152,7 +153,6 @@ disable_in_kcflags 'error=write-strings' # TODO, type acpi_string complicates th
 if $CC -v 2>&1 | grep -q clang
 then
     KCFLAGS="$KCFLAGS -Weverything"
-    disable_in_kcflags 'address-of-packed-member' # Linux takes references to unaligned members of packed structs
     disable_in_kcflags 'bad-function-cast' # (unsigned long *)kernel_stack_pointer(...)
     disable_in_kcflags 'c11-extensions' # Use C11 features
     disable_in_kcflags 'c99-extensions' # Use C99 features
@@ -226,7 +226,9 @@ then
     KCFLAGS="$KCFLAGS -Wtrampolines"
     KCFLAGS="$KCFLAGS -Wjump-misses-init"
     KCFLAGS="$KCFLAGS -Wlogical-op"
+    disable_in_kcflags 'aggressive-loop-optimizations' # gcc 9 warns about some loops in echoaudio_dsp, which looks fine
     disable_in_kcflags 'attribute-alias' # gcc 8 warns about x86-32 syscall handler using incompatible types
+    disable_in_kcflags 'builtin-declaration-mismatch' # gcc 9 warns about using speicific pointer types instead of void*
     disable_in_kcflags 'cast-function-type' # gcc 8 warns about many incompatible function casts used by Linux
     disable_in_kcflags 'format-overflow' # Many calls to snprintf may overflow
     disable_in_kcflags 'format-truncation' # Many calls to snprintf may be truncated
