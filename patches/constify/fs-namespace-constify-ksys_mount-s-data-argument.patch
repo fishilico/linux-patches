@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 20 Jul 2019 11:17:37 +0200
+Subject: [PATCH] {CONSTIFY} fs/namespace: constify ksys_mount's data argument
+
+---
+ fs/namespace.c           | 2 +-
+ include/linux/syscalls.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/namespace.c b/fs/namespace.c
+index 0d2dc9489f34..68c7765e7053 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -3295,7 +3295,7 @@ struct dentry *mount_subtree(struct vfsmount *m, const char *name)
+ EXPORT_SYMBOL(mount_subtree);
+ 
+ int ksys_mount(const char __user *dev_name, const char __user *dir_name,
+-	       const char __user *type, unsigned long flags, void __user *data)
++	       const char __user *type, unsigned long flags, const void __user *data)
+ {
+ 	int ret;
+ 	char *kernel_type;
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index c73313d53e66..9e8db82de415 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -1239,7 +1239,7 @@ asmlinkage long sys_ni_syscall(void);
+  */
+ 
+ int ksys_mount(const char __user *dev_name, const char __user *dir_name,
+-	       const char __user *type, unsigned long flags, void __user *data);
++	       const char __user *type, unsigned long flags, const void __user *data);
+ int ksys_umount(const char __user *name, int flags);
+ int ksys_dup(unsigned int fildes);
+ int ksys_chroot(const char __user *filename);
+-- 

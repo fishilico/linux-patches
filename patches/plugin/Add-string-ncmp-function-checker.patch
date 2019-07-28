@@ -33,7 +33,7 @@ index 40efdfbb46fb..46211a40b50c 100644
  
  gcc-plugin-$(CONFIG_GCC_PLUGIN_STRUCTLEAK)	+= structleak_plugin.so
 diff --git a/scripts/gcc-plugins/Kconfig b/scripts/gcc-plugins/Kconfig
-index 028c0147c5d7..6769d5eae2a1 100644
+index 73331d72105d..cde6553c8be7 100644
 --- a/scripts/gcc-plugins/Kconfig
 +++ b/scripts/gcc-plugins/Kconfig
 @@ -126,4 +126,10 @@ config GCC_PLUGIN_DEREF_CHECKER
@@ -292,25 +292,25 @@ index 000000000000..a43c42692b83
 +	return 0;
 +}
 diff --git a/sound/soc/intel/boards/bxt_rt298.c b/sound/soc/intel/boards/bxt_rt298.c
-index 771df36fbbaf..93888303ad0b 100644
+index adf416a49b48..f78bc1a16629 100644
 --- a/sound/soc/intel/boards/bxt_rt298.c
 +++ b/sound/soc/intel/boards/bxt_rt298.c
-@@ -575,14 +575,11 @@ static int broxton_audio_probe(struct platform_device *pdev)
+@@ -594,14 +594,11 @@ static int broxton_audio_probe(struct platform_device *pdev)
  	int i;
  
  	for (i = 0; i < ARRAY_SIZE(broxton_rt298_dais); i++) {
--		if (!strncmp(card->dai_link[i].codec_name, "i2c-INT343A:00",
--						I2C_NAME_SIZE)) {
+-		if (!strncmp(card->dai_link[i].codecs->name, "i2c-INT343A:00",
+-			     I2C_NAME_SIZE)) {
 -			if (!strncmp(card->name, "broxton-rt298",
--						PLATFORM_NAME_SIZE)) {
-+		if (!strcmp(card->dai_link[i].codec_name, "i2c-INT343A:00")) {
+-				     PLATFORM_NAME_SIZE)) {
++		if (!strcmp(card->dai_link[i].codecs->name, "i2c-INT343A:00")) {
 +			if (!strcmp(card->name, "broxton-rt298")) {
  				card->dai_link[i].name = "SSP5-Codec";
- 				card->dai_link[i].cpu_dai_name = "SSP5 Pin";
+ 				card->dai_link[i].cpus->dai_name = "SSP5 Pin";
 -			} else if (!strncmp(card->name, "geminilake-rt298",
--						PLATFORM_NAME_SIZE)) {
+-					    PLATFORM_NAME_SIZE)) {
 +			} else if (!strcmp(card->name, "geminilake-rt298")) {
  				card->dai_link[i].name = "SSP2-Codec";
- 				card->dai_link[i].cpu_dai_name = "SSP2 Pin";
+ 				card->dai_link[i].cpus->dai_name = "SSP2 Pin";
  			}
 -- 

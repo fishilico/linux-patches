@@ -13,7 +13,6 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  drivers/md/bcache/alloc.c                             | 2 +-
  drivers/media/tuners/tda8290.c                        | 2 ++
  drivers/misc/qcom-coincell.c                          | 4 ++++
- drivers/misc/sgi-xp/xpc_partition.c                   | 2 +-
  drivers/net/sb1000.c                                  | 2 +-
  drivers/scsi/qla2xxx/qla_mr.c                         | 1 +
  drivers/scsi/qla4xxx/ql4_os.c                         | 2 +-
@@ -26,7 +25,7 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  mm/filemap.c                                          | 2 +-
  net/mac80211/mlme.c                                   | 2 +-
  net/mac80211/tx.c                                     | 2 +-
- 21 files changed, 31 insertions(+), 14 deletions(-)
+ 20 files changed, 30 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 index 77c14671866c..25690300ada9 100644
@@ -44,10 +43,10 @@ index 77c14671866c..25690300ada9 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i915_request.c
-index c88e538b2ef4..c315d7add760 100644
+index a195a92d0105..43edd6f13b4d 100644
 --- a/drivers/gpu/drm/i915/i915_request.c
 +++ b/drivers/gpu/drm/i915/i915_request.c
-@@ -1277,7 +1277,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
+@@ -1283,7 +1283,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
@@ -96,7 +95,7 @@ index 5336db81ba0a..115818d1714c 100644
  	return iio_push_to_buffers_with_timestamp(indio_dev, spd->buffer,
  						  calculated_time);
 diff --git a/drivers/md/bcache/alloc.c b/drivers/md/bcache/alloc.c
-index f8986effcb50..f0125d10c5ec 100644
+index 6f776823b9ba..828d9ce5e1cd 100644
 --- a/drivers/md/bcache/alloc.c
 +++ b/drivers/md/bcache/alloc.c
 @@ -328,7 +328,7 @@ static int bch_allocator_thread(void *arg)
@@ -136,19 +135,6 @@ index 54d4f6ee8888..a4995c3170bc 100644
  	}
  
  	return qcom_coincell_chgr_config(&chgr, rset, vset, enable);
-diff --git a/drivers/misc/sgi-xp/xpc_partition.c b/drivers/misc/sgi-xp/xpc_partition.c
-index 3eba1c420cc0..1a38e1460c58 100644
---- a/drivers/misc/sgi-xp/xpc_partition.c
-+++ b/drivers/misc/sgi-xp/xpc_partition.c
-@@ -70,7 +70,7 @@ xpc_get_rsvd_page_pa(int nasid)
- 	unsigned long rp_pa = nasid;	/* seed with nasid */
- 	size_t len = 0;
- 	size_t buf_len = 0;
--	void *buf = buf;
-+	void *buf = NULL; /* BUG? No. May need an uninitialized_variable macro instead */
- 	void *buf_base = NULL;
- 	enum xp_retval (*get_partition_rsvd_page_pa)
- 		(void *, u64 *, unsigned long *, size_t *) =
 diff --git a/drivers/net/sb1000.c b/drivers/net/sb1000.c
 index e88af978f63c..5c9461988aab 100644
 --- a/drivers/net/sb1000.c
@@ -202,10 +188,10 @@ index c8e633594479..c99968bf2df8 100644
  	cxacru_upload_firmware(instance, fw, bp);
  
 diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
-index f03674afbd30..515e60d95295 100644
+index 158e5af767fd..aec86c694ba7 100644
 --- a/fs/ocfs2/localalloc.c
 +++ b/fs/ocfs2/localalloc.c
-@@ -834,6 +834,7 @@ static int ocfs2_local_alloc_find_clear_bits(struct ocfs2_super *osb,
+@@ -833,6 +833,7 @@ static int ocfs2_local_alloc_find_clear_bits(struct ocfs2_super *osb,
  
  	if (!alloc->id1.bitmap1.i_total) {
  		bitoff = -1;
@@ -214,10 +200,10 @@ index f03674afbd30..515e60d95295 100644
  	}
  
 diff --git a/fs/xfs/libxfs/xfs_dir2_node.c b/fs/xfs/libxfs/xfs_dir2_node.c
-index 16731d2d684b..4a11f284b4de 100644
+index afcc6642690a..bc8d97bd36a5 100644
 --- a/fs/xfs/libxfs/xfs_dir2_node.c
 +++ b/fs/xfs/libxfs/xfs_dir2_node.c
-@@ -485,6 +485,8 @@ xfs_dir2_leafn_add(
+@@ -483,6 +483,8 @@ xfs_dir2_leafn_add(
  		 */
  		lfloglow = leafhdr.count;
  		lfloghigh = -1;
@@ -227,10 +213,10 @@ index 16731d2d684b..4a11f284b4de 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index fe9898875097..6802927ffd34 100644
+index 04377ab75863..132dfe73ae70 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
-@@ -2048,7 +2048,7 @@ xfs_difree_finobt(
+@@ -2036,7 +2036,7 @@ xfs_difree_finobt(
  	struct xfs_agi			*agi = XFS_BUF_TO_AGI(agbp);
  	xfs_agnumber_t			agno = be32_to_cpu(agi->agi_seqno);
  	struct xfs_btree_cur		*cur;
@@ -240,10 +226,10 @@ index fe9898875097..6802927ffd34 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 52c8a0edb7b0..10f7f98b1f7d 100644
+index 22c8a5fdd90d..59a9957b47b7 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
-@@ -1073,7 +1073,7 @@ xlog_verify_tail(
+@@ -993,7 +993,7 @@ xlog_verify_tail(
  	xfs_daddr_t		first_bad;
  	int			error = 0;
  	bool			wrapped;
@@ -251,7 +237,7 @@ index 52c8a0edb7b0..10f7f98b1f7d 100644
 +	xfs_daddr_t		tmp_tail = 0 /* -Wmaybe-uninitialized false positive */;
  	xfs_daddr_t		orig_tail = *tail_blk;
  
- 	bp = xlog_get_bp(log, 1);
+ 	buffer = xlog_alloc_buffer(log, 1);
 diff --git a/include/linux/sunrpc/cache.h b/include/linux/sunrpc/cache.h
 index c7f38e897174..cf4acc9cc5f7 100644
 --- a/include/linux/sunrpc/cache.h
@@ -266,10 +252,10 @@ index c7f38e897174..cf4acc9cc5f7 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/mm/filemap.c b/mm/filemap.c
-index 6dd9a2274c80..2ca219b1650f 100644
+index d0cf700bf201..1abe6ac7d9c5 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -823,7 +823,7 @@ static int __add_to_page_cache_locked(struct page *page,
+@@ -845,7 +845,7 @@ static int __add_to_page_cache_locked(struct page *page,
  {
  	XA_STATE(xas, &mapping->i_pages, offset);
  	int huge = PageHuge(page);
@@ -279,10 +265,10 @@ index 6dd9a2274c80..2ca219b1650f 100644
  	void *old;
  
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 379d2ab6d327..1bd51e39d70f 100644
+index a99ad0325309..2bc569b0ad4d 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1529,7 +1529,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
+@@ -1530,7 +1530,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
  {
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;

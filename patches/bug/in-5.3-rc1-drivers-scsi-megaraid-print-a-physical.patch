@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 20 Jul 2019 12:21:11 +0200
+Subject: [PATCH] {BUG in 5.3-rc1} drivers/scsi/megaraid: print a physical
+ address with %pa
+
+There was an indirection.
+
+This has been found using printk_checker gcc plugin.
+---
+ drivers/scsi/megaraid/megaraid_sas_base.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/scsi/megaraid/megaraid_sas_base.c b/drivers/scsi/megaraid/megaraid_sas_base.c
+index 6773c5a56949..0d05805a36eb 100644
+--- a/drivers/scsi/megaraid/megaraid_sas_base.c
++++ b/drivers/scsi/megaraid/megaraid_sas_base.c
+@@ -5810,7 +5810,7 @@ static int megasas_init_fw(struct megasas_instance *instance)
+ 	base_addr_phys = &base_addr;
+ 	dev_printk(KERN_DEBUG, &instance->pdev->dev,
+ 		   "BAR:0x%lx  BAR's base_addr(phys):%pa  mapped virt_addr:0x%p\n",
+-		   instance->bar, base_addr_phys, instance->reg_set);
++		   instance->bar, &base_addr, instance->reg_set);
+ 
+ 	if (instance->adapter_type != MFI_SERIES)
+ 		instance->instancet = &megasas_instance_template_fusion;
+-- 

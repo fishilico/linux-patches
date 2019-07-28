@@ -39,10 +39,10 @@ index 764ff4c56233..016e18d0c236 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index 004fcc0c363a..df625ab8c483 100644
+index 9620ec60d29e..cf08fb2268f4 100644
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -6530,6 +6530,12 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -7470,6 +7470,12 @@ static int do_check(struct bpf_verifier_env *env)
  
  	env->prev_linfo = NULL;
  
@@ -55,7 +55,7 @@ index 004fcc0c363a..df625ab8c483 100644
  	state = kzalloc(sizeof(struct bpf_verifier_state), GFP_KERNEL);
  	if (!state)
  		return -ENOMEM;
-@@ -6870,6 +6876,9 @@ static int do_check(struct bpf_verifier_env *env)
+@@ -7814,6 +7820,9 @@ static int do_check(struct bpf_verifier_env *env)
  
  	env->prog->aux->stack_depth = env->subprog_info[0].stack_depth;
  	return 0;
@@ -92,10 +92,10 @@ index 7e8c3e8ae75f..e20feced1146 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index c8cd99c3603f..f3f3ebb0b557 100644
+index 0338820ee0ec..3ec81893456a 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -1808,6 +1808,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1935,6 +1935,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  	    unlikely((err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC))))
  		return err;
  
@@ -107,7 +107,7 @@ index c8cd99c3603f..f3f3ebb0b557 100644
  	i = 0;
  	if (offset >= len)
  		goto drop_pages;
-@@ -1824,6 +1829,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1951,6 +1956,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  
  drop_pages:
  		skb_shinfo(skb)->nr_frags = i;
@@ -118,10 +118,10 @@ index c8cd99c3603f..f3f3ebb0b557 100644
  		for (; i < nfrags; i++)
  			skb_frag_unref(skb, i);
 diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
-index ef9c07ac74a7..6e2a7abf67d6 100644
+index 2b2b3d291ab0..62d9fac1060d 100644
 --- a/net/ipv4/fib_trie.c
 +++ b/net/ipv4/fib_trie.c
-@@ -1331,6 +1331,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1335,6 +1335,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->gets);
  #endif
  
@@ -132,7 +132,7 @@ index ef9c07ac74a7..6e2a7abf67d6 100644
  	/* Step 1: Travel to the longest prefix match in the trie */
  	for (;;) {
  		index = get_cindex(key, n);
-@@ -1498,6 +1502,9 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1509,6 +1513,9 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->semantic_match_miss);
  #endif
  	goto backtrace;
@@ -143,10 +143,10 @@ index ef9c07ac74a7..6e2a7abf67d6 100644
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
-index c7727de5e073..e5e9565c044c 100644
+index be9e46c77e8b..f921c610709b 100644
 --- a/net/sched/cls_u32.c
 +++ b/net/sched/cls_u32.c
-@@ -108,6 +108,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
+@@ -103,6 +103,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
  static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  			struct tcf_result *res)
  {
@@ -158,7 +158,7 @@ index c7727de5e073..e5e9565c044c 100644
  	struct {
  		struct tc_u_knode *knode;
  		unsigned int	  off;
-@@ -256,6 +261,9 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
+@@ -249,6 +254,9 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
  deadloop:
  	net_warn_ratelimited("cls_u32: dead loop\n");
  	return -1;

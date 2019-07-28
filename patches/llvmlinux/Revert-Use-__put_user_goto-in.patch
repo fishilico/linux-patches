@@ -12,10 +12,10 @@ clang does not support it yet.
  1 file changed, 31 insertions(+), 22 deletions(-)
 
 diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index 8eb4abfe3284..b0edb8326177 100644
+index d2ad8d9999a0..4f33b1eaebc7 100644
 --- a/arch/x86/include/asm/uaccess.h
 +++ b/arch/x86/include/asm/uaccess.h
-@@ -182,14 +182,19 @@ __typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
+@@ -184,14 +184,19 @@ __typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
  
  
  #ifdef CONFIG_X86_32
@@ -43,7 +43,7 @@ index 8eb4abfe3284..b0edb8326177 100644
  
  #define __put_user_asm_ex_u64(x, addr)					\
  	asm volatile("\n"						\
-@@ -204,8 +209,8 @@ __typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
+@@ -206,8 +211,8 @@ __typeof__(__builtin_choose_expr(sizeof(x) > sizeof(0UL), 0ULL, 0UL))
  	asm volatile("call __put_user_8" : "=a" (__ret_pu)	\
  		     : "A" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
  #else
@@ -54,7 +54,7 @@ index 8eb4abfe3284..b0edb8326177 100644
  #define __put_user_asm_ex_u64(x, addr)	\
  	__put_user_asm_ex(x, addr, "q", "", "er")
  #define __put_user_x8(x, ptr, __ret_pu) __put_user_x(8, x, ptr, __ret_pu)
-@@ -266,21 +271,23 @@ extern void __put_user_8(void);
+@@ -268,21 +273,23 @@ extern void __put_user_8(void);
  	__builtin_expect(__ret_pu, 0);				\
  })
  
@@ -83,7 +83,7 @@ index 8eb4abfe3284..b0edb8326177 100644
  		break;							\
  	default:							\
  		__put_user_bad();					\
-@@ -425,12 +432,9 @@ do {									\
+@@ -427,12 +434,9 @@ do {									\
  
  #define __put_user_nocheck(x, ptr, size)			\
  ({								\
@@ -98,7 +98,7 @@ index 8eb4abfe3284..b0edb8326177 100644
  	__uaccess_end();					\
  	__builtin_expect(__pu_err, 0);				\
  })
-@@ -715,8 +719,13 @@ static __must_check __always_inline bool user_access_begin(const void __user *pt
+@@ -717,8 +721,13 @@ static __must_check __always_inline bool user_access_begin(const void __user *pt
  #define user_access_save()	smap_save()
  #define user_access_restore(x)	smap_restore(x)
  

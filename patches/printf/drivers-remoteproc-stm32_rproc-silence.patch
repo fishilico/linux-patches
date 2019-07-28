@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 27 Jul 2019 09:31:59 +0200
+Subject: [PATCH] {PRINTF} drivers/remoteproc/stm32_rproc: silence
+ -Wformat-security
+
+gcc on ARM-32 reports:
+
+    drivers/remoteproc/stm32_rproc.c: In function 'stm32_rproc_parse_fw':
+    drivers/remoteproc/stm32_rproc.c:232:10: error: format not a string
+    literal and no format arguments [-Werror=format-security]
+      232 |          it.node->name);
+          |          ^~
+    drivers/remoteproc/stm32_rproc.c:242:11: error: format not a string
+    literal and no format arguments [-Werror=format-security]
+      242 |           it.node->name);
+          |           ^~
+---
+ drivers/remoteproc/stm32_rproc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rproc.c
+index e2da7198b65f..6423682e781c 100644
+--- a/drivers/remoteproc/stm32_rproc.c
++++ b/drivers/remoteproc/stm32_rproc.c
+@@ -229,7 +229,7 @@ static int stm32_rproc_parse_fw(struct rproc *rproc, const struct firmware *fw)
+ 						   rmem->size, da,
+ 						   stm32_rproc_mem_alloc,
+ 						   stm32_rproc_mem_release,
+-						   it.node->name);
++						   "%s", it.node->name);
+ 
+ 			if (mem)
+ 				rproc_coredump_add_segment(rproc, da,
+@@ -239,7 +239,7 @@ static int stm32_rproc_parse_fw(struct rproc *rproc, const struct firmware *fw)
+ 			mem = rproc_of_resm_mem_entry_init(dev, index,
+ 							   rmem->size,
+ 							   rmem->base,
+-							   it.node->name);
++							   "%s", it.node->name);
+ 		}
+ 
+ 		if (!mem)
+-- 

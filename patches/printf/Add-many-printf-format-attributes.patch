@@ -4,43 +4,37 @@ Date: Sun, 28 Jun 2015 15:24:06 +0800
 Subject: [PATCH] {PRINTF} Add many printf format attributes
 
 ---
- arch/x86/boot/tools/build.c          |  3 ++-
- drivers/acpi/acpica/acutils.h        |  6 +++---
- drivers/acpi/acpica/nsrepair2.c      |  2 +-
- drivers/acpi/acpica/utdebug.c        |  2 +-
- drivers/clk/clkdev.c                 |  7 ++++---
- drivers/iio/industrialio-trigger.c   |  3 ++-
- drivers/isdn/capi/capiutil.c         |  4 ++--
- drivers/isdn/hisax/fsm.h             |  2 +-
- drivers/isdn/hisax/hisax.h           |  2 +-
- drivers/isdn/hisax/hisax_isac.c      |  2 +-
- drivers/isdn/hisax/isdnl1.c          |  2 +-
- drivers/isdn/hisax/isdnl2.c          |  2 +-
- drivers/isdn/hisax/tei.c             |  6 +++---
- drivers/isdn/hysdn/hysdn_boot.c      |  4 ++--
- drivers/isdn/hysdn/hysdn_defs.h      |  3 ++-
- drivers/isdn/hysdn/hysdn_procconf.c  | 12 +++++++-----
- drivers/isdn/hysdn/hysdn_proclog.c   |  2 +-
- drivers/isdn/hysdn/hysdn_sched.c     |  2 +-
- drivers/pnp/interface.c              |  2 +-
- drivers/scsi/BusLogic.c              |  6 +++---
- drivers/scsi/esas2r/esas2r_log.c     |  8 ++++----
- drivers/staging/fbtft/fbtft.h        |  2 +-
- drivers/xen/xenbus/xenbus_client.c   | 10 ++++++----
- include/acpi/acpiosxf.h              |  3 ++-
- include/linux/iio/iio.h              |  2 +-
- include/linux/iio/trigger_consumer.h |  2 +-
- include/linux/trace_events.h         |  3 ++-
- kernel/audit.c                       |  4 ++--
- kernel/trace/trace.h                 |  8 +++++---
- kernel/trace/trace_output.c          |  6 +++---
- net/dccp/ccid.c                      |  3 ++-
- net/tipc/netlink_compat.c            |  2 +-
- scripts/mod/modpost.h                |  6 +++---
- scripts/unifdef.c                    |  2 +-
- security/tomoyo/common.c             |  3 ++-
- security/tomoyo/common.h             |  4 ++--
- 36 files changed, 78 insertions(+), 64 deletions(-)
+ arch/x86/boot/tools/build.c                 |  3 ++-
+ drivers/acpi/acpica/acutils.h               |  6 +++---
+ drivers/acpi/acpica/nsrepair2.c             |  2 +-
+ drivers/acpi/acpica/utdebug.c               |  2 +-
+ drivers/clk/clkdev.c                        |  7 ++++---
+ drivers/iio/industrialio-trigger.c          |  3 ++-
+ drivers/isdn/capi/capiutil.c                |  4 ++--
+ drivers/pnp/interface.c                     |  2 +-
+ drivers/scsi/BusLogic.c                     |  6 +++---
+ drivers/scsi/esas2r/esas2r_log.c            |  8 ++++----
+ drivers/staging/fbtft/fbtft.h               |  2 +-
+ drivers/staging/isdn/hysdn/hysdn_boot.c     |  4 ++--
+ drivers/staging/isdn/hysdn/hysdn_defs.h     |  3 ++-
+ drivers/staging/isdn/hysdn/hysdn_procconf.c | 12 +++++++-----
+ drivers/staging/isdn/hysdn/hysdn_proclog.c  |  2 +-
+ drivers/staging/isdn/hysdn/hysdn_sched.c    |  2 +-
+ drivers/xen/xenbus/xenbus_client.c          | 10 ++++++----
+ include/acpi/acpiosxf.h                     |  3 ++-
+ include/linux/iio/iio.h                     |  2 +-
+ include/linux/iio/trigger_consumer.h        |  2 +-
+ include/linux/trace_events.h                |  3 ++-
+ kernel/audit.c                              |  4 ++--
+ kernel/trace/trace.h                        |  8 +++++---
+ kernel/trace/trace_output.c                 |  6 +++---
+ net/dccp/ccid.c                             |  3 ++-
+ net/tipc/netlink_compat.c                   |  2 +-
+ scripts/mod/modpost.h                       |  6 +++---
+ scripts/unifdef.c                           |  2 +-
+ security/tomoyo/common.c                    |  3 ++-
+ security/tomoyo/common.h                    |  4 ++--
+ 30 files changed, 70 insertions(+), 56 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index a93d44e58f9c..73349d9a27be 100644
@@ -176,201 +170,6 @@ index 9846d82eb097..1b9f41563d47 100644
  			cmsg->l += 4;
  			break;
  		case _CSTRUCT:
-diff --git a/drivers/isdn/hisax/fsm.h b/drivers/isdn/hisax/fsm.h
-index 8c7385619a46..04bb1b3512e3 100644
---- a/drivers/isdn/hisax/fsm.h
-+++ b/drivers/isdn/hisax/fsm.h
-@@ -32,7 +32,7 @@ struct FsmInst {
- 	int debug;
- 	void *userdata;
- 	int userint;
--	void (*printdebug) (struct FsmInst *, char *, ...);
-+	void (__printf(2, 3) *printdebug) (struct FsmInst *, char *, ...);
- };
- 
- struct FsmNode {
-diff --git a/drivers/isdn/hisax/hisax.h b/drivers/isdn/hisax/hisax.h
-index 40080e06421c..e62eb874064b 100644
---- a/drivers/isdn/hisax/hisax.h
-+++ b/drivers/isdn/hisax/hisax.h
-@@ -179,7 +179,7 @@ struct FsmInst {
- 	int debug;
- 	void *userdata;
- 	int userint;
--	void (*printdebug) (struct FsmInst *, char *, ...);
-+	void (__printf(2, 3) *printdebug) (struct FsmInst *, char *, ...);
- };
- 
- struct FsmNode {
-diff --git a/drivers/isdn/hisax/hisax_isac.c b/drivers/isdn/hisax/hisax_isac.c
-index 0f36375478c5..4639b3d0d04d 100644
---- a/drivers/isdn/hisax/hisax_isac.c
-+++ b/drivers/isdn/hisax/hisax_isac.c
-@@ -428,7 +428,7 @@ static struct FsmNode L1FnList[] __initdata =
- 	{ST_L1_F8,            EV_PH_DC,             l1_go_f3pdown},
- };
- 
--static void l1m_debug(struct FsmInst *fi, char *fmt, ...)
-+static __printf(2, 3) void l1m_debug(struct FsmInst *fi, char *fmt, ...)
- {
- 	va_list args;
- 	char buf[256];
-diff --git a/drivers/isdn/hisax/isdnl1.c b/drivers/isdn/hisax/isdnl1.c
-index a560842c0e48..b52da087bb94 100644
---- a/drivers/isdn/hisax/isdnl1.c
-+++ b/drivers/isdn/hisax/isdnl1.c
-@@ -138,7 +138,7 @@ debugl1(struct IsdnCardState *cs, char *fmt, ...)
- 	va_end(args);
- }
- 
--static void
-+static __printf(2, 3) void
- l1m_debug(struct FsmInst *fi, char *fmt, ...)
- {
- 	va_list args;
-diff --git a/drivers/isdn/hisax/isdnl2.c b/drivers/isdn/hisax/isdnl2.c
-index 1a40ed04cb52..5b44b47a26d6 100644
---- a/drivers/isdn/hisax/isdnl2.c
-+++ b/drivers/isdn/hisax/isdnl2.c
-@@ -1756,7 +1756,7 @@ releasestack_isdnl2(struct PStack *st)
- 	ReleaseWin(&st->l2);
- }
- 
--static void
-+static __printf(2, 3) void
- l2m_debug(struct FsmInst *fi, char *fmt, ...)
- {
- 	va_list args;
-diff --git a/drivers/isdn/hisax/tei.c b/drivers/isdn/hisax/tei.c
-index 9195f9fd628f..bf4928dc69fc 100644
---- a/drivers/isdn/hisax/tei.c
-+++ b/drivers/isdn/hisax/tei.c
-@@ -320,7 +320,7 @@ tei_l1l2(struct PStack *st, int pr, void *arg)
- 	if (pr == (PH_DATA | INDICATION)) {
- 		if (skb->len < 3) {
- 			st->ma.tei_m.printdebug(&st->ma.tei_m,
--						"short mgr frame %ld/3", skb->len);
-+						"short mgr frame %u/3", skb->len);
- 		} else if ((skb->data[0] != ((TEI_SAPI << 2) | 2)) ||
- 			   (skb->data[1] != ((GROUP_TEI << 1) | 1))) {
- 			st->ma.tei_m.printdebug(&st->ma.tei_m,
-@@ -333,7 +333,7 @@ tei_l1l2(struct PStack *st, int pr, void *arg)
- 			skb_pull(skb, 3);
- 			if (skb->len < 5) {
- 				st->ma.tei_m.printdebug(&st->ma.tei_m,
--							"short mgr frame %ld/5", skb->len);
-+							"short mgr frame %u/5", skb->len);
- 			} else if (skb->data[0] != TEI_ENTITY_ID) {
- 				/* wrong management entity identifier, ignore */
- 				st->ma.tei_m.printdebug(&st->ma.tei_m,
-@@ -390,7 +390,7 @@ tei_l2tei(struct PStack *st, int pr, void *arg)
- 	}
- }
- 
--static void
-+static __printf(2, 3) void
- tei_debug(struct FsmInst *fi, char *fmt, ...)
- {
- 	va_list args;
-diff --git a/drivers/isdn/hysdn/hysdn_boot.c b/drivers/isdn/hysdn/hysdn_boot.c
-index ba177c3a621b..5404e58d3cb6 100644
---- a/drivers/isdn/hysdn/hysdn_boot.c
-+++ b/drivers/isdn/hysdn/hysdn_boot.c
-@@ -155,7 +155,7 @@ pof_handle_data(hysdn_card *card, int datlen)
- 
- 	default:
- 		if (card->debug_flags & LOG_POF_RECORD)
--			hysdn_addlog(card, "POF got data(id=0x%lx) len=%d offs=0x%lx", boot->pof_recid,
-+			hysdn_addlog(card, "POF got data(id=0x%x) len=%d offs=0x%lx", boot->pof_recid,
- 				     datlen, boot->pof_recoffset);
- 
- 		break;	/* simply skip record */
-@@ -217,7 +217,7 @@ pof_write_buffer(hysdn_card *card, int datlen)
- 		boot->pof_recoffset = 0;	/* no starting offset */
- 
- 		if (card->debug_flags & LOG_POF_RECORD)
--			hysdn_addlog(card, "POF: got record id=0x%lx length=%ld ",
-+			hysdn_addlog(card, "POF: got record id=0x%x length=%ld ",
- 				     boot->pof_recid, boot->pof_reclen);
- 
- 		boot->pof_state = POF_READ_TAG_DATA;	/* now start with tag data */
-diff --git a/drivers/isdn/hysdn/hysdn_defs.h b/drivers/isdn/hysdn/hysdn_defs.h
-index cdac46a21692..6d5c4deba042 100644
---- a/drivers/isdn/hysdn/hysdn_defs.h
-+++ b/drivers/isdn/hysdn/hysdn_defs.h
-@@ -235,7 +235,8 @@ extern void hysdn_procconf_release(void);	/* deinit proc config filesys */
- /* hysdn_proclog.c */
- extern int hysdn_proclog_init(hysdn_card *);	/* init proc log entry */
- extern void hysdn_proclog_release(hysdn_card *);	/* deinit proc log entry */
--extern void hysdn_addlog(hysdn_card *, char *, ...);	/* output data to log */
-+extern __printf(2, 3)
-+void hysdn_addlog(hysdn_card *, const char *, ...);	/* output data to log */
- extern void hysdn_card_errlog(hysdn_card *, tErrLogEntry *, int);	/* output card log */
- 
- /* boardergo.c */
-diff --git a/drivers/isdn/hysdn/hysdn_procconf.c b/drivers/isdn/hysdn/hysdn_procconf.c
-index 73079213ec94..62306515bc1f 100644
---- a/drivers/isdn/hysdn/hysdn_procconf.c
-+++ b/drivers/isdn/hysdn/hysdn_procconf.c
-@@ -188,7 +188,7 @@ hysdn_conf_write(struct file *file, const char __user *buf, size_t count, loff_t
- 				cnf->buf_size += count;		/* add chars to string */
- 				if (cnf->buf_size >= CONF_LINE_LEN - 1) {
- 					if (cnf->card->debug_flags & LOG_CNF_MISC)
--						hysdn_addlog(cnf->card, "cnf line too long %d chars pos %d", cnf->buf_size, count);
-+						hysdn_addlog(cnf->card, "cnf line too long %d chars pos %zu", cnf->buf_size, count);
- 					return (-ERR_CONF_LONG);
- 				}
- 			}	/* not delimited */
-@@ -236,8 +236,9 @@ hysdn_conf_open(struct inode *ino, struct file *filep)
- 	mutex_lock(&hysdn_conf_mutex);
- 	card = PDE_DATA(ino);
- 	if (card->debug_flags & (LOG_PROC_OPEN | LOG_PROC_ALL))
--		hysdn_addlog(card, "config open for uid=%d gid=%d mode=0x%x",
--			     filep->f_cred->fsuid, filep->f_cred->fsgid,
-+		hysdn_addlog(card, "config open for uid=%u gid=%u mode=0x%x",
-+			     from_kuid(&init_user_ns, filep->f_cred->fsuid),
-+			     from_kgid(&init_user_ns, filep->f_cred->fsgid),
- 			     filep->f_mode);
- 
- 	if ((filep->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_WRITE) {
-@@ -310,8 +311,9 @@ hysdn_conf_close(struct inode *ino, struct file *filep)
- 	mutex_lock(&hysdn_conf_mutex);
- 	card = PDE_DATA(ino);
- 	if (card->debug_flags & (LOG_PROC_OPEN | LOG_PROC_ALL))
--		hysdn_addlog(card, "config close for uid=%d gid=%d mode=0x%x",
--			     filep->f_cred->fsuid, filep->f_cred->fsgid,
-+		hysdn_addlog(card, "config close for uid=%u gid=%u mode=0x%x",
-+			     from_kuid(&init_user_ns, filep->f_cred->fsuid),
-+			     from_kgid(&init_user_ns, filep->f_cred->fsgid),
- 			     filep->f_mode);
- 
- 	if ((filep->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_WRITE) {
-diff --git a/drivers/isdn/hysdn/hysdn_proclog.c b/drivers/isdn/hysdn/hysdn_proclog.c
-index 6e898b90e86e..4b7ba6ba1727 100644
---- a/drivers/isdn/hysdn/hysdn_proclog.c
-+++ b/drivers/isdn/hysdn/hysdn_proclog.c
-@@ -65,7 +65,7 @@ hysdn_card_errlog(hysdn_card *card, tErrLogEntry *logp, int maxsize)
- /* Log function using format specifiers for output */
- /***************************************************/
- void
--hysdn_addlog(hysdn_card *card, char *fmt, ...)
-+hysdn_addlog(hysdn_card *card, const char *fmt, ...)
- {
- 	struct procdata *pd = card->proclog;
- 	char *cp;
-diff --git a/drivers/isdn/hysdn/hysdn_sched.c b/drivers/isdn/hysdn/hysdn_sched.c
-index 31d7c1415543..63da693c6822 100644
---- a/drivers/isdn/hysdn/hysdn_sched.c
-+++ b/drivers/isdn/hysdn/hysdn_sched.c
-@@ -153,7 +153,7 @@ hysdn_tx_cfgline(hysdn_card *card, unsigned char *line, unsigned short chan)
- 	unsigned long flags;
- 
- 	if (card->debug_flags & LOG_SCHED_ASYN)
--		hysdn_addlog(card, "async tx-cfg chan=%d len=%d", chan, strlen(line) + 1);
-+		hysdn_addlog(card, "async tx-cfg chan=%d len=%zu", chan, strlen(line) + 1);
- 
- 	while (card->async_busy) {
- 
 diff --git a/drivers/pnp/interface.c b/drivers/pnp/interface.c
 index 187e4a1175b0..553fb28c2d7f 100644
 --- a/drivers/pnp/interface.c
@@ -440,6 +239,105 @@ index 9b6bdb62093d..8a3e3ec21d8a 100644
  struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
  					struct device *dev,
  					struct fbtft_platform_data *pdata);
+diff --git a/drivers/staging/isdn/hysdn/hysdn_boot.c b/drivers/staging/isdn/hysdn/hysdn_boot.c
+index ba177c3a621b..5404e58d3cb6 100644
+--- a/drivers/staging/isdn/hysdn/hysdn_boot.c
++++ b/drivers/staging/isdn/hysdn/hysdn_boot.c
+@@ -155,7 +155,7 @@ pof_handle_data(hysdn_card *card, int datlen)
+ 
+ 	default:
+ 		if (card->debug_flags & LOG_POF_RECORD)
+-			hysdn_addlog(card, "POF got data(id=0x%lx) len=%d offs=0x%lx", boot->pof_recid,
++			hysdn_addlog(card, "POF got data(id=0x%x) len=%d offs=0x%lx", boot->pof_recid,
+ 				     datlen, boot->pof_recoffset);
+ 
+ 		break;	/* simply skip record */
+@@ -217,7 +217,7 @@ pof_write_buffer(hysdn_card *card, int datlen)
+ 		boot->pof_recoffset = 0;	/* no starting offset */
+ 
+ 		if (card->debug_flags & LOG_POF_RECORD)
+-			hysdn_addlog(card, "POF: got record id=0x%lx length=%ld ",
++			hysdn_addlog(card, "POF: got record id=0x%x length=%ld ",
+ 				     boot->pof_recid, boot->pof_reclen);
+ 
+ 		boot->pof_state = POF_READ_TAG_DATA;	/* now start with tag data */
+diff --git a/drivers/staging/isdn/hysdn/hysdn_defs.h b/drivers/staging/isdn/hysdn/hysdn_defs.h
+index cdac46a21692..6d5c4deba042 100644
+--- a/drivers/staging/isdn/hysdn/hysdn_defs.h
++++ b/drivers/staging/isdn/hysdn/hysdn_defs.h
+@@ -235,7 +235,8 @@ extern void hysdn_procconf_release(void);	/* deinit proc config filesys */
+ /* hysdn_proclog.c */
+ extern int hysdn_proclog_init(hysdn_card *);	/* init proc log entry */
+ extern void hysdn_proclog_release(hysdn_card *);	/* deinit proc log entry */
+-extern void hysdn_addlog(hysdn_card *, char *, ...);	/* output data to log */
++extern __printf(2, 3)
++void hysdn_addlog(hysdn_card *, const char *, ...);	/* output data to log */
+ extern void hysdn_card_errlog(hysdn_card *, tErrLogEntry *, int);	/* output card log */
+ 
+ /* boardergo.c */
+diff --git a/drivers/staging/isdn/hysdn/hysdn_procconf.c b/drivers/staging/isdn/hysdn/hysdn_procconf.c
+index 73079213ec94..62306515bc1f 100644
+--- a/drivers/staging/isdn/hysdn/hysdn_procconf.c
++++ b/drivers/staging/isdn/hysdn/hysdn_procconf.c
+@@ -188,7 +188,7 @@ hysdn_conf_write(struct file *file, const char __user *buf, size_t count, loff_t
+ 				cnf->buf_size += count;		/* add chars to string */
+ 				if (cnf->buf_size >= CONF_LINE_LEN - 1) {
+ 					if (cnf->card->debug_flags & LOG_CNF_MISC)
+-						hysdn_addlog(cnf->card, "cnf line too long %d chars pos %d", cnf->buf_size, count);
++						hysdn_addlog(cnf->card, "cnf line too long %d chars pos %zu", cnf->buf_size, count);
+ 					return (-ERR_CONF_LONG);
+ 				}
+ 			}	/* not delimited */
+@@ -236,8 +236,9 @@ hysdn_conf_open(struct inode *ino, struct file *filep)
+ 	mutex_lock(&hysdn_conf_mutex);
+ 	card = PDE_DATA(ino);
+ 	if (card->debug_flags & (LOG_PROC_OPEN | LOG_PROC_ALL))
+-		hysdn_addlog(card, "config open for uid=%d gid=%d mode=0x%x",
+-			     filep->f_cred->fsuid, filep->f_cred->fsgid,
++		hysdn_addlog(card, "config open for uid=%u gid=%u mode=0x%x",
++			     from_kuid(&init_user_ns, filep->f_cred->fsuid),
++			     from_kgid(&init_user_ns, filep->f_cred->fsgid),
+ 			     filep->f_mode);
+ 
+ 	if ((filep->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_WRITE) {
+@@ -310,8 +311,9 @@ hysdn_conf_close(struct inode *ino, struct file *filep)
+ 	mutex_lock(&hysdn_conf_mutex);
+ 	card = PDE_DATA(ino);
+ 	if (card->debug_flags & (LOG_PROC_OPEN | LOG_PROC_ALL))
+-		hysdn_addlog(card, "config close for uid=%d gid=%d mode=0x%x",
+-			     filep->f_cred->fsuid, filep->f_cred->fsgid,
++		hysdn_addlog(card, "config close for uid=%u gid=%u mode=0x%x",
++			     from_kuid(&init_user_ns, filep->f_cred->fsuid),
++			     from_kgid(&init_user_ns, filep->f_cred->fsgid),
+ 			     filep->f_mode);
+ 
+ 	if ((filep->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_WRITE) {
+diff --git a/drivers/staging/isdn/hysdn/hysdn_proclog.c b/drivers/staging/isdn/hysdn/hysdn_proclog.c
+index 6e898b90e86e..4b7ba6ba1727 100644
+--- a/drivers/staging/isdn/hysdn/hysdn_proclog.c
++++ b/drivers/staging/isdn/hysdn/hysdn_proclog.c
+@@ -65,7 +65,7 @@ hysdn_card_errlog(hysdn_card *card, tErrLogEntry *logp, int maxsize)
+ /* Log function using format specifiers for output */
+ /***************************************************/
+ void
+-hysdn_addlog(hysdn_card *card, char *fmt, ...)
++hysdn_addlog(hysdn_card *card, const char *fmt, ...)
+ {
+ 	struct procdata *pd = card->proclog;
+ 	char *cp;
+diff --git a/drivers/staging/isdn/hysdn/hysdn_sched.c b/drivers/staging/isdn/hysdn/hysdn_sched.c
+index 31d7c1415543..63da693c6822 100644
+--- a/drivers/staging/isdn/hysdn/hysdn_sched.c
++++ b/drivers/staging/isdn/hysdn/hysdn_sched.c
+@@ -153,7 +153,7 @@ hysdn_tx_cfgline(hysdn_card *card, unsigned char *line, unsigned short chan)
+ 	unsigned long flags;
+ 
+ 	if (card->debug_flags & LOG_SCHED_ASYN)
+-		hysdn_addlog(card, "async tx-cfg chan=%d len=%d", chan, strlen(line) + 1);
++		hysdn_addlog(card, "async tx-cfg chan=%d len=%zu", chan, strlen(line) + 1);
+ 
+ 	while (card->async_busy) {
+ 
 diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
 index e17ca8156171..306c1196fedb 100644
 --- a/drivers/xen/xenbus/xenbus_client.c
@@ -513,10 +411,10 @@ index c3c6ba5ec423..29f184893c88 100644
  		    irqreturn_t (*thread)(int irq, void *p),
  		    int type,
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index 8a62731673f7..b809229827d3 100644
+index 5150436783e8..f64aef3995d5 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
-@@ -162,7 +162,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
+@@ -163,7 +163,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
  void tracing_record_cmdline(struct task_struct *task);
  void tracing_record_tgid(struct task_struct *task);
  
@@ -527,7 +425,7 @@ index 8a62731673f7..b809229827d3 100644
  struct event_filter;
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index 486c968214d9..9994d077cf4c 100644
+index da8dc0db5bd3..15965b792c85 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
 @@ -1833,8 +1833,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
@@ -567,7 +465,7 @@ index 005f08629b8b..d576cf025bae 100644
  			   unsigned long ip, const char *fmt, ...);
  void trace_printk_seq(struct trace_seq *s);
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index ba751f993c3b..88a3dfc529cf 100644
+index cab4a5398f1d..ab9bec1754a3 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
 @@ -297,8 +297,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
@@ -605,7 +503,7 @@ index 1e9bb121ba72..e265a1c5e1ea 100644
  	struct kmem_cache *slab;
  	va_list args;
 diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
-index cf155061c472..27d2c2c0cb49 100644
+index d86030ef1232..8fe1a4491f3e 100644
 --- a/net/tipc/netlink_compat.c
 +++ b/net/tipc/netlink_compat.c
 @@ -117,7 +117,7 @@ static void tipc_tlv_init(struct sk_buff *skb, u16 type)

@@ -6,9 +6,12 @@ Subject: [PATCH] {MAYBE UPS} drivers/gpu/drm/amd/display/dc/calcs: ignore
 
 clang reports issues
 ---
- drivers/gpu/drm/amd/display/dc/calcs/Makefile        | 6 +++---
- drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c | 4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/gpu/drm/amd/display/dc/calcs/Makefile |  6 +-
+ .../drm/amd/display/dc/calcs/dcn_calc_math.c  |  4 +-
+ drivers/gpu/drm/amd/display/dc/dsc/Makefile   |  2 +-
+ drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c  | 56 +++++++++----------
+ .../gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c  |  4 +-
+ 5 files changed, 36 insertions(+), 36 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/display/dc/calcs/Makefile b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
 index 4baae228ef57..d6cccdba08db 100644
@@ -28,10 +31,10 @@ index 4baae228ef57..d6cccdba08db 100644
  BW_CALCS = dce_calcs.o bw_fixed.o custom_float.o
  
 diff --git a/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c b/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c
-index 7600a4a4abc7..bd10615dc9ba 100644
+index 07d18e78de49..61e77cf6f333 100644
 --- a/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c
 +++ b/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c
-@@ -79,7 +79,7 @@ float dcn_bw_ceil2(const float arg, const float significance)
+@@ -90,7 +90,7 @@ float dcn_bw_ceil2(const float arg, const float significance)
  	float flr = dcn_bw_floor2(arg, significance);
  	if (significance == 0)
  		return 0;
@@ -40,7 +43,7 @@ index 7600a4a4abc7..bd10615dc9ba 100644
  }
  
  float dcn_bw_max3(float v1, float v2, float v3)
-@@ -120,7 +120,7 @@ float dcn_bw_log(float a, float b)
+@@ -140,7 +140,7 @@ float dcn_bw_log(float a, float b)
  
  	a = ((-1.0f / 3) * a + 2) * a - 2.0f / 3;
  
@@ -49,4 +52,116 @@ index 7600a4a4abc7..bd10615dc9ba 100644
  		return (a + log_2) / dcn_bw_log(b, 2);
  	else
  		return (a + log_2);
+diff --git a/drivers/gpu/drm/amd/display/dc/dsc/Makefile b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
+index 76ad71a9640c..4530aba3ad96 100644
+--- a/drivers/gpu/drm/amd/display/dc/dsc/Makefile
++++ b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
+@@ -9,7 +9,7 @@ endif
+ 
+ dsc_ccflags := -mhard-float -msse $(cc_stack_align)
+ 
+-CFLAGS_rc_calc.o := $(dsc_ccflags) -Wno-float-equal
++CFLAGS_rc_calc.o := $(dsc_ccflags) -Wno-float-equal -Wno-double-promotion
+ CFLAGS_rc_calc_dpi.o := $(dsc_ccflags)
+ CFLAGS_codec_main_amd.o := $(dsc_ccflags)
+ CFLAGS_dc_dsc.o := $(dsc_ccflags)
+diff --git a/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c b/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c
+index ca51e83f8764..141b5b1f0a3f 100644
+--- a/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c
++++ b/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c
+@@ -116,45 +116,45 @@ void get_ofs_set(qp_set ofs, enum colour_mode mode, float bpp)
+ 		*p++ = (bpp <=  6) ? (-2) : ((((bpp >=  8) && (bpp <= 12))) ? (0) : ((bpp >= 15) ? (6) : ((((bpp > 6) && (bpp < 8))) ? (-2 + dsc_roundf((bpp -  6) * (2 / 2.0))) : (0 + dsc_roundf((bpp - 12) * (6 / 3.0))))));
+ 		*p++ = (bpp <=  6) ? (-4) : ((((bpp >=  8) && (bpp <= 12))) ? (-2) : ((bpp >= 15) ? (4) : ((((bpp > 6) && (bpp < 8))) ? (-4 + dsc_roundf((bpp -  6) * (2 / 2.0))) : (-2 + dsc_roundf((bpp - 12) * (6 / 3.0))))));
+ 		*p++ = (bpp <=  6) ? (-6) : ((((bpp >=  8) && (bpp <= 12))) ? (-4) : ((bpp >= 15) ? (2) : ((((bpp > 6) && (bpp < 8))) ? (-6 + dsc_roundf((bpp -  6) * (2 / 2.0))) : (-4 + dsc_roundf((bpp - 12) * (6 / 3.0))))));
+-		*p++ = (bpp <= 12) ? (-6) : ((bpp >= 15) ? (0) : (-6 + dsc_roundf((bpp - 12) * (6 / 3.0))));
+-		*p++ = (bpp <= 12) ? (-8) : ((bpp >= 15) ? (-2) : (-8 + dsc_roundf((bpp - 12) * (6 / 3.0))));
+-		*p++ = (bpp <= 12) ? (-8) : ((bpp >= 15) ? (-4) : (-8 + dsc_roundf((bpp - 12) * (4 / 3.0))));
+-		*p++ = (bpp <= 12) ? (-8) : ((bpp >= 15) ? (-6) : (-8 + dsc_roundf((bpp - 12) * (2 / 3.0))));
+-		*p++ = (bpp <= 12) ? (-10) : ((bpp >= 15) ? (-8) : (-10 + dsc_roundf((bpp - 12) * (2 / 3.0))));
++		*p++ = (bpp <= 12) ? (-6) : ((bpp >= 15) ? (0) : (-6 + dsc_roundf((bpp - 12) * (6 / 3.0f))));
++		*p++ = (bpp <= 12) ? (-8) : ((bpp >= 15) ? (-2) : (-8 + dsc_roundf((bpp - 12) * (6 / 3.0f))));
++		*p++ = (bpp <= 12) ? (-8) : ((bpp >= 15) ? (-4) : (-8 + dsc_roundf((bpp - 12) * (4 / 3.0f))));
++		*p++ = (bpp <= 12) ? (-8) : ((bpp >= 15) ? (-6) : (-8 + dsc_roundf((bpp - 12) * (2 / 3.0f))));
++		*p++ = (bpp <= 12) ? (-10) : ((bpp >= 15) ? (-8) : (-10 + dsc_roundf((bpp - 12) * (2 / 3.0f))));
+ 		*p++ = -10;
+-		*p++ = (bpp <=  6) ? (-12) : ((bpp >=  8) ? (-10) : (-12 + dsc_roundf((bpp -  6) * (2 / 2.0))));
++		*p++ = (bpp <=  6) ? (-12) : ((bpp >=  8) ? (-10) : (-12 + dsc_roundf((bpp -  6) * (2 / 2.0f))));
+ 		*p++ = -12;
+ 		*p++ = -12;
+ 		*p++ = -12;
+ 	} else if (mode == CM_422) {
+-		*p++ = (bpp <=  8) ? (2) : ((bpp >= 10) ? (10) : (2 + dsc_roundf((bpp -  8) * (8 / 2.0))));
+-		*p++ = (bpp <=  8) ? (0) : ((bpp >= 10) ? (8) : (0 + dsc_roundf((bpp -  8) * (8 / 2.0))));
+-		*p++ = (bpp <=  8) ? (0) : ((bpp >= 10) ? (6) : (0 + dsc_roundf((bpp -  8) * (6 / 2.0))));
+-		*p++ = (bpp <=  8) ? (-2) : ((bpp >= 10) ? (4) : (-2 + dsc_roundf((bpp -  8) * (6 / 2.0))));
+-		*p++ = (bpp <=  8) ? (-4) : ((bpp >= 10) ? (2) : (-4 + dsc_roundf((bpp -  8) * (6 / 2.0))));
+-		*p++ = (bpp <=  8) ? (-6) : ((bpp >= 10) ? (0) : (-6 + dsc_roundf((bpp -  8) * (6 / 2.0))));
+-		*p++ = (bpp <=  8) ? (-8) : ((bpp >= 10) ? (-2) : (-8 + dsc_roundf((bpp -  8) * (6 / 2.0))));
+-		*p++ = (bpp <=  8) ? (-8) : ((bpp >= 10) ? (-4) : (-8 + dsc_roundf((bpp -  8) * (4 / 2.0))));
+-		*p++ = (bpp <=  8) ? (-8) : ((bpp >= 10) ? (-6) : (-8 + dsc_roundf((bpp -  8) * (2 / 2.0))));
+-		*p++ = (bpp <=  8) ? (-10) : ((bpp >= 10) ? (-8) : (-10 + dsc_roundf((bpp -  8) * (2 / 2.0))));
++		*p++ = (bpp <=  8) ? (2) : ((bpp >= 10) ? (10) : (2 + dsc_roundf((bpp -  8) * (8 / 2.0f))));
++		*p++ = (bpp <=  8) ? (0) : ((bpp >= 10) ? (8) : (0 + dsc_roundf((bpp -  8) * (8 / 2.0f))));
++		*p++ = (bpp <=  8) ? (0) : ((bpp >= 10) ? (6) : (0 + dsc_roundf((bpp -  8) * (6 / 2.0f))));
++		*p++ = (bpp <=  8) ? (-2) : ((bpp >= 10) ? (4) : (-2 + dsc_roundf((bpp -  8) * (6 / 2.0f))));
++		*p++ = (bpp <=  8) ? (-4) : ((bpp >= 10) ? (2) : (-4 + dsc_roundf((bpp -  8) * (6 / 2.0f))));
++		*p++ = (bpp <=  8) ? (-6) : ((bpp >= 10) ? (0) : (-6 + dsc_roundf((bpp -  8) * (6 / 2.0f))));
++		*p++ = (bpp <=  8) ? (-8) : ((bpp >= 10) ? (-2) : (-8 + dsc_roundf((bpp -  8) * (6 / 2.0f))));
++		*p++ = (bpp <=  8) ? (-8) : ((bpp >= 10) ? (-4) : (-8 + dsc_roundf((bpp -  8) * (4 / 2.0f))));
++		*p++ = (bpp <=  8) ? (-8) : ((bpp >= 10) ? (-6) : (-8 + dsc_roundf((bpp -  8) * (2 / 2.0f))));
++		*p++ = (bpp <=  8) ? (-10) : ((bpp >= 10) ? (-8) : (-10 + dsc_roundf((bpp -  8) * (2 / 2.0f))));
+ 		*p++ = -10;
+-		*p++ = (bpp <=  6) ? (-12) : ((bpp >= 7) ? (-10) : (-12 + dsc_roundf((bpp -  6) * (2.0 / 1))));
++		*p++ = (bpp <=  6) ? (-12) : ((bpp >= 7) ? (-10) : (-12 + dsc_roundf((bpp -  6) * (2.0f / 1))));
+ 		*p++ = -12;
+ 		*p++ = -12;
+ 		*p++ = -12;
+ 	} else {
+-		*p++ = (bpp <=  6) ? (2) : ((bpp >=  8) ? (10) : (2 + dsc_roundf((bpp -  6) * (8 / 2.0))));
+-		*p++ = (bpp <=  6) ? (0) : ((bpp >=  8) ? (8) : (0 + dsc_roundf((bpp -  6) * (8 / 2.0))));
+-		*p++ = (bpp <=  6) ? (0) : ((bpp >=  8) ? (6) : (0 + dsc_roundf((bpp -  6) * (6 / 2.0))));
+-		*p++ = (bpp <=  6) ? (-2) : ((bpp >=  8) ? (4) : (-2 + dsc_roundf((bpp -  6) * (6 / 2.0))));
+-		*p++ = (bpp <=  6) ? (-4) : ((bpp >=  8) ? (2) : (-4 + dsc_roundf((bpp -  6) * (6 / 2.0))));
+-		*p++ = (bpp <=  6) ? (-6) : ((bpp >=  8) ? (0) : (-6 + dsc_roundf((bpp -  6) * (6 / 2.0))));
+-		*p++ = (bpp <=  6) ? (-8) : ((bpp >=  8) ? (-2) : (-8 + dsc_roundf((bpp -  6) * (6 / 2.0))));
+-		*p++ = (bpp <=  6) ? (-8) : ((bpp >=  8) ? (-4) : (-8 + dsc_roundf((bpp -  6) * (4 / 2.0))));
+-		*p++ = (bpp <=  6) ? (-8) : ((bpp >=  8) ? (-6) : (-8 + dsc_roundf((bpp -  6) * (2 / 2.0))));
+-		*p++ = (bpp <=  6) ? (-10) : ((bpp >=  8) ? (-8) : (-10 + dsc_roundf((bpp -  6) * (2 / 2.0))));
++		*p++ = (bpp <=  6) ? (2) : ((bpp >=  8) ? (10) : (2 + dsc_roundf((bpp -  6) * (8 / 2.0f))));
++		*p++ = (bpp <=  6) ? (0) : ((bpp >=  8) ? (8) : (0 + dsc_roundf((bpp -  6) * (8 / 2.0f))));
++		*p++ = (bpp <=  6) ? (0) : ((bpp >=  8) ? (6) : (0 + dsc_roundf((bpp -  6) * (6 / 2.0f))));
++		*p++ = (bpp <=  6) ? (-2) : ((bpp >=  8) ? (4) : (-2 + dsc_roundf((bpp -  6) * (6 / 2.0f))));
++		*p++ = (bpp <=  6) ? (-4) : ((bpp >=  8) ? (2) : (-4 + dsc_roundf((bpp -  6) * (6 / 2.0f))));
++		*p++ = (bpp <=  6) ? (-6) : ((bpp >=  8) ? (0) : (-6 + dsc_roundf((bpp -  6) * (6 / 2.0f))));
++		*p++ = (bpp <=  6) ? (-8) : ((bpp >=  8) ? (-2) : (-8 + dsc_roundf((bpp -  6) * (6 / 2.0f))));
++		*p++ = (bpp <=  6) ? (-8) : ((bpp >=  8) ? (-4) : (-8 + dsc_roundf((bpp -  6) * (4 / 2.0f))));
++		*p++ = (bpp <=  6) ? (-8) : ((bpp >=  8) ? (-6) : (-8 + dsc_roundf((bpp -  6) * (2 / 2.0f))));
++		*p++ = (bpp <=  6) ? (-10) : ((bpp >=  8) ? (-8) : (-10 + dsc_roundf((bpp -  6) * (2 / 2.0f))));
+ 		*p++ = -10;
+-		*p++ = (bpp <=  4) ? (-12) : ((bpp >=  5) ? (-10) : (-12 + dsc_roundf((bpp -  4) * (2 / 1.0))));
++		*p++ = (bpp <=  4) ? (-12) : ((bpp >=  5) ? (-10) : (-12 + dsc_roundf((bpp -  4) * (2 / 1.0f))));
+ 		*p++ = -12;
+ 		*p++ = -12;
+ 		*p++ = -12;
+diff --git a/drivers/gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c b/drivers/gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c
+index 73172fd0b529..e7178e08e0e6 100644
+--- a/drivers/gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c
++++ b/drivers/gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c
+@@ -107,14 +107,14 @@ int dscc_compute_dsc_parameters(const struct drm_dsc_config *pps, struct dsc_par
+ 							pps->native_420  ? CM_420 : CM_444));
+ 	enum bits_per_comp bpc = (pps->bits_per_component == 8) ? BPC_8 :
+ 							(pps->bits_per_component == 10) ? BPC_10 : BPC_12;
+-	float            bpp = ((float) pps->bits_per_pixel / 16.0);
++	float            bpp = ((float) pps->bits_per_pixel / 16.0f);
+ 	int              slice_width  = pps->slice_width;
+ 	int              slice_height = pps->slice_height;
+ 	int              ret;
+ 	struct rc_params rc;
+ 	struct drm_dsc_config   dsc_cfg;
+ 
+-	double d_bytes_per_pixel = dsc_ceil(bpp * slice_width / 8.0) / slice_width;
++	double d_bytes_per_pixel = dsc_ceil((double) bpp * slice_width / 8.0) / slice_width;
+ 
+ 	// TODO: Make sure the formula for calculating this is precise (ceiling vs. floor, and at what point they should be applied)
+ 	if (pps->native_422 || pps->native_420)
 -- 

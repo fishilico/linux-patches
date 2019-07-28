@@ -381,6 +381,10 @@ then
         # Disable GCC plugins when using clang
         echo '# CONFIG_GCC_PLUGINS is not set' >> "$KBUILD_OUTPUT/.config"
         echo '# CONFIG_KCOV is not set' >> "$KBUILD_OUTPUT/.config"
+
+        # Enable config that was not selected with KCOV_INSTRUMENT_ALL
+        echo 'CONFIG_DRM_AMD_DC_DCN2_0=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_DRM_AMD_DC_DSC_SUPPORT=y' >> "$KBUILD_OUTPUT/.config"
     fi
 
     # Merge options

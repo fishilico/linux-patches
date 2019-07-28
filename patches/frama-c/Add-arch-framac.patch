@@ -6,19 +6,19 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
 ---
  arch/framac/Kconfig                    |  57 +++++++++++
  arch/framac/Kconfig.debug              |   1 +
- arch/framac/Makefile                   |  28 ++++++
+ arch/framac/Makefile                   |  29 ++++++
  arch/framac/extra/Makefile             |  13 +++
  arch/framac/extra/gen_lds_vars.sh      |  27 ++++++
  arch/framac/extra/lds_vars.c           | 128 +++++++++++++++++++++++++
  arch/framac/include/abstract_structs.h |  73 ++++++++++++++
- arch/framac/include/asm/Kbuild         |  87 +++++++++++++++++
+ arch/framac/include/asm/Kbuild         |  88 +++++++++++++++++
  arch/framac/include/asm/byteorder.h    |   6 ++
  arch/framac/include/asm/dma-mapping.h  |  11 +++
  arch/framac/include/asm/elf.h          |  33 +++++++
  arch/framac/include/asm/irqflags.h     |  15 +++
  arch/framac/include/asm/pgtable.h      |  76 +++++++++++++++
  arch/framac/include/asm/processor.h    |  40 ++++++++
- arch/framac/include/asm/ptrace.h       |  23 +++++
+ arch/framac/include/asm/ptrace.h       |  32 +++++++
  arch/framac/include/asm/sigcontext.h   |  10 ++
  arch/framac/include/asm/thread_info.h  |  68 +++++++++++++
  arch/framac/include/asm/tlb.h          |   6 ++
@@ -41,7 +41,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/delay.c                |  27 ++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 +++
- 37 files changed, 1030 insertions(+)
+ 37 files changed, 1041 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Kconfig.debug
  create mode 100644 arch/framac/Makefile
@@ -152,10 +152,10 @@ index 000000000000..22a162cd99e8
 +# dummy file, do not delete
 diff --git a/arch/framac/Makefile b/arch/framac/Makefile
 new file mode 100644
-index 000000000000..d4409781f7dd
+index 000000000000..8ffc7ad0735d
 --- /dev/null
 +++ b/arch/framac/Makefile
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,29 @@
 +#  Makefile for the Frama-C arch
 +
 +# Save preprocessed files, if not using allyesconfig (otherwise the output files are way too big)
@@ -169,6 +169,7 @@ index 000000000000..d4409781f7dd
 +# Customize flags
 +KBUILD_CPPFLAGS += -D__CHECKER__ -D__FRAMAC__
 +KBUILD_CPPFLAGS += -D__ARCH_WANT_NEW_STAT
++KBUILD_CPPFLAGS += -D__ARCH_WANT_SYS_CLONE3
 +
 +KBUILD_AFLAGS += -m32
 +
@@ -451,10 +452,10 @@ index 000000000000..73c6bb86722a
 +#endif /* _ASM_FRAMA_C_ABSTRACT_STRUCT_H */
 diff --git a/arch/framac/include/asm/Kbuild b/arch/framac/include/asm/Kbuild
 new file mode 100644
-index 000000000000..f932e23d14c7
+index 000000000000..e904c508edd2
 --- /dev/null
 +++ b/arch/framac/include/asm/Kbuild
-@@ -0,0 +1,87 @@
+@@ -0,0 +1,88 @@
 +generic-y += atomic.h
 +generic-y += auxvec.h
 +generic-y += barrier.h
@@ -530,6 +531,7 @@ index 000000000000..f932e23d14c7
 +generic-y += string.h
 +generic-y += swab.h
 +generic-y += switch_to.h
++generic-y += syscall.h
 +generic-y += termbits.h
 +generic-y += termios.h
 +generic-y += timex.h
@@ -761,10 +763,10 @@ index 000000000000..b341573b9581
 +#endif /* _ASM_FRAMA_C_PROCESSOR_H */
 diff --git a/arch/framac/include/asm/ptrace.h b/arch/framac/include/asm/ptrace.h
 new file mode 100644
-index 000000000000..6da8c8be3650
+index 000000000000..9079213e3dbc
 --- /dev/null
 +++ b/arch/framac/include/asm/ptrace.h
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,32 @@
 +#ifndef _ASM_FRAMA_C_PTRACE_H
 +#define _ASM_FRAMA_C_PTRACE_H
 +
@@ -785,7 +787,16 @@ index 000000000000..6da8c8be3650
 +
 +#define user_mode(regs)			true /* FIXME */
 +
-+#include <asm-generic/ptrace.h>
++static inline unsigned long instruction_pointer(struct pt_regs *regs)
++{
++	return regs->pc;
++}
++
++static inline unsigned long user_stack_pointer(struct pt_regs *regs)
++{
++	return regs->usp;
++}
++
 +
 +#endif /* _ASM_FRAMA_C_PTRACE_H */
 diff --git a/arch/framac/include/asm/sigcontext.h b/arch/framac/include/asm/sigcontext.h

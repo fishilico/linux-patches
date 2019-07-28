@@ -37,7 +37,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  create mode 100644 include/linux/flex_array.h
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 31237f45247a..4f4078ba9f65 100644
+index ddbf56014c51..677e18c0459c 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -39,7 +39,7 @@
@@ -100,7 +100,7 @@ index e935318804f8..33cafe921495 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 6e136271aaab..1bbf65e5f4c9 100644
+index 4b6a3ae4b35e..20093ef9979b 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
@@ -132,7 +132,7 @@ index 6e136271aaab..1bbf65e5f4c9 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 19e58b9138a0..70dfdfaf426b 100644
+index 599c27b56c29..6db61ecf424d 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -4,7 +4,7 @@
@@ -164,10 +164,10 @@ index 21755471b1c3..874e6599d339 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 9488e1cc0564..afac9b35bcb1 100644
+index 96b6613dabdd..67482f17a75d 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -174,7 +174,9 @@ struct ablkcipher_request {
+@@ -173,7 +173,9 @@ struct ablkcipher_request {
  	struct scatterlist *src;
  	struct scatterlist *dst;
  
@@ -178,7 +178,7 @@ index 9488e1cc0564..afac9b35bcb1 100644
  };
  
  struct blkcipher_desc {
-@@ -763,7 +765,12 @@ struct crypto_tfm {
+@@ -773,7 +775,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -377,10 +377,10 @@ index 000000000000..ffd6208aabbd
 +
 +#endif /* _FLEX_ARRAY_H */
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 96dcbb1679fe..14e2c277d320 100644
+index f5d44caf58a3..309628e0c478 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
-@@ -251,6 +251,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
+@@ -253,6 +253,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
   *
   * Return: an absolute value of x.
   */
@@ -391,7 +391,7 @@ index 96dcbb1679fe..14e2c277d320 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -265,6 +269,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
+@@ -267,6 +271,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -466,7 +466,7 @@ index 659045046468..c60209574fc5 100644
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index dd436da7eccc..5897b33d558b 100644
+index 9e700d9f9f28..7096de4ce79d 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -137,6 +137,8 @@ typedef int __bitwise pci_power_t;
@@ -487,10 +487,10 @@ index dd436da7eccc..5897b33d558b 100644
  #define PCI_PM_D2_DELAY		200
  #define PCI_PM_D3_WAIT		10
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 1daae528c450..da6472f78de6 100644
+index 96aa63af2149..c73313d53e66 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -231,6 +231,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -232,6 +232,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
   * done within __do_sys_*().
   */
  #ifndef __SYSCALL_DEFINEx
@@ -503,7 +503,7 @@ index 1daae528c450..da6472f78de6 100644
  #define __SYSCALL_DEFINEx(x, name, ...)					\
  	__diag_push();							\
  	__diag_ignore(GCC, 8, "-Wattribute-alias",			\
-@@ -249,6 +255,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -250,6 +256,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  	}								\
  	__diag_pop();							\
  	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
@@ -549,10 +549,10 @@ index 2fce8b6876e9..357ff7b0ecdd 100644
  #else
  #define __bitwise__
 diff --git a/kernel/signal.c b/kernel/signal.c
-index edf8915ddd54..cf02993ec12d 100644
+index 91b789dd6e72..7814a508952c 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1215,7 +1215,7 @@ static void print_fatal_signal(int signr)
+@@ -1236,7 +1236,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  
@@ -562,10 +562,10 @@ index edf8915ddd54..cf02993ec12d 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index 7f7d6914ddd5..77e52e82729b 100644
+index 5c54ca632d08..7e07a77f7042 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
-@@ -519,17 +519,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
+@@ -523,17 +523,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
  void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {
