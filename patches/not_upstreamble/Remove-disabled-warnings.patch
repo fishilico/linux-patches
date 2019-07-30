@@ -10,14 +10,14 @@ list of disabled warnings.
  arch/arc/Makefile                      |  2 +-
  arch/x86/Makefile                      |  2 +-
  arch/x86/boot/compressed/Makefile      |  6 ++---
- drivers/gpu/drm/i915/Makefile          | 24 +++++++++----------
+ drivers/gpu/drm/i915/Makefile          | 22 ++++++++---------
  drivers/misc/cxl/Makefile              |  2 +-
  drivers/staging/greybus/tools/Makefile |  8 ++++++-
  scripts/Makefile.extrawarn             | 10 ++++----
- 8 files changed, 46 insertions(+), 41 deletions(-)
+ 8 files changed, 45 insertions(+), 40 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 9be5834073f8..8db58175277e 100644
+index fa0fbe7851ea..3c6f71c1694d 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -432,7 +432,7 @@ PYTHON3		= python3
@@ -103,7 +103,7 @@ index 9be5834073f8..8db58175277e 100644
  ifdef CONFIG_FRAME_POINTER
  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
  else
-@@ -847,10 +846,10 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
+@@ -850,10 +849,10 @@ KBUILD_CFLAGS += $(call cc-option,-Wimplicit-fallthrough=3,)
  KBUILD_CFLAGS += -Wvla
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -160,10 +160,10 @@ index 6b84afdd7538..38acbca84ed8 100644
  KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
  GCOV_PROFILE := n
 diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
-index 91355c2ea8a5..27e0e3fcf848 100644
+index 8cace65f50ce..04361020a437 100644
 --- a/drivers/gpu/drm/i915/Makefile
 +++ b/drivers/gpu/drm/i915/Makefile
-@@ -12,22 +12,22 @@
+@@ -12,21 +12,21 @@
  # Note the danger in using -Wall -Wextra is that when CI updates gcc we
  # will most likely get a sudden build breakage... Hopefully we will fix
  # new warnings before CI updates!
@@ -171,13 +171,11 @@ index 91355c2ea8a5..27e0e3fcf848 100644
 -subdir-ccflags-y += $(call cc-disable-warning, unused-parameter)
 -subdir-ccflags-y += $(call cc-disable-warning, type-limits)
 -subdir-ccflags-y += $(call cc-disable-warning, missing-field-initializers)
--subdir-ccflags-y += $(call cc-disable-warning, implicit-fallthrough)
 -subdir-ccflags-y += $(call cc-disable-warning, unused-but-set-variable)
 +#subdir-ccflags-y := -Wall -Wextra
 +#subdir-ccflags-y += $(call cc-disable-warning, unused-parameter)
 +#subdir-ccflags-y += $(call cc-disable-warning, type-limits)
 +#subdir-ccflags-y += $(call cc-disable-warning, missing-field-initializers)
-+#subdir-ccflags-y += $(call cc-disable-warning, implicit-fallthrough)
 +#subdir-ccflags-y += $(call cc-disable-warning, unused-but-set-variable)
  # clang warnings
 -subdir-ccflags-y += $(call cc-disable-warning, sign-compare)
