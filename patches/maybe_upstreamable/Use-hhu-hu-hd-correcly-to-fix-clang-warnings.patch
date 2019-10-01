@@ -4,313 +4,85 @@ Date: Fri, 22 May 2015 10:55:41 +0800
 Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
 
 ---
- drivers/acpi/acpica/dbhistry.c                |  2 +-
- drivers/acpi/acpica/dbinput.c                 | 10 +--
- drivers/acpi/acpica/dbstats.c                 | 88 +++++++++----------
- drivers/acpi/acpica/nsdump.c                  |  4 +-
- drivers/atm/ambassador.c                      | 20 ++---
+ drivers/acpi/acpica/nsdump.c                  |  4 ++--
+ drivers/acpi/acpica/nsrepair2.c               |  2 +-
+ drivers/atm/ambassador.c                      | 20 +++++++++----------
  drivers/atm/firestream.c                      |  2 +-
- drivers/atm/horizon.c                         | 10 +--
+ drivers/atm/horizon.c                         | 10 +++++-----
  drivers/gpio/gpiolib-acpi.c                   |  2 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c       |  6 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c       |  6 +++---
  drivers/gpu/drm/amd/amdgpu/amdgpu_vce.c       |  2 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c       |  4 +-
- drivers/gpu/drm/amd/amdgpu/atombios_dp.c      |  4 +-
- drivers/gpu/drm/nouveau/nouveau_dp.c          |  4 +-
- drivers/gpu/drm/radeon/atombios_dp.c          |  4 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c       |  4 ++--
+ drivers/gpu/drm/amd/amdgpu/atombios_dp.c      |  4 ++--
+ drivers/gpu/drm/nouveau/nouveau_dp.c          |  4 ++--
+ drivers/gpu/drm/radeon/atombios_dp.c          |  4 ++--
  drivers/gpu/drm/radeon/radeon_uvd.c           |  2 +-
  drivers/hid/i2c-hid/i2c-hid-core.c            |  2 +-
  drivers/hwmon/smsc47m1.c                      |  2 +-
- drivers/iio/light/si1133.c                    |  4 +-
- drivers/media/dvb-frontends/dib0070.c         | 16 ++--
+ drivers/iio/light/si1133.c                    |  4 ++--
+ drivers/media/dvb-frontends/dib0070.c         | 16 +++++++--------
  drivers/media/dvb-frontends/dib0090.c         |  2 +-
  drivers/media/dvb-frontends/dib7000m.c        |  2 +-
  drivers/media/dvb-frontends/dib7000p.c        |  2 +-
- drivers/media/radio/si470x/radio-si470x-i2c.c |  4 +-
- drivers/media/radio/si470x/radio-si470x-usb.c |  8 +-
- drivers/misc/eeprom/idt_89hpesx.c             |  6 +-
+ drivers/media/radio/si470x/radio-si470x-i2c.c |  4 ++--
+ drivers/media/radio/si470x/radio-si470x-usb.c |  8 ++++----
+ drivers/misc/eeprom/idt_89hpesx.c             |  6 +++---
  drivers/misc/mei/hw-me.c                      |  2 +-
- drivers/misc/sgi-xp/xpnet.c                   |  4 +-
+ drivers/misc/sgi-xp/xpnet.c                   |  4 ++--
  drivers/net/ethernet/amd/xgbe/xgbe-dcb.c      |  2 +-
- .../net/ethernet/broadcom/bnx2x/bnx2x_link.c  |  4 +-
+ .../net/ethernet/broadcom/bnx2x/bnx2x_link.c  |  4 ++--
  .../net/ethernet/freescale/enetc/enetc_mdio.c |  2 +-
  drivers/net/ethernet/freescale/xgmac_mdio.c   |  2 +-
  drivers/net/ethernet/netronome/nfp/nfp_app.c  |  2 +-
  drivers/net/ethernet/netronome/nfp/nfp_main.c |  2 +-
- drivers/net/ethernet/qlogic/qed/qed_dev.c     |  4 +-
+ drivers/net/ethernet/qlogic/qed/qed_dev.c     |  4 ++--
  drivers/net/ethernet/qlogic/qed/qed_main.c    |  2 +-
  drivers/net/wireless/ath/ath10k/htt_tx.c      |  2 +-
- drivers/net/wireless/ath/ath10k/mac.c         |  8 +-
- drivers/net/wireless/ath/ath10k/wmi-tlv.c     |  4 +-
+ drivers/net/wireless/ath/ath10k/mac.c         |  8 ++++----
+ drivers/net/wireless/ath/ath10k/wmi-tlv.c     |  4 ++--
  drivers/net/wireless/ath/ath10k/wmi.c         |  2 +-
- .../intel/iwlwifi/mvm/ftm-initiator.c         |  4 +-
+ .../intel/iwlwifi/mvm/ftm-initiator.c         |  4 ++--
  .../net/wireless/mediatek/mt7601u/debugfs.c   |  2 +-
  .../net/wireless/mediatek/mt7601u/eeprom.c    |  2 +-
- drivers/ntb/hw/idt/ntb_hw_idt.c               |  6 +-
+ drivers/ntb/hw/idt/ntb_hw_idt.c               |  6 +++---
  drivers/platform/x86/thinkpad_acpi.c          |  2 +-
  drivers/scsi/libfc/fc_lport.c                 |  2 +-
- drivers/scsi/qedi/qedi_main.c                 |  4 +-
- drivers/scsi/scsi_sysfs.c                     |  4 +-
- drivers/soc/qcom/smem.c                       |  4 +-
+ drivers/scsi/qedi/qedi_main.c                 |  4 ++--
+ drivers/scsi/scsi_sysfs.c                     |  4 ++--
+ drivers/soc/qcom/smem.c                       |  4 ++--
  drivers/target/iscsi/iscsi_target.c           |  2 +-
- drivers/target/iscsi/iscsi_target_login.c     |  4 +-
+ drivers/target/iscsi/iscsi_target_login.c     |  4 ++--
  .../target/iscsi/iscsi_target_parameters.c    |  2 +-
- drivers/target/target_core_configfs.c         |  6 +-
+ drivers/target/target_core_configfs.c         |  6 +++---
  drivers/target/target_core_fabric_lib.c       |  2 +-
- drivers/target/target_core_pr.c               |  4 +-
+ drivers/target/target_core_pr.c               |  4 ++--
  fs/afs/flock.c                                |  2 +-
  fs/nfsd/flexfilelayout.c                      |  2 +-
  fs/ntfs/attrib.c                              |  2 +-
  fs/reiserfs/journal.c                         |  2 +-
- kernel/sysctl_binary.c                        |  4 +-
- lib/test_printf.c                             |  6 +-
- net/8021q/vlanproc.c                          |  4 +-
+ kernel/sysctl_binary.c                        |  4 ++--
+ lib/test_printf.c                             |  6 +++---
+ net/8021q/vlanproc.c                          |  4 ++--
  net/batman-adv/sysfs.c                        |  2 +-
  net/ipv4/ah4.c                                |  2 +-
  net/ipv4/esp4.c                               |  2 +-
  net/ipv6/ah6.c                                |  2 +-
  net/ipv6/esp6.c                               |  2 +-
- net/l2tp/l2tp_core.c                          |  4 +-
- net/l2tp/l2tp_debugfs.c                       |  6 +-
+ net/l2tp/l2tp_core.c                          |  4 ++--
+ net/l2tp/l2tp_debugfs.c                       |  6 +++---
  net/l2tp/l2tp_ppp.c                           |  2 +-
- net/netfilter/nf_conntrack_h323_main.c        |  4 +-
+ net/netfilter/nf_conntrack_h323_main.c        |  4 ++--
  net/netfilter/xt_AUDIT.c                      |  2 +-
  net/netfilter/xt_CONNSECMARK.c                |  2 +-
- net/netfilter/xt_SECMARK.c                    |  4 +-
- net/netfilter/xt_TPROXY.c                     |  4 +-
+ net/netfilter/xt_SECMARK.c                    |  4 ++--
+ net/netfilter/xt_TPROXY.c                     |  4 ++--
  net/rxrpc/rxkad.c                             |  2 +-
  security/selinux/hooks.c                      |  2 +-
  security/tomoyo/common.c                      |  2 +-
- 77 files changed, 185 insertions(+), 185 deletions(-)
+ 75 files changed, 136 insertions(+), 136 deletions(-)
 
-diff --git a/drivers/acpi/acpica/dbhistry.c b/drivers/acpi/acpica/dbhistry.c
-index 7809bd94a18d..47d2e5059849 100644
---- a/drivers/acpi/acpica/dbhistry.c
-+++ b/drivers/acpi/acpica/dbhistry.c
-@@ -121,7 +121,7 @@ void acpi_db_display_history(void)
- 
- 	for (i = 0; i < acpi_gbl_num_history; i++) {
- 		if (acpi_gbl_history_buffer[history_index].command) {
--			acpi_os_printf("%3ld %s\n",
-+			acpi_os_printf("%3u %s\n",
- 				       acpi_gbl_history_buffer[history_index].
- 				       cmd_num,
- 				       acpi_gbl_history_buffer[history_index].
-diff --git a/drivers/acpi/acpica/dbinput.c b/drivers/acpi/acpica/dbinput.c
-index 3e5f95390f0d..c2a7ca9c899a 100644
---- a/drivers/acpi/acpica/dbinput.c
-+++ b/drivers/acpi/acpica/dbinput.c
-@@ -592,7 +592,7 @@ static u32 acpi_db_get_line(char *input_buffer)
- 	    (acpi_gbl_db_parsed_buf, sizeof(acpi_gbl_db_parsed_buf),
- 	     input_buffer)) {
- 		acpi_os_printf
--		    ("Buffer overflow while parsing input line (max %u characters)\n",
-+		    ("Buffer overflow while parsing input line (max %zu characters)\n",
- 		     sizeof(acpi_gbl_db_parsed_buf));
- 		return (0);
- 	}
-@@ -853,24 +853,24 @@ acpi_db_command_dispatch(char *input_buffer,
- 
- 		if (param_count == 0) {
- 			acpi_os_printf
--			    ("Current debug level for file output is:    %8.8lX\n",
-+			    ("Current debug level for file output is:    %8.8X\n",
- 			     acpi_gbl_db_debug_level);
- 			acpi_os_printf
--			    ("Current debug level for console output is: %8.8lX\n",
-+			    ("Current debug level for console output is: %8.8X\n",
- 			     acpi_gbl_db_console_debug_level);
- 		} else if (param_count == 2) {
- 			temp = acpi_gbl_db_console_debug_level;
- 			acpi_gbl_db_console_debug_level =
- 			    strtoul(acpi_gbl_db_args[1], NULL, 16);
- 			acpi_os_printf
--			    ("Debug Level for console output was %8.8lX, now %8.8lX\n",
-+			    ("Debug Level for console output was %8.8X, now %8.8X\n",
- 			     temp, acpi_gbl_db_console_debug_level);
- 		} else {
- 			temp = acpi_gbl_db_debug_level;
- 			acpi_gbl_db_debug_level =
- 			    strtoul(acpi_gbl_db_args[1], NULL, 16);
- 			acpi_os_printf
--			    ("Debug Level for file output was %8.8lX, now %8.8lX\n",
-+			    ("Debug Level for file output was %8.8X, now %8.8X\n",
- 			     temp, acpi_gbl_db_debug_level);
- 		}
- 		break;
-diff --git a/drivers/acpi/acpica/dbstats.c b/drivers/acpi/acpica/dbstats.c
-index bf620937c79b..2dbec879097f 100644
---- a/drivers/acpi/acpica/dbstats.c
-+++ b/drivers/acpi/acpica/dbstats.c
-@@ -341,17 +341,17 @@ acpi_status acpi_db_display_statistics(char *type_arg)
- 			       "ACPI_TYPE", "NODES", "OBJECTS");
- 
- 		for (i = 0; i < ACPI_TYPE_NS_NODE_MAX; i++) {
--			acpi_os_printf("%16.16s % 10ld% 10ld\n",
-+			acpi_os_printf("%16.16s % 10d% 10d\n",
- 				       acpi_ut_get_type_name(i),
- 				       acpi_gbl_node_type_count[i],
- 				       acpi_gbl_obj_type_count[i]);
- 		}
- 
--		acpi_os_printf("%16.16s % 10ld% 10ld\n", "Misc/Unknown",
-+		acpi_os_printf("%16.16s % 10d% 10d\n", "Misc/Unknown",
- 			       acpi_gbl_node_type_count_misc,
- 			       acpi_gbl_obj_type_count_misc);
- 
--		acpi_os_printf("%16.16s % 10ld% 10ld\n", "TOTALS:",
-+		acpi_os_printf("%16.16s % 10d% 10d\n", "TOTALS:",
- 			       acpi_gbl_num_nodes, acpi_gbl_num_objects);
- 		break;
- 
-@@ -379,16 +379,16 @@ acpi_status acpi_db_display_statistics(char *type_arg)
- 	case CMD_STAT_MISC:
- 
- 		acpi_os_printf("\nMiscellaneous Statistics:\n\n");
--		acpi_os_printf("Calls to AcpiPsFind:.. ........% 7ld\n",
-+		acpi_os_printf("Calls to AcpiPsFind:.. ........%7u\n",
- 			       acpi_gbl_ps_find_count);
--		acpi_os_printf("Calls to AcpiNsLookup:..........% 7ld\n",
-+		acpi_os_printf("Calls to AcpiNsLookup:..........%7u\n",
- 			       acpi_gbl_ns_lookup_count);
- 
- 		acpi_os_printf("\n");
- 
- 		acpi_os_printf("Mutex usage:\n\n");
- 		for (i = 0; i < ACPI_NUM_MUTEX; i++) {
--			acpi_os_printf("%-28s:     % 7ld\n",
-+			acpi_os_printf("%-28s:     % 7d\n",
- 				       acpi_ut_get_mutex_name(i),
- 				       acpi_gbl_mutex_info[i].use_count);
- 		}
-@@ -398,87 +398,87 @@ acpi_status acpi_db_display_statistics(char *type_arg)
- 
- 		acpi_os_printf("\nInternal object sizes:\n\n");
- 
--		acpi_os_printf("Common         %3d\n",
-+		acpi_os_printf("Common         %3zu\n",
- 			       sizeof(struct acpi_object_common));
--		acpi_os_printf("Number         %3d\n",
-+		acpi_os_printf("Number         %3zu\n",
- 			       sizeof(struct acpi_object_integer));
--		acpi_os_printf("String         %3d\n",
-+		acpi_os_printf("String         %3zu\n",
- 			       sizeof(struct acpi_object_string));
--		acpi_os_printf("Buffer         %3d\n",
-+		acpi_os_printf("Buffer         %3zu\n",
- 			       sizeof(struct acpi_object_buffer));
--		acpi_os_printf("Package        %3d\n",
-+		acpi_os_printf("Package        %3zu\n",
- 			       sizeof(struct acpi_object_package));
--		acpi_os_printf("BufferField    %3d\n",
-+		acpi_os_printf("BufferField    %3zu\n",
- 			       sizeof(struct acpi_object_buffer_field));
--		acpi_os_printf("Device         %3d\n",
-+		acpi_os_printf("Device         %3zu\n",
- 			       sizeof(struct acpi_object_device));
--		acpi_os_printf("Event          %3d\n",
-+		acpi_os_printf("Event          %3zu\n",
- 			       sizeof(struct acpi_object_event));
--		acpi_os_printf("Method         %3d\n",
-+		acpi_os_printf("Method         %3zu\n",
- 			       sizeof(struct acpi_object_method));
--		acpi_os_printf("Mutex          %3d\n",
-+		acpi_os_printf("Mutex          %3zu\n",
- 			       sizeof(struct acpi_object_mutex));
--		acpi_os_printf("Region         %3d\n",
-+		acpi_os_printf("Region         %3zu\n",
- 			       sizeof(struct acpi_object_region));
--		acpi_os_printf("PowerResource  %3d\n",
-+		acpi_os_printf("PowerResource  %3zu\n",
- 			       sizeof(struct acpi_object_power_resource));
--		acpi_os_printf("Processor      %3d\n",
-+		acpi_os_printf("Processor      %3zu\n",
- 			       sizeof(struct acpi_object_processor));
--		acpi_os_printf("ThermalZone    %3d\n",
-+		acpi_os_printf("ThermalZone    %3zu\n",
- 			       sizeof(struct acpi_object_thermal_zone));
--		acpi_os_printf("RegionField    %3d\n",
-+		acpi_os_printf("RegionField    %3zu\n",
- 			       sizeof(struct acpi_object_region_field));
--		acpi_os_printf("BankField      %3d\n",
-+		acpi_os_printf("BankField      %3zu\n",
- 			       sizeof(struct acpi_object_bank_field));
--		acpi_os_printf("IndexField     %3d\n",
-+		acpi_os_printf("IndexField     %3zu\n",
- 			       sizeof(struct acpi_object_index_field));
--		acpi_os_printf("Reference      %3d\n",
-+		acpi_os_printf("Reference      %3zu\n",
- 			       sizeof(struct acpi_object_reference));
--		acpi_os_printf("Notify         %3d\n",
-+		acpi_os_printf("Notify         %3zu\n",
- 			       sizeof(struct acpi_object_notify_handler));
--		acpi_os_printf("AddressSpace   %3d\n",
-+		acpi_os_printf("AddressSpace   %3zu\n",
- 			       sizeof(struct acpi_object_addr_handler));
--		acpi_os_printf("Extra          %3d\n",
-+		acpi_os_printf("Extra          %3zu\n",
- 			       sizeof(struct acpi_object_extra));
--		acpi_os_printf("Data           %3d\n",
-+		acpi_os_printf("Data           %3zu\n",
- 			       sizeof(struct acpi_object_data));
- 
- 		acpi_os_printf("\n");
- 
--		acpi_os_printf("ParseObject    %3d\n",
-+		acpi_os_printf("ParseObject    %3zu\n",
- 			       sizeof(struct acpi_parse_obj_common));
--		acpi_os_printf("ParseObjectNamed %3d\n",
-+		acpi_os_printf("ParseObjectNamed %3zu\n",
- 			       sizeof(struct acpi_parse_obj_named));
--		acpi_os_printf("ParseObjectAsl %3d\n",
-+		acpi_os_printf("ParseObjectAsl %3zu\n",
- 			       sizeof(struct acpi_parse_obj_asl));
--		acpi_os_printf("OperandObject  %3d\n",
-+		acpi_os_printf("OperandObject  %3zu\n",
- 			       sizeof(union acpi_operand_object));
--		acpi_os_printf("NamespaceNode  %3d\n",
-+		acpi_os_printf("NamespaceNode  %3zu\n",
- 			       sizeof(struct acpi_namespace_node));
--		acpi_os_printf("AcpiObject     %3d\n",
-+		acpi_os_printf("AcpiObject     %3zu\n",
- 			       sizeof(union acpi_object));
- 
- 		acpi_os_printf("\n");
- 
--		acpi_os_printf("Generic State  %3d\n",
-+		acpi_os_printf("Generic State  %3zu\n",
- 			       sizeof(union acpi_generic_state));
--		acpi_os_printf("Common State   %3d\n",
-+		acpi_os_printf("Common State   %3zu\n",
- 			       sizeof(struct acpi_common_state));
--		acpi_os_printf("Control State  %3d\n",
-+		acpi_os_printf("Control State  %3zu\n",
- 			       sizeof(struct acpi_control_state));
--		acpi_os_printf("Update State   %3d\n",
-+		acpi_os_printf("Update State   %3zu\n",
- 			       sizeof(struct acpi_update_state));
--		acpi_os_printf("Scope State    %3d\n",
-+		acpi_os_printf("Scope State    %3zu\n",
- 			       sizeof(struct acpi_scope_state));
--		acpi_os_printf("Parse Scope    %3d\n",
-+		acpi_os_printf("Parse Scope    %3zu\n",
- 			       sizeof(struct acpi_pscope_state));
--		acpi_os_printf("Package State  %3d\n",
-+		acpi_os_printf("Package State  %3zu\n",
- 			       sizeof(struct acpi_pkg_state));
--		acpi_os_printf("Thread State   %3d\n",
-+		acpi_os_printf("Thread State   %3zu\n",
- 			       sizeof(struct acpi_thread_state));
--		acpi_os_printf("Result Values  %3d\n",
-+		acpi_os_printf("Result Values  %3zu\n",
- 			       sizeof(struct acpi_result_values));
--		acpi_os_printf("Notify Info    %3d\n",
-+		acpi_os_printf("Notify Info    %3zu\n",
- 			       sizeof(struct acpi_notify_info));
- 		break;
- 
 diff --git a/drivers/acpi/acpica/nsdump.c b/drivers/acpi/acpica/nsdump.c
-index 1b12c172e115..d1834eb041d1 100644
+index 9731d7cf1b83..0369999dccae 100644
 --- a/drivers/acpi/acpica/nsdump.c
 +++ b/drivers/acpi/acpica/nsdump.c
 @@ -291,7 +291,7 @@ acpi_ns_dump_one_object(acpi_handle obj_handle,
@@ -331,6 +103,19 @@ index 1b12c172e115..d1834eb041d1 100644
  				       (obj_desc->common_field.
  					base_byte_offset * 8)
  				       +
+diff --git a/drivers/acpi/acpica/nsrepair2.c b/drivers/acpi/acpica/nsrepair2.c
+index 9d1e8fd8c32c..663d85e0adba 100644
+--- a/drivers/acpi/acpica/nsrepair2.c
++++ b/drivers/acpi/acpica/nsrepair2.c
+@@ -271,7 +271,7 @@ acpi_ns_repair_FDE(struct acpi_evaluate_info *info,
+ 			ACPI_WARN_PREDEFINED((AE_INFO,
+ 					      info->full_pathname,
+ 					      info->node_flags,
+-					      "Incorrect return buffer length %u, expected %zu",
++					      "Incorrect return buffer length %u, expected %u",
+ 					      return_object->buffer.length,
+ 					      ACPI_FDE_DWORD_BUFFER_SIZE));
+ 
 diff --git a/drivers/atm/ambassador.c b/drivers/atm/ambassador.c
 index c039b8a4fefe..483e81018810 100644
 --- a/drivers/atm/ambassador.c
@@ -479,10 +264,10 @@ index e5da51f907a2..2cca7b7906b6 100644
    
    return;
 diff --git a/drivers/gpio/gpiolib-acpi.c b/drivers/gpio/gpiolib-acpi.c
-index bda28eb82c3f..bf01a6110303 100644
+index 609ed16ae933..71e7edd69052 100644
 --- a/drivers/gpio/gpiolib-acpi.c
 +++ b/drivers/gpio/gpiolib-acpi.c
-@@ -215,7 +215,7 @@ static acpi_status acpi_gpiochip_alloc_event(struct acpi_resource *ares,
+@@ -216,7 +216,7 @@ static acpi_status acpi_gpiochip_alloc_event(struct acpi_resource *ares,
  		char ev_name[5];
  		sprintf(ev_name, "_%c%02hhX",
  			agpio->triggering == ACPI_EDGE_SENSITIVE ? 'E' : 'L',
@@ -492,7 +277,7 @@ index bda28eb82c3f..bf01a6110303 100644
  			handler = acpi_gpio_irq_handler;
  	}
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
-index 5b2fea3b4a2c..fe18d0850798 100644
+index b2c364b8695f..70fe449e537b 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
 @@ -212,7 +212,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
@@ -536,10 +321,10 @@ index b70b3c45bb29..50595b0510cb 100644
  	adev->vce.fw_version = ((version_major << 24) | (version_minor << 16) |
  				(binary_id << 8));
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c
-index 2e12eeb314a7..09fcc5690337 100644
+index 7a6beb2e7c4e..1f3a23ea503e 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c
-@@ -118,7 +118,7 @@ int amdgpu_vcn_sw_init(struct amdgpu_device *adev)
+@@ -147,7 +147,7 @@ int amdgpu_vcn_sw_init(struct amdgpu_device *adev)
  		enc_major = fw_check;
  		dec_ver = (le32_to_cpu(hdr->ucode_version) >> 24) & 0xf;
  		vep = (le32_to_cpu(hdr->ucode_version) >> 28) & 0xf;
@@ -548,7 +333,7 @@ index 2e12eeb314a7..09fcc5690337 100644
  			enc_major, enc_minor, dec_ver, vep, fw_rev);
  	} else {
  		unsigned int version_major, version_minor, family_id;
-@@ -126,7 +126,7 @@ int amdgpu_vcn_sw_init(struct amdgpu_device *adev)
+@@ -155,7 +155,7 @@ int amdgpu_vcn_sw_init(struct amdgpu_device *adev)
  		family_id = le32_to_cpu(hdr->ucode_version) & 0xff;
  		version_major = (le32_to_cpu(hdr->ucode_version) >> 24) & 0xff;
  		version_minor = (le32_to_cpu(hdr->ucode_version) >> 8) & 0xff;
@@ -576,10 +361,10 @@ index 6858cde9fc5d..2e5f1558ea30 100644
  }
  
 diff --git a/drivers/gpu/drm/nouveau/nouveau_dp.c b/drivers/gpu/drm/nouveau/nouveau_dp.c
-index 0d052e1660f8..e4b81ba46756 100644
+index 2674f1587457..3c74c643c944 100644
 --- a/drivers/gpu/drm/nouveau/nouveau_dp.c
 +++ b/drivers/gpu/drm/nouveau/nouveau_dp.c
-@@ -47,11 +47,11 @@ nouveau_dp_probe_oui(struct drm_device *dev, struct nvkm_i2c_aux *aux, u8 *dpcd)
+@@ -46,11 +46,11 @@ nouveau_dp_probe_oui(struct drm_device *dev, struct nvkm_i2c_aux *aux, u8 *dpcd)
  		return;
  
  	if (!nvkm_rdaux(aux, DP_SINK_OUI, buf, 3))
@@ -612,7 +397,7 @@ index 6f38375c77c8..47f66ad9de2d 100644
  }
  
 diff --git a/drivers/gpu/drm/radeon/radeon_uvd.c b/drivers/gpu/drm/radeon/radeon_uvd.c
-index ff4f794d1c86..3653349169a6 100644
+index 1ad5c3b86b64..16fa83cf6b3d 100644
 --- a/drivers/gpu/drm/radeon/radeon_uvd.c
 +++ b/drivers/gpu/drm/radeon/radeon_uvd.c
 @@ -155,7 +155,7 @@ int radeon_uvd_init(struct radeon_device *rdev)
@@ -625,10 +410,10 @@ index ff4f794d1c86..3653349169a6 100644
  
  			/*
 diff --git a/drivers/hid/i2c-hid/i2c-hid-core.c b/drivers/hid/i2c-hid/i2c-hid-core.c
-index 90164fed08d3..c64d00eefd8e 100644
+index 2a7c6e33bb1c..10c1ecfc04d5 100644
 --- a/drivers/hid/i2c-hid/i2c-hid-core.c
 +++ b/drivers/hid/i2c-hid/i2c-hid-core.c
-@@ -1143,7 +1143,7 @@ static int i2c_hid_probe(struct i2c_client *client,
+@@ -1141,7 +1141,7 @@ static int i2c_hid_probe(struct i2c_client *client,
  	hid->vendor = le16_to_cpu(ihid->hdesc.wVendorID);
  	hid->product = le16_to_cpu(ihid->hdesc.wProductID);
  
@@ -744,7 +529,7 @@ index e211830c9c99..1d8c2644e998 100644
  			(*agc_state)++;
  			ret = 5;
 diff --git a/drivers/media/dvb-frontends/dib7000p.c b/drivers/media/dvb-frontends/dib7000p.c
-index 52f5e697c5dc..53ed3c1446ab 100644
+index 0d22c700016d..ef8b0c407218 100644
 --- a/drivers/media/dvb-frontends/dib7000p.c
 +++ b/drivers/media/dvb-frontends/dib7000p.c
 @@ -915,7 +915,7 @@ static int dib7000p_agc_startup(struct dvb_frontend *demod)
@@ -757,10 +542,10 @@ index 52f5e697c5dc..53ed3c1446ab 100644
  		(*agc_state)++;
  		ret = 5;
 diff --git a/drivers/media/radio/si470x/radio-si470x-i2c.c b/drivers/media/radio/si470x/radio-si470x-i2c.c
-index 7d53422b3b56..b45d3d4a9d71 100644
+index 7541698a0be1..26466421d94b 100644
 --- a/drivers/media/radio/si470x/radio-si470x-i2c.c
 +++ b/drivers/media/radio/si470x/radio-si470x-i2c.c
-@@ -411,10 +411,10 @@ static int si470x_i2c_probe(struct i2c_client *client,
+@@ -410,10 +410,10 @@ static int si470x_i2c_probe(struct i2c_client *client)
  			radio->registers[DEVICEID], radio->registers[SI_CHIPID]);
  	if ((radio->registers[SI_CHIPID] & SI_CHIPID_FIRMWARE) < RADIO_FW_VERSION) {
  		dev_warn(&client->dev,
@@ -774,7 +559,7 @@ index 7d53422b3b56..b45d3d4a9d71 100644
  		version_warning = 1;
  	}
 diff --git a/drivers/media/radio/si470x/radio-si470x-usb.c b/drivers/media/radio/si470x/radio-si470x-usb.c
-index 49073747b1e7..bc9d2182f68e 100644
+index fedff68d8c49..766f5e44c114 100644
 --- a/drivers/media/radio/si470x/radio-si470x-usb.c
 +++ b/drivers/media/radio/si470x/radio-si470x-usb.c
 @@ -681,10 +681,10 @@ static int si470x_usb_driver_probe(struct usb_interface *intf,
@@ -848,7 +633,7 @@ index abe1b1f4362f..5a1a6516f471 100644
  	if (empty_slots < 0)
  		return -EOVERFLOW;
 diff --git a/drivers/misc/sgi-xp/xpnet.c b/drivers/misc/sgi-xp/xpnet.c
-index 44d750d98bc8..44315fd9387f 100644
+index f7d610a22347..cd3e0e184658 100644
 --- a/drivers/misc/sgi-xp/xpnet.c
 +++ b/drivers/misc/sgi-xp/xpnet.c
 @@ -207,7 +207,7 @@ xpnet_receive(short partid, int channel, struct xpnet_message *msg)
@@ -905,12 +690,12 @@ index d581d0ae6584..1fe193cdf2b9 100644
  	return 0;
  }
 diff --git a/drivers/net/ethernet/freescale/enetc/enetc_mdio.c b/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
-index 77b9cd10ba2b..79b496e89e1c 100644
+index 149883c8f0b8..cb64ab91cd1f 100644
 --- a/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
 +++ b/drivers/net/ethernet/freescale/enetc/enetc_mdio.c
-@@ -133,7 +133,7 @@ static int enetc_mdio_read(struct mii_bus *bus, int phy_id, int regnum)
+@@ -136,7 +136,7 @@ int enetc_mdio_read(struct mii_bus *bus, int phy_id, int regnum)
  	/* return all Fs if nothing was there */
- 	if (enetc_rd_reg(&regs->mdio_cfg) & MDIO_CFG_RD_ER) {
+ 	if (enetc_mdio_rd(hw, MDIO_CFG) & MDIO_CFG_RD_ER) {
  		dev_dbg(&bus->dev,
 -			"Error while reading PHY%d reg at %d.%hhu\n",
 +			"Error while reading PHY%d reg at %d.%u\n",
@@ -944,7 +729,7 @@ index 3a973282b2bb..7966f2899a88 100644
  	}
  
 diff --git a/drivers/net/ethernet/netronome/nfp/nfp_main.c b/drivers/net/ethernet/netronome/nfp/nfp_main.c
-index 60e57f08de80..f9fbd405fa92 100644
+index 4d282fc56009..716b3201d46a 100644
 --- a/drivers/net/ethernet/netronome/nfp/nfp_main.c
 +++ b/drivers/net/ethernet/netronome/nfp/nfp_main.c
 @@ -382,7 +382,7 @@ nfp_net_fw_find(struct pci_dev *pdev, struct nfp_pf *pf)
@@ -979,10 +764,10 @@ index a1ebc2b1ca0b..61916dd67ab2 100644
  		*p_abs_ppfid = 0;
  		return -EINVAL;
 diff --git a/drivers/net/ethernet/qlogic/qed/qed_main.c b/drivers/net/ethernet/qlogic/qed/qed_main.c
-index 1efff7f68ef6..c4c3d903ceef 100644
+index 2ce70097d018..5350efe05907 100644
 --- a/drivers/net/ethernet/qlogic/qed/qed_main.c
 +++ b/drivers/net/ethernet/qlogic/qed/qed_main.c
-@@ -906,7 +906,7 @@ static int qed_slowpath_setup_int(struct qed_dev *cdev,
+@@ -910,7 +910,7 @@ static int qed_slowpath_setup_int(struct qed_dev *cdev,
  
  	if (is_kdump_kernel()) {
  		DP_INFO(cdev,
@@ -992,7 +777,7 @@ index 1efff7f68ef6..c4c3d903ceef 100644
  		cdev->int_params.in.num_vectors =
  			cdev->int_params.in.min_msix_cnt;
 diff --git a/drivers/net/wireless/ath/ath10k/htt_tx.c b/drivers/net/wireless/ath/ath10k/htt_tx.c
-index 2ef717f18795..7340e84b7f5d 100644
+index a182c0944cc7..d2f7478f0981 100644
 --- a/drivers/net/wireless/ath/ath10k/htt_tx.c
 +++ b/drivers/net/wireless/ath/ath10k/htt_tx.c
 @@ -507,7 +507,7 @@ static int ath10k_htt_tx_clean_up_pending(int msdu_id, void *skb, void *ctx)
@@ -1005,10 +790,10 @@ index 2ef717f18795..7340e84b7f5d 100644
  	tx_done.msdu_id = msdu_id;
  	tx_done.status = HTT_TX_COMPL_STATE_DISCARD;
 diff --git a/drivers/net/wireless/ath/ath10k/mac.c b/drivers/net/wireless/ath/ath10k/mac.c
-index 0606416dc971..aaabd3d19486 100644
+index a6d21856b7e7..9efe3861746f 100644
 --- a/drivers/net/wireless/ath/ath10k/mac.c
 +++ b/drivers/net/wireless/ath/ath10k/mac.c
-@@ -7789,7 +7789,7 @@ ath10k_mac_update_vif_chan(struct ath10k *ar,
+@@ -7791,7 +7791,7 @@ ath10k_mac_update_vif_chan(struct ath10k *ar,
  		arvif = (void *)vifs[i].vif->drv_priv;
  
  		ath10k_dbg(ar, ATH10K_DBG_MAC,
@@ -1017,7 +802,7 @@ index 0606416dc971..aaabd3d19486 100644
  			   arvif->vdev_id,
  			   vifs[i].old_ctx->def.chan->center_freq,
  			   vifs[i].new_ctx->def.chan->center_freq,
-@@ -7863,7 +7863,7 @@ ath10k_mac_op_add_chanctx(struct ieee80211_hw *hw,
+@@ -7865,7 +7865,7 @@ ath10k_mac_op_add_chanctx(struct ieee80211_hw *hw,
  	struct ath10k *ar = hw->priv;
  
  	ath10k_dbg(ar, ATH10K_DBG_MAC,
@@ -1026,7 +811,7 @@ index 0606416dc971..aaabd3d19486 100644
  		   ctx->def.chan->center_freq, ctx->def.width, ctx);
  
  	mutex_lock(&ar->conf_mutex);
-@@ -7887,7 +7887,7 @@ ath10k_mac_op_remove_chanctx(struct ieee80211_hw *hw,
+@@ -7889,7 +7889,7 @@ ath10k_mac_op_remove_chanctx(struct ieee80211_hw *hw,
  	struct ath10k *ar = hw->priv;
  
  	ath10k_dbg(ar, ATH10K_DBG_MAC,
@@ -1035,7 +820,7 @@ index 0606416dc971..aaabd3d19486 100644
  		   ctx->def.chan->center_freq, ctx->def.width, ctx);
  
  	mutex_lock(&ar->conf_mutex);
-@@ -7952,7 +7952,7 @@ ath10k_mac_op_change_chanctx(struct ieee80211_hw *hw,
+@@ -7954,7 +7954,7 @@ ath10k_mac_op_change_chanctx(struct ieee80211_hw *hw,
  	mutex_lock(&ar->conf_mutex);
  
  	ath10k_dbg(ar, ATH10K_DBG_MAC,
@@ -1045,7 +830,7 @@ index 0606416dc971..aaabd3d19486 100644
  
  	/* This shouldn't really happen because channel switching should use
 diff --git a/drivers/net/wireless/ath/ath10k/wmi-tlv.c b/drivers/net/wireless/ath/ath10k/wmi-tlv.c
-index 2985bb17decd..674ffed9f16f 100644
+index 4d5d10c01064..2c6999b70fdd 100644
 --- a/drivers/net/wireless/ath/ath10k/wmi-tlv.c
 +++ b/drivers/net/wireless/ath/ath10k/wmi-tlv.c
 @@ -93,7 +93,7 @@ ath10k_wmi_tlv_iter(struct ath10k *ar, const void *ptr, size_t len,
@@ -1154,10 +939,10 @@ index dcf234680535..c7cd9b6213fd 100644
  	off += scnprintf(strbuf + off, size - off, "\n");
  
 diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index 7bde4640ef34..16236f7477ba 100644
+index da794dcfdd92..7dcf3921da20 100644
 --- a/drivers/platform/x86/thinkpad_acpi.c
 +++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -7479,7 +7479,7 @@ static void volume_exit_software_mute(void)
+@@ -7476,7 +7476,7 @@ static void volume_exit_software_mute(void)
  static int volume_alsa_set_volume(const u8 vol)
  {
  	dbg_printk(TPACPI_DBG_MIXER,
@@ -1221,10 +1006,10 @@ index 64c96c7828ee..bbefc8ba8d6c 100644
  
  static ssize_t
 diff --git a/drivers/soc/qcom/smem.c b/drivers/soc/qcom/smem.c
-index f27c00d82ae4..1c57d54f927e 100644
+index 28c19bcb2f20..5f1d3cdd6fdd 100644
 --- a/drivers/soc/qcom/smem.c
 +++ b/drivers/soc/qcom/smem.c
-@@ -843,12 +843,12 @@ qcom_smem_enumerate_partitions(struct qcom_smem *smem, u16 local_host)
+@@ -844,12 +844,12 @@ qcom_smem_enumerate_partitions(struct qcom_smem *smem, u16 local_host)
  			continue;
  
  		if (remote_host >= SMEM_HOST_COUNT) {
@@ -1393,10 +1178,10 @@ index d563abc3e136..31113ce69fec 100644
  	BUG_ON(ofs < 0);
  	BUG_ON(cnt < 0);
 diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-index 4517a1394c6f..e8925dad1860 100644
+index 4b3e3e73b512..36d6022dd41e 100644
 --- a/fs/reiserfs/journal.c
 +++ b/fs/reiserfs/journal.c
-@@ -2553,7 +2553,7 @@ static int journal_read(struct super_block *sb)
+@@ -2546,7 +2546,7 @@ static int journal_read(struct super_block *sb)
  	journal->j_first_unflushed_offset = journal->j_start;
  	if (replay_count > 0) {
  		reiserfs_info(sb,
@@ -1421,7 +1206,7 @@ index 73c132095a7b..283c772d9ee7 100644
  		result = kernel_write(file, buf, len, &pos);
  		if (result < 0)
 diff --git a/lib/test_printf.c b/lib/test_printf.c
-index 944eb50f3862..08dff4ef588d 100644
+index 5d94cbff2120..871bff375d11 100644
 --- a/lib/test_printf.c
 +++ b/lib/test_printf.c
 @@ -150,9 +150,9 @@ test_number(void)
@@ -1460,7 +1245,7 @@ index ec87dea23719..8d6d7a3baa28 100644
  		}
  	}
 diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 1efcb97039cd..d3cd3e835f7d 100644
+index e5bbc28ed12c..c07629a77ffa 100644
 --- a/net/batman-adv/sysfs.c
 +++ b/net/batman-adv/sysfs.c
 @@ -873,7 +873,7 @@ int batadv_sysfs_add_vlan(struct net_device *dev,
@@ -1676,10 +1461,10 @@ index 194dc03341f3..d549a02b72b2 100644
  		 &iph->daddr, ntohs(hp->dest), skb->mark);
  
 diff --git a/net/rxrpc/rxkad.c b/net/rxrpc/rxkad.c
-index c60c520fde7c..675f2a64414b 100644
+index 8d8aa3c230b5..6a42088c6200 100644
 --- a/net/rxrpc/rxkad.c
 +++ b/net/rxrpc/rxkad.c
-@@ -301,7 +301,7 @@ static int rxkad_secure_packet(struct rxrpc_call *call,
+@@ -341,7 +341,7 @@ static int rxkad_secure_packet(struct rxrpc_call *call,
  		break;
  	}
  
@@ -1689,10 +1474,10 @@ index c60c520fde7c..675f2a64414b 100644
  }
  
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 74dd46de01b6..824a0444e49c 100644
+index 9625b99e677f..11d982327f1c 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -5478,7 +5478,7 @@ static int selinux_nlmsg_perm(struct sock *sk, struct sk_buff *skb)
+@@ -5524,7 +5524,7 @@ static int selinux_nlmsg_perm(struct sock *sk, struct sk_buff *skb)
  	if (err) {
  		if (err == -EINVAL) {
  			pr_warn_ratelimited("SELinux: unrecognized netlink"

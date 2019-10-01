@@ -5,9 +5,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
 
 ---
  arch/x86/boot/tools/build.c                 |  3 ++-
- drivers/acpi/acpica/acutils.h               |  6 +++---
  drivers/acpi/acpica/nsrepair2.c             |  2 +-
- drivers/acpi/acpica/utdebug.c               |  2 +-
  drivers/clk/clkdev.c                        |  7 ++++---
  drivers/iio/industrialio-trigger.c          |  3 ++-
  drivers/isdn/capi/capiutil.c                |  4 ++--
@@ -21,7 +19,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  drivers/staging/isdn/hysdn/hysdn_proclog.c  |  2 +-
  drivers/staging/isdn/hysdn/hysdn_sched.c    |  2 +-
  drivers/xen/xenbus/xenbus_client.c          | 10 ++++++----
- include/acpi/acpiosxf.h                     |  3 ++-
+ include/acpi/acpiosxf.h                     |  2 +-
  include/linux/iio/iio.h                     |  2 +-
  include/linux/iio/trigger_consumer.h        |  2 +-
  include/linux/trace_events.h                |  3 ++-
@@ -34,7 +32,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  scripts/unifdef.c                           |  2 +-
  security/tomoyo/common.c                    |  3 ++-
  security/tomoyo/common.h                    |  4 ++--
- 30 files changed, 70 insertions(+), 56 deletions(-)
+ 28 files changed, 65 insertions(+), 52 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index a93d44e58f9c..73349d9a27be 100644
@@ -50,34 +48,8 @@ index a93d44e58f9c..73349d9a27be 100644
  {
  	va_list args;
  	va_start(args, str);
-diff --git a/drivers/acpi/acpica/acutils.h b/drivers/acpi/acpica/acutils.h
-index 9022537567e9..0d6dfcf3d59a 100644
---- a/drivers/acpi/acpica/acutils.h
-+++ b/drivers/acpi/acpica/acutils.h
-@@ -686,18 +686,18 @@ void acpi_ut_delete_address_lists(void);
- /*
-  * utxferror - various error/warning output functions
-  */
--void ACPI_INTERNAL_VAR_XFACE
-+__printf(5, 6) void ACPI_INTERNAL_VAR_XFACE
- acpi_ut_predefined_warning(const char *module_name,
- 			   u32 line_number,
- 			   char *pathname,
- 			   u8 node_flags, const char *format, ...);
- 
--void ACPI_INTERNAL_VAR_XFACE
-+__printf(5, 6) void ACPI_INTERNAL_VAR_XFACE
- acpi_ut_predefined_info(const char *module_name,
- 			u32 line_number,
- 			char *pathname, u8 node_flags, const char *format, ...);
- 
--void ACPI_INTERNAL_VAR_XFACE
-+__printf(5, 6) void ACPI_INTERNAL_VAR_XFACE
- acpi_ut_predefined_bios_error(const char *module_name,
- 			      u32 line_number,
- 			      char *pathname,
 diff --git a/drivers/acpi/acpica/nsrepair2.c b/drivers/acpi/acpica/nsrepair2.c
-index 8d776256b213..ee496ad56b84 100644
+index 663d85e0adba..9d1e8fd8c32c 100644
 --- a/drivers/acpi/acpica/nsrepair2.c
 +++ b/drivers/acpi/acpica/nsrepair2.c
 @@ -271,7 +271,7 @@ acpi_ns_repair_FDE(struct acpi_evaluate_info *info,
@@ -89,19 +61,6 @@ index 8d776256b213..ee496ad56b84 100644
  					      return_object->buffer.length,
  					      ACPI_FDE_DWORD_BUFFER_SIZE));
  
-diff --git a/drivers/acpi/acpica/utdebug.c b/drivers/acpi/acpica/utdebug.c
-index 01b1b36c8a8e..262722b4eacc 100644
---- a/drivers/acpi/acpica/utdebug.c
-+++ b/drivers/acpi/acpica/utdebug.c
-@@ -158,7 +158,7 @@ acpi_debug_print(u32 requested_debug_level,
- 	 * Display the module name, current line number, thread ID (if requested),
- 	 * current procedure nesting level, and the current procedure name
- 	 */
--	acpi_os_printf("%9s-%04ld ", module_name, line_number);
-+	acpi_os_printf("%9s-%04u ", module_name, line_number);
- 
- #ifdef ACPI_APPLICATION
- 	/*
 diff --git a/drivers/clk/clkdev.c b/drivers/clk/clkdev.c
 index 0f2e3fcf0f19..4dfcf9de41f8 100644
 --- a/drivers/clk/clkdev.c
@@ -276,7 +235,7 @@ index cdac46a21692..6d5c4deba042 100644
  
  /* boardergo.c */
 diff --git a/drivers/staging/isdn/hysdn/hysdn_procconf.c b/drivers/staging/isdn/hysdn/hysdn_procconf.c
-index 73079213ec94..62306515bc1f 100644
+index 48afd9f5316e..69cb8e7e6b5f 100644
 --- a/drivers/staging/isdn/hysdn/hysdn_procconf.c
 +++ b/drivers/staging/isdn/hysdn/hysdn_procconf.c
 @@ -188,7 +188,7 @@ hysdn_conf_write(struct file *file, const char __user *buf, size_t count, loff_t
@@ -367,15 +326,10 @@ index e17ca8156171..306c1196fedb 100644
  	va_list ap;
  
 diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
-index 1b59fb61f67d..b284524b5655 100644
+index 2e63b7b390f5..aa6bc67df34d 100644
 --- a/include/acpi/acpiosxf.h
 +++ b/include/acpi/acpiosxf.h
-@@ -330,11 +330,12 @@ acpi_status acpi_os_enter_sleep(u8 sleep_state, u32 rega_value, u32 regb_value);
-  * Debug print routines
-  */
- #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_printf
-+__printf(1, 2)
- void ACPI_INTERNAL_VAR_XFACE acpi_os_printf(const char *format, ...);
+@@ -335,7 +335,7 @@ void ACPI_INTERNAL_VAR_XFACE acpi_os_printf(const char *format, ...);
  #endif
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_vprintf
@@ -440,10 +394,10 @@ index da8dc0db5bd3..15965b792c85 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 005f08629b8b..d576cf025bae 100644
+index f801d154ff6a..b5b39d4be2a2 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -845,15 +845,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -844,15 +844,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -465,7 +419,7 @@ index 005f08629b8b..d576cf025bae 100644
  			   unsigned long ip, const char *fmt, ...);
  void trace_printk_seq(struct trace_seq *s);
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index cab4a5398f1d..ab9bec1754a3 100644
+index d54ce252b05a..ccd4ee0027ea 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
 @@ -297,8 +297,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
@@ -516,10 +470,10 @@ index e135d4e11231..9b5f115333bf 100644
  	int n;
  	u16 len;
 diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
-index 8453d6ac2f77..7aecdcc1d224 100644
+index 92a926d375d2..41e1cebc78fe 100644
 --- a/scripts/mod/modpost.h
 +++ b/scripts/mod/modpost.h
-@@ -189,6 +189,6 @@ void *grab_file(const char *filename, unsigned long *size);
+@@ -198,6 +198,6 @@ void *grab_file(const char *filename, unsigned long *size);
  char* get_next_line(unsigned long *pos, void *file, unsigned long size);
  void release_file(void *file, unsigned long size);
  

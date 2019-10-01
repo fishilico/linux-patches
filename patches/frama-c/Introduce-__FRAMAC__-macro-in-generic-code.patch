@@ -132,7 +132,7 @@ index 4387b4e5e09e..dd62d1f80948 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 599c27b56c29..6db61ecf424d 100644
+index 72393a8c1a6c..827eb7753952 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -4,7 +4,7 @@
@@ -145,10 +145,10 @@ index 599c27b56c29..6db61ecf424d 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __safe		__attribute__((safe))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 21755471b1c3..874e6599d339 100644
+index 78a73eba64dd..6eeb073dc590 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -834,9 +834,14 @@ set_cpu_active(unsigned int cpu, bool active)
+@@ -857,9 +857,14 @@ set_cpu_active(unsigned int cpu, bool active)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -377,10 +377,10 @@ index 000000000000..ffd6208aabbd
 +
 +#endif /* _FLEX_ARRAY_H */
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index f5d44caf58a3..309628e0c478 100644
+index 76c7704cce66..d5d088f37d90 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
-@@ -253,6 +253,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
+@@ -274,6 +274,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
   *
   * Return: an absolute value of x.
   */
@@ -391,7 +391,7 @@ index f5d44caf58a3..309628e0c478 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -267,6 +271,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
+@@ -288,6 +292,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -466,10 +466,10 @@ index 659045046468..c60209574fc5 100644
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 82e4cd1b7ac3..a06f2ba18871 100644
+index f9088c89a534..d6e6ab825b55 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -137,6 +137,8 @@ typedef int __bitwise pci_power_t;
+@@ -143,6 +143,8 @@ typedef int __bitwise pci_power_t;
  #define PCI_UNKNOWN	((pci_power_t __force) 5)
  #define PCI_POWER_ERROR	((pci_power_t __force) -1)
  
@@ -478,14 +478,14 @@ index 82e4cd1b7ac3..a06f2ba18871 100644
  /* Remember to update this when the list above changes! */
  extern const char *pci_power_names[];
  
-@@ -144,6 +146,7 @@ static inline const char *pci_power_name(pci_power_t state)
+@@ -150,6 +152,7 @@ static inline const char *pci_power_name(pci_power_t state)
  {
  	return pci_power_names[1 + (__force int) state];
  }
 +#endif
  
- #define PCI_PM_D2_DELAY		200
- #define PCI_PM_D3_WAIT		10
+ /**
+  * typedef pci_channel_state_t
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
 index bc0c58b7c353..5f478137ae1a 100644
 --- a/include/linux/syscalls.h
@@ -549,7 +549,7 @@ index 2fce8b6876e9..357ff7b0ecdd 100644
  #else
  #define __bitwise__
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 534fec266a33..1c7d3fe6bebc 100644
+index c4da1ef56fdf..efd113982651 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1241,7 +1241,7 @@ static void print_fatal_signal(int signr)
@@ -588,7 +588,7 @@ index 5c54ca632d08..7e07a77f7042 100644
  		--sec;
  	}
 diff --git a/lib/hexdump.c b/lib/hexdump.c
-index b1d55b669ae2..cf41177426d7 100644
+index 147133f8eb2f..ab0cbe351e7f 100644
 --- a/lib/hexdump.c
 +++ b/lib/hexdump.c
 @@ -110,7 +110,9 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,

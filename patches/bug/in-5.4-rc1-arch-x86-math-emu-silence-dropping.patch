@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 28 Sep 2019 08:31:57 +0200
+Subject: [PATCH] {BUG in 5.4-rc1} arch/x86/math-emu: silence dropping
+ __copy_from_user result
+
+---
+ arch/x86/math-emu/reg_ld_str.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/math-emu/reg_ld_str.c b/arch/x86/math-emu/reg_ld_str.c
+index f3779743d15e..db80f2f06ab6 100644
+--- a/arch/x86/math-emu/reg_ld_str.c
++++ b/arch/x86/math-emu/reg_ld_str.c
+@@ -85,7 +85,7 @@ int FPU_load_extended(long double __user *s, int stnr)
+ 
+ 	RE_ENTRANT_CHECK_OFF;
+ 	FPU_access_ok(s, 10);
+-	__copy_from_user(sti_ptr, s, 10);
++	if (__copy_from_user(sti_ptr, s, 10)) {}
+ 	RE_ENTRANT_CHECK_ON;
+ 
+ 	return FPU_tagof(sti_ptr);
+@@ -1126,9 +1126,9 @@ void frstor(fpu_addr_modes addr_modes, u_char __user *data_address)
+ 	/* Copy all registers in stack order. */
+ 	RE_ENTRANT_CHECK_OFF;
+ 	FPU_access_ok(s, 80);
+-	__copy_from_user(register_base + offset, s, other);
++	if (__copy_from_user(register_base + offset, s, other)) {}
+ 	if (offset)
+-		__copy_from_user(register_base, s + other, offset);
++		if (__copy_from_user(register_base, s + other, offset)) {}
+ 	RE_ENTRANT_CHECK_ON;
+ 
+ 	for (i = 0; i < 8; i++) {
+-- 

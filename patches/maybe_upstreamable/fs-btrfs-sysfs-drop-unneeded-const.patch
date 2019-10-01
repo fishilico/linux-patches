@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 19 Sep 2019 20:24:42 +0200
+Subject: [PATCH] {MAYBE UPS} fs/btrfs/sysfs: drop unneeded "const"
+
+gcc warns:
+
+    fs/btrfs/sysfs.h:16:1: error: type qualifiers ignored on function
+    return type [-Werror=ignored-qualifiers]
+       16 | const char * const btrfs_feature_set_name(enum btrfs_feature_set set);
+          | ^~~~~
+    fs/btrfs/sysfs.c:750:1: error: type qualifiers ignored on function
+    return type [-Werror=ignored-qualifiers]
+      750 | const char * const btrfs_feature_set_name(enum btrfs_feature_set set)
+          | ^~~~~
+---
+ fs/btrfs/sysfs.c | 2 +-
+ fs/btrfs/sysfs.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/sysfs.c b/fs/btrfs/sysfs.c
+index a961fef8550f..527b9a6edd9a 100644
+--- a/fs/btrfs/sysfs.c
++++ b/fs/btrfs/sysfs.c
+@@ -747,7 +747,7 @@ static const char * const btrfs_feature_set_names[FEAT_MAX] = {
+ 	[FEAT_INCOMPAT]	 = "incompat",
+ };
+ 
+-const char * const btrfs_feature_set_name(enum btrfs_feature_set set)
++const char * btrfs_feature_set_name(enum btrfs_feature_set set)
+ {
+ 	return btrfs_feature_set_names[set];
+ }
+diff --git a/fs/btrfs/sysfs.h b/fs/btrfs/sysfs.h
+index 610e9c36a94c..73b53abdb60a 100644
+--- a/fs/btrfs/sysfs.h
++++ b/fs/btrfs/sysfs.h
+@@ -13,7 +13,7 @@ enum btrfs_feature_set {
+ };
+ 
+ char *btrfs_printable_features(enum btrfs_feature_set set, u64 flags);
+-const char * const btrfs_feature_set_name(enum btrfs_feature_set set);
++const char * btrfs_feature_set_name(enum btrfs_feature_set set);
+ int btrfs_sysfs_add_device_link(struct btrfs_fs_devices *fs_devices,
+ 		struct btrfs_device *one_device);
+ int btrfs_sysfs_rm_device_link(struct btrfs_fs_devices *fs_devices,
+-- 

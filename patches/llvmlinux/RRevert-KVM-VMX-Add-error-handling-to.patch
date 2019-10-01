@@ -1,0 +1,74 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 28 Sep 2019 12:48:25 +0200
+Subject: [PATCH] {For LLVMLinux} RRevert "KVM: VMX: Add error handling to
+ VMREAD helper"
+
+This reverts commit 6e2020977e3e692a8bb31258c1f8251521f4fdb7.
+
+clang does not support asm goto yet.
+---
+ arch/x86/kvm/vmx/ops.h | 21 ++++-----------------
+ arch/x86/kvm/vmx/vmx.c |  8 --------
+ 2 files changed, 4 insertions(+), 25 deletions(-)
+
+diff --git a/arch/x86/kvm/vmx/ops.h b/arch/x86/kvm/vmx/ops.h
+index 45eaedee2ac0..79e25d49d4d9 100644
+--- a/arch/x86/kvm/vmx/ops.h
++++ b/arch/x86/kvm/vmx/ops.h
+@@ -11,8 +11,9 @@
+ #include "vmcs.h"
+ 
+ #define __ex(x) __kvm_handle_fault_on_reboot(x)
++#define __ex_clear(x, reg) \
++	____kvm_handle_fault_on_reboot(x, "xor " reg ", " reg)
+ 
+-asmlinkage void vmread_error(unsigned long field, bool fault);
+ void vmwrite_error(unsigned long field, unsigned long value);
+ void vmclear_error(struct vmcs *vmcs, u64 phys_addr);
+ void vmptrld_error(struct vmcs *vmcs, u64 phys_addr);
+@@ -67,22 +68,8 @@ static __always_inline unsigned long __vmcs_readl(unsigned long field)
+ {
+ 	unsigned long value;
+ 
+-	asm volatile("1: vmread %2, %1\n\t"
+-		     ".byte 0x3e\n\t" /* branch taken hint */
+-		     "ja 3f\n\t"
+-		     "mov %2, %%" _ASM_ARG1 "\n\t"
+-		     "xor %%" _ASM_ARG2 ", %%" _ASM_ARG2 "\n\t"
+-		     "2: call vmread_error\n\t"
+-		     "xor %k1, %k1\n\t"
+-		     "3:\n\t"
+-
+-		     ".pushsection .fixup, \"ax\"\n\t"
+-		     "4: mov %2, %%" _ASM_ARG1 "\n\t"
+-		     "mov $1, %%" _ASM_ARG2 "\n\t"
+-		     "jmp 2b\n\t"
+-		     ".popsection\n\t"
+-		     _ASM_EXTABLE(1b, 4b)
+-		     : ASM_CALL_CONSTRAINT, "=r"(value) : "r"(field) : "cc");
++	asm volatile (__ex_clear("vmread %1, %0", "%k0")
++		      : "=r"(value) : "r"(field));
+ 	return value;
+ }
+ 
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index cf4b277d2129..10500543bac4 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -349,14 +349,6 @@ do {					\
+ 	pr_warn_ratelimited(fmt);	\
+ } while (0)
+ 
+-asmlinkage void vmread_error(unsigned long field, bool fault)
+-{
+-	if (fault)
+-		kvm_spurious_fault();
+-	else
+-		vmx_insn_failed("kvm: vmread failed: field=%lx\n", field);
+-}
+-
+ noinline void vmwrite_error(unsigned long field, unsigned long value)
+ {
+ 	vmx_insn_failed("kvm: vmwrite failed: field=%lx val=%lx err=%d\n",
+-- 

@@ -40,7 +40,7 @@ index 5b50689d8539..769016b254b7 100644
  		       "vs-9005 item_num == %d, item amount == %d",
  		       item_num, B_NR_ITEMS(bh));
 diff --git a/fs/reiserfs/do_balan.c b/fs/reiserfs/do_balan.c
-index 9c02d96d3a42..b789efb786b8 100644
+index 4075e41408b4..e19821dbd22e 100644
 --- a/fs/reiserfs/do_balan.c
 +++ b/fs/reiserfs/do_balan.c
 @@ -83,9 +83,13 @@ static void balance_leaf_when_delete_del(struct tree_balance *tb)
@@ -57,9 +57,9 @@ index 9c02d96d3a42..b789efb786b8 100644
  
  	buffer_info_init_tbS0(tb, &bi);
  	leaf_delete_items(&bi, 0, item_pos, 1, -1);
-@@ -244,8 +248,12 @@ static int balance_leaf_when_delete(struct tree_balance *tb, int flag)
+@@ -242,8 +246,12 @@ static int balance_leaf_when_delete(struct tree_balance *tb, int flag)
+ 	struct buffer_info bi;
  	int n;
- 	struct item_head *ih;
  
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat"
@@ -70,7 +70,7 @@ index 9c02d96d3a42..b789efb786b8 100644
  	RFALSE(tb->blknum[0] > 1,
  	       "PAP-12005: tb->blknum == %d, can not be > 1", tb->blknum[0]);
  	RFALSE(!tb->blknum[0] && !PATH_H_PPARENT(tb->tb_path, 0),
-@@ -1260,11 +1268,15 @@ static void balance_leaf_new_nodes(struct tree_balance *tb,
+@@ -1249,11 +1257,15 @@ static void balance_leaf_new_nodes(struct tree_balance *tb,
  		memcpy(insert_key + i, leaf_key(tb->S_new[i], 0), KEY_SIZE);
  		insert_ptr[i] = tb->S_new[i];
  
@@ -86,7 +86,7 @@ index 9c02d96d3a42..b789efb786b8 100644
  	}
  }
  
-@@ -1567,9 +1579,13 @@ void replace_key(struct tree_balance *tb, struct buffer_head *dest, int n_dest,
+@@ -1556,9 +1568,13 @@ void replace_key(struct tree_balance *tb, struct buffer_head *dest, int n_dest,
  	RFALSE(dest == NULL || src == NULL,
  	       "vs-12305: source or destination buffer is 0 (src=%p, dest=%p)",
  	       src, dest);
@@ -100,7 +100,7 @@ index 9c02d96d3a42..b789efb786b8 100644
  	RFALSE(n_dest < 0 || n_src < 0,
  	       "vs-12315: src(%d) or dest(%d) key number < 0", n_src, n_dest);
  	RFALSE(n_dest >= B_NR_ITEMS(dest) || n_src >= B_NR_ITEMS(src),
-@@ -1629,17 +1645,25 @@ static void check_internal_node(struct super_block *s, struct buffer_head *bh,
+@@ -1618,17 +1634,25 @@ static void check_internal_node(struct super_block *s, struct buffer_head *bh,
  	if (!bh || !B_IS_IN_TREE(bh))
  		return;
  
@@ -126,7 +126,7 @@ index 9c02d96d3a42..b789efb786b8 100644
  		}
  	}
  }
-@@ -1649,7 +1673,11 @@ static int locked_or_not_in_tree(struct tree_balance *tb,
+@@ -1638,7 +1662,11 @@ static int locked_or_not_in_tree(struct tree_balance *tb,
  {
  	if ((!buffer_journal_prepared(bh) && buffer_locked(bh)) ||
  	    !B_IS_IN_TREE(bh)) {
@@ -138,7 +138,7 @@ index 9c02d96d3a42..b789efb786b8 100644
  		return 1;
  	}
  	return 0;
-@@ -1723,6 +1751,10 @@ static void check_after_balance_leaf(struct tree_balance *tb)
+@@ -1712,6 +1740,10 @@ static void check_after_balance_leaf(struct tree_balance *tb)
  					       PATH_H_POSITION(tb->tb_path,
  							       1))));
  		print_cur_tb("12223");
@@ -149,7 +149,7 @@ index 9c02d96d3a42..b789efb786b8 100644
  		reiserfs_warning(tb->tb_sb, "reiserfs-12363",
  				 "B_FREE_SPACE (PATH_H_PBUFFER(tb->tb_path,0)) = %d; "
  				 "MAX_CHILD_SIZE (%d) - dc_size( %y, %d ) [%d] = %d",
-@@ -1734,6 +1766,7 @@ static void check_after_balance_leaf(struct tree_balance *tb)
+@@ -1723,6 +1755,7 @@ static void check_after_balance_leaf(struct tree_balance *tb)
  					 (PATH_H_PBUFFER(tb->tb_path, 1),
  					  PATH_H_POSITION(tb->tb_path, 1))),
  				 right);
@@ -158,7 +158,7 @@ index 9c02d96d3a42..b789efb786b8 100644
  	}
  }
 diff --git a/fs/reiserfs/fix_node.c b/fs/reiserfs/fix_node.c
-index 6b0ddb2a9091..470d6a489381 100644
+index 117092224111..5c200260954f 100644
 --- a/fs/reiserfs/fix_node.c
 +++ b/fs/reiserfs/fix_node.c
 @@ -175,11 +175,15 @@ static void create_virtual_node(struct tree_balance *tb, int h)
@@ -177,7 +177,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  			}
  		}
  #endif
-@@ -890,11 +894,15 @@ static int get_empty_nodes(struct tree_balance *tb, int h)
+@@ -888,11 +892,15 @@ static int get_empty_nodes(struct tree_balance *tb, int h)
  		       "PAP-8135: reiserfs_new_blocknrs failed when got new blocks");
  
  		new_bh = sb_getblk(sb, *blocknr);
@@ -193,7 +193,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  
  		/* Put empty buffers into the array. */
  		RFALSE(tb->FEB[tb->cur_blknum],
-@@ -972,6 +980,9 @@ static int is_left_neighbor_in_cache(struct tree_balance *tb, int h)
+@@ -970,6 +978,9 @@ static int is_left_neighbor_in_cache(struct tree_balance *tb, int h)
  	/* Calculate father of the node to be balanced. */
  	father = PATH_H_PBUFFER(tb->tb_path, h + 1);
  
@@ -203,7 +203,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  	RFALSE(!father ||
  	       !B_IS_IN_TREE(father) ||
  	       !B_IS_IN_TREE(tb->FL[h]) ||
-@@ -979,6 +990,7 @@ static int is_left_neighbor_in_cache(struct tree_balance *tb, int h)
+@@ -977,6 +988,7 @@ static int is_left_neighbor_in_cache(struct tree_balance *tb, int h)
  	       !buffer_uptodate(tb->FL[h]),
  	       "vs-8165: F[h] (%b) or FL[h] (%b) is invalid",
  	       father, tb->FL[h]);
@@ -211,7 +211,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  
  	/*
  	 * Get position of the pointer to the left neighbor
-@@ -992,9 +1004,13 @@ static int is_left_neighbor_in_cache(struct tree_balance *tb, int h)
+@@ -990,9 +1002,13 @@ static int is_left_neighbor_in_cache(struct tree_balance *tb, int h)
  	/* Look for the left neighbor in the cache. */
  	if ((left = sb_find_get_block(sb, left_neighbor_blocknr))) {
  
@@ -225,7 +225,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  		put_bh(left);
  		return 1;
  	}
-@@ -1100,9 +1116,13 @@ static int get_far_parent(struct tree_balance *tb,
+@@ -1098,9 +1114,13 @@ static int get_far_parent(struct tree_balance *tb,
  		return REPEAT_SEARCH;
  	}
  
@@ -239,7 +239,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  
  	/* Check whether the common parent is locked. */
  
-@@ -1151,10 +1171,14 @@ static int get_far_parent(struct tree_balance *tb,
+@@ -1149,10 +1169,14 @@ static int get_far_parent(struct tree_balance *tb,
  
  	*pfather = PATH_PLAST_BUFFER(&s_path_to_neighbor_father);
  
@@ -254,7 +254,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  
  	s_path_to_neighbor_father.path_length--;
  	pathrelse(&s_path_to_neighbor_father);
-@@ -1226,9 +1250,13 @@ static int get_parents(struct tree_balance *tb, int h)
+@@ -1224,9 +1248,13 @@ static int get_parents(struct tree_balance *tb, int h)
  	brelse(tb->CFL[h]);
  	tb->CFL[h] = curcf;	/* New initialization of CFL[h]. */
  
@@ -268,7 +268,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  
  	/* Get parent FR[h] of R[h]. */
  
-@@ -1261,9 +1289,13 @@ static int get_parents(struct tree_balance *tb, int h)
+@@ -1259,9 +1287,13 @@ static int get_parents(struct tree_balance *tb, int h)
  	/* New initialization of CFR[path_offset]. */
  	tb->CFR[h] = curcf;
  
@@ -282,7 +282,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  
  	return CARRY_ON;
  }
-@@ -2318,6 +2350,9 @@ static void tb_buffer_sanity_check(struct super_block *sb,
+@@ -2314,6 +2346,9 @@ static void tb_buffer_sanity_check(struct super_block *sb,
  				   struct buffer_head *bh,
  				   const char *descr, int level)
  {
@@ -292,7 +292,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  	if (bh) {
  		if (atomic_read(&(bh->b_count)) <= 0)
  
-@@ -2350,6 +2385,7 @@ static void tb_buffer_sanity_check(struct super_block *sb,
+@@ -2346,6 +2381,7 @@ static void tb_buffer_sanity_check(struct super_block *sb,
  				       "number too high %s[%d] (%b)",
  				       descr, level, bh);
  	}
@@ -300,7 +300,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  }
  #else
  static void tb_buffer_sanity_check(struct super_block *sb,
-@@ -2492,10 +2528,14 @@ static int wait_tb_buffers_until_unlocked(struct tree_balance *tb)
+@@ -2488,10 +2524,14 @@ static int wait_tb_buffers_until_unlocked(struct tree_balance *tb)
  #ifdef CONFIG_REISERFS_CHECK
  			repeat_counter++;
  			if ((repeat_counter % 10000) == 0) {
@@ -315,7 +315,7 @@ index 6b0ddb2a9091..470d6a489381 100644
  
  				/* Don't loop forever.  Try to recover from possible error. */
  
-@@ -2594,10 +2634,14 @@ int fix_nodes(int op_mode, struct tree_balance *tb,
+@@ -2590,10 +2630,14 @@ int fix_nodes(int op_mode, struct tree_balance *tb,
  	}
  
  	if (!buffer_uptodate(tbS0) || !B_IS_IN_TREE(tbS0))
@@ -541,7 +541,7 @@ index 3a5a752d96c7..37b39de36d69 100644
  	for (i = 0; i < dir_u->entry_count; i++)
  		printk("%d ", dir_u->entry_sizes[i]);
 diff --git a/fs/reiserfs/lbalance.c b/fs/reiserfs/lbalance.c
-index a94ab74db575..774152c2b867 100644
+index d50fffe51c9e..000e6ecd18ba 100644
 --- a/fs/reiserfs/lbalance.c
 +++ b/fs/reiserfs/lbalance.c
 @@ -184,11 +184,15 @@ static int leaf_copy_boundary_item(struct buffer_info *dest_bi,
@@ -669,7 +669,7 @@ index a94ab74db575..774152c2b867 100644
  			}
  		}
  	}
-@@ -1409,17 +1445,25 @@ void leaf_paste_entries(struct buffer_info *bi,
+@@ -1408,17 +1444,25 @@ void leaf_paste_entries(struct buffer_info *bi,
  			prev = (i != 0) ? deh_location(&deh[i - 1]) : 0;
  
  			if (prev && prev <= deh_location(&deh[i]))
@@ -728,7 +728,7 @@ index 97f3fc4fdd79..5e1fc0cb2693 100644
  			if (buffer != small_buf)
  				kfree(buffer);
 diff --git a/fs/reiserfs/prints.c b/fs/reiserfs/prints.c
-index 9fed1c05f1f4..b3115bde87a1 100644
+index 500f2000eb41..9ee2f4e3fe4e 100644
 --- a/fs/reiserfs/prints.c
 +++ b/fs/reiserfs/prints.c
 @@ -200,7 +200,7 @@ static char *is_there_reiserfs_struct(char *fmt, int *what)
@@ -808,7 +808,7 @@ index 9fed1c05f1f4..b3115bde87a1 100644
  		if (print_mode & PRINT_LEAF_ITEMS)
  			op_print_item(ih, ih_item_body(bh, ih));
  	}
-@@ -736,11 +760,19 @@ static void check_leaf_block_head(struct buffer_head *bh)
+@@ -736,26 +760,46 @@ static void check_leaf_block_head(struct buffer_head *bh)
  	blkh = B_BLK_HEAD(bh);
  	nr = blkh_nr_item(blkh);
  	if (nr > (bh->b_size - BLKH_SIZE) / IH_SIZE)
@@ -828,9 +828,8 @@ index 9fed1c05f1f4..b3115bde87a1 100644
  
  }
  
-@@ -750,15 +782,27 @@ static void check_internal_block_head(struct buffer_head *bh)
- 
- 	blkh = B_BLK_HEAD(bh);
+ static void check_internal_block_head(struct buffer_head *bh)
+ {
  	if (!(B_LEVEL(bh) > DISK_LEAF_NODE_LEVEL && B_LEVEL(bh) <= MAX_HEIGHT))
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat"
@@ -905,7 +904,7 @@ index e5ca9ed79e54..063fb3bfdeba 100644
  void store_print_tb(struct tree_balance *tb);
  void print_cur_tb(char *mes);
 diff --git a/fs/reiserfs/stree.c b/fs/reiserfs/stree.c
-index 90a28b7ca94a..ef83cd2d69c2 100644
+index 16fadfcc22b9..99439713ac5b 100644
 --- a/fs/reiserfs/stree.c
 +++ b/fs/reiserfs/stree.c
 @@ -20,8 +20,12 @@
@@ -1017,7 +1016,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  		return 0;
  	}
  
-@@ -627,11 +663,15 @@ int search_by_key(struct super_block *sb, const struct cpu_key *key,
+@@ -624,11 +660,15 @@ int search_by_key(struct super_block *sb, const struct cpu_key *key,
  
  #ifdef CONFIG_REISERFS_CHECK
  		if (!(++repeat_counter % 50000))
@@ -1033,7 +1032,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  #endif
  
  		/* prep path to have another element added to it. */
-@@ -978,8 +1018,12 @@ static inline int prepare_for_direntry_item(struct treepath *path,
+@@ -974,8 +1014,12 @@ static inline int prepare_for_direntry_item(struct treepath *path,
  {
  	if (le_ih_k_offset(le_ih) == DOT_OFFSET &&
  	    new_file_length == max_reiserfs_offset(inode)) {
@@ -1046,7 +1045,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  		*cut_size = -(IH_SIZE + ih_item_len(le_ih));
  		/* Delete the directory item containing "." and ".." entry. */
  		return M_DELETE;
-@@ -1282,9 +1326,13 @@ int reiserfs_delete_item(struct reiserfs_transaction_handle *th,
+@@ -1278,9 +1322,13 @@ int reiserfs_delete_item(struct reiserfs_transaction_handle *th,
  		if (ret_value == IO_ERROR)
  			break;
  		if (ret_value == FILE_NOT_FOUND) {
@@ -1060,7 +1059,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  			break;
  		}
  	}			/* while (1) */
-@@ -1403,9 +1451,13 @@ void reiserfs_delete_solid_item(struct reiserfs_transaction_handle *th,
+@@ -1399,9 +1447,13 @@ void reiserfs_delete_solid_item(struct reiserfs_transaction_handle *th,
  	while (1) {
  		retval = search_item(th->t_super, &cpu_key, &path);
  		if (retval == IO_ERROR) {
@@ -1074,7 +1073,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  			break;
  		}
  		if (retval != ITEM_FOUND) {
-@@ -1423,8 +1475,12 @@ void reiserfs_delete_solid_item(struct reiserfs_transaction_handle *th,
+@@ -1419,8 +1471,12 @@ void reiserfs_delete_solid_item(struct reiserfs_transaction_handle *th,
  			     GET_GENERATION_NUMBER(le_key_k_offset
  						   (le_key_version(key),
  						    key)) == 1))
@@ -1087,7 +1086,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  			break;
  		}
  		if (!tb_init) {
-@@ -1464,9 +1520,13 @@ void reiserfs_delete_solid_item(struct reiserfs_transaction_handle *th,
+@@ -1460,9 +1516,13 @@ void reiserfs_delete_solid_item(struct reiserfs_transaction_handle *th,
  		}
  
  		/* IO_ERROR, NO_DISK_SPACE, etc */
@@ -1101,7 +1100,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  		unfix_nodes(&tb);
  		break;
  	}
-@@ -1709,9 +1769,13 @@ int reiserfs_cut_from_item(struct reiserfs_transaction_handle *th,
+@@ -1705,9 +1765,13 @@ int reiserfs_cut_from_item(struct reiserfs_transaction_handle *th,
  				print_block(PATH_PLAST_BUFFER(path), 3,
  					    PATH_LAST_POSITION(path) - 1,
  					    PATH_LAST_POSITION(path) + 1);
@@ -1115,7 +1114,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  			}
  			continue;
  		}
-@@ -1733,8 +1797,12 @@ int reiserfs_cut_from_item(struct reiserfs_transaction_handle *th,
+@@ -1729,8 +1793,12 @@ int reiserfs_cut_from_item(struct reiserfs_transaction_handle *th,
  		if (ret_value == POSITION_FOUND)
  			continue;
  
@@ -1128,7 +1127,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  		unfix_nodes(&s_cut_balance);
  		return (ret_value == IO_ERROR) ? -EIO : -ENOENT;
  	}			/* while */
-@@ -1794,22 +1862,34 @@ int reiserfs_cut_from_item(struct reiserfs_transaction_handle *th,
+@@ -1790,22 +1858,34 @@ int reiserfs_cut_from_item(struct reiserfs_transaction_handle *th,
  		 * sure, that we exactly remove last unformatted node pointer
  		 * of the item
  		 */
@@ -1163,7 +1162,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  		}
  		/*
  		 * it would be useful to make sure, that right neighboring
-@@ -1903,16 +1983,24 @@ int reiserfs_do_truncate(struct reiserfs_transaction_handle *th,
+@@ -1899,16 +1979,24 @@ int reiserfs_do_truncate(struct reiserfs_transaction_handle *th,
  	    search_for_position_by_key(inode->i_sb, &s_item_key,
  				       &s_search_path);
  	if (retval == IO_ERROR) {
@@ -1188,7 +1187,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  
  		err = -EIO;
  		goto out;
-@@ -1962,9 +2050,13 @@ int reiserfs_do_truncate(struct reiserfs_transaction_handle *th,
+@@ -1958,9 +2046,13 @@ int reiserfs_do_truncate(struct reiserfs_transaction_handle *th,
  			return 0;
  		}
  
@@ -1202,7 +1201,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  
  		/* Change key to search the last file item. */
  		file_size -= deleted;
-@@ -2038,10 +2130,14 @@ static void check_research_for_paste(struct treepath *path,
+@@ -2034,10 +2126,14 @@ static void check_research_for_paste(struct treepath *path,
  		    || op_bytes_number(found_ih,
  				       get_last_bh(path)->b_size) !=
  		    pos_in_item(path))
@@ -1217,7 +1216,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  	}
  	if (is_indirect_le_ih(found_ih)) {
  		if (le_ih_k_offset(found_ih) +
-@@ -2050,10 +2146,14 @@ static void check_research_for_paste(struct treepath *path,
+@@ -2046,10 +2142,14 @@ static void check_research_for_paste(struct treepath *path,
  		    cpu_key_k_offset(key)
  		    || I_UNFM_NUM(found_ih) != pos_in_item(path)
  		    || get_ih_free_space(found_ih) != 0)
@@ -1232,7 +1231,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  	}
  }
  #endif				/* config reiserfs check */
-@@ -2123,9 +2223,13 @@ int reiserfs_paste_into_item(struct reiserfs_transaction_handle *th,
+@@ -2119,9 +2219,13 @@ int reiserfs_paste_into_item(struct reiserfs_transaction_handle *th,
  			goto error_out;
  		}
  		if (retval == POSITION_FOUND) {
@@ -1246,7 +1245,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  			retval = -EEXIST;
  			goto error_out;
  		}
-@@ -2231,9 +2335,13 @@ int reiserfs_insert_item(struct reiserfs_transaction_handle *th,
+@@ -2227,9 +2331,13 @@ int reiserfs_insert_item(struct reiserfs_transaction_handle *th,
  			goto error_out;
  		}
  		if (retval == ITEM_FOUND) {
@@ -1261,7 +1260,7 @@ index 90a28b7ca94a..ef83cd2d69c2 100644
  			goto error_out;
  		}
 diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index ab028ea0e561..f0d326363f6f 100644
+index d69b4ac0ae2f..c04fd6246219 100644
 --- a/fs/reiserfs/super.c
 +++ b/fs/reiserfs/super.c
 @@ -326,17 +326,25 @@ static int finish_unfinished(struct super_block *s)

@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 21 Sep 2019 20:42:32 +0200
+Subject: [PATCH] {PRAGMA} display/dc/dml/dcn21: silence clang's
+ -Wtypedef-redefinition
+
+clang reports:
+
+    drivers/gpu/drm/amd/amdgpu/../display/dc/dml/dcn21/display_mode_vba_21.c:43:22:
+    error: redefinition of typedef 'uint' is a C11 feature
+    [-Werror,-Wtypedef-redefinition]
+    typedef unsigned int uint;
+                         ^
+    include/linux/types.h:92:23: note: previous definition is here
+    typedef unsigned int            uint;
+                                    ^
+    1 error generated.
+---
+ .../drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c   | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c b/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c
+index 456cd0e3289c..c235a92a1d7a 100644
+--- a/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c
++++ b/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c
+@@ -39,8 +39,15 @@
+  * ways. Unless there is something clearly wrong with it the code should
+  * remain as-is as it provides us with a guarantee from HW that it is correct.
+  */
+-
++/* clang reports: redefinition of typedef 'uint' is a C11 feature [-Wtypedef-redefinition] */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wtypedef-redefinition"
++#endif
+ typedef unsigned int uint;
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ typedef struct {
+ 	double DPPCLK;
+-- 

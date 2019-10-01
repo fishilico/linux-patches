@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 21 Sep 2019 20:28:33 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/gpu/drm/amd/display/dc: fix clang's
+ -Wmissing-braces
+
+---
+ drivers/gpu/drm/amd/display/dc/clk_mgr/dcn21/rn_clk_mgr.c | 2 +-
+ drivers/gpu/drm/amd/powerplay/renoir_ppt.c                | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/display/dc/clk_mgr/dcn21/rn_clk_mgr.c b/drivers/gpu/drm/amd/display/dc/clk_mgr/dcn21/rn_clk_mgr.c
+index 787f94d815f4..1e09658153d7 100644
+--- a/drivers/gpu/drm/amd/display/dc/clk_mgr/dcn21/rn_clk_mgr.c
++++ b/drivers/gpu/drm/amd/display/dc/clk_mgr/dcn21/rn_clk_mgr.c
+@@ -514,7 +514,7 @@ void rn_clk_mgr_construct(
+ 		struct dccg *dccg)
+ {
+ 	struct dc_debug_options *debug = &ctx->dc->debug;
+-	struct dpm_clocks clock_table = { 0 };
++	struct dpm_clocks clock_table = { { { 0 } } };
+ 	struct clk_state_registers_and_bypass s = { 0 };
+ 
+ 	clk_mgr->base.ctx = ctx;
+diff --git a/drivers/gpu/drm/amd/powerplay/renoir_ppt.c b/drivers/gpu/drm/amd/powerplay/renoir_ppt.c
+index e62bfba51562..64df08aa2726 100644
+--- a/drivers/gpu/drm/amd/powerplay/renoir_ppt.c
++++ b/drivers/gpu/drm/amd/powerplay/renoir_ppt.c
+@@ -183,7 +183,7 @@ static int renoir_print_clk_levels(struct smu_context *smu,
+ 	int i, size = 0, ret = 0;
+ 	uint32_t cur_value = 0, value = 0, count = 0, min = 0, max = 0;
+ 	DpmClocks_t *clk_table = smu->smu_table.clocks_table;
+-	SmuMetrics_t metrics = {0};
++	SmuMetrics_t metrics = {{0}};
+ 
+ 	if (!clk_table || clk_type >= SMU_CLK_COUNT)
+ 		return -EINVAL;
+-- 

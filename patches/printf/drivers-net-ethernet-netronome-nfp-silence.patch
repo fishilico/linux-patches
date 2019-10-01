@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 19 Sep 2019 21:35:25 +0200
+Subject: [PATCH] {PRINTF} drivers/net/ethernet/netronome/nfp: silence
+ -Wformat-security
+
+---
+ drivers/net/ethernet/netronome/nfp/devlink_param.c | 2 +-
+ drivers/net/ethernet/netronome/nfp/nfp_main.c      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/netronome/nfp/devlink_param.c b/drivers/net/ethernet/netronome/nfp/devlink_param.c
+index 36491835ac65..8aab41914b92 100644
+--- a/drivers/net/ethernet/netronome/nfp/devlink_param.c
++++ b/drivers/net/ethernet/netronome/nfp/devlink_param.c
+@@ -102,7 +102,7 @@ nfp_devlink_param_u8_get(struct devlink *devlink, u32 id,
+ 		return err;
+ 	}
+ 
+-	snprintf(hwinfo, sizeof(hwinfo), arg->hwinfo_name);
++	snprintf(hwinfo, sizeof(hwinfo), "%s", arg->hwinfo_name);
+ 	err = nfp_nsp_hwinfo_lookup_optional(nsp, hwinfo, sizeof(hwinfo),
+ 					     arg->default_hi_val);
+ 	if (err) {
+diff --git a/drivers/net/ethernet/netronome/nfp/nfp_main.c b/drivers/net/ethernet/netronome/nfp/nfp_main.c
+index fd79ccaf5aec..090f3572a68f 100644
+--- a/drivers/net/ethernet/netronome/nfp/nfp_main.c
++++ b/drivers/net/ethernet/netronome/nfp/nfp_main.c
+@@ -445,7 +445,7 @@ nfp_get_fw_policy_value(struct pci_dev *pdev, struct nfp_nsp *nsp,
+ 	long hi_val;
+ 	int err;
+ 
+-	snprintf(hwinfo, sizeof(hwinfo), key);
++	snprintf(hwinfo, sizeof(hwinfo), "%s", key);
+ 	err = nfp_nsp_hwinfo_lookup_optional(nsp, hwinfo, sizeof(hwinfo),
+ 					     default_val);
+ 	if (err)
+-- 

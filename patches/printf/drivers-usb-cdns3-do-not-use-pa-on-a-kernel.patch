@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 19 Sep 2019 21:38:38 +0200
+Subject: [PATCH] {PRINTF} drivers/usb/cdns3: do not use %pa on a kernel
+ pointer
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+printf checker reports:
+
+    drivers/usb/cdns3/trace.c: In function ‘trace_raw_output_cdns3_log_request’:
+    include/trace/trace_events.h:360:2: error: Argument for %pa is not a
+    pointer with a matching type [-Werror=format=]
+      360 |  trace_seq_printf(s, print);     \
+          |  ^~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/usb/cdns3/./trace.h:196:1: note: in expansion of macro ‘DECLARE_EVENT_CLASS’
+      196 | DECLARE_EVENT_CLASS(cdns3_log_request,
+          | ^~~~~~~~~~~~~~~~~~~
+---
+ drivers/usb/cdns3/trace.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/cdns3/trace.h b/drivers/usb/cdns3/trace.h
+index e92348c9b4d7..e37a0f14abd3 100644
+--- a/drivers/usb/cdns3/trace.h
++++ b/drivers/usb/cdns3/trace.h
+@@ -227,7 +227,7 @@ DECLARE_EVENT_CLASS(cdns3_log_request,
+ 		__entry->flags = req->flags;
+ 	),
+ 	TP_printk("%s: req: %p, req buff %p, length: %u/%u %s%s%s, status: %d,"
+-		  " trb: [start:%d, end:%d: virt addr %pa], flags:%x ",
++		  " trb: [start:%d, end:%d: virt addr %p], flags:%x ",
+ 		__get_str(name), __entry->req, __entry->buf, __entry->actual,
+ 		__entry->length,
+ 		__entry->zero ? "Z" : "z",
+-- 

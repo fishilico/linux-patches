@@ -1,0 +1,88 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 28 Sep 2019 23:12:06 +0200
+Subject: [PATCH] {MAYBE UPS} drivers: fix pointer casts on ARM32
+
+gcc on ARM reports -Wint-to-pointer-cast (cast to pointer from integer
+of different size) in several places.
+---
+ drivers/dma/iop-adma.c                  | 6 +++---
+ drivers/infiniband/sw/siw/siw_qp_rx.c   | 2 +-
+ drivers/media/platform/omap/omap_vout.c | 4 ++--
+ drivers/mfd/altera-sysmgr.c             | 2 +-
+ 4 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index a3f942a6a946..17f41be1aa56 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -445,9 +445,9 @@ static int iop_adma_alloc_chan_resources(struct dma_chan *chan)
+ 		INIT_LIST_HEAD(&slot->tx_list);
+ 		INIT_LIST_HEAD(&slot->chain_node);
+ 		INIT_LIST_HEAD(&slot->slot_node);
+-		hw_desc = (char *) iop_chan->device->dma_desc_pool;
++		hw_desc = (char *)(uintptr_t) iop_chan->device->dma_desc_pool;
+ 		slot->async_tx.phys =
+-			(dma_addr_t) &hw_desc[idx * IOP_ADMA_SLOT_SIZE];
++			(dma_addr_t)(uintptr_t) &hw_desc[idx * IOP_ADMA_SLOT_SIZE];
+ 		slot->idx = idx;
+ 
+ 		spin_lock_bh(&iop_chan->lock);
+@@ -1299,7 +1299,7 @@ static int iop_adma_probe(struct platform_device *pdev)
+ 
+ 	dev_dbg(&pdev->dev, "%s: allocated descriptor pool virt %p phys %p\n",
+ 		__func__, adev->dma_desc_pool_virt,
+-		(void *) adev->dma_desc_pool);
++		(void *)(uintptr_t) adev->dma_desc_pool);
+ 
+ 	adev->id = plat_data->hw_id;
+ 
+diff --git a/drivers/infiniband/sw/siw/siw_qp_rx.c b/drivers/infiniband/sw/siw/siw_qp_rx.c
+index c0a887240325..a392d7dd453f 100644
+--- a/drivers/infiniband/sw/siw/siw_qp_rx.c
++++ b/drivers/infiniband/sw/siw/siw_qp_rx.c
+@@ -139,7 +139,7 @@ static int siw_rx_pbl(struct siw_rx_stream *srx, int *pbl_idx,
+ 			break;
+ 
+ 		bytes = min(bytes, len);
+-		if (siw_rx_kva(srx, (void *)buf_addr, bytes) == bytes) {
++		if (siw_rx_kva(srx, (void *)(uintptr_t)buf_addr, bytes) == bytes) {
+ 			copied += bytes;
+ 			offset += bytes;
+ 			len -= bytes;
+diff --git a/drivers/media/platform/omap/omap_vout.c b/drivers/media/platform/omap/omap_vout.c
+index 513b99bf963b..76c83f32bb6d 100644
+--- a/drivers/media/platform/omap/omap_vout.c
++++ b/drivers/media/platform/omap/omap_vout.c
+@@ -976,7 +976,7 @@ static int omap_vout_vb2_prepare(struct vb2_buffer *vb)
+ 	vb2_set_plane_payload(vb, 0, vout->pix.sizeimage);
+ 	voutbuf->vbuf.field = V4L2_FIELD_NONE;
+ 
+-	vout->queued_buf_addr[vb->index] = (u8 *)buf_phy_addr;
++	vout->queued_buf_addr[vb->index] = (u8 *)(uintptr_t)buf_phy_addr;
+ 	if (ovid->rotation_type == VOUT_ROT_VRFB)
+ 		return omap_vout_prepare_vrfb(vout, vb);
+ 	return 0;
+@@ -1476,7 +1476,7 @@ static int __init omap_vout_create_video_devices(struct platform_device *pdev)
+ 		 * To be precise: fbuf.base should match smem_start of
+ 		 * struct fb_fix_screeninfo.
+ 		 */
+-		vout->fbuf.base = (void *)info.paddr;
++		vout->fbuf.base = (void *)(uintptr_t)info.paddr;
+ 
+ 		/* Set VRFB as rotation_type for omap2 and omap3 */
+ 		if (omap_vout_dss_omap24xx() || omap_vout_dss_omap34xx())
+diff --git a/drivers/mfd/altera-sysmgr.c b/drivers/mfd/altera-sysmgr.c
+index d2a13a547a3c..6f78095d9795 100644
+--- a/drivers/mfd/altera-sysmgr.c
++++ b/drivers/mfd/altera-sysmgr.c
+@@ -140,7 +140,7 @@ static int sysmgr_probe(struct platform_device *pdev)
+ 				     sysmgr_config.reg_stride;
+ 	if (of_device_is_compatible(np, "altr,sys-mgr-s10")) {
+ 		/* Need physical address for SMCC call */
+-		sysmgr->base = (resource_size_t *)res->start;
++		sysmgr->base = (resource_size_t *)(uintptr_t)res->start;
+ 		sysmgr_config.reg_read = s10_protected_reg_read;
+ 		sysmgr_config.reg_write = s10_protected_reg_write;
+ 
+-- 

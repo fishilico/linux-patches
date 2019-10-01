@@ -1,0 +1,183 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 28 Sep 2019 08:34:28 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/staging/octeon: fix ptr cast
+
+gcc on x86-32 warns about casting pointers to u64.
+---
+ drivers/net/phy/mdio-cavium.c         | 20 ++++++++++----------
+ drivers/net/phy/mdio-octeon.c         |  8 ++++----
+ drivers/staging/octeon/ethernet-tx.c  |  8 ++++----
+ drivers/staging/octeon/octeon-stubs.h |  2 +-
+ 4 files changed, 19 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/net/phy/mdio-cavium.c b/drivers/net/phy/mdio-cavium.c
+index 1afd6fc1a351..0cc430bbd197 100644
+--- a/drivers/net/phy/mdio-cavium.c
++++ b/drivers/net/phy/mdio-cavium.c
+@@ -18,10 +18,10 @@ static void cavium_mdiobus_set_mode(struct cavium_mdiobus *p,
+ 	if (m == p->mode)
+ 		return;
+ 
+-	smi_clk.u64 = oct_mdio_readq(p->register_base + SMI_CLK);
++	smi_clk.u64 = oct_mdio_readq((uintptr_t)p->register_base + SMI_CLK);
+ 	smi_clk.s.mode = (m == C45) ? 1 : 0;
+ 	smi_clk.s.preamble = 1;
+-	oct_mdio_writeq(smi_clk.u64, p->register_base + SMI_CLK);
++	oct_mdio_writeq(smi_clk.u64, (uintptr_t)p->register_base + SMI_CLK);
+ 	p->mode = m;
+ }
+ 
+@@ -36,7 +36,7 @@ static int cavium_mdiobus_c45_addr(struct cavium_mdiobus *p,
+ 
+ 	smi_wr.u64 = 0;
+ 	smi_wr.s.dat = regnum & 0xffff;
+-	oct_mdio_writeq(smi_wr.u64, p->register_base + SMI_WR_DAT);
++	oct_mdio_writeq(smi_wr.u64, (uintptr_t)p->register_base + SMI_WR_DAT);
+ 
+ 	regnum = (regnum >> 16) & 0x1f;
+ 
+@@ -44,14 +44,14 @@ static int cavium_mdiobus_c45_addr(struct cavium_mdiobus *p,
+ 	smi_cmd.s.phy_op = 0; /* MDIO_CLAUSE_45_ADDRESS */
+ 	smi_cmd.s.phy_adr = phy_id;
+ 	smi_cmd.s.reg_adr = regnum;
+-	oct_mdio_writeq(smi_cmd.u64, p->register_base + SMI_CMD);
++	oct_mdio_writeq(smi_cmd.u64, (uintptr_t)p->register_base + SMI_CMD);
+ 
+ 	do {
+ 		/* Wait 1000 clocks so we don't saturate the RSL bus
+ 		 * doing reads.
+ 		 */
+ 		__delay(1000);
+-		smi_wr.u64 = oct_mdio_readq(p->register_base + SMI_WR_DAT);
++		smi_wr.u64 = oct_mdio_readq((uintptr_t)p->register_base + SMI_WR_DAT);
+ 	} while (smi_wr.s.pending && --timeout);
+ 
+ 	if (timeout <= 0)
+@@ -83,14 +83,14 @@ int cavium_mdiobus_read(struct mii_bus *bus, int phy_id, int regnum)
+ 	smi_cmd.s.phy_op = op;
+ 	smi_cmd.s.phy_adr = phy_id;
+ 	smi_cmd.s.reg_adr = regnum;
+-	oct_mdio_writeq(smi_cmd.u64, p->register_base + SMI_CMD);
++	oct_mdio_writeq(smi_cmd.u64, (uintptr_t)p->register_base + SMI_CMD);
+ 
+ 	do {
+ 		/* Wait 1000 clocks so we don't saturate the RSL bus
+ 		 * doing reads.
+ 		 */
+ 		__delay(1000);
+-		smi_rd.u64 = oct_mdio_readq(p->register_base + SMI_RD_DAT);
++		smi_rd.u64 = oct_mdio_readq((uintptr_t)p->register_base + SMI_RD_DAT);
+ 	} while (smi_rd.s.pending && --timeout);
+ 
+ 	if (smi_rd.s.val)
+@@ -122,20 +122,20 @@ int cavium_mdiobus_write(struct mii_bus *bus, int phy_id, int regnum, u16 val)
+ 
+ 	smi_wr.u64 = 0;
+ 	smi_wr.s.dat = val;
+-	oct_mdio_writeq(smi_wr.u64, p->register_base + SMI_WR_DAT);
++	oct_mdio_writeq(smi_wr.u64, (uintptr_t)p->register_base + SMI_WR_DAT);
+ 
+ 	smi_cmd.u64 = 0;
+ 	smi_cmd.s.phy_op = op;
+ 	smi_cmd.s.phy_adr = phy_id;
+ 	smi_cmd.s.reg_adr = regnum;
+-	oct_mdio_writeq(smi_cmd.u64, p->register_base + SMI_CMD);
++	oct_mdio_writeq(smi_cmd.u64, (uintptr_t)p->register_base + SMI_CMD);
+ 
+ 	do {
+ 		/* Wait 1000 clocks so we don't saturate the RSL bus
+ 		 * doing reads.
+ 		 */
+ 		__delay(1000);
+-		smi_wr.u64 = oct_mdio_readq(p->register_base + SMI_WR_DAT);
++		smi_wr.u64 = oct_mdio_readq((uintptr_t)p->register_base + SMI_WR_DAT);
+ 	} while (smi_wr.s.pending && --timeout);
+ 
+ 	if (timeout <= 0)
+diff --git a/drivers/net/phy/mdio-octeon.c b/drivers/net/phy/mdio-octeon.c
+index 8327382aa568..55db604df6fc 100644
+--- a/drivers/net/phy/mdio-octeon.c
++++ b/drivers/net/phy/mdio-octeon.c
+@@ -45,7 +45,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	bus->register_base =
+-		(u64)devm_ioremap(&pdev->dev, mdio_phys, regsize);
++		(u64)(uintptr_t)devm_ioremap(&pdev->dev, mdio_phys, regsize);
+ 	if (!bus->register_base) {
+ 		dev_err(&pdev->dev, "dev_ioremap failed\n");
+ 		return -ENOMEM;
+@@ -53,7 +53,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
+ 
+ 	smi_en.u64 = 0;
+ 	smi_en.s.en = 1;
+-	oct_mdio_writeq(smi_en.u64, bus->register_base + SMI_EN);
++	oct_mdio_writeq(smi_en.u64, (uintptr_t)bus->register_base + SMI_EN);
+ 
+ 	bus->mii_bus->name = KBUILD_MODNAME;
+ 	snprintf(bus->mii_bus->id, MII_BUS_ID_SIZE, "%llx", bus->register_base);
+@@ -74,7 +74,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
+ fail_register:
+ 	mdiobus_free(bus->mii_bus);
+ 	smi_en.u64 = 0;
+-	oct_mdio_writeq(smi_en.u64, bus->register_base + SMI_EN);
++	oct_mdio_writeq(smi_en.u64, (uintptr_t)bus->register_base + SMI_EN);
+ 	return err;
+ }
+ 
+@@ -88,7 +88,7 @@ static int octeon_mdiobus_remove(struct platform_device *pdev)
+ 	mdiobus_unregister(bus->mii_bus);
+ 	mdiobus_free(bus->mii_bus);
+ 	smi_en.u64 = 0;
+-	oct_mdio_writeq(smi_en.u64, bus->register_base + SMI_EN);
++	oct_mdio_writeq(smi_en.u64, (uintptr_t)bus->register_base + SMI_EN);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/staging/octeon/ethernet-tx.c b/drivers/staging/octeon/ethernet-tx.c
+index c64728fc21f2..e6f89da0a197 100644
+--- a/drivers/staging/octeon/ethernet-tx.c
++++ b/drivers/staging/octeon/ethernet-tx.c
+@@ -261,11 +261,11 @@ int cvm_oct_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	/* Build the PKO buffer pointer */
+ 	hw_buffer.u64 = 0;
+ 	if (skb_shinfo(skb)->nr_frags == 0) {
+-		hw_buffer.s.addr = XKPHYS_TO_PHYS((u64)skb->data);
++		hw_buffer.s.addr = XKPHYS_TO_PHYS((u64)(uintptr_t)skb->data);
+ 		hw_buffer.s.pool = 0;
+ 		hw_buffer.s.size = skb->len;
+ 	} else {
+-		hw_buffer.s.addr = XKPHYS_TO_PHYS((u64)skb->data);
++		hw_buffer.s.addr = XKPHYS_TO_PHYS((u64)(uintptr_t)skb->data);
+ 		hw_buffer.s.pool = 0;
+ 		hw_buffer.s.size = skb_headlen(skb);
+ 		CVM_OCT_SKB_CB(skb)[0] = hw_buffer.u64;
+@@ -273,11 +273,11 @@ int cvm_oct_xmit(struct sk_buff *skb, struct net_device *dev)
+ 			skb_frag_t *fs = skb_shinfo(skb)->frags + i;
+ 
+ 			hw_buffer.s.addr =
+-				XKPHYS_TO_PHYS((u64)skb_frag_address(fs));
++				XKPHYS_TO_PHYS((u64)(uintptr_t)skb_frag_address(fs));
+ 			hw_buffer.s.size = skb_frag_size(fs);
+ 			CVM_OCT_SKB_CB(skb)[i + 1] = hw_buffer.u64;
+ 		}
+-		hw_buffer.s.addr = XKPHYS_TO_PHYS((u64)CVM_OCT_SKB_CB(skb));
++		hw_buffer.s.addr = XKPHYS_TO_PHYS((u64)(uintptr_t)CVM_OCT_SKB_CB(skb));
+ 		hw_buffer.s.size = skb_shinfo(skb)->nr_frags + 1;
+ 		pko_command.s.segs = skb_shinfo(skb)->nr_frags + 1;
+ 		pko_command.s.gather = 1;
+diff --git a/drivers/staging/octeon/octeon-stubs.h b/drivers/staging/octeon/octeon-stubs.h
+index a4ac3bfb62a8..b78ce9eaab85 100644
+--- a/drivers/staging/octeon/octeon-stubs.h
++++ b/drivers/staging/octeon/octeon-stubs.h
+@@ -1202,7 +1202,7 @@ static inline int cvmx_wqe_get_grp(cvmx_wqe_t *work)
+ 
+ static inline void *cvmx_phys_to_ptr(uint64_t physical_address)
+ {
+-	return (void *)(physical_address);
++	return (void *)(uintptr_t)(physical_address);
+ }
+ 
+ static inline uint64_t cvmx_ptr_to_phys(void *ptr)
+-- 

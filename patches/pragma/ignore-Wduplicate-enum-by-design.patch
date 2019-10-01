@@ -9,7 +9,6 @@ Subject: [PATCH] {PRAGMA} ignore -Wduplicate-enum by design
  drivers/gpu/drm/amd/display/dc/dc_types.h          |  7 +++++++
  drivers/gpu/drm/amd/display/dc/dce/dce_i2c_hw.h    |  7 +++++++
  drivers/gpu/drm/amd/display/dc/dm_services_types.h |  7 +++++++
- drivers/gpu/drm/i915/i915_reg.h                    |  7 +++++++
  drivers/media/dvb-frontends/helene.c               |  7 +++++++
  drivers/media/dvb-frontends/mxl5xx_defs.h          | 14 ++++++++++++++
  drivers/media/dvb-frontends/tda1002x.h             |  7 +++++++
@@ -23,13 +22,13 @@ Subject: [PATCH] {PRAGMA} ignore -Wduplicate-enum by design
  include/uapi/linux/netfilter/nf_conntrack_common.h | 10 ++++++++++
  include/uapi/linux/nl80211.h                       |  7 +++++++
  sound/pci/pcxhr/pcxhr.h                            |  8 ++++++++
- 19 files changed, 146 insertions(+)
+ 18 files changed, 139 insertions(+)
 
 diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
-index 9da8cccdf3fb..a81d31fdd84b 100644
+index 0c47aa82e2e2..9929cf02c0bd 100644
 --- a/arch/x86/include/asm/fixmap.h
 +++ b/arch/x86/include/asm/fixmap.h
-@@ -113,6 +113,10 @@ enum fixed_addresses {
+@@ -112,6 +112,10 @@ enum fixed_addresses {
  	FIX_APEI_GHES_NMI,
  #endif
  
@@ -40,7 +39,7 @@ index 9da8cccdf3fb..a81d31fdd84b 100644
  	__end_of_permanent_fixed_addresses,
  
  	/*
-@@ -132,6 +136,9 @@ enum fixed_addresses {
+@@ -131,6 +135,9 @@ enum fixed_addresses {
  	 ? __end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS -
  	   (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1))
  	 : __end_of_permanent_fixed_addresses,
@@ -51,10 +50,10 @@ index 9da8cccdf3fb..a81d31fdd84b 100644
  #ifdef CONFIG_X86_32
  	FIX_WP_TEST,
 diff --git a/drivers/gpu/drm/amd/display/dc/dc_hw_types.h b/drivers/gpu/drm/amd/display/dc/dc_hw_types.h
-index 22db5682aa6c..32f7924c52b0 100644
+index 0b8700a8a94a..9af9608d0fb3 100644
 --- a/drivers/gpu/drm/amd/display/dc/dc_hw_types.h
 +++ b/drivers/gpu/drm/amd/display/dc/dc_hw_types.h
-@@ -222,6 +222,10 @@ enum surface_pixel_format {
+@@ -220,6 +220,10 @@ enum surface_pixel_format {
  
  
  /* Pixel format */
@@ -65,7 +64,7 @@ index 22db5682aa6c..32f7924c52b0 100644
  enum pixel_format {
  	/*graph*/
  	PIXEL_FORMAT_UNINITIALIZED,
-@@ -243,6 +247,9 @@ enum pixel_format {
+@@ -241,6 +245,9 @@ enum pixel_format {
  	PIXEL_FORMAT_VIDEO_END = PIXEL_FORMAT_420BPP10,
  	PIXEL_FORMAT_UNKNOWN
  };
@@ -76,10 +75,10 @@ index 22db5682aa6c..32f7924c52b0 100644
  enum tile_split_values {
  	DC_DISPLAY_MICRO_TILING = 0x0,
 diff --git a/drivers/gpu/drm/amd/display/dc/dc_types.h b/drivers/gpu/drm/amd/display/dc/dc_types.h
-index 6eabb6491a3d..bf76221a7783 100644
+index b273735b6a3e..f8dda0816e82 100644
 --- a/drivers/gpu/drm/amd/display/dc/dc_types.h
 +++ b/drivers/gpu/drm/amd/display/dc/dc_types.h
-@@ -498,6 +498,10 @@ struct audio_info_flags {
+@@ -499,6 +499,10 @@ struct audio_info_flags {
  	};
  };
  
@@ -90,7 +89,7 @@ index 6eabb6491a3d..bf76221a7783 100644
  enum audio_format_code {
  	AUDIO_FORMAT_CODE_FIRST = 1,
  	AUDIO_FORMAT_CODE_LINEARPCM = AUDIO_FORMAT_CODE_FIRST,
-@@ -522,6 +526,9 @@ enum audio_format_code {
+@@ -523,6 +527,9 @@ enum audio_format_code {
  	AUDIO_FORMAT_CODE_COUNT =
  		AUDIO_FORMAT_CODE_LAST - AUDIO_FORMAT_CODE_FIRST
  };
@@ -149,31 +148,6 @@ index a3d1be20dd9d..b39da46f0b6b 100644
  
  struct dm_pp_gpu_clock_range {
  	enum dm_pp_clocks_state clock_state;
-diff --git a/drivers/gpu/drm/i915/i915_reg.h b/drivers/gpu/drm/i915/i915_reg.h
-index d6483b5dc8e5..5e3949cbaf71 100644
---- a/drivers/gpu/drm/i915/i915_reg.h
-+++ b/drivers/gpu/drm/i915/i915_reg.h
-@@ -1168,6 +1168,10 @@ static inline bool i915_mmio_reg_valid(i915_reg_t reg)
-  * the power domains framework must be assigned a unique ID. The rest of power
-  * wells must be assigned DISP_PW_ID_NONE.
-  */
-+#ifdef __clang__
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wduplicate-enum"
-+#endif
- enum i915_power_well_id {
- 	DISP_PW_ID_NONE,
- 
-@@ -1181,6 +1185,9 @@ enum i915_power_well_id {
- 	SKL_DISP_PW_1,
- 	SKL_DISP_PW_2,
- };
-+#ifdef __clang__
-+#pragma GCC diagnostic pop
-+#endif
- 
- #define PUNIT_REG_PWRGT_CTRL			0x60
- #define PUNIT_REG_PWRGT_STATUS			0x61
 diff --git a/drivers/media/dvb-frontends/helene.c b/drivers/media/dvb-frontends/helene.c
 index 8c1310c6b0bc..bd7824a2198c 100644
 --- a/drivers/media/dvb-frontends/helene.c
@@ -270,10 +244,10 @@ index 60a0952c1bca..356278a7bf3a 100644
  struct tda10023_config {
  	/* the demodulator's i2c address */
 diff --git a/drivers/media/usb/cx231xx/cx231xx.h b/drivers/media/usb/cx231xx/cx231xx.h
-index 3efa8ff93c1c..58cdb211c31a 100644
+index b007611abc37..337a461b3bf8 100644
 --- a/drivers/media/usb/cx231xx/cx231xx.h
 +++ b/drivers/media/usb/cx231xx/cx231xx.h
-@@ -275,6 +275,10 @@ enum cx231xx_itype {
+@@ -274,6 +274,10 @@ enum cx231xx_itype {
  	CX231XX_VMUX_DVB,
  };
  
@@ -284,7 +258,7 @@ index 3efa8ff93c1c..58cdb211c31a 100644
  enum cx231xx_v_input {
  	CX231XX_VIN_1_1 = 0x1,
  	CX231XX_VIN_2_1,
-@@ -287,6 +291,9 @@ enum cx231xx_v_input {
+@@ -286,6 +290,9 @@ enum cx231xx_v_input {
  	CX231XX_VIN_2_3,
  	CX231XX_VIN_3_3,
  };
@@ -475,10 +449,10 @@ index 336014bf8868..b2e022dd98bd 100644
  #define NF_CT_STATE_INVALID_BIT			(1 << 0)
  #define NF_CT_STATE_BIT(ctinfo)			(1 << ((ctinfo) % IP_CT_IS_REPLY + 1))
 diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
-index beb9a9d0c00a..b0c35a99708d 100644
+index beee59c831a7..d31381960a52 100644
 --- a/include/uapi/linux/nl80211.h
 +++ b/include/uapi/linux/nl80211.h
-@@ -4379,6 +4379,10 @@ enum nl80211_bss_status {
+@@ -4416,6 +4416,10 @@ enum nl80211_bss_status {
   *	trying multiple times); this is invalid in netlink -- leave out
   *	the attribute for this on CONNECT commands.
   */
@@ -489,7 +463,7 @@ index beb9a9d0c00a..b0c35a99708d 100644
  enum nl80211_auth_type {
  	NL80211_AUTHTYPE_OPEN_SYSTEM,
  	NL80211_AUTHTYPE_SHARED_KEY,
-@@ -4394,6 +4398,9 @@ enum nl80211_auth_type {
+@@ -4431,6 +4435,9 @@ enum nl80211_auth_type {
  	NL80211_AUTHTYPE_MAX = __NL80211_AUTHTYPE_NUM - 1,
  	NL80211_AUTHTYPE_AUTOMATIC
  };

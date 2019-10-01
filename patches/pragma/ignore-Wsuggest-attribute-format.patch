@@ -193,10 +193,10 @@ index 9ad93ef60890..a0649ece9f6d 100644
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 057540b6eee9..ea642c0463b8 100644
+index 47e8ebccc22b..ec34f0793c9e 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -546,6 +546,11 @@ struct warn_args {
+@@ -554,6 +554,11 @@ struct warn_args {
  	va_list args;
  };
  
@@ -208,7 +208,7 @@ index 057540b6eee9..ea642c0463b8 100644
  void __warn(const char *file, int line, void *caller, unsigned taint,
  	    struct pt_regs *regs, struct warn_args *args)
  {
-@@ -590,6 +595,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -595,6 +600,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  	/* Just a warning, don't kill lockdep. */
  	add_taint(taint, LOCKDEP_STILL_OK);
  }
@@ -216,13 +216,13 @@ index 057540b6eee9..ea642c0463b8 100644
 +#pragma GCC diagnostic pop
 +#endif
  
- #ifdef WANT_WARN_ON_SLOWPATH
- void warn_slowpath_fmt(const char *file, int line, const char *fmt, ...)
+ #ifndef __WARN_FLAGS
+ void warn_slowpath_fmt(const char *file, int line, unsigned taint,
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 1c27b9e301b0..20a65277f23d 100644
+index 3cec8c50f105..309f4d360c21 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
-@@ -1601,7 +1601,14 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
+@@ -1610,7 +1610,14 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
  		return buf;
  
  	va_copy(va, *va_fmt->va);

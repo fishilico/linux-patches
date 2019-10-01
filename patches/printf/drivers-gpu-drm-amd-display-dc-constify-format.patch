@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 28 Sep 2019 08:44:58 +0200
+Subject: [PATCH] {PRINTF} drivers/gpu/drm/amd/display/dc: constify format
+ argument
+
+printk checker complains about non-const arg
+---
+ drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer_debug.c | 2 +-
+ drivers/gpu/drm/amd/display/dc/dm_services.h                    | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer_debug.c b/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer_debug.c
+index 7f4766e45dff..fa87df9706cb 100644
+--- a/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer_debug.c
++++ b/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer_debug.c
+@@ -45,7 +45,7 @@
+ #include "dcn10_cm_common.h"
+ #include "clk_mgr.h"
+ 
+-unsigned int snprintf_count(char *pBuf, unsigned int bufSize, char *fmt, ...)
++unsigned int snprintf_count(char *pBuf, unsigned int bufSize, const char *fmt, ...)
+ {
+ 	unsigned int ret_vsnprintf;
+ 	unsigned int chars_printed;
+diff --git a/drivers/gpu/drm/amd/display/dc/dm_services.h b/drivers/gpu/drm/amd/display/dc/dm_services.h
+index c381d85cf73c..e7c11e4fe436 100644
+--- a/drivers/gpu/drm/amd/display/dc/dm_services.h
++++ b/drivers/gpu/drm/amd/display/dc/dm_services.h
+@@ -151,7 +151,7 @@ void generic_reg_wait(const struct dc_context *ctx,
+ 	unsigned int delay_between_poll_us, unsigned int time_out_num_tries,
+ 	const char *func_name, int line);
+ 
+-unsigned int snprintf_count(char *pBuf, unsigned int bufSize, char *fmt, ...) __printf(3, 4);
++unsigned int snprintf_count(char *pBuf, unsigned int bufSize, const char *fmt, ...) __printf(3, 4);
+ 
+ /* These macros need to be used with soc15 registers in order to retrieve
+  * the actual offset.
+-- 

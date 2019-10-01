@@ -4,13 +4,12 @@ Date: Sun, 4 Nov 2018 10:44:11 +0100
 Subject: [PATCH] {PRINTF} drivers/gpu/drm/amd: add printf format attribute
 
 ---
- drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c       | 2 +-
- drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer_debug.c | 2 +-
- drivers/gpu/drm/amd/display/dc/dm_services.h                    | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c | 2 +-
+ drivers/gpu/drm/amd/display/dc/dm_services.h              | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c b/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c
-index 2118ea21d7e9..8c7cabe7ea0e 100644
+index 60123db7ba02..10f06aae8c97 100644
 --- a/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c
 +++ b/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c
 @@ -195,7 +195,7 @@ static void dcn10_log_hubp_states(struct dc *dc, void *log_ctx)
@@ -22,24 +21,20 @@ index 2118ea21d7e9..8c7cabe7ea0e 100644
  				"  %8xh  %8xh  %8xh  %8xh  %8xh  %8xh  %8xh  %8xh  %8xh  %8xh  %8xh  %8xh  %8xh  %8xh  %8xh\n",
  				pool->hubps[i]->inst, dlg_regs->refcyc_h_blank_end, dlg_regs->dlg_vblank_end, dlg_regs->min_dst_y_next_start,
  				dlg_regs->refcyc_per_htotal, dlg_regs->refcyc_x_after_scaler, dlg_regs->dst_y_after_scaler,
-diff --git a/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer_debug.c b/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer_debug.c
-index 6e47444109d7..024660e8de03 100644
---- a/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer_debug.c
-+++ b/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer_debug.c
-@@ -45,7 +45,7 @@
- #include "dcn10_cm_common.h"
- #include "clk_mgr.h"
- 
--static unsigned int snprintf_count(char *pBuf, unsigned int bufSize, char *fmt, ...)
-+static __printf(3, 4) unsigned int snprintf_count(char *pBuf, unsigned int bufSize, const char *fmt, ...)
- {
- 	unsigned int ret_vsnprintf;
- 	unsigned int chars_printed;
 diff --git a/drivers/gpu/drm/amd/display/dc/dm_services.h b/drivers/gpu/drm/amd/display/dc/dm_services.h
-index b426ba02b793..e6befff7fced 100644
+index 1a0429744630..c381d85cf73c 100644
 --- a/drivers/gpu/drm/amd/display/dc/dm_services.h
 +++ b/drivers/gpu/drm/amd/display/dc/dm_services.h
-@@ -361,7 +361,7 @@ void dm_dtn_log_begin(struct dc_context *ctx,
+@@ -151,7 +151,7 @@ void generic_reg_wait(const struct dc_context *ctx,
+ 	unsigned int delay_between_poll_us, unsigned int time_out_num_tries,
+ 	const char *func_name, int line);
+ 
+-unsigned int snprintf_count(char *pBuf, unsigned int bufSize, char *fmt, ...);
++unsigned int snprintf_count(char *pBuf, unsigned int bufSize, char *fmt, ...) __printf(3, 4);
+ 
+ /* These macros need to be used with soc15 registers in order to retrieve
+  * the actual offset.
+@@ -362,7 +362,7 @@ void dm_dtn_log_begin(struct dc_context *ctx,
  	struct dc_log_buffer_ctx *log_ctx);
  void dm_dtn_log_append_v(struct dc_context *ctx,
  	struct dc_log_buffer_ctx *log_ctx,

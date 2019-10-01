@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 19 Sep 2019 21:48:43 +0200
+Subject: [PATCH] {PRINTF} fs/crypto: do not format unions directly
+
+This makes the printk format checker go wild.
+---
+ fs/crypto/keyring.c  | 4 ++--
+ fs/crypto/keysetup.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/crypto/keyring.c b/fs/crypto/keyring.c
+index c34fa7c61b43..0978cdcf92e0 100644
+--- a/fs/crypto/keyring.c
++++ b/fs/crypto/keyring.c
+@@ -172,7 +172,7 @@ static void format_mk_description(
+ 			const struct fscrypt_key_specifier *mk_spec)
+ {
+ 	sprintf(description, "%*phN",
+-		master_key_spec_len(mk_spec), (u8 *)&mk_spec->u);
++		master_key_spec_len(mk_spec), (u8 *)&mk_spec->u.__reserved);
+ }
+ 
+ static void format_mk_users_keyring_description(
+@@ -699,7 +699,7 @@ static int check_for_busy_inodes(struct super_block *sb,
+ 	fscrypt_warn(NULL,
+ 		     "%s: %zu inode(s) still busy after removing key with %s %*phN, including ino %lu (%s)",
+ 		     sb->s_id, busy_count, master_key_spec_type(&mk->mk_spec),
+-		     master_key_spec_len(&mk->mk_spec), (u8 *)&mk->mk_spec.u,
++		     master_key_spec_len(&mk->mk_spec), (u8 *)&mk->mk_spec.u.__reserved,
+ 		     ino, path);
+ 	return -EBUSY;
+ }
+diff --git a/fs/crypto/keysetup.c b/fs/crypto/keysetup.c
+index d71c2d6dd162..318ef987a62d 100644
+--- a/fs/crypto/keysetup.c
++++ b/fs/crypto/keysetup.c
+@@ -351,7 +351,7 @@ static int setup_file_encryption_key(struct fscrypt_info *ci,
+ 		fscrypt_warn(NULL,
+ 			     "key with %s %*phN is too short (got %u bytes, need %u+ bytes)",
+ 			     master_key_spec_type(&mk_spec),
+-			     master_key_spec_len(&mk_spec), (u8 *)&mk_spec.u,
++			     master_key_spec_len(&mk_spec), (u8 *)&mk_spec.u.__reserved,
+ 			     mk->mk_secret.size, ci->ci_mode->keysize);
+ 		err = -ENOKEY;
+ 		goto out_release_key;
+-- 
