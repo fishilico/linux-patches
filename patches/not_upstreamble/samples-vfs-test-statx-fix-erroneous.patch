@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 29 Oct 2019 21:36:53 +0100
+Subject: [PATCH] {NOT UPSTREAMABLE} samples/vfs/test-statx: fix erroneous
+ macro in an ugly way
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc reports on x86-64:
+
+    samples/vfs/test-statx.c:24:15: error: ‘struct foo’ declared inside
+    parameter list will not be visible outside of this definition or
+    declaration [-Werror]
+       24 | #define statx foo
+          |               ^~~
+---
+ samples/vfs/test-statx.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/samples/vfs/test-statx.c b/samples/vfs/test-statx.c
+index d10738027bae..c3d5b874caf3 100644
+--- a/samples/vfs/test-statx.c
++++ b/samples/vfs/test-statx.c
+@@ -21,6 +21,7 @@
+ #include <sys/types.h>
+ #include <linux/stat.h>
+ #include <linux/fcntl.h>
++struct foo { struct statx s; };
+ #define statx foo
+ #define statx_timestamp foo_timestamp
+ #include <sys/stat.h>
+-- 
