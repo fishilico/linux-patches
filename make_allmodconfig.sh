@@ -153,6 +153,7 @@ disable_in_kcflags 'error=write-strings' # TODO, type acpi_string complicates th
 if $CC -v 2>&1 | grep -q clang
 then
     KCFLAGS="$KCFLAGS -Weverything"
+    disable_in_kcflags 'atomic-implicit-seq-cst' # __sync_add_and_fetch() and __sync_bool_compare_and_swap() trigger warnings
     disable_in_kcflags 'bad-function-cast' # (unsigned long *)kernel_stack_pointer(...)
     disable_in_kcflags 'c11-extensions' # Use C11 features
     disable_in_kcflags 'c99-extensions' # Use C99 features
@@ -299,6 +300,7 @@ then
     disable_in_hostcflags 'language-extension-token' # "inline"
     disable_in_hostcflags 'long-long'
     disable_in_hostcflags 'overlength-strings' # Some string literals have more that 509 characters
+    disable_in_hostcflags 'packed' # Ignore warnings about unnecessary __attribute__((packed))
     disable_in_hostcflags 'padded'
     disable_in_hostcflags 'pedantic'
     disable_in_hostcflags 'reserved-id-macro' # Some macros begins with underscore
