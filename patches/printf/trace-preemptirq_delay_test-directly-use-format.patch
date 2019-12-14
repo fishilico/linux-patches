@@ -9,21 +9,19 @@ Subject: [PATCH] {PRINTF} trace/preemptirq_delay_test: directly use format
  1 file changed, 1 insertion(+), 4 deletions(-)
 
 diff --git a/kernel/trace/preemptirq_delay_test.c b/kernel/trace/preemptirq_delay_test.c
-index d8765c952fab..c3469e79586f 100644
+index 31c0fad4cb9e..7083226bcab1 100644
 --- a/kernel/trace/preemptirq_delay_test.c
 +++ b/kernel/trace/preemptirq_delay_test.c
-@@ -53,12 +53,9 @@ static int preemptirq_delay_run(void *data)
+@@ -118,10 +118,7 @@ static int preemptirq_delay_run(void *data)
  
- static int __init preemptirq_delay_init(void)
+ static struct task_struct *preemptirq_start_test(void)
  {
 -	char task_name[50];
- 	struct task_struct *test_task;
- 
--	snprintf(task_name, sizeof(task_name), "%s_test", test_mode);
 -
--	test_task = kthread_run(preemptirq_delay_run, NULL, task_name);
-+	test_task = kthread_run(preemptirq_delay_run, NULL, "%s_test", test_mode);
- 	return PTR_ERR_OR_ZERO(test_task);
+-	snprintf(task_name, sizeof(task_name), "%s_test", test_mode);
+-	return kthread_run(preemptirq_delay_run, NULL, task_name);
++	return kthread_run(preemptirq_delay_run, NULL, "%s_test", test_mode);
  }
+ 
  
 -- 

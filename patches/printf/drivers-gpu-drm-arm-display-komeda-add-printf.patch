@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 29 Nov 2019 23:39:23 +0100
+Subject: [PATCH] {PRINTF} drivers/gpu/drm/arm/display/komeda: add printf
+ attribute
+
+---
+ drivers/gpu/drm/arm/display/komeda/komeda_event.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/arm/display/komeda/komeda_event.c b/drivers/gpu/drm/arm/display/komeda/komeda_event.c
+index a36fb86cc054..965b0ae55973 100644
+--- a/drivers/gpu/drm/arm/display/komeda/komeda_event.c
++++ b/drivers/gpu/drm/arm/display/komeda/komeda_event.c
+@@ -16,7 +16,7 @@ struct komeda_str {
+ 
+ /* return 0 on success,  < 0 on no space.
+  */
+-static int komeda_sprintf(struct komeda_str *str, const char *fmt, ...)
++static __printf(2, 3) int komeda_sprintf(struct komeda_str *str, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	int num, free_sz;
+@@ -46,7 +46,7 @@ static int komeda_sprintf(struct komeda_str *str, const char *fmt, ...)
+ static void evt_sprintf(struct komeda_str *str, u64 evt, const char *msg)
+ {
+ 	if (evt)
+-		komeda_sprintf(str, msg);
++		komeda_sprintf(str, "%s", msg);
+ }
+ 
+ static void evt_str(struct komeda_str *str, u64 events)
+-- 

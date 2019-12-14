@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 29 Nov 2019 23:26:41 +0100
+Subject: [PATCH] {MAYBE UPS} fs/btrfs: remove useless const qualifier
+
+gcc reports:
+
+    error: type qualifiers ignored on function return type
+    [-Werror=ignored-qualifiers].
+---
+ fs/btrfs/ctree.c | 2 +-
+ fs/btrfs/ctree.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
+index a8218bb71f5e..59fea97828a6 100644
+--- a/fs/btrfs/ctree.c
++++ b/fs/btrfs/ctree.c
+@@ -67,7 +67,7 @@ const char *btrfs_super_csum_driver(u16 csum_type)
+ 		btrfs_csums[csum_type].name;
+ }
+ 
+-size_t __const btrfs_get_num_csums(void)
++size_t btrfs_get_num_csums(void)
+ {
+ 	return ARRAY_SIZE(btrfs_csums);
+ }
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index b2e8fd8a8e59..5116ae156346 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -2165,7 +2165,7 @@ BTRFS_SETGET_STACK_FUNCS(super_uuid_tree_generation, struct btrfs_super_block,
+ int btrfs_super_csum_size(const struct btrfs_super_block *s);
+ const char *btrfs_super_csum_name(u16 csum_type);
+ const char *btrfs_super_csum_driver(u16 csum_type);
+-size_t __const btrfs_get_num_csums(void);
++size_t btrfs_get_num_csums(void);
+ 
+ 
+ /*
+-- 

@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 11 Dec 2019 21:10:19 +0100
+Subject: [PATCH] {MAYBE UPS} drivers/mtd/nand: force cast to pointer of
+ different size
+
+On ARM-32, gcc reports:
+
+    drivers/mtd/nand/raw/cadence-nand-controller.c: In function
+    'cadence_nand_cdma_transfer':
+    drivers/mtd/nand/raw/cadence-nand-controller.c:1283:12: error: cast
+    to pointer from integer of different size
+    [-Werror=int-to-pointer-cast]
+     1283 |            (void *)dma_buf, (void *)dma_ctrl_dat,
+          |            ^
+
+    drivers/mtd/nand/raw/cadence-nand-controller.c:1283:29: error: cast
+    to pointer from integer of different size
+    [-Werror=int-to-pointer-cast]
+     1283 |            (void *)dma_buf, (void *)dma_ctrl_dat,
+          |                             ^
+---
+ drivers/mtd/nand/raw/cadence-nand-controller.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/mtd/nand/raw/cadence-nand-controller.c b/drivers/mtd/nand/raw/cadence-nand-controller.c
+index 3a36285a8d8a..8de97e49f431 100644
+--- a/drivers/mtd/nand/raw/cadence-nand-controller.c
++++ b/drivers/mtd/nand/raw/cadence-nand-controller.c
+@@ -1280,7 +1280,7 @@ cadence_nand_cdma_transfer(struct cdns_nand_ctrl *cdns_ctrl, u8 chip_nr,
+ 	}
+ 
+ 	cadence_nand_cdma_desc_prepare(cdns_ctrl, chip_nr, page,
+-				       (void *)dma_buf, (void *)dma_ctrl_dat,
++				       (void *)(unsigned long)dma_buf, (void *)(unsigned long)dma_ctrl_dat,
+ 				       ctype);
+ 
+ 	status = cadence_nand_cdma_send_and_wait(cdns_ctrl, thread_nr);
+-- 

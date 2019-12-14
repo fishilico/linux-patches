@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 29 Nov 2019 23:40:24 +0100
+Subject: [PATCH] {BUG in 5.5-rc1} lib/kunit/string-stream: fix a printf format
+ string injection
+
+string_stream_append() may format things when concatenating strings.
+---
+ lib/kunit/string-stream.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/kunit/string-stream.c b/lib/kunit/string-stream.c
+index e6d17aacca30..95448826e22c 100644
+--- a/lib/kunit/string-stream.c
++++ b/lib/kunit/string-stream.c
+@@ -156,7 +156,7 @@ int string_stream_append(struct string_stream *stream,
+ 	if (!other_content)
+ 		return -ENOMEM;
+ 
+-	return string_stream_add(stream, other_content);
++	return string_stream_add(stream, "%s", other_content);
+ }
+ 
+ bool string_stream_is_empty(struct string_stream *stream)
+-- 

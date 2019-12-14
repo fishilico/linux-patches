@@ -33,6 +33,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  .../net/ethernet/broadcom/bnx2x/bnx2x_link.c  |  4 ++--
  .../net/ethernet/freescale/enetc/enetc_mdio.c |  2 +-
  drivers/net/ethernet/freescale/xgmac_mdio.c   |  2 +-
+ drivers/net/ethernet/mellanox/mlx5/core/wq.c  |  4 ++--
  drivers/net/ethernet/netronome/nfp/nfp_app.c  |  2 +-
  drivers/net/ethernet/netronome/nfp/nfp_main.c |  2 +-
  drivers/net/ethernet/qlogic/qed/qed_dev.c     |  4 ++--
@@ -57,10 +58,10 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  drivers/target/target_core_fabric_lib.c       |  2 +-
  drivers/target/target_core_pr.c               |  4 ++--
  fs/afs/flock.c                                |  2 +-
+ fs/btrfs/tree-checker.c                       |  2 +-
  fs/nfsd/flexfilelayout.c                      |  2 +-
  fs/ntfs/attrib.c                              |  2 +-
  fs/reiserfs/journal.c                         |  2 +-
- kernel/sysctl_binary.c                        |  4 ++--
  lib/test_printf.c                             |  6 +++---
  net/8021q/vlanproc.c                          |  4 ++--
  net/batman-adv/sysfs.c                        |  2 +-
@@ -79,18 +80,18 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  net/rxrpc/rxkad.c                             |  2 +-
  security/selinux/hooks.c                      |  2 +-
  security/tomoyo/common.c                      |  2 +-
- 75 files changed, 136 insertions(+), 136 deletions(-)
+ 76 files changed, 137 insertions(+), 137 deletions(-)
 
 diff --git a/drivers/acpi/acpica/nsdump.c b/drivers/acpi/acpica/nsdump.c
-index 9731d7cf1b83..0369999dccae 100644
+index 9ad340f644a1..64c44c3ceea2 100644
 --- a/drivers/acpi/acpica/nsdump.c
 +++ b/drivers/acpi/acpica/nsdump.c
 @@ -291,7 +291,7 @@ acpi_ns_dump_one_object(acpi_handle obj_handle,
  					for (i = 0;
  					     (i < obj_desc->buffer.length
  					      && i < 12); i++) {
--						acpi_os_printf(" %.2hX",
-+						acpi_os_printf(" %.2hhX",
+-						acpi_os_printf(" %2.2X",
++						acpi_os_printf(" %2.2hhX",
  							       obj_desc->buffer.
  							       pointer[i]);
  					}
@@ -98,8 +99,8 @@ index 9731d7cf1b83..0369999dccae 100644
  		case ACPI_TYPE_LOCAL_BANK_FIELD:
  		case ACPI_TYPE_LOCAL_INDEX_FIELD:
  
--			acpi_os_printf(" Off %.3X Len %.2X Acc %.2hd\n",
-+			acpi_os_printf(" Off %.3X Len %.2X Acc %.2hhu\n",
+-			acpi_os_printf(" Off %.3X Len %.2X Acc %.2X\n",
++			acpi_os_printf(" Off %.3X Len %.2X Acc %.2hhX\n",
  				       (obj_desc->common_field.
  					base_byte_offset * 8)
  				       +
@@ -210,7 +211,7 @@ index c039b8a4fefe..483e81018810 100644
      else
        max_rx_size = rxs_bs[pool];
 diff --git a/drivers/atm/firestream.c b/drivers/atm/firestream.c
-index 2bbab0230aeb..c483e0932304 100644
+index aad00d2b28f5..6fe2d77622d5 100644
 --- a/drivers/atm/firestream.c
 +++ b/drivers/atm/firestream.c
 @@ -541,7 +541,7 @@ static int make_rate(unsigned int rate, int r,
@@ -264,10 +265,10 @@ index e5da51f907a2..2cca7b7906b6 100644
    
    return;
 diff --git a/drivers/gpio/gpiolib-acpi.c b/drivers/gpio/gpiolib-acpi.c
-index 59ccfd24627d..36d2357929b1 100644
+index d30e57dc755c..2a8a950055fa 100644
 --- a/drivers/gpio/gpiolib-acpi.c
 +++ b/drivers/gpio/gpiolib-acpi.c
-@@ -216,7 +216,7 @@ static acpi_status acpi_gpiochip_alloc_event(struct acpi_resource *ares,
+@@ -217,7 +217,7 @@ static acpi_status acpi_gpiochip_alloc_event(struct acpi_resource *ares,
  		char ev_name[5];
  		sprintf(ev_name, "_%c%02hhX",
  			agpio->triggering == ACPI_EDGE_SENSITIVE ? 'E' : 'L',
@@ -277,10 +278,10 @@ index 59ccfd24627d..36d2357929b1 100644
  			handler = acpi_gpio_irq_handler;
  	}
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
-index b2c364b8695f..70fe449e537b 100644
+index e324bfe6c58f..09d35c0139b3 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
-@@ -212,7 +212,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
+@@ -214,7 +214,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
  
  		version_major = (le32_to_cpu(hdr->ucode_version) >> 24) & 0xff;
  		version_minor = (le32_to_cpu(hdr->ucode_version) >> 8) & 0xff;
@@ -289,7 +290,7 @@ index b2c364b8695f..70fe449e537b 100644
  			version_major, version_minor, family_id);
  
  		/*
-@@ -231,7 +231,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
+@@ -233,7 +233,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
  		if ((adev->asic_type == CHIP_POLARIS10 ||
  		     adev->asic_type == CHIP_POLARIS11) &&
  		    (adev->uvd.fw_version < FW_1_66_16))
@@ -298,7 +299,7 @@ index b2c364b8695f..70fe449e537b 100644
  				  version_major, version_minor);
  	} else {
  		unsigned int enc_major, enc_minor, dec_minor;
-@@ -239,7 +239,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
+@@ -241,7 +241,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
  		dec_minor = (le32_to_cpu(hdr->ucode_version) >> 8) & 0xff;
  		enc_minor = (le32_to_cpu(hdr->ucode_version) >> 24) & 0x3f;
  		enc_major = (le32_to_cpu(hdr->ucode_version) >> 30) & 0x3;
@@ -308,10 +309,10 @@ index b2c364b8695f..70fe449e537b 100644
  
  		adev->uvd.max_handles = AMDGPU_MAX_UVD_HANDLES;
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vce.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_vce.c
-index 65044b1b3d4c..02113cd59ae5 100644
+index 46b590af2fd2..7318c5a4ffe4 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vce.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vce.c
-@@ -173,7 +173,7 @@ int amdgpu_vce_sw_init(struct amdgpu_device *adev, unsigned long size)
+@@ -178,7 +178,7 @@ int amdgpu_vce_sw_init(struct amdgpu_device *adev, unsigned long size)
  	version_major = (ucode_version >> 20) & 0xfff;
  	version_minor = (ucode_version >> 8) & 0xfff;
  	binary_id = ucode_version & 0xff;
@@ -321,7 +322,7 @@ index 65044b1b3d4c..02113cd59ae5 100644
  	adev->vce.fw_version = ((version_major << 24) | (version_minor << 16) |
  				(binary_id << 8));
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c
-index 3199e4a5ff12..70555c9bd944 100644
+index 9d870444d7d6..2dab9e14bfa5 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vcn.c
 @@ -147,7 +147,7 @@ int amdgpu_vcn_sw_init(struct amdgpu_device *adev)
@@ -410,10 +411,10 @@ index 1ad5c3b86b64..16fa83cf6b3d 100644
  
  			/*
 diff --git a/drivers/hid/i2c-hid/i2c-hid-core.c b/drivers/hid/i2c-hid/i2c-hid-core.c
-index 04c088131e04..b3b70dd6a673 100644
+index a358e61fbc82..b67e3928522f 100644
 --- a/drivers/hid/i2c-hid/i2c-hid-core.c
 +++ b/drivers/hid/i2c-hid/i2c-hid-core.c
-@@ -1091,7 +1091,7 @@ static int i2c_hid_probe(struct i2c_client *client,
+@@ -1094,7 +1094,7 @@ static int i2c_hid_probe(struct i2c_client *client,
  	hid->vendor = le16_to_cpu(ihid->hdesc.wVendorID);
  	hid->product = le16_to_cpu(ihid->hdesc.wProductID);
  
@@ -542,7 +543,7 @@ index 0d22c700016d..ef8b0c407218 100644
  		(*agc_state)++;
  		ret = 5;
 diff --git a/drivers/media/radio/si470x/radio-si470x-i2c.c b/drivers/media/radio/si470x/radio-si470x-i2c.c
-index 7541698a0be1..26466421d94b 100644
+index f491420d7b53..769f841a1bf8 100644
 --- a/drivers/media/radio/si470x/radio-si470x-i2c.c
 +++ b/drivers/media/radio/si470x/radio-si470x-i2c.c
 @@ -410,10 +410,10 @@ static int si470x_i2c_probe(struct i2c_client *client)
@@ -620,10 +621,10 @@ index 81c70e5bc168..306c1a05ebad 100644
  		goto err_mutex_unlock;
  	}
 diff --git a/drivers/misc/mei/hw-me.c b/drivers/misc/mei/hw-me.c
-index c4f6991d3028..bd009d96d4fe 100644
+index 668418d7ea77..37cd5f4c1c93 100644
 --- a/drivers/misc/mei/hw-me.c
 +++ b/drivers/misc/mei/hw-me.c
-@@ -532,7 +532,7 @@ static int mei_me_hbuf_write(struct mei_device *dev,
+@@ -561,7 +561,7 @@ static int mei_me_hbuf_write(struct mei_device *dev,
  	dev_dbg(dev->dev, MEI_HDR_FMT, MEI_HDR_PRM((struct mei_msg_hdr *)hdr));
  
  	empty_slots = mei_hbuf_empty_slots(dev);
@@ -668,7 +669,7 @@ index 895d35639129..9066f35fe96e 100644
  
  	/* Check PFC for supported number of traffic classes */
 diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
-index d581d0ae6584..1fe193cdf2b9 100644
+index 9638d65d8261..6b8d568de4d8 100644
 --- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
 +++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
 @@ -6174,7 +6174,7 @@ static int bnx2x_format_ver(u32 num, u8 *str, u16 *len)
@@ -715,6 +716,21 @@ index e03b30c60dcf..d94daf52f63e 100644
  			phy_id, dev_addr, regnum);
  		return 0xffff;
  	}
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/wq.c b/drivers/net/ethernet/mellanox/mlx5/core/wq.c
+index f2a0e72285ba..afa8e16099dd 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/wq.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/wq.c
+@@ -89,8 +89,8 @@ void mlx5_wq_cyc_wqe_dump(struct mlx5_wq_cyc *wq, u16 ix, u8 nstrides)
+ 	len = nstrides << wq->fbc.log_stride;
+ 	wqe = mlx5_wq_cyc_get_wqe(wq, ix);
+ 
+-	pr_info("WQE DUMP: WQ size %d WQ cur size %d, WQE index 0x%x, len: %ld\n",
+-		mlx5_wq_cyc_get_size(wq), wq->cur_sz, ix, len);
++	pr_info("WQE DUMP: WQ size %d WQ cur size %d, WQE index 0x%x, len: %lu\n",
++		mlx5_wq_cyc_get_size(wq), wq->cur_sz, ix, (unsigned long)len);
+ 	print_hex_dump(KERN_WARNING, "", DUMP_PREFIX_OFFSET, 16, 1, wqe, len, false);
+ }
+ 
 diff --git a/drivers/net/ethernet/netronome/nfp/nfp_app.c b/drivers/net/ethernet/netronome/nfp/nfp_app.c
 index 3a973282b2bb..7966f2899a88 100644
 --- a/drivers/net/ethernet/netronome/nfp/nfp_app.c
@@ -790,10 +806,10 @@ index a182c0944cc7..d2f7478f0981 100644
  	tx_done.msdu_id = msdu_id;
  	tx_done.status = HTT_TX_COMPL_STATE_DISCARD;
 diff --git a/drivers/net/wireless/ath/ath10k/mac.c b/drivers/net/wireless/ath/ath10k/mac.c
-index a6d21856b7e7..9efe3861746f 100644
+index 83cc8778ca1e..7a7b94a8aab2 100644
 --- a/drivers/net/wireless/ath/ath10k/mac.c
 +++ b/drivers/net/wireless/ath/ath10k/mac.c
-@@ -7791,7 +7791,7 @@ ath10k_mac_update_vif_chan(struct ath10k *ar,
+@@ -7881,7 +7881,7 @@ ath10k_mac_update_vif_chan(struct ath10k *ar,
  		arvif = (void *)vifs[i].vif->drv_priv;
  
  		ath10k_dbg(ar, ATH10K_DBG_MAC,
@@ -802,7 +818,7 @@ index a6d21856b7e7..9efe3861746f 100644
  			   arvif->vdev_id,
  			   vifs[i].old_ctx->def.chan->center_freq,
  			   vifs[i].new_ctx->def.chan->center_freq,
-@@ -7865,7 +7865,7 @@ ath10k_mac_op_add_chanctx(struct ieee80211_hw *hw,
+@@ -7955,7 +7955,7 @@ ath10k_mac_op_add_chanctx(struct ieee80211_hw *hw,
  	struct ath10k *ar = hw->priv;
  
  	ath10k_dbg(ar, ATH10K_DBG_MAC,
@@ -811,7 +827,7 @@ index a6d21856b7e7..9efe3861746f 100644
  		   ctx->def.chan->center_freq, ctx->def.width, ctx);
  
  	mutex_lock(&ar->conf_mutex);
-@@ -7889,7 +7889,7 @@ ath10k_mac_op_remove_chanctx(struct ieee80211_hw *hw,
+@@ -7979,7 +7979,7 @@ ath10k_mac_op_remove_chanctx(struct ieee80211_hw *hw,
  	struct ath10k *ar = hw->priv;
  
  	ath10k_dbg(ar, ATH10K_DBG_MAC,
@@ -820,7 +836,7 @@ index a6d21856b7e7..9efe3861746f 100644
  		   ctx->def.chan->center_freq, ctx->def.width, ctx);
  
  	mutex_lock(&ar->conf_mutex);
-@@ -7954,7 +7954,7 @@ ath10k_mac_op_change_chanctx(struct ieee80211_hw *hw,
+@@ -8044,7 +8044,7 @@ ath10k_mac_op_change_chanctx(struct ieee80211_hw *hw,
  	mutex_lock(&ar->conf_mutex);
  
  	ath10k_dbg(ar, ATH10K_DBG_MAC,
@@ -830,7 +846,7 @@ index a6d21856b7e7..9efe3861746f 100644
  
  	/* This shouldn't really happen because channel switching should use
 diff --git a/drivers/net/wireless/ath/ath10k/wmi-tlv.c b/drivers/net/wireless/ath/ath10k/wmi-tlv.c
-index 4d5d10c01064..2c6999b70fdd 100644
+index 69a1ec53df29..344162581331 100644
 --- a/drivers/net/wireless/ath/ath10k/wmi-tlv.c
 +++ b/drivers/net/wireless/ath/ath10k/wmi-tlv.c
 @@ -93,7 +93,7 @@ ath10k_wmi_tlv_iter(struct ath10k *ar, const void *ptr, size_t len,
@@ -852,10 +868,10 @@ index 4d5d10c01064..2c6999b70fdd 100644
  				   wmi_tlv_policies[tlv_tag].min_len);
  			return -EINVAL;
 diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
-index 4f707c6394bb..01924f7d0282 100644
+index 9f564e2b7a14..0242755c265f 100644
 --- a/drivers/net/wireless/ath/ath10k/wmi.c
 +++ b/drivers/net/wireless/ath/ath10k/wmi.c
-@@ -9418,7 +9418,7 @@ static int ath10k_wmi_mgmt_tx_clean_up_pending(int msdu_id, void *ptr,
+@@ -9472,7 +9472,7 @@ static int ath10k_wmi_mgmt_tx_clean_up_pending(int msdu_id, void *ptr,
  	struct sk_buff *msdu;
  
  	ath10k_dbg(ar, ATH10K_DBG_WMI,
@@ -882,7 +898,7 @@ index 9f4b117db9d7..422f542b879c 100644
  	IWL_DEBUG_INFO(mvm, "\trtt var: %llu\n", res->ftm.rtt_variance);
  	IWL_DEBUG_INFO(mvm, "\trtt spread: %llu\n", res->ftm.rtt_spread);
 diff --git a/drivers/net/wireless/mediatek/mt7601u/debugfs.c b/drivers/net/wireless/mediatek/mt7601u/debugfs.c
-index 5e549831370c..e5d476f642de 100644
+index 300242bce799..8b3564c1d53a 100644
 --- a/drivers/net/wireless/mediatek/mt7601u/debugfs.c
 +++ b/drivers/net/wireless/mediatek/mt7601u/debugfs.c
 @@ -99,7 +99,7 @@ mt7601u_eeprom_param_read(struct seq_file *file, void *data)
@@ -987,7 +1003,7 @@ index acb930b8c6a6..55bd37dad7ef 100644
  	case ISCSI_BOOT_TGT_NIC_ASSOC:
  		rc = snprintf(buf, 3, "0\n");
 diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index 6d7362e7367e..f0c0a3cf5f9e 100644
+index 677b5c5403d2..20518d40814a 100644
 --- a/drivers/scsi/scsi_sysfs.c
 +++ b/drivers/scsi/scsi_sysfs.c
 @@ -370,12 +370,12 @@ static DEVICE_ATTR(eh_deadline, S_IRUGO | S_IWUSR, show_shost_eh_deadline, store
@@ -1025,10 +1041,10 @@ index 28c19bcb2f20..5f1d3cdd6fdd 100644
  		}
  
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index d19e051f2bc2..afb32c58c802 100644
+index 7251a87bb576..ffb6a18d8341 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4254,7 +4254,7 @@ int iscsit_close_connection(
+@@ -4258,7 +4258,7 @@ int iscsit_close_connection(
  
  	spin_lock_bh(&sess->conn_lock);
  	atomic_dec(&sess->nconn);
@@ -1104,7 +1120,7 @@ index e6e175597860..2e6339b6de0b 100644
  		return -EINVAL;						\
  	}								\
 diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
-index 3c79411c4cd0..f551cdef7607 100644
+index 6b4b354c88aa..c0a3e37e4389 100644
 --- a/drivers/target/target_core_fabric_lib.c
 +++ b/drivers/target/target_core_fabric_lib.c
 @@ -303,7 +303,7 @@ static char *iscsi_parse_pr_out_transport_id(
@@ -1139,7 +1155,7 @@ index 5e931690e697..b09b444cc13f 100644
  				dest_rtpi);
  
 diff --git a/fs/afs/flock.c b/fs/afs/flock.c
-index d5e5a6ddc847..d53a412b581b 100644
+index 0f2a94ba73cb..dba0c6d1d6b5 100644
 --- a/fs/afs/flock.c
 +++ b/fs/afs/flock.c
 @@ -765,7 +765,7 @@ static int afs_do_getlk(struct file *file, struct file_lock *fl)
@@ -1151,6 +1167,19 @@ index d5e5a6ddc847..d53a412b581b 100644
  	return ret;
  }
  
+diff --git a/fs/btrfs/tree-checker.c b/fs/btrfs/tree-checker.c
+index 493d4d9e0f79..67529a5e89d6 100644
+--- a/fs/btrfs/tree-checker.c
++++ b/fs/btrfs/tree-checker.c
+@@ -228,7 +228,7 @@ static int check_extent_data_item(struct extent_buffer *leaf,
+ 	if (item_size < BTRFS_FILE_EXTENT_INLINE_DATA_START) {
+ 		file_extent_err(leaf, slot,
+ 				"invalid item size, have %u expect [%lu, %u)",
+-				item_size, BTRFS_FILE_EXTENT_INLINE_DATA_START,
++				item_size, (unsigned long)BTRFS_FILE_EXTENT_INLINE_DATA_START,
+ 				SZ_4K);
+ 		return -EUCLEAN;
+ 	}
 diff --git a/fs/nfsd/flexfilelayout.c b/fs/nfsd/flexfilelayout.c
 index db7ef07ae50c..34d7345b1bf1 100644
 --- a/fs/nfsd/flexfilelayout.c
@@ -1190,26 +1219,11 @@ index 4b3e3e73b512..36d6022dd41e 100644
  			      replay_count, ktime_get_seconds() - start);
  	}
  	/* needed to satisfy the locking in _update_journal_header_block */
-diff --git a/kernel/sysctl_binary.c b/kernel/sysctl_binary.c
-index 73c132095a7b..283c772d9ee7 100644
---- a/kernel/sysctl_binary.c
-+++ b/kernel/sysctl_binary.c
-@@ -1189,8 +1189,8 @@ static ssize_t bin_dn_node_address(struct file *file,
- 			goto out;
- 
- 		len = scnprintf(buf, sizeof(buf), "%hu.%hu",
--				le16_to_cpu(dnaddr) >> 10,
--				le16_to_cpu(dnaddr) & 0x3ff);
-+				(u16)(le16_to_cpu(dnaddr) >> 10),
-+				(u16)(le16_to_cpu(dnaddr) & 0x3ff));
- 
- 		result = kernel_write(file, buf, len, &pos);
- 		if (result < 0)
 diff --git a/lib/test_printf.c b/lib/test_printf.c
-index 5d94cbff2120..871bff375d11 100644
+index 2d9f520d2f27..222087da1f7f 100644
 --- a/lib/test_printf.c
 +++ b/lib/test_printf.c
-@@ -150,9 +150,9 @@ test_number(void)
+@@ -152,9 +152,9 @@ test_number(void)
  	test("0x1234abcd  ", "%#-12x", 0x1234abcd);
  	test("  0x1234abcd", "%#12x", 0x1234abcd);
  	test("0|001| 12|+123| 1234|-123|-1234", "%d|%03d|%3d|%+d|% d|%+d|% d", 0, 1, 12, 123, 1234, -123, -1234);
@@ -1474,10 +1488,10 @@ index 8d8aa3c230b5..6a42088c6200 100644
  }
  
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 9625b99e677f..11d982327f1c 100644
+index 116b4d644f68..ce55d3728c77 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -5524,7 +5524,7 @@ static int selinux_nlmsg_perm(struct sock *sk, struct sk_buff *skb)
+@@ -5532,7 +5532,7 @@ static int selinux_nlmsg_perm(struct sock *sk, struct sk_buff *skb)
  	if (err) {
  		if (err == -EINVAL) {
  			pr_warn_ratelimited("SELinux: unrecognized netlink"

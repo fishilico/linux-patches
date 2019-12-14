@@ -158,7 +158,7 @@ index 111a1d8a41dd..d962f4dd8ff3 100644
 +
  #endif
 diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
-index 48c2888297dd..0c8ea2d802cf 100644
+index 5d0d0f86e790..e797c9518ba4 100644
 --- a/arch/arm/mm/mmu.c
 +++ b/arch/arm/mm/mmu.c
 @@ -1554,7 +1554,7 @@ static void __init early_paging_init(const struct machine_desc *mdesc)
@@ -218,10 +218,10 @@ index 164b6ef5de63..34f51d487706 100644
  #define memcmp	__builtin_memcmp
  #endif
 diff --git a/arch/x86/events/core.c b/arch/x86/events/core.c
-index 7b21455d7504..04b027353fce 100644
+index 9a89d98c55bd..1338d28a29a3 100644
 --- a/arch/x86/events/core.c
 +++ b/arch/x86/events/core.c
-@@ -2497,7 +2497,14 @@ perf_callchain_user(struct perf_callchain_entry_ctx *entry, struct pt_regs *regs
+@@ -2511,7 +2511,14 @@ perf_callchain_user(struct perf_callchain_entry_ctx *entry, struct pt_regs *regs
  		if (!valid_user_frame(fp, sizeof(frame)))
  			break;
  
@@ -389,7 +389,7 @@ index a873da6b46d6..8a60d0142a7a 100644
  			goto do_another_FPU_instruction;
  	}
 diff --git a/arch/x86/xen/enlighten_pv.c b/arch/x86/xen/enlighten_pv.c
-index 5bfea374a160..aaec3d5998d5 100644
+index ae4a41ca19f6..94bba246a8bf 100644
 --- a/arch/x86/xen/enlighten_pv.c
 +++ b/arch/x86/xen/enlighten_pv.c
 @@ -679,8 +679,12 @@ static int cvt_gate_to_trap(int vector, const gate_desc *val,
@@ -427,7 +427,7 @@ index 997faa10f615..3a7fd3f9aea2 100644
  		}
  
 diff --git a/drivers/acpi/property.c b/drivers/acpi/property.c
-index 3eacf474e1e3..0410429d5a23 100644
+index e601c4511a8b..20e8881d986d 100644
 --- a/drivers/acpi/property.c
 +++ b/drivers/acpi/property.c
 @@ -969,9 +969,13 @@ static int acpi_data_prop_read(const struct acpi_device_data *data,
@@ -448,18 +448,18 @@ index 3eacf474e1e3..0410429d5a23 100644
  	default:
  		ret = -EINVAL;
 diff --git a/drivers/base/swnode.c b/drivers/base/swnode.c
-index a1f3f0994f9f..c2f2b72d4b55 100644
+index d8d0dc0ca5ac..0a02c3de8ac7 100644
 --- a/drivers/base/swnode.c
 +++ b/drivers/base/swnode.c
-@@ -287,7 +287,7 @@ static int property_entry_read_string_array(const struct property_entry *props,
+@@ -173,7 +173,7 @@ static int property_entry_read_string_array(const struct property_entry *props,
+ 					    const char *propname,
  					    const char **strings, size_t nval)
  {
- 	const struct property_entry *prop;
 -	const void *pointer;
-+	const char *const *pointer;
- 	size_t array_len, length;
++	const char *const *pointer; /* Play nice with the pointer deref checker */
+ 	size_t length;
+ 	int array_len;
  
- 	/* Find out the array length. */
 diff --git a/drivers/dma/ti/cppi41.c b/drivers/dma/ti/cppi41.c
 index 8c2f7ebe998c..394868cf2780 100644
 --- a/drivers/dma/ti/cppi41.c
@@ -480,10 +480,10 @@ index 8c2f7ebe998c..394868cf2780 100644
  	return __raw_readl(mem);
  }
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c
-index 82823d9a8ba8..66e82aeeabe5 100644
+index 5ca905b4a0fb..4f733854d4d7 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c
-@@ -151,7 +151,7 @@ static int amdgpu_cs_parser_init(struct amdgpu_cs_parser *p, union drm_amdgpu_cs
+@@ -152,7 +152,7 @@ static int amdgpu_cs_parser_init(struct amdgpu_cs_parser *p, union drm_amdgpu_cs
  	}
  
  	for (i = 0; i < p->nchunks; i++) {
@@ -528,10 +528,10 @@ index 7b5460678382..87dd4a321a3a 100644
  		uint32_t __user *cdata;
  
 diff --git a/drivers/i2c/busses/i2c-i801.c b/drivers/i2c/busses/i2c-i801.c
-index f1c714acc280..190b00a3c86c 100644
+index f5e69fe56532..01d098948ab0 100644
 --- a/drivers/i2c/busses/i2c-i801.c
 +++ b/drivers/i2c/busses/i2c-i801.c
-@@ -1236,9 +1236,13 @@ static bool is_dell_system_with_lis3lv02d(void)
+@@ -1242,9 +1242,13 @@ static bool is_dell_system_with_lis3lv02d(void)
  	 * accelerometer but unfortunately ACPI does not provide any other
  	 * information (like I2C address).
  	 */
@@ -652,7 +652,7 @@ index 37ba708ac781..b0c66c3db73e 100644
  	u32			sw_len;
  };
 diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 5a635f028bdc..df3bc070dfba 100644
+index 4d7d5434cc5d..6b925b635a26 100644
 --- a/drivers/net/virtio_net.c
 +++ b/drivers/net/virtio_net.c
 @@ -1008,7 +1008,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
@@ -665,10 +665,10 @@ index 5a635f028bdc..df3bc070dfba 100644
  			struct virtnet_rq_stats *stats)
  {
 diff --git a/drivers/net/wireless/ti/wlcore/main.c b/drivers/net/wireless/ti/wlcore/main.c
-index 547ad538d8b6..412898718019 100644
+index e994995d79ab..21b1efc6a5de 100644
 --- a/drivers/net/wireless/ti/wlcore/main.c
 +++ b/drivers/net/wireless/ti/wlcore/main.c
-@@ -1475,7 +1475,20 @@ void wl1271_rx_filter_flatten_fields(struct wl12xx_rx_filter *filter,
+@@ -1474,7 +1474,20 @@ void wl1271_rx_filter_flatten_fields(struct wl12xx_rx_filter *filter,
  		field->flags = filter->fields[i].flags;
  		field->len = filter->fields[i].len;
  
@@ -691,7 +691,7 @@ index 547ad538d8b6..412898718019 100644
  			sizeof(u8 *) + field->len;
  	}
 diff --git a/drivers/scsi/csiostor/csio_hw.c b/drivers/scsi/csiostor/csio_hw.c
-index e51923886475..39f641950a78 100644
+index 950f9cdf0577..1de440f9a5f6 100644
 --- a/drivers/scsi/csiostor/csio_hw.c
 +++ b/drivers/scsi/csiostor/csio_hw.c
 @@ -4035,7 +4035,11 @@ csio_evtq_worker(struct work_struct *work)
@@ -708,10 +708,10 @@ index e51923886475..39f641950a78 100644
  				break;
  
 diff --git a/drivers/scsi/pm8001/pm8001_ctl.c b/drivers/scsi/pm8001/pm8001_ctl.c
-index 6b85016b4db3..a2493b6b0c69 100644
+index 7c6be2ec110d..a4d931afb52c 100644
 --- a/drivers/scsi/pm8001/pm8001_ctl.c
 +++ b/drivers/scsi/pm8001/pm8001_ctl.c
-@@ -610,7 +610,7 @@ static int pm8001_set_nvmd(struct pm8001_hba_info *pm8001_ha)
+@@ -629,7 +629,7 @@ static int pm8001_set_nvmd(struct pm8001_hba_info *pm8001_ha)
  		return -ENOMEM;
  	}
  	payload = (struct pm8001_ioctl_payload *)ioctlbuffer;
@@ -720,7 +720,7 @@ index 6b85016b4db3..a2493b6b0c69 100644
  				pm8001_ha->fw_image->size);
  	payload->length = pm8001_ha->fw_image->size;
  	payload->id = 0;
-@@ -661,7 +661,7 @@ static int pm8001_update_flash(struct pm8001_hba_info *pm8001_ha)
+@@ -680,7 +680,7 @@ static int pm8001_update_flash(struct pm8001_hba_info *pm8001_ha)
  			payload->length = 1024*16;
  			payload->id = 0;
  			fwControl =
@@ -730,10 +730,10 @@ index 6b85016b4db3..a2493b6b0c69 100644
  			fwControl->size = partitionSize + HEADER_LEN;/* IN */
  			fwControl->retcode = 0;/* OUT */
 diff --git a/drivers/scsi/pm8001/pm8001_hwi.c b/drivers/scsi/pm8001/pm8001_hwi.c
-index 68a8217032d0..2788743812b8 100644
+index 2328ff1349ac..ac4e2cdfe4f5 100644
 --- a/drivers/scsi/pm8001/pm8001_hwi.c
 +++ b/drivers/scsi/pm8001/pm8001_hwi.c
-@@ -4846,7 +4846,7 @@ int pm8001_chip_set_nvmd_req(struct pm8001_hba_info *pm8001_ha,
+@@ -4889,7 +4889,7 @@ int pm8001_chip_set_nvmd_req(struct pm8001_hba_info *pm8001_ha,
  		return -ENOMEM;
  	circularQ = &pm8001_ha->inbnd_q_tbl[0];
  	memcpy(pm8001_ha->memoryMap.region[NVMD].virt_ptr,
@@ -769,7 +769,7 @@ index c5e44bbe997c..075a10a68be1 100644
  		tcb_desc->queue_index = TXCMD_QUEUE;
  		tcb_desc->bCmdOrInit = type;
 diff --git a/drivers/staging/rtl8192e/rtl8192e/rtl_core.c b/drivers/staging/rtl8192e/rtl8192e/rtl_core.c
-index f932cb15e4e5..ff22f7bb50e1 100644
+index dace81a7d1ba..66de70a29e73 100644
 --- a/drivers/staging/rtl8192e/rtl8192e/rtl_core.c
 +++ b/drivers/staging/rtl8192e/rtl8192e/rtl_core.c
 @@ -1613,7 +1613,7 @@ static void _rtl92e_hard_data_xmit(struct sk_buff *skb, struct net_device *dev,
@@ -780,8 +780,8 @@ index f932cb15e4e5..ff22f7bb50e1 100644
 +	memcpy_with_cast((unsigned char *)(skb->cb), &dev, sizeof(dev));
  	skb_push(skb, priv->rtllib->tx_headroom);
  	ret = _rtl92e_tx(dev, skb);
- 	if (ret != 0)
-@@ -1642,7 +1642,7 @@ static int _rtl92e_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 
+@@ -1643,7 +1643,7 @@ static int _rtl92e_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
  		}
  	}
  
@@ -791,10 +791,10 @@ index f932cb15e4e5..ff22f7bb50e1 100644
  		_rtl92e_tx_cmd(dev, skb);
  		return 0;
 diff --git a/drivers/staging/rtl8192u/r8192U_core.c b/drivers/staging/rtl8192u/r8192U_core.c
-index 2821411878ce..e825ff2dd256 100644
+index 7e2cabd16e88..da033dd2e681 100644
 --- a/drivers/staging/rtl8192u/r8192U_core.c
 +++ b/drivers/staging/rtl8192u/r8192U_core.c
-@@ -954,7 +954,7 @@ static int rtl8192_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+@@ -935,7 +935,7 @@ static int rtl8192_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
  
  	spin_lock_irqsave(&priv->tx_lock, flags);
  
@@ -804,7 +804,7 @@ index 2821411878ce..e825ff2dd256 100644
  		skb_push(skb, USB_HWDESC_HEADER_LEN);
  		rtl819xU_tx_cmd(dev, skb);
 diff --git a/drivers/staging/rtl8192u/r819xU_cmdpkt.c b/drivers/staging/rtl8192u/r819xU_cmdpkt.c
-index e064f43fd8b6..e4b48816d5c2 100644
+index bc98cdaf61ec..313a6d924848 100644
 --- a/drivers/staging/rtl8192u/r819xU_cmdpkt.c
 +++ b/drivers/staging/rtl8192u/r819xU_cmdpkt.c
 @@ -39,7 +39,7 @@ rt_status SendTxCommandPacket(struct net_device *dev, void *pData, u32 DataLen)
@@ -843,10 +843,10 @@ index 43fa351e2b9e..719538e52a42 100644
  };
  
 diff --git a/drivers/usb/core/devio.c b/drivers/usb/core/devio.c
-index 3f899552f6e3..1a9dd01e2684 100644
+index 12bb5722b420..a34ee40c4057 100644
 --- a/drivers/usb/core/devio.c
 +++ b/drivers/usb/core/devio.c
-@@ -1966,12 +1966,13 @@ static struct async *reap_as(struct usb_dev_state *ps)
+@@ -1979,12 +1979,13 @@ static struct async *reap_as(struct usb_dev_state *ps)
  static int proc_reapurb(struct usb_dev_state *ps, void __user *arg)
  {
  	struct async *as = reap_as(ps);
@@ -861,7 +861,7 @@ index 3f899552f6e3..1a9dd01e2684 100644
  		free_async(as);
  		return retval;
  	}
-@@ -1984,11 +1985,12 @@ static int proc_reapurbnonblock(struct usb_dev_state *ps, void __user *arg)
+@@ -1997,11 +1998,12 @@ static int proc_reapurbnonblock(struct usb_dev_state *ps, void __user *arg)
  {
  	int retval;
  	struct async *as;
@@ -875,7 +875,7 @@ index 3f899552f6e3..1a9dd01e2684 100644
  		free_async(as);
  	} else {
  		retval = (connected(ps) ? -EAGAIN : -ENODEV);
-@@ -2113,12 +2115,13 @@ static int processcompl_compat(struct async *as, void __user * __user *arg)
+@@ -2126,12 +2128,13 @@ static int processcompl_compat(struct async *as, void __user * __user *arg)
  static int proc_reapurb_compat(struct usb_dev_state *ps, void __user *arg)
  {
  	struct async *as = reap_as(ps);
@@ -890,7 +890,7 @@ index 3f899552f6e3..1a9dd01e2684 100644
  		free_async(as);
  		return retval;
  	}
-@@ -2131,11 +2134,12 @@ static int proc_reapurbnonblock_compat(struct usb_dev_state *ps, void __user *ar
+@@ -2144,11 +2147,12 @@ static int proc_reapurbnonblock_compat(struct usb_dev_state *ps, void __user *ar
  {
  	int retval;
  	struct async *as;
@@ -1019,10 +1019,10 @@ index 497f979018c2..905e2de2f87a 100644
  			pr_warn("[%02x] %32phN\n", i * qty + j, block);
  		}
 diff --git a/fs/cifs/cifsacl.c b/fs/cifs/cifsacl.c
-index f842944a5c76..2b0295a47c66 100644
+index 96ae72b556ac..d967d4585651 100644
 --- a/fs/cifs/cifsacl.c
 +++ b/fs/cifs/cifsacl.c
-@@ -426,16 +426,20 @@ sid_to_id(struct cifs_sb_info *cifs_sb, struct cifs_sid *psid,
+@@ -424,16 +424,20 @@ sid_to_id(struct cifs_sb_info *cifs_sb, struct cifs_sid *psid,
  	}
  
  	if (sidtype == SIDOWNER) {
@@ -1062,7 +1062,7 @@ index 2fa2bc208383..7c392857a3d3 100644
 +#define memmove(t, f, l) ({ __same_pointer_depths_chk(t, f); memmove(t, f, l); })
 +#endif
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 5e88e7e33abe..fc2becbfaf2a 100644
+index 5e88e7e33abe..2428a11cbe88 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -8,6 +8,27 @@
@@ -1075,13 +1075,13 @@ index 5e88e7e33abe..fc2becbfaf2a 100644
 + * This is VERY ugly and a better way would be to insert the plugin before gcc
 + * inlines calls to memcpy, but I have not yet found how to do this.
 + */
-+static noinline __used void __same_pointer_depths_chk(const void *p1, const void *p2)
++static noinline notrace __used void __same_pointer_depths_chk(const void *p1, const void *p2)
 +{
 +}
-+static noinline __used void __same_pointer_depths_with_volatile1_chk(const volatile void *p1, const void *p2)
++static noinline notrace __used void __same_pointer_depths_with_volatile1_chk(const volatile void *p1, const void *p2)
 +{
 +}
-+static noinline __used void __same_pointer_depths_with_volatile2_chk(const void *p1, const volatile void *p2)
++static noinline notrace __used void __same_pointer_depths_with_volatile2_chk(const void *p1, const volatile void *p2)
 +{
 +}
 +#else
@@ -1110,7 +1110,7 @@ index 5e88e7e33abe..fc2becbfaf2a 100644
  	case 1: *(volatile __u8 *)p = *(__u8 *)res; break;
  	case 2: *(volatile __u16 *)p = *(__u16 *)res; break;
 diff --git a/include/linux/string.h b/include/linux/string.h
-index 3e2a4465e21a..88989c1141b7 100644
+index 0f2b431d5ce0..9d1927b46b17 100644
 --- a/include/linux/string.h
 +++ b/include/linux/string.h
 @@ -152,7 +152,13 @@ extern void * memmove(void *,const void *,__kernel_size_t);
@@ -1127,7 +1127,7 @@ index 3e2a4465e21a..88989c1141b7 100644
  #endif
  #ifndef __HAVE_ARCH_BCMP
  extern int bcmp(const void *,const void *,__kernel_size_t);
-@@ -268,6 +274,12 @@ void __read_overflow2(void) __compiletime_error("detected read beyond size of ob
+@@ -270,6 +276,12 @@ void __read_overflow2(void) __compiletime_error("detected read beyond size of ob
  void __read_overflow3(void) __compiletime_error("detected read beyond size of object passed as 3rd parameter");
  void __write_overflow(void) __compiletime_error("detected write beyond size of object passed as 1st parameter");
  
@@ -1140,7 +1140,7 @@ index 3e2a4465e21a..88989c1141b7 100644
  #if !defined(__NO_FORTIFY) && defined(__OPTIMIZE__) && defined(CONFIG_FORTIFY_SOURCE)
  __FORTIFY_INLINE char *strncpy(char *p, const char *q, __kernel_size_t size)
  {
-@@ -482,6 +494,12 @@ static inline void memcpy_and_pad(void *dest, size_t dest_len,
+@@ -484,6 +496,12 @@ static inline void memcpy_and_pad(void *dest, size_t dest_len,
  		memcpy(dest, src, dest_len);
  }
  
@@ -1154,10 +1154,10 @@ index 3e2a4465e21a..88989c1141b7 100644
   * str_has_prefix - Test if a string has a given prefix
   * @str: The string to test
 diff --git a/include/sound/pcm.h b/include/sound/pcm.h
-index bbe6eb1ff5d2..2ca8b06ed52a 100644
+index 8a89fa6fdd5e..9146b4b47b55 100644
 --- a/include/sound/pcm.h
 +++ b/include/sound/pcm.h
-@@ -1079,14 +1079,18 @@ static inline snd_pcm_sframes_t
+@@ -1083,14 +1083,18 @@ static inline snd_pcm_sframes_t
  snd_pcm_lib_writev(struct snd_pcm_substream *substream,
  		   void __user **bufs, snd_pcm_uframes_t frames)
  {
@@ -1178,7 +1178,7 @@ index bbe6eb1ff5d2..2ca8b06ed52a 100644
  }
  
  static inline snd_pcm_sframes_t
-@@ -1107,14 +1111,18 @@ static inline snd_pcm_sframes_t
+@@ -1111,14 +1115,18 @@ static inline snd_pcm_sframes_t
  snd_pcm_kernel_writev(struct snd_pcm_substream *substream,
  		      void **bufs, snd_pcm_uframes_t frames)
  {
@@ -1200,7 +1200,7 @@ index bbe6eb1ff5d2..2ca8b06ed52a 100644
  
  int snd_pcm_limit_hw_rates(struct snd_pcm_runtime *runtime);
 diff --git a/include/trace/bpf_probe.h b/include/trace/bpf_probe.h
-index d6e556c0a085..0f4b53b8bded 100644
+index b04c29270973..5c79e01c181f 100644
 --- a/include/trace/bpf_probe.h
 +++ b/include/trace/bpf_probe.h
 @@ -37,7 +37,7 @@
@@ -1253,10 +1253,10 @@ index b8e6306e7e13..391a757fa7a1 100644
  			debug_kfree(knt1);
  			knt1 = kdb_name_table[i];
 diff --git a/kernel/futex.c b/kernel/futex.c
-index bd18f60e4c6c..1304f1914b9c 100644
+index 03c518e9747e..d445cdd26b75 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -3775,8 +3775,10 @@ void compat_exit_robust_list(struct task_struct *curr)
+@@ -4012,8 +4012,10 @@ static void compat_exit_robust_list(struct task_struct *curr)
  		 * Fetch the next entry in the list before calling
  		 * handle_futex_death:
  		 */
@@ -1269,10 +1269,10 @@ index bd18f60e4c6c..1304f1914b9c 100644
  		 * A pending lock might already be on the list, so
  		 * dont process it twice:
 diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
-index ab4a4606d19b..802c6e689f80 100644
+index c3512e7e0801..edbda11cf783 100644
 --- a/kernel/livepatch/core.c
 +++ b/kernel/livepatch/core.c
-@@ -735,9 +735,11 @@ static int klp_init_object_loaded(struct klp_patch *patch,
+@@ -753,9 +753,11 @@ static int klp_init_object_loaded(struct klp_patch *patch,
  	mutex_unlock(&text_mutex);
  
  	klp_for_each_func(obj, func) {
@@ -1286,10 +1286,10 @@ index ab4a4606d19b..802c6e689f80 100644
  			return ret;
  
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 6a0ee9178365..67e2449b37e2 100644
+index 23459d53d576..92269013b184 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -7730,7 +7730,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
+@@ -7834,7 +7834,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
  	 * We use the callback data field (which is a pointer)
  	 * as our counter.
  	 */
@@ -1332,10 +1332,10 @@ index b611cd36e22d..a38cbe9973e1 100644
  	return ret < 0 ? ret : 0;
  }
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 1552a95c743b..1ffceb3c5362 100644
+index 7f890262c8a3..8f950e2a898c 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
-@@ -773,28 +773,34 @@ static int trace_kprobe_create(int argc, const char *argv[])
+@@ -794,28 +794,34 @@ static int trace_kprobe_create(int argc, const char *argv[])
  
  	/* try to parse an address. if that fails, try to read the
  	 * input as a symbol. */
@@ -1393,10 +1393,10 @@ index 1552a95c743b..1ffceb3c5362 100644
  	}
  
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index ee4ffd8cb1d5..7120fea240ae 100644
+index 29248e824510..7f5a0952c538 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -4574,7 +4574,7 @@ EXPORT_SYMBOL_GPL(set_worker_desc);
+@@ -4606,7 +4606,7 @@ EXPORT_SYMBOL_GPL(set_worker_desc);
   */
  void print_worker_info(const char *log_lvl, struct task_struct *task)
  {
@@ -1424,10 +1424,10 @@ index a2b395acef89..af8e1419e7ce 100644
  }
  
 diff --git a/mm/slub.c b/mm/slub.c
-index ec1b31b3a940..8ec1e4edf805 100644
+index 059bed7b2b4c..a51eca561e9c 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -288,13 +288,15 @@ static void prefetch_freepointer(const struct kmem_cache *s, void *object)
+@@ -286,13 +286,15 @@ static void prefetch_freepointer(const struct kmem_cache *s, void *object)
  static inline void *get_freepointer_safe(struct kmem_cache *s, void *object)
  {
  	unsigned long freepointer_addr;
@@ -2012,10 +2012,10 @@ index 000000000000..edeb3ad8ea19
 +	return 0;
 +}
 diff --git a/security/apparmor/apparmorfs.c b/security/apparmor/apparmorfs.c
-index 45d13b6462aa..eb9c2ec9370a 100644
+index 09996f2552ee..34b1e4d51399 100644
 --- a/security/apparmor/apparmorfs.c
 +++ b/security/apparmor/apparmorfs.c
-@@ -702,8 +702,15 @@ static ssize_t query_data(char *buf, size_t buf_len,
+@@ -732,8 +732,15 @@ static ssize_t query_data(char *buf, size_t buf_len,
  		if (!profile->data)
  			continue;
  
@@ -2034,10 +2034,10 @@ index 45d13b6462aa..eb9c2ec9370a 100644
  		if (data) {
  			if (out + sizeof(outle32) + data->size > buf +
 diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-index 91c6ad58729f..7e3ecfa2140b 100644
+index 1fe581167b7b..55bbdbf29966 100644
 --- a/sound/core/pcm_native.c
 +++ b/sound/core/pcm_native.c
-@@ -2823,7 +2823,7 @@ static int snd_pcm_xfern_frames_ioctl(struct snd_pcm_substream *substream,
+@@ -2865,7 +2865,7 @@ static int snd_pcm_xfern_frames_ioctl(struct snd_pcm_substream *substream,
  {
  	struct snd_xfern xfern;
  	struct snd_pcm_runtime *runtime = substream->runtime;

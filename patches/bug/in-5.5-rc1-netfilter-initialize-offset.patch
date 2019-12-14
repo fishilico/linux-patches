@@ -1,0 +1,60 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 1 Dec 2019 17:24:24 +0100
+Subject: [PATCH] {BUG in 5.5-rc1} netfilter: initialize offset
+
+clang report on x86-64:
+
+    net/netfilter/nf_flow_table_offload.c:342:2: error: variable
+    'offset' is used uninitialized whenever switch default is taken
+    [-Werror,-Wsometimes-uninitialized]
+            default:
+            ^~~~~~~
+    net/netfilter/nf_flow_table_offload.c:346:57: note: uninitialized
+    use occurs here
+            flow_offload_mangle(entry, flow_offload_l4proto(flow), offset,
+                                                                   ^~~~~~
+    net/netfilter/nf_flow_table_offload.c:331:12: note: initialize the
+    variable 'offset' to silence this warning
+            u32 offset;
+                      ^
+                       = 0
+    net/netfilter/nf_flow_table_offload.c:369:2: error: variable
+    'offset' is used uninitialized whenever switch default is taken
+    [-Werror,-Wsometimes-uninitialized]
+            default:
+            ^~~~~~~
+    net/netfilter/nf_flow_table_offload.c:373:57: note: uninitialized
+    use occurs here
+            flow_offload_mangle(entry, flow_offload_l4proto(flow), offset,
+                                                                   ^~~~~~
+    net/netfilter/nf_flow_table_offload.c:358:12: note: initialize the
+    variable 'offset' to silence this warning
+            u32 offset;
+                      ^
+                       = 0
+---
+ net/netfilter/nf_flow_table_offload.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/net/netfilter/nf_flow_table_offload.c b/net/netfilter/nf_flow_table_offload.c
+index c54c9a6cc981..7ff4497ddd9f 100644
+--- a/net/netfilter/nf_flow_table_offload.c
++++ b/net/netfilter/nf_flow_table_offload.c
+@@ -340,6 +340,7 @@ static void flow_offload_port_snat(struct net *net,
+ 		offset = 0; /* offsetof(struct tcphdr, dest); */
+ 		break;
+ 	default:
++		offset = 0; /* BUG uninitialized? */
+ 		break;
+ 	}
+ 
+@@ -367,6 +368,7 @@ static void flow_offload_port_dnat(struct net *net,
+ 		offset = 0; /* offsetof(struct tcphdr, dest); */
+ 		break;
+ 	default:
++		offset = 0; /* BUG uninitialized? */
+ 		break;
+ 	}
+ 
+-- 

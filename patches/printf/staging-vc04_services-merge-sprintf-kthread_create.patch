@@ -25,52 +25,36 @@ This silents a -Wformat-security warning found by clang:
             kthread_create_on_node(threadfn, data, NUMA_NO_NODE, namefmt, ##arg)
                                                                  ^
 ---
- .../interface/vchiq_arm/vchiq_arm.c           | 11 ++++-------
+ .../interface/vchiq_arm/vchiq_arm.c           |  2 +-
  .../interface/vchiq_arm/vchiq_core.c          | 19 +++++++++----------
- 2 files changed, 13 insertions(+), 17 deletions(-)
+ 2 files changed, 10 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
-index b1595b13dea8..bbc56dcc243f 100644
+index 02148a24818a..80c874aa8d62 100644
 --- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
 +++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
-@@ -3138,20 +3138,17 @@ void vchiq_platform_conn_state_changed(struct vchiq_state *state,
- 	if (state->conn_state == VCHIQ_CONNSTATE_CONNECTED) {
- 		write_lock_bh(&arm_state->susp_res_lock);
- 		if (!arm_state->first_connect) {
--			char threadname[16];
--
- 			arm_state->first_connect = 1;
- 			write_unlock_bh(&arm_state->susp_res_lock);
--			snprintf(threadname, sizeof(threadname), "vchiq-keep/%d",
--				state->id);
- 			arm_state->ka_thread = kthread_create(
- 				&vchiq_keepalive_thread_func,
- 				(void *)state,
--				threadname);
-+				"vchiq-keep/%d",
-+				state->id);
- 			if (IS_ERR(arm_state->ka_thread)) {
- 				vchiq_log_error(vchiq_susp_log_level,
--					"vchiq: FATAL: couldn't create thread %s",
--					threadname);
-+					"vchiq: FATAL: couldn't create thread vchiq-keep/%d",
-+					state->id);
- 			} else {
- 				wake_up_process(arm_state->ka_thread);
- 			}
+@@ -3160,7 +3160,7 @@ void vchiq_platform_conn_state_changed(struct vchiq_state *state,
+ 		 state->id);
+ 	arm_state->ka_thread = kthread_create(&vchiq_keepalive_thread_func,
+ 					      (void *)state,
+-					      threadname);
++					      "%s", threadname);
+ 	if (IS_ERR(arm_state->ka_thread)) {
+ 		vchiq_log_error(vchiq_susp_log_level,
+ 				"vchiq: FATAL: couldn't create thread %s",
 diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
-index 56a23a297fa4..7d64e4fb0101 100644
+index 76351078affb..c41043008e2f 100644
 --- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
 +++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
 @@ -2129,7 +2129,6 @@ vchiq_init_state(struct vchiq_state *state, struct vchiq_slot_zero *slot_zero)
  	struct vchiq_shared_state *local;
  	struct vchiq_shared_state *remote;
- 	VCHIQ_STATUS_T status;
+ 	enum vchiq_status status;
 -	char threadname[16];
  	int i;
  
- 	vchiq_log_warning(vchiq_core_log_level,
-@@ -2223,38 +2222,38 @@ vchiq_init_state(struct vchiq_state *state, struct vchiq_slot_zero *slot_zero)
+ 	if (vchiq_states[0]) {
+@@ -2220,38 +2219,38 @@ vchiq_init_state(struct vchiq_state *state, struct vchiq_slot_zero *slot_zero)
  	/*
  		bring up slot handler thread
  	 */

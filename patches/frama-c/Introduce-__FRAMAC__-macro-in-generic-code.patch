@@ -18,7 +18,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  include/linux/compiler.h        |  21 +++++
  include/linux/compiler_types.h  |   2 +-
  include/linux/cpumask.h         |   5 ++
- include/linux/crypto.h          |  11 ++-
+ include/linux/crypto.h          |   7 +-
  include/linux/delay.h           |  15 +++-
  include/linux/flex_array.h      | 152 ++++++++++++++++++++++++++++++++
  include/linux/kernel.h          |   5 ++
@@ -33,7 +33,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  kernel/signal.c                 |   2 +-
  kernel/time/time.c              |   4 +
  lib/hexdump.c                   |  10 ++-
- 21 files changed, 266 insertions(+), 14 deletions(-)
+ 21 files changed, 263 insertions(+), 13 deletions(-)
  create mode 100644 include/linux/flex_array.h
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
@@ -100,10 +100,10 @@ index e935318804f8..33cafe921495 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 4387b4e5e09e..dd62d1f80948 100644
+index 53c8e5e4d8e7..c242f1b43e8e 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
-@@ -29,6 +29,27 @@ static noinline __used void __same_pointer_depths_with_volatile2_chk(const void
+@@ -29,6 +29,27 @@ static noinline notrace __used void __same_pointer_depths_with_volatile2_chk(con
  #define __same_pointer_depths_with_volatile2_chk(p1, p2) do { } while (0)
  #endif
  
@@ -164,21 +164,10 @@ index 78a73eba64dd..6eeb073dc590 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 96b6613dabdd..67482f17a75d 100644
+index 183240715cfd..c4423958cfc8 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -173,7 +173,9 @@ struct ablkcipher_request {
- 	struct scatterlist *src;
- 	struct scatterlist *dst;
- 
--	void *__ctx[] CRYPTO_MINALIGN_ATTR;
-+	void *__ctx[0] CRYPTO_MINALIGN_ATTR; /* Add [0] to silence Frama-C error:
-+linux: include/crypto/skcipher.h:48:[kernel] user error: field creq is declared with incomplete type struct ablkcipher_request
-+*/
- };
- 
- struct blkcipher_desc {
-@@ -773,7 +775,12 @@ struct crypto_tfm {
+@@ -631,7 +631,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -191,7 +180,7 @@ index 96b6613dabdd..67482f17a75d 100644
 +*/
  };
  
- struct crypto_ablkcipher {
+ struct crypto_cipher {
 diff --git a/include/linux/delay.h b/include/linux/delay.h
 index 8e6828094c1e..0afdf9074c4d 100644
 --- a/include/linux/delay.h
@@ -377,7 +366,7 @@ index 000000000000..ffd6208aabbd
 +
 +#endif /* _FLEX_ARRAY_H */
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 76c7704cce66..d5d088f37d90 100644
+index bcb5fdd41db1..d6ab7d97bcf5 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -274,6 +274,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
@@ -466,7 +455,7 @@ index 659045046468..c60209574fc5 100644
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index f9088c89a534..d6e6ab825b55 100644
+index c393dff2d66f..5bbd44ec6434 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -143,6 +143,8 @@ typedef int __bitwise pci_power_t;
@@ -487,7 +476,7 @@ index f9088c89a534..d6e6ab825b55 100644
  /**
   * typedef pci_channel_state_t
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index bc0c58b7c353..5f478137ae1a 100644
+index 083bc56825ca..4b3236ea2d41 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -232,6 +232,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
@@ -562,10 +551,10 @@ index bcd46f547db3..a0cde8790021 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index 5c54ca632d08..7e07a77f7042 100644
+index 704ccd9451b0..5c50300f15bb 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
-@@ -523,17 +523,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
+@@ -521,17 +521,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);
  void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
  {
  	while (nsec >= NSEC_PER_SEC) {

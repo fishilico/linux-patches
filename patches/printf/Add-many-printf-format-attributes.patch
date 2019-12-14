@@ -24,7 +24,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  include/linux/iio/trigger_consumer.h        |  2 +-
  include/linux/trace_events.h                |  3 ++-
  kernel/audit.c                              |  4 ++--
- kernel/trace/trace.h                        |  8 +++++---
+ kernel/trace/trace.h                        |  6 +++---
  kernel/trace/trace_output.c                 |  6 +++---
  net/dccp/ccid.c                             |  3 ++-
  net/tipc/netlink_compat.c                   |  2 +-
@@ -32,13 +32,13 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  scripts/unifdef.c                           |  2 +-
  security/tomoyo/common.c                    |  3 ++-
  security/tomoyo/common.h                    |  4 ++--
- 28 files changed, 65 insertions(+), 52 deletions(-)
+ 28 files changed, 63 insertions(+), 52 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
-index a93d44e58f9c..73349d9a27be 100644
+index 55e669d29e54..c56e01ac81e2 100644
 --- a/arch/x86/boot/tools/build.c
 +++ b/arch/x86/boot/tools/build.c
-@@ -127,7 +127,8 @@ static u32 partial_crc32(const u8 *s, int len, u32 crc)
+@@ -128,7 +128,8 @@ static u32 partial_crc32(const u8 *s, int len, u32 crc)
  	return crc;
  }
  
@@ -186,7 +186,7 @@ index 65fdf22b0ba9..3349670b09de 100644
  	if (level <= event_log_level) {
  		unsigned long flags = 0;
 diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index 9b6bdb62093d..8a3e3ec21d8a 100644
+index 5f782da51959..eb34f68b078b 100644
 --- a/drivers/staging/fbtft/fbtft.h
 +++ b/drivers/staging/fbtft/fbtft.h
 @@ -240,7 +240,7 @@ struct fbtft_par {
@@ -339,10 +339,10 @@ index 2e63b7b390f5..aa6bc67df34d 100644
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
 diff --git a/include/linux/iio/iio.h b/include/linux/iio/iio.h
-index 8e132cf819e4..6bfe23790c53 100644
+index 862ce0019eba..d4b697ebd09b 100644
 --- a/include/linux/iio/iio.h
 +++ b/include/linux/iio/iio.h
-@@ -691,7 +691,7 @@ void iio_device_free(struct iio_dev *indio_dev);
+@@ -693,7 +693,7 @@ void iio_device_free(struct iio_dev *indio_dev);
  int devm_iio_device_match(struct device *dev, void *res, void *data);
  struct iio_dev *devm_iio_device_alloc(struct device *dev, int sizeof_priv);
  void devm_iio_device_free(struct device *dev, struct iio_dev *indio_dev);
@@ -365,10 +365,10 @@ index c3c6ba5ec423..29f184893c88 100644
  		    irqreturn_t (*thread)(int irq, void *p),
  		    int type,
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index 30a8cdcfd4a4..c12f47dcef0e 100644
+index 4c6e15605766..7b237658986f 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
-@@ -163,7 +163,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
+@@ -168,7 +168,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
  void tracing_record_cmdline(struct task_struct *task);
  void tracing_record_tgid(struct task_struct *task);
  
@@ -379,7 +379,7 @@ index 30a8cdcfd4a4..c12f47dcef0e 100644
  struct event_filter;
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index da8dc0db5bd3..15965b792c85 100644
+index 8e09f0f55b4b..8bee2db6ae02 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
 @@ -1833,8 +1833,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
@@ -394,10 +394,10 @@ index da8dc0db5bd3..15965b792c85 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index d685c61085c0..03acfa0eb76c 100644
+index 63bf60f79398..b0724df41f39 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -846,15 +846,17 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -866,11 +866,11 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -411,18 +411,12 @@ index d685c61085c0..03acfa0eb76c 100644
 +extern __printf(3, 0) int
  trace_array_vprintk(struct trace_array *tr,
  		    unsigned long ip, const char *fmt, va_list args);
-+extern __printf(3, 4)
- int trace_array_printk(struct trace_array *tr,
- 		       unsigned long ip, const char *fmt, ...);
-+extern __printf(3, 4)
  int trace_array_printk_buf(struct ring_buffer *buffer,
- 			   unsigned long ip, const char *fmt, ...);
- void trace_printk_seq(struct trace_seq *s);
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index d54ce252b05a..ccd4ee0027ea 100644
+index d9b4b7c22db4..a3c5829f0aa3 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
-@@ -297,8 +297,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
+@@ -312,8 +312,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
  }
  EXPORT_SYMBOL(trace_raw_output_prep);
  
@@ -433,7 +427,7 @@ index d54ce252b05a..ccd4ee0027ea 100644
  {
  	struct trace_seq *s = &iter->seq;
  
-@@ -308,7 +308,7 @@ static int trace_output_raw(struct trace_iterator *iter, char *name,
+@@ -323,7 +323,7 @@ static int trace_output_raw(struct trace_iterator *iter, char *name,
  	return trace_handle_return(s);
  }
  
@@ -457,7 +451,7 @@ index 1e9bb121ba72..e265a1c5e1ea 100644
  	struct kmem_cache *slab;
  	va_list args;
 diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
-index e135d4e11231..9b5f115333bf 100644
+index 0254bb7e418b..2601554e6207 100644
 --- a/net/tipc/netlink_compat.c
 +++ b/net/tipc/netlink_compat.c
 @@ -118,7 +118,7 @@ static void tipc_tlv_init(struct sk_buff *skb, u16 type)
@@ -470,10 +464,10 @@ index e135d4e11231..9b5f115333bf 100644
  	int n;
  	u16 len;
 diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
-index ad271bc6c313..9091455ab67f 100644
+index 64a82d2d85f6..c622a07bf3aa 100644
 --- a/scripts/mod/modpost.h
 +++ b/scripts/mod/modpost.h
-@@ -199,6 +199,6 @@ void *grab_file(const char *filename, unsigned long *size);
+@@ -198,6 +198,6 @@ void *grab_file(const char *filename, unsigned long *size);
  char* get_next_line(unsigned long *pos, void *file, unsigned long size);
  void release_file(void *file, unsigned long size);
  
