@@ -7,12 +7,12 @@ Subject: [PATCH] {CONSTIFY} init/do_mounts: constify a few things including
 ---
  fs/namespace.c           | 10 +++++-----
  include/linux/syscalls.h | 12 ++++++------
- init/do_mounts.c         |  4 ++--
+ init/do_mounts.c         |  2 +-
  init/do_mounts.h         |  4 ++--
- 4 files changed, 15 insertions(+), 15 deletions(-)
+ 4 files changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 2fd0c8bcb8c1..ab9498ff940a 100644
+index be601d3a8008..12ea70ccf844 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
 @@ -1664,7 +1664,7 @@ static inline bool may_mandlock(void)
@@ -42,19 +42,19 @@ index 2fd0c8bcb8c1..ab9498ff940a 100644
  {
  	return ksys_umount(name, 0);
  }
-@@ -3359,8 +3359,8 @@ int ksys_mount(const char __user *dev_name, const char __user *dir_name,
- 	return ret;
+@@ -3325,8 +3325,8 @@ struct dentry *mount_subtree(struct vfsmount *m, const char *name)
  }
+ EXPORT_SYMBOL(mount_subtree);
  
 -SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 -		char __user *, type, unsigned long, flags, void __user *, data)
 +SYSCALL_DEFINE5(mount, const char __user *, dev_name, const char __user *, dir_name,
 +		const char __user *, type, unsigned long, flags, const void __user *, data)
  {
- 	return ksys_mount(dev_name, dir_name, type, flags, data);
- }
+ 	int ret;
+ 	char *kernel_type;
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index d0391cc2dae9..5d5cd68a023f 100644
+index 2960dedcfde8..b6937a3fabc7 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -403,10 +403,10 @@ asmlinkage long sys_renameat(int olddfd, const char __user * oldname,
@@ -81,30 +81,21 @@ index d0391cc2dae9..5d5cd68a023f 100644
  asmlinkage long sys_uselib(const char __user *library);
  asmlinkage long sys_sysctl(struct __sysctl_args __user *args);
  asmlinkage long sys_sysfs(int option,
-@@ -1233,7 +1233,7 @@ asmlinkage long sys_ni_syscall(void);
+@@ -1231,7 +1231,7 @@ asmlinkage long sys_ni_syscall(void);
+  * the ksys_xyzyyz() functions prototyped below.
+  */
  
- int ksys_mount(const char __user *dev_name, const char __user *dir_name,
- 	       const char __user *type, unsigned long flags, void __user *data);
 -int ksys_umount(char __user *name, int flags);
 +int ksys_umount(const char __user *name, int flags);
- int ksys_dup(unsigned int fildes);
  int ksys_chroot(const char __user *filename);
  ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count);
+ int ksys_chdir(const char __user *filename);
 diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 476a3b12a9fd..d93db77fedbc 100644
+index a11dd74f406f..4ab4d394ae9f 100644
 --- a/init/do_mounts.c
 +++ b/init/do_mounts.c
-@@ -387,7 +387,7 @@ static void __init get_fs_names(char *page)
- 	*s = '\0';
- }
- 
--static int __init do_mount_root(char *name, char *fs, int flags, void *data)
-+static int __init do_mount_root(const char *name, const char *fs, int flags, const void *data)
- {
- 	struct super_block *s;
- 	int err = ksys_mount(name, "/root", fs, flags, data);
-@@ -405,7 +405,7 @@ static int __init do_mount_root(char *name, char *fs, int flags, void *data)
- 	return 0;
+@@ -421,7 +421,7 @@ static int __init do_mount_root(const char *name, const char *fs,
+ 	return ret;
  }
  
 -void __init mount_block_root(char *name, int flags)
