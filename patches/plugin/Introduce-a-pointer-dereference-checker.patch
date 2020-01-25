@@ -88,6 +88,7 @@ It has also detected some bugs reported and fixed by other people:
  kernel/trace/trace_functions.c                |   6 +-
  kernel/trace/trace_kprobe.c                   |  50 +-
  kernel/workqueue.c                            |   2 +-
+ mm/hugetlb.c                                  |   4 +-
  mm/percpu-vm.c                                |   7 +-
  mm/slub.c                                     |   6 +-
  net/core/drop_monitor.c                       |  10 +-
@@ -100,7 +101,7 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/deref_checker_plugin.c    | 445 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 71 files changed, 826 insertions(+), 120 deletions(-)
+ 72 files changed, 829 insertions(+), 121 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
@@ -1405,6 +1406,21 @@ index 7752382ce838..df5ee902a33d 100644
  	char name[WQ_NAME_LEN] = { };
  	char desc[WORKER_DESC_LEN] = { };
  	struct pool_workqueue *pwq = NULL;
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index dd8737a94bec..632ae5bd4888 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1239,7 +1239,9 @@ void free_huge_page(struct page *page)
+ 		 * empty. Otherwise, schedule_work() had been called but the
+ 		 * workfn hasn't retrieved the list yet.
+ 		 */
+-		if (llist_add((struct llist_node *)&page->mapping,
++		/* Play nice with the pointer deref checker */
++		struct llist_node *page_mapping = (struct llist_node *)&page->mapping;
++		if (llist_add(page_mapping,
+ 			      &hpage_freelist))
+ 			schedule_work(&free_hpage_work);
+ 		return;
 diff --git a/mm/percpu-vm.c b/mm/percpu-vm.c
 index a2b395acef89..af8e1419e7ce 100644
 --- a/mm/percpu-vm.c
@@ -1520,7 +1536,7 @@ index 6c3f35fac42d..f53d952b2282 100644
  	ci = crypto_alloc_skcipher("pcbc(des)", 0, CRYPTO_ALG_ASYNC);
  	if (IS_ERR(ci)) {
 diff --git a/net/rxrpc/rxkad.c b/net/rxrpc/rxkad.c
-index 6a42088c6200..1f024ec08d7a 100644
+index 654526eb23a0..2d4a1436af25 100644
 --- a/net/rxrpc/rxkad.c
 +++ b/net/rxrpc/rxkad.c
 @@ -930,7 +930,7 @@ static int rxkad_decrypt_ticket(struct rxrpc_connection *conn,
@@ -1546,10 +1562,10 @@ index b74fe31ff37f..40efdfbb46fb 100644
  
  gcc-plugin-$(CONFIG_GCC_PLUGIN_STRUCTLEAK)	+= structleak_plugin.so
 diff --git a/scripts/gcc-plugins/Kconfig b/scripts/gcc-plugins/Kconfig
-index 2256d93fee8c..73331d72105d 100644
+index e40972fe813c..58b6ba32b2bc 100644
 --- a/scripts/gcc-plugins/Kconfig
 +++ b/scripts/gcc-plugins/Kconfig
-@@ -120,4 +120,10 @@ config GCC_PLUGIN_PRINTK_FORMAT
+@@ -119,4 +119,10 @@ config GCC_PLUGIN_PRINTK_FORMAT
  	  Check printk format strings with kernel specs.
  	  This is complementary to -Wformat-security and -Wformat=2 flags.
  
@@ -1559,7 +1575,7 @@ index 2256d93fee8c..73331d72105d 100644
 +	help
 +	  Check function calls involving pointers about some consistencies.
 +
- endmenu
+ endif
 diff --git a/scripts/gcc-plugins/deref_checker_plugin.c b/scripts/gcc-plugins/deref_checker_plugin.c
 new file mode 100644
 index 000000000000..edeb3ad8ea19
@@ -2012,7 +2028,7 @@ index 000000000000..edeb3ad8ea19
 +	return 0;
 +}
 diff --git a/security/apparmor/apparmorfs.c b/security/apparmor/apparmorfs.c
-index 09996f2552ee..34b1e4d51399 100644
+index 47aff8700547..5c697aff0599 100644
 --- a/security/apparmor/apparmorfs.c
 +++ b/security/apparmor/apparmorfs.c
 @@ -732,8 +732,15 @@ static ssize_t query_data(char *buf, size_t buf_len,
