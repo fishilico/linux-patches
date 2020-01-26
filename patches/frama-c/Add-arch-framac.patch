@@ -4,7 +4,7 @@ Date: Tue, 27 Dec 2016 19:09:50 +0100
 Subject: [PATCH] {FRAMA-C} Add arch/framac
 
 ---
- arch/framac/Kconfig                    |  57 +++++++++++
+ arch/framac/Kconfig                    |  58 +++++++++++
  arch/framac/Kconfig.debug              |   1 +
  arch/framac/Makefile                   |  29 ++++++
  arch/framac/extra/Makefile             |  13 +++
@@ -41,7 +41,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/delay.c                |  27 ++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 +++
- 37 files changed, 1040 insertions(+)
+ 37 files changed, 1041 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Kconfig.debug
  create mode 100644 arch/framac/Makefile
@@ -82,10 +82,10 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
 
 diff --git a/arch/framac/Kconfig b/arch/framac/Kconfig
 new file mode 100644
-index 000000000000..1fe61f9cdc25
+index 000000000000..6468f618fbd0
 --- /dev/null
 +++ b/arch/framac/Kconfig
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,58 @@
 +comment "Linux Kernel Configuration for Frama-C"
 +
 +config FRAMA_C
@@ -98,6 +98,7 @@ index 000000000000..1fe61f9cdc25
 +	select GENERIC_FIND_FIRST_BIT
 +	select GENERIC_IRQ_PROBE
 +	select GENERIC_IRQ_SHOW
++	select HAVE_COPY_THREAD_TLS
 +	---help---
 +	  Frama-C is a static C program checker
 +
@@ -1076,14 +1077,14 @@ index 000000000000..a280c0b95bae
 +#endif
 diff --git a/arch/framac/kernel/process.c b/arch/framac/kernel/process.c
 new file mode 100644
-index 000000000000..beecac689061
+index 000000000000..2ed0fea5ac4f
 --- /dev/null
 +++ b/arch/framac/kernel/process.c
 @@ -0,0 +1,40 @@
 +#include <linux/sched/task_stack.h>
 +
-+int copy_thread(unsigned long clone_flags, unsigned long stack_start,
-+		unsigned long stk_sz, struct task_struct *p)
++int copy_thread_tls(unsigned long clone_flags, unsigned long stack_start,
++		unsigned long stk_sz, struct task_struct *p, unsigned long tls)
 +{
 +	struct pt_regs *childregs = task_pt_regs(p);
 +
