@@ -38,6 +38,7 @@ This fixes errors like:
  drivers/net/hamradio/baycom_epp.c            |   5 +-
  drivers/net/hamradio/mkiss.c                 |  14 +-
  drivers/net/wan/z85230.c                     |   4 +-
+ drivers/ptp/ptp_clockmatrix.c                |   3 +-
  drivers/remoteproc/keystone_remoteproc.c     |   5 +-
  drivers/scsi/esas2r/esas2r_log.c             |   6 +-
  drivers/scsi/fnic/fnic_trace.c               |   5 +-
@@ -52,7 +53,7 @@ This fixes errors like:
  net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
- 26 files changed, 165 insertions(+), 270 deletions(-)
+ 27 files changed, 166 insertions(+), 272 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 418a61ecb827..06b14af43421 100644
@@ -170,10 +171,10 @@ index a0c4c42e56b9..8b651f5f9cac 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 304d31d8cbbc..1e6eb96f464e 100644
+index fa4ea09593ab..4a4f7461ce4c 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
-@@ -396,15 +396,6 @@ static noinline int vmalloc_fault(unsigned long address)
+@@ -397,15 +397,6 @@ static noinline int vmalloc_fault(unsigned long address)
  }
  NOKPROBE_SYMBOL(vmalloc_fault);
  
@@ -189,7 +190,7 @@ index 304d31d8cbbc..1e6eb96f464e 100644
  /*
   * No vm86 mode in 64-bit mode:
   */
-@@ -506,7 +497,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+@@ -507,7 +498,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  	address |= 0xffffffffUL << 32;
  	if ((address >= (u64)_stext && address <= (u64)_etext) ||
  	    (address >= MODULES_VADDR && address <= MODULES_END)) {
@@ -204,10 +205,10 @@ index 304d31d8cbbc..1e6eb96f464e 100644
  		return 1;
  	}
 diff --git a/arch/x86/platform/intel-quark/imr_selftest.c b/arch/x86/platform/intel-quark/imr_selftest.c
-index 42f879b75f9b..9387220e6fd8 100644
+index 4307830e1b6f..c28482293686 100644
 --- a/arch/x86/platform/intel-quark/imr_selftest.c
 +++ b/arch/x86/platform/intel-quark/imr_selftest.c
-@@ -58,7 +58,6 @@ static void __init imr_self_test(void)
+@@ -60,7 +60,6 @@ static void __init imr_self_test(void)
  {
  	phys_addr_t base  = virt_to_phys(&_text);
  	size_t size = virt_to_phys(&__end_rodata) - base;
@@ -215,7 +216,7 @@ index 42f879b75f9b..9387220e6fd8 100644
  	int ret;
  
  	/* Test zero zero. */
-@@ -67,17 +66,17 @@ static void __init imr_self_test(void)
+@@ -69,17 +68,17 @@ static void __init imr_self_test(void)
  
  	/* Test exact overlap. */
  	ret = imr_add_range(base, size, IMR_CPU, IMR_CPU);
@@ -271,7 +272,7 @@ index 8e19bfa94121..4ba1b2fbe62f 100644
  		p += bytes;						\
  		len -= bytes;						\
 diff --git a/drivers/misc/pti.c b/drivers/misc/pti.c
-index 359c5bab45ac..9f1a3036def9 100644
+index b7f510676cd6..0e2a7e493803 100644
 --- a/drivers/misc/pti.c
 +++ b/drivers/misc/pti.c
 @@ -165,7 +165,6 @@ static void pti_control_frame_built_and_sent(struct pti_masterchannel *mc,
@@ -436,6 +437,27 @@ index 7ad3d24195ba..6cd103cbd4dd 100644
  	return 0;
  }
  module_init(z85230_init_driver);
+diff --git a/drivers/ptp/ptp_clockmatrix.c b/drivers/ptp/ptp_clockmatrix.c
+index 032e112c3dd9..bd1cf6e77c53 100644
+--- a/drivers/ptp/ptp_clockmatrix.c
++++ b/drivers/ptp/ptp_clockmatrix.c
+@@ -1036,7 +1036,6 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
+ 	u16 product_id;
+ 	u8 hw_rev_id;
+ 	u8 config_select;
+-	char *fmt = "%d.%d.%d, Id: 0x%04x  HW Rev: %d  OTP Config Select: %d\n";
+ 
+ 	idtcm_read_major_release(idtcm, &major);
+ 	idtcm_read_minor_release(idtcm, &minor);
+@@ -1047,7 +1046,7 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
+ 
+ 	idtcm_read_otp_scsr_config_select(idtcm, &config_select);
+ 
+-	dev_info(&idtcm->client->dev, fmt, major, minor, hotfix,
++	dev_info(&idtcm->client->dev, "%d.%d.%d, Id: 0x%04x  HW Rev: %d  OTP Config Select: %d\n", major, minor, hotfix,
+ 		 product_id, hw_rev_id, config_select);
+ }
+ 
 diff --git a/drivers/remoteproc/keystone_remoteproc.c b/drivers/remoteproc/keystone_remoteproc.c
 index 5c4658f00b3d..03945f53eaf6 100644
 --- a/drivers/remoteproc/keystone_remoteproc.c
@@ -514,10 +536,10 @@ index a0d01aea28f7..426c62f636ce 100644
  		tm.tm_hour, tm.tm_min, tm.tm_sec,
  		tdata->time_stamp.tv_nsec, tdata->host_no,
 diff --git a/drivers/tty/n_hdlc.c b/drivers/tty/n_hdlc.c
-index 98361acd3053..4823e2c962bd 100644
+index 27b506bf03ce..53f54a4195c9 100644
 --- a/drivers/tty/n_hdlc.c
 +++ b/drivers/tty/n_hdlc.c
-@@ -939,13 +939,6 @@ static struct n_hdlc_buf *n_hdlc_buf_get(struct n_hdlc_buf_list *buf_list)
+@@ -938,13 +938,6 @@ static struct n_hdlc_buf *n_hdlc_buf_get(struct n_hdlc_buf_list *buf_list)
  	return buf;
  }	/* end of n_hdlc_buf_get() */
  
@@ -531,7 +553,7 @@ index 98361acd3053..4823e2c962bd 100644
  static int __init n_hdlc_init(void)
  {
  	int status;
-@@ -956,13 +949,13 @@ static int __init n_hdlc_init(void)
+@@ -955,13 +948,13 @@ static int __init n_hdlc_init(void)
  	else if (maxframe > 65535)
  		maxframe = 65535;
  
@@ -548,7 +570,7 @@ index 98361acd3053..4823e2c962bd 100644
  
  	return status;
  	
-@@ -973,20 +966,15 @@ static int __init n_hdlc_init(void)
+@@ -972,20 +965,15 @@ static int __init n_hdlc_init(void)
  #define __exitdata
  #endif
  
@@ -572,10 +594,10 @@ index 98361acd3053..4823e2c962bd 100644
  
  module_init(n_hdlc_init);
 diff --git a/drivers/tty/serial/st-asc.c b/drivers/tty/serial/st-asc.c
-index 7971997cdead..560281a2716c 100644
+index e7048515a79c..20415ec10c25 100644
 --- a/drivers/tty/serial/st-asc.c
 +++ b/drivers/tty/serial/st-asc.c
-@@ -980,10 +980,8 @@ static struct platform_driver asc_serial_driver = {
+@@ -975,10 +975,8 @@ static struct platform_driver asc_serial_driver = {
  static int __init asc_init(void)
  {
  	int ret;
@@ -588,10 +610,10 @@ index 7971997cdead..560281a2716c 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 2937a8873fe1..74a39fbe25e2 100644
+index 8434217549b3..c2437d5de4b6 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1590,9 +1590,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1635,9 +1635,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  }
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
@@ -601,7 +623,7 @@ index 2937a8873fe1..74a39fbe25e2 100644
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -1824,7 +1821,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -1869,7 +1866,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -914,7 +936,7 @@ index 7dc3bc604f78..9f7a1de72932 100644
  	if (bh_primary)
  		brelse(bh_primary);
 diff --git a/kernel/power/suspend_test.c b/kernel/power/suspend_test.c
-index 1f7defb7f0d7..70695fb44a01 100644
+index 790de9ddc1c7..4d30066422b3 100644
 --- a/kernel/power/suspend_test.c
 +++ b/kernel/power/suspend_test.c
 @@ -61,15 +61,6 @@ void suspend_test_finish(const char *label)
@@ -930,7 +952,7 @@ index 1f7defb7f0d7..70695fb44a01 100644
 -	static char info_test[] __initdata =
 -		KERN_INFO "PM: test RTC wakeup from '%s' suspend\n";
 -
- 	unsigned long		now;
+ 	time64_t		now;
  	struct rtc_wkalrm	alm;
  	int			status;
 @@ -78,7 +69,7 @@ static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
@@ -941,7 +963,7 @@ index 1f7defb7f0d7..70695fb44a01 100644
 +		printk(KERN_ERR "PM: can't read %s time, err %d\n", dev_name(&rtc->dev), status);
  		return;
  	}
- 	rtc_tm_to_time(&alm.time, &now);
+ 	now = rtc_tm_to_time64(&alm.time);
 @@ -89,29 +80,29 @@ static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
  
  	status = rtc_set_alarm(rtc, &alm);
@@ -1213,7 +1235,7 @@ index 4c826b8bf9b1..31bfcd45a57c 100644
  	read_unlock(&dev_base_lock);
  	return ret;
 diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
-index e19a92a62e14..f8c72f686361 100644
+index 0a46ea3bddd5..4b1a28ecdb56 100644
 --- a/net/decnet/af_decnet.c
 +++ b/net/decnet/af_decnet.c
 @@ -2340,14 +2340,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");

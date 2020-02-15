@@ -43,10 +43,10 @@ index 77c14671866c..25690300ada9 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i915_request.c
-index 765bec89fc0d..deed925569fb 100644
+index be185886e4fc..1f34f22c969b 100644
 --- a/drivers/gpu/drm/i915/i915_request.c
 +++ b/drivers/gpu/drm/i915/i915_request.c
-@@ -1380,7 +1380,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
+@@ -1392,7 +1392,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
@@ -69,10 +69,10 @@ index 5bebf1ea1c5d..42ed3f4ec1af 100644
  	struct qxl_rect *rects;
  	int stride = fb->pitches[0];
 diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-index 934ad7c0c342..266974f6c716 100644
+index 73489a45decb..e6e33e9ceec4 100644
 --- a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
 +++ b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-@@ -3771,6 +3771,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
+@@ -3780,6 +3780,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
  		goto out_err;
  
  	vmw_query_bo_switch_commit(dev_priv, sw_context);
@@ -149,7 +149,7 @@ index e88af978f63c..5c9461988aab 100644
  	int ioaddr, ns;
  	unsigned int skbsize;
 diff --git a/drivers/scsi/qla2xxx/qla_mr.c b/drivers/scsi/qla2xxx/qla_mr.c
-index 605b59c76c90..9081ed42702e 100644
+index cad1fc2a1b28..9aca083b9486 100644
 --- a/drivers/scsi/qla2xxx/qla_mr.c
 +++ b/drivers/scsi/qla2xxx/qla_mr.c
 @@ -2229,6 +2229,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
@@ -161,7 +161,7 @@ index 605b59c76c90..9081ed42702e 100644
  		bsg_job = sp->u.bsg_job;
  		bsg_reply = bsg_job->reply;
 diff --git a/drivers/scsi/qla4xxx/ql4_os.c b/drivers/scsi/qla4xxx/ql4_os.c
-index 2323432a0edb..b6a1413f1753 100644
+index 5504ab11decc..e6588a4537ff 100644
 --- a/drivers/scsi/qla4xxx/ql4_os.c
 +++ b/drivers/scsi/qla4xxx/ql4_os.c
 @@ -5883,7 +5883,7 @@ static void qla4xxx_boot_release(void *data)
@@ -213,7 +213,7 @@ index a0cc5e240306..173986c5558c 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index 5b759af4d165..95758fbde498 100644
+index bf161e930f1d..28024bd09307 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
 @@ -2082,7 +2082,7 @@ xfs_difree_finobt(
@@ -226,7 +226,7 @@ index 5b759af4d165..95758fbde498 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 6ed8184150d4..9a8b8d12da51 100644
+index bdc216e2c2c6..7ba3046c7ef4 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
 @@ -990,7 +990,7 @@ xlog_verify_tail(
@@ -239,23 +239,23 @@ index 6ed8184150d4..9a8b8d12da51 100644
  
  	buffer = xlog_alloc_buffer(log, 1);
 diff --git a/include/linux/sunrpc/cache.h b/include/linux/sunrpc/cache.h
-index f8603724fbee..a73c79f75457 100644
+index 0f64de7caa39..30a00762e920 100644
 --- a/include/linux/sunrpc/cache.h
 +++ b/include/linux/sunrpc/cache.h
-@@ -293,7 +293,7 @@ static inline int get_time(char **bpp, time_t *time)
+@@ -297,7 +297,7 @@ static inline int get_time(char **bpp, time64_t *time)
  
- static inline time_t get_expiry(char **bpp)
+ static inline time64_t get_expiry(char **bpp)
  {
--	time_t rv;
-+	time_t rv = 0; /* gcc -Wmaybe-uninitialized false positive */
- 	struct timespec boot;
+-	time64_t rv;
++	time64_t rv = 0; /* gcc -Wmaybe-uninitialized false positive */
+ 	struct timespec64 boot;
  
  	if (get_time(bpp, &rv))
 diff --git a/mm/filemap.c b/mm/filemap.c
-index bf6aa30be58d..0e280cc877e8 100644
+index 1784478270e1..533adea3c349 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
-@@ -854,7 +854,7 @@ static int __add_to_page_cache_locked(struct page *page,
+@@ -832,7 +832,7 @@ static int __add_to_page_cache_locked(struct page *page,
  {
  	XA_STATE(xas, &mapping->i_pages, offset);
  	int huge = PageHuge(page);
@@ -278,7 +278,7 @@ index 5fa13176036f..c07f1abe7f4f 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index a8a7306a1f56..7db644d587ff 100644
+index 4bd1faf4f779..e5e47f6f9582 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
 @@ -2493,7 +2493,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,

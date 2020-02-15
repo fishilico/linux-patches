@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 2 Feb 2020 11:31:13 +0100
+Subject: [PATCH] {BUG in 5.6-rc1} drivers/pinctrl/intel: fix use of %pR
+
+printf format checker reports:
+
+    Argument for %pR is not a pointer with a matching type
+---
+ drivers/pinctrl/intel/pinctrl-lynxpoint.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/pinctrl/intel/pinctrl-lynxpoint.c b/drivers/pinctrl/intel/pinctrl-lynxpoint.c
+index e928742c7181..ae3f989f6020 100644
+--- a/drivers/pinctrl/intel/pinctrl-lynxpoint.c
++++ b/drivers/pinctrl/intel/pinctrl-lynxpoint.c
+@@ -838,7 +838,7 @@ static int lp_gpio_probe(struct platform_device *pdev)
+ 
+ 	regs = devm_ioport_map(dev, io_rc->start, resource_size(io_rc));
+ 	if (!regs) {
+-		dev_err(dev, "failed mapping IO region %pR\n", &io_rc);
++		dev_err(dev, "failed mapping IO region %pR\n", io_rc);
+ 		return -EBUSY;
+ 	}
+ 
+-- 

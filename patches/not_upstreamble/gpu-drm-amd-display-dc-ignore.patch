@@ -13,11 +13,11 @@ There are float equalities in these files.
  4 files changed, 11 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/display/dc/calcs/Makefile b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-index 26c6d735cdc7..9408f68d5b99 100644
+index 4674aca8f206..cf7dde89e770 100644
 --- a/drivers/gpu/drm/amd/display/dc/calcs/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-@@ -41,9 +41,9 @@ else
- calcs_ccflags += -msse2
+@@ -50,9 +50,9 @@ calcs_ccflags += -msse2
+ endif
  endif
  
 -CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calcs.o := $(calcs_ccflags)
@@ -30,10 +30,10 @@ index 26c6d735cdc7..9408f68d5b99 100644
  BW_CALCS = dce_calcs.o bw_fixed.o custom_float.o
  
 diff --git a/drivers/gpu/drm/amd/display/dc/dcn20/Makefile b/drivers/gpu/drm/amd/display/dc/dcn20/Makefile
-index 10b47986526b..6391874c5024 100644
+index 5fcaf78334ff..24ecb4e804e5 100644
 --- a/drivers/gpu/drm/amd/display/dc/dcn20/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/dcn20/Makefile
-@@ -23,9 +23,9 @@ ifdef IS_OLD_GCC
+@@ -28,9 +28,9 @@ ifdef IS_OLD_GCC
  # Stack alignment mismatch, proceed with caution.
  # GCC < 7.1 cannot compile code using `double` and -mpreferred-stack-boundary=3
  # (8B stack alignment).
@@ -43,16 +43,16 @@ index 10b47986526b..6391874c5024 100644
 -CFLAGS_$(AMDDALPATH)/dc/dcn20/dcn20_resource.o += -msse2
 +CFLAGS_$(AMDDALPATH)/dc/dcn20/dcn20_resource.o += -msse2 -Wno-float-equal
  endif
+ endif
  
- AMD_DAL_DCN20 = $(addprefix $(AMDDALPATH)/dc/dcn20/,$(DCN20))
 diff --git a/drivers/gpu/drm/amd/display/dc/dml/Makefile b/drivers/gpu/drm/amd/display/dc/dml/Makefile
-index 8df251626e22..7806e2f017b6 100644
+index 7ee8b8460a9b..5ba6c505544a 100644
 --- a/drivers/gpu/drm/amd/display/dc/dml/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/dml/Makefile
-@@ -44,17 +44,17 @@ endif
+@@ -53,15 +53,15 @@ endif
  CFLAGS_$(AMDDALPATH)/dc/dml/display_mode_lib.o := $(dml_ccflags)
  
- ifdef CONFIG_DRM_AMD_DC_DCN2_0
+ ifdef CONFIG_DRM_AMD_DC_DCN
 -CFLAGS_$(AMDDALPATH)/dc/dml/display_mode_vba.o := $(dml_ccflags)
 -CFLAGS_$(AMDDALPATH)/dc/dml/dcn20/display_mode_vba_20.o := $(dml_ccflags)
 +CFLAGS_$(AMDDALPATH)/dc/dml/display_mode_vba.o := $(dml_ccflags) -Wno-float-equal
@@ -61,8 +61,6 @@ index 8df251626e22..7806e2f017b6 100644
 -CFLAGS_$(AMDDALPATH)/dc/dml/dcn20/display_mode_vba_20v2.o := $(dml_ccflags)
 +CFLAGS_$(AMDDALPATH)/dc/dml/dcn20/display_mode_vba_20v2.o := $(dml_ccflags) -Wno-float-equal
  CFLAGS_$(AMDDALPATH)/dc/dml/dcn20/display_rq_dlg_calc_20v2.o := $(dml_ccflags)
- endif
- ifdef CONFIG_DRM_AMD_DC_DCN2_1
 -CFLAGS_$(AMDDALPATH)/dc/dml/dcn21/display_mode_vba_21.o := $(dml_ccflags)
 +CFLAGS_$(AMDDALPATH)/dc/dml/dcn21/display_mode_vba_21.o := $(dml_ccflags) -Wno-float-equal
  CFLAGS_$(AMDDALPATH)/dc/dml/dcn21/display_rq_dlg_calc_21.o := $(dml_ccflags)
@@ -73,11 +71,11 @@ index 8df251626e22..7806e2f017b6 100644
  CFLAGS_$(AMDDALPATH)/dc/dml/dml_common_defs.o := $(dml_ccflags)
  
 diff --git a/drivers/gpu/drm/amd/display/dc/dsc/Makefile b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
-index 641ffb7cfaed..866888afb197 100644
+index 3f66868df171..6c4c594f46de 100644
 --- a/drivers/gpu/drm/amd/display/dc/dsc/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
-@@ -19,7 +19,7 @@ else
- dsc_ccflags += -msse2
+@@ -27,7 +27,7 @@ dsc_ccflags += -msse2
+ endif
  endif
  
 -CFLAGS_$(AMDDALPATH)/dc/dsc/rc_calc.o := $(dsc_ccflags)

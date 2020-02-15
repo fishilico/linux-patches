@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 12 Feb 2020 00:57:44 +0100
+Subject: [PATCH] {BUG in 5.6-rc1} virt/kvm/arm/arm: fix missing header
+ inclusion
+
+Commit de9375634b1e ("KVM: arm: Remove duplicate include") removed a
+required include file. Now gcc for x86-32 reports:
+
+    In file included from linux/include/trace/define_trace.h:102,
+                     from linux/arch/arm/kvm/../../../virt/kvm/arm/trace.h:378,
+                     from linux/arch/arm/kvm/../../../virt/kvm/arm/arm.c:25:
+    linux/include/trace/../../virt/kvm/arm/trace.h: In function 'trace_raw_output_kvm_exit':
+    linux/include/trace/../../virt/kvm/arm/trace.h:46:36: error:
+    'kvm_arm_exception_type' undeclared (first use in this function)
+       46 |     __print_symbolic(__entry->ret, kvm_arm_exception_type),
+          |                                    ^~~~~~~~~~~~~~~~~~~~~~
+    linux/include/trace/trace_events.h:368:22: note: in definition of macro 'DECLARE_EVENT_CLASS'
+      368 |  trace_seq_printf(s, print);     \
+          |                      ^~~~~
+    linux/include/trace/trace_events.h:80:9: note: in expansion of macro 'PARAMS'
+       80 |         PARAMS(print));         \
+          |         ^~~~~~
+    linux/include/trace/../../virt/kvm/arm/trace.h:29:1: note: in expansion of macro 'TRACE_EVENT'
+       29 | TRACE_EVENT(kvm_exit,
+          | ^~~~~~~~~~~
+    linux/include/trace/../../virt/kvm/arm/trace.h:45:2: note: in expansion of macro 'TP_printk'
+       45 |  TP_printk("%s: HSR_EC: 0x%04x (%s), PC: 0x%08lx",
+          |  ^~~~~~~~~
+    linux/include/trace/../../virt/kvm/arm/trace.h:46:5: note: in expansion of macro '__print_symbolic'
+       46 |     __print_symbolic(__entry->ret, kvm_arm_exception_type),
+          |     ^~~~~~~~~~~~~~~~
+---
+ virt/kvm/arm/arm.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/virt/kvm/arm/arm.c b/virt/kvm/arm/arm.c
+index d65a0faa46d8..06943e7bc179 100644
+--- a/virt/kvm/arm/arm.c
++++ b/virt/kvm/arm/arm.c
+@@ -21,6 +21,7 @@
+ #include <linux/sched/stat.h>
+ #include <trace/events/kvm.h>
+ 
++#include <asm/kvm_arm.h> /* for trace.h */
+ #define CREATE_TRACE_POINTS
+ #include "trace.h"
+ 
+-- 
