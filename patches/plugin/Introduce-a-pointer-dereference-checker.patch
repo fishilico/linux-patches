@@ -98,10 +98,10 @@ It has also detected some bugs reported and fixed by other people:
  net/rxrpc/rxkad.c                             |   2 +-
  scripts/Makefile.gcc-plugins                  |   2 +
  scripts/gcc-plugins/Kconfig                   |   6 +
- scripts/gcc-plugins/deref_checker_plugin.c    | 454 ++++++++++++++++++
+ scripts/gcc-plugins/deref_checker_plugin.c    | 455 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 72 files changed, 842 insertions(+), 122 deletions(-)
+ 72 files changed, 843 insertions(+), 122 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
@@ -390,7 +390,7 @@ index a873da6b46d6..8a60d0142a7a 100644
  			goto do_another_FPU_instruction;
  	}
 diff --git a/arch/x86/xen/enlighten_pv.c b/arch/x86/xen/enlighten_pv.c
-index 1f756ffffe8b..19b942363eb2 100644
+index 79409120a603..8001baf50caf 100644
 --- a/arch/x86/xen/enlighten_pv.c
 +++ b/arch/x86/xen/enlighten_pv.c
 @@ -679,8 +679,12 @@ static int cvt_gate_to_trap(int vector, const gate_desc *val,
@@ -1227,10 +1227,10 @@ index b04c29270973..5c79e01c181f 100644
  
  #define __CAST1(a,...) __CAST_TO_U64(a)
 diff --git a/kernel/bpf/hashtab.c b/kernel/bpf/hashtab.c
-index 2d182c4ee9d9..d7b7073daf37 100644
+index a1468e3f5af2..a589c43fa34a 100644
 --- a/kernel/bpf/hashtab.c
 +++ b/kernel/bpf/hashtab.c
-@@ -1705,7 +1705,13 @@ int bpf_fd_htab_map_update_elem(struct bpf_map *map, struct file *map_file,
+@@ -1753,7 +1753,13 @@ int bpf_fd_htab_map_update_elem(struct bpf_map *map, struct file *map_file,
  	if (IS_ERR(ptr))
  		return PTR_ERR(ptr);
  
@@ -1591,10 +1591,10 @@ index e40972fe813c..58b6ba32b2bc 100644
  endif
 diff --git a/scripts/gcc-plugins/deref_checker_plugin.c b/scripts/gcc-plugins/deref_checker_plugin.c
 new file mode 100644
-index 000000000000..4f857ac07463
+index 000000000000..25bc106bdf99
 --- /dev/null
 +++ b/scripts/gcc-plugins/deref_checker_plugin.c
-@@ -0,0 +1,454 @@
+@@ -0,0 +1,455 @@
 +/*
 + * Copyright 2016-2018 by Nicolas Iooss
 + * Licensed under the GPL v2, or (at your option) v3
@@ -1710,6 +1710,7 @@ index 000000000000..4f857ac07463
 +	    identifier_is(fnident, "cmpxchg_size") ||
 +	    identifier_is(fnident, "devres_free") ||
 +	    identifier_is(fnident, "drm_free_large") ||
++	    identifier_is(fnident, "ext4_kvfree_array_rcu") ||
 +	    identifier_is(fnident, "i915_prandom_shuffle") ||
 +	    identifier_is(fnident, "ice_get_free_slot") || /* it is on purpose */
 +	    identifier_is(fnident, "is_vmalloc_addr") ||

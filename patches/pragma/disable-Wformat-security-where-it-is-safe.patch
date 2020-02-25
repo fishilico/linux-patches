@@ -232,19 +232,17 @@ index 2a3e72286d3a..d398d8e474b6 100644
  cleanup:
  	kfree(hw);
 diff --git a/arch/x86/kernel/cpu/mce/amd.c b/arch/x86/kernel/cpu/mce/amd.c
-index b3a50d962851..67a862e6eea7 100644
+index 52de616a8065..a6aa1359774b 100644
 --- a/arch/x86/kernel/cpu/mce/amd.c
 +++ b/arch/x86/kernel/cpu/mce/amd.c
-@@ -1250,9 +1250,13 @@ static int allocate_threshold_blocks(unsigned int cpu, unsigned int bank,
- 		per_cpu(threshold_banks, cpu)[bank]->blocks = b;
- 	}
+@@ -1252,7 +1252,11 @@ static int allocate_threshold_blocks(unsigned int cpu, struct threshold_bank *tb
+ 	else
+ 		tb->blocks = b;
  
 +/* bank4_names(b) and th_names[bank] are well-defined constant string */
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
- 	err = kobject_init_and_add(&b->kobj, &threshold_ktype,
- 				   per_cpu(threshold_banks, cpu)[bank]->kobj,
- 				   get_name(bank, b));
+ 	err = kobject_init_and_add(&b->kobj, &threshold_ktype, tb->kobj, get_name(bank, b));
 +#pragma GCC diagnostic pop
  	if (err)
  		goto out_free;
@@ -1252,10 +1250,10 @@ index 20d672edf7cd..3f6a5fd6f2ab 100644
  void cb710_dump_regs(struct cb710_chip *chip, unsigned select)
  {
 diff --git a/drivers/misc/habanalabs/goya/goya.c b/drivers/misc/habanalabs/goya/goya.c
-index 7344e8a222ae..fa45e1ed9067 100644
+index b8a8de24aaf7..aba33b322cce 100644
 --- a/drivers/misc/habanalabs/goya/goya.c
 +++ b/drivers/misc/habanalabs/goya/goya.c
-@@ -4264,6 +4264,8 @@ static void goya_get_event_desc(u16 event_type, char *desc, size_t size)
+@@ -4306,6 +4306,8 @@ static void goya_get_event_desc(u16 event_type, char *desc, size_t size)
  {
  	u8 index;
  
@@ -1264,7 +1262,7 @@ index 7344e8a222ae..fa45e1ed9067 100644
  	switch (event_type) {
  	case GOYA_ASYNC_EVENT_ID_TPC0_ECC:
  	case GOYA_ASYNC_EVENT_ID_TPC1_ECC:
-@@ -4341,6 +4343,7 @@ static void goya_get_event_desc(u16 event_type, char *desc, size_t size)
+@@ -4383,6 +4385,7 @@ static void goya_get_event_desc(u16 event_type, char *desc, size_t size)
  		snprintf(desc, size, _goya_get_event_desc(event_type));
  		break;
  	}
@@ -1399,7 +1397,7 @@ index aff44241988c..18e041c64960 100644
  	/* The LANCE-specific entries in the device structure. */
  	dev->netdev_ops = &lance_netdev_ops;
 diff --git a/drivers/net/ethernet/aquantia/atlantic/aq_ethtool.c b/drivers/net/ethernet/aquantia/atlantic/aq_ethtool.c
-index a1f99bef4a68..c0cb6f29450e 100644
+index 7b55633d2cb9..164c16fa3df6 100644
 --- a/drivers/net/ethernet/aquantia/atlantic/aq_ethtool.c
 +++ b/drivers/net/ethernet/aquantia/atlantic/aq_ethtool.c
 @@ -166,8 +166,11 @@ static void aq_ethtool_get_strings(struct net_device *ndev,
@@ -3920,10 +3918,10 @@ index e6881bfc3ed1..9c7c2bc1d964 100644
  }
  
 diff --git a/net/core/dev.c b/net/core/dev.c
-index a6316b336128..199381e751a6 100644
+index e10bd680dc03..a2dcc975c179 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
-@@ -1114,7 +1114,10 @@ static int __dev_alloc_name(struct net *net, const char *name, char *buf)
+@@ -1119,7 +1119,10 @@ static int __dev_alloc_name(struct net *net, const char *name, char *buf)
  				continue;
  
  			/*  avoid cases where sscanf is not exact inverse of printf */
@@ -3934,7 +3932,7 @@ index a6316b336128..199381e751a6 100644
  			if (!strncmp(buf, d->name, IFNAMSIZ))
  				set_bit(i, inuse);
  		}
-@@ -1123,7 +1126,10 @@ static int __dev_alloc_name(struct net *net, const char *name, char *buf)
+@@ -1128,7 +1131,10 @@ static int __dev_alloc_name(struct net *net, const char *name, char *buf)
  		free_page((unsigned long) inuse);
  	}
  
@@ -3945,7 +3943,7 @@ index a6316b336128..199381e751a6 100644
  	if (!__dev_get_by_name(net, buf))
  		return i;
  
-@@ -7360,8 +7366,11 @@ static int netdev_adjacent_sysfs_add(struct net_device *dev,
+@@ -7348,8 +7354,11 @@ static int netdev_adjacent_sysfs_add(struct net_device *dev,
  {
  	char linkname[IFNAMSIZ+7];
  
@@ -3957,7 +3955,7 @@ index a6316b336128..199381e751a6 100644
  	return sysfs_create_link(&(dev->dev.kobj), &(adj_dev->dev.kobj),
  				 linkname);
  }
-@@ -7371,8 +7380,11 @@ static void netdev_adjacent_sysfs_del(struct net_device *dev,
+@@ -7359,8 +7368,11 @@ static void netdev_adjacent_sysfs_del(struct net_device *dev,
  {
  	char linkname[IFNAMSIZ+7];
  
@@ -4087,7 +4085,7 @@ index 3579dd7a161f..c9ad2977ce8c 100644
  	vprintk(format, args);
  #endif
 diff --git a/sound/core/seq/seq_clientmgr.c b/sound/core/seq/seq_clientmgr.c
-index 6d9592f0ae1d..6cff02882449 100644
+index cc93157fa950..307c46b7b24e 100644
 --- a/sound/core/seq/seq_clientmgr.c
 +++ b/sound/core/seq/seq_clientmgr.c
 @@ -2395,7 +2395,10 @@ static void snd_seq_info_dump_subscribers(struct snd_info_buffer *buffer,
