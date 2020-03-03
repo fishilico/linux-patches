@@ -167,7 +167,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  kernel/debug/kdb/kdb_main.c                   |  7 ++++
  kernel/kthread.c                              |  4 ++
  kernel/trace/bpf_trace.c                      |  3 ++
- kernel/trace/trace_events_hist.c              |  3 ++
+ kernel/trace/trace_events_hist.c              | 10 ++++-
  kernel/trace/trace_probe.c                    |  3 ++
  lib/globtest.c                                |  4 ++
  lib/test_printf.c                             |  6 +++
@@ -194,7 +194,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  sound/usb/midi.c                              |  3 ++
  sound/usb/mixer_quirks.c                      |  3 ++
  sound/usb/mixer_scarlett_gen2.c               |  9 +++-
- 190 files changed, 876 insertions(+), 27 deletions(-)
+ 190 files changed, 881 insertions(+), 29 deletions(-)
 
 diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
 index 1e70e7227f0f..ea9ff3542932 100644
@@ -2189,10 +2189,10 @@ index 2a6ec5394966..7cbd3b6a214b 100644
  
  	pci_read_config_byte(pdev, PCI_LATENCY_TIMER, &pci_latency);
 diff --git a/drivers/net/hyperv/netvsc_drv.c b/drivers/net/hyperv/netvsc_drv.c
-index 65e12cb07f45..3c3517ff770e 100644
+index 2c0a24c606fc..20c0b5574dd3 100644
 --- a/drivers/net/hyperv/netvsc_drv.c
 +++ b/drivers/net/hyperv/netvsc_drv.c
-@@ -1590,7 +1590,10 @@ static void netvsc_get_strings(struct net_device *dev, u32 stringset, u8 *data)
+@@ -1591,7 +1591,10 @@ static void netvsc_get_strings(struct net_device *dev, u32 stringset, u8 *data)
  
  		for_each_present_cpu(cpu) {
  			for (i = 0; i < ARRAY_SIZE(pcpu_stats); i++) {
@@ -2234,10 +2234,10 @@ index 694e2f5dbbe5..ae76ebe00080 100644
  			tap_free_minor(macvtap_major, &vlantap->tap);
  			return notifier_from_errno(PTR_ERR(classdev));
 diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 6a5056e0ae77..66021f945b28 100644
+index c8b0c34030d3..acd3404808a7 100644
 --- a/drivers/net/phy/phy_device.c
 +++ b/drivers/net/phy/phy_device.c
-@@ -1102,7 +1102,10 @@ EXPORT_SYMBOL(phy_init_hw);
+@@ -1103,7 +1103,10 @@ EXPORT_SYMBOL(phy_init_hw);
  
  void phy_attached_info(struct phy_device *phydev)
  {
@@ -3749,10 +3749,32 @@ index 19e793aa441a..044afc6cc926 100644
  
  static const struct bpf_func_proto bpf_trace_printk_proto = {
 diff --git a/kernel/trace/trace_events_hist.c b/kernel/trace/trace_events_hist.c
-index 483b3fd1094f..95b1248a5f4b 100644
+index 5f6834a2bf41..d58fabf018c1 100644
 --- a/kernel/trace/trace_events_hist.c
 +++ b/kernel/trace/trace_events_hist.c
-@@ -852,6 +852,8 @@ static enum print_line_t print_synth_event(struct trace_iterator *iter,
+@@ -822,9 +822,11 @@ static const char *synth_field_fmt(char *type)
+ }
+ 
+ static void print_synth_event_num_val(struct trace_seq *s,
+-				      char *print_fmt, char *name,
+-				      int size, u64 val, char *space)
++				      const char *print_fmt, const char *name,
++				      int size, u64 val, const char *space)
+ {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat-security"
+ 	switch (size) {
+ 	case 1:
+ 		trace_seq_printf(s, print_fmt, name, (u8)val, space);
+@@ -842,6 +844,7 @@ static void print_synth_event_num_val(struct trace_seq *s,
+ 		trace_seq_printf(s, print_fmt, name, val, space);
+ 		break;
+ 	}
++#pragma GCC diagnostic pop
+ }
+ 
+ static enum print_line_t print_synth_event(struct trace_iterator *iter,
+@@ -875,6 +878,8 @@ static enum print_line_t print_synth_event(struct trace_iterator *iter,
  
  		/* parameter values */
  		if (se->fields[i]->is_string) {
@@ -3761,7 +3783,7 @@ index 483b3fd1094f..95b1248a5f4b 100644
  			trace_seq_printf(s, print_fmt, se->fields[i]->name,
  					 (char *)&entry->fields[n_u64],
  					 i == se->n_fields - 1 ? "" : " ");
-@@ -873,6 +875,7 @@ static enum print_line_t print_synth_event(struct trace_iterator *iter,
+@@ -899,6 +904,7 @@ static enum print_line_t print_synth_event(struct trace_iterator *iter,
  			}
  			n_u64++;
  		}
@@ -3849,10 +3871,10 @@ index 5ef9f24f566b..506c7b757c0a 100644
  		 * We should not pass a shadow pointer to generic
  		 * function, because generic functions may try to
 diff --git a/mm/shmem.c b/mm/shmem.c
-index c8f7540ef048..aa274b56174f 100644
+index aad3ba74b0e9..b2156fb4ea6a 100644
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
-@@ -3943,9 +3943,12 @@ static ssize_t shmem_enabled_show(struct kobject *kobj,
+@@ -3941,9 +3941,12 @@ static ssize_t shmem_enabled_show(struct kobject *kobj,
  	for (i = 0, count = 0; i < ARRAY_SIZE(values); i++) {
  		const char *fmt = shmem_huge == values[i] ? "[%s] " : "%s ";
  
@@ -3918,7 +3940,7 @@ index e6881bfc3ed1..9c7c2bc1d964 100644
  }
  
 diff --git a/net/core/dev.c b/net/core/dev.c
-index e10bd680dc03..a2dcc975c179 100644
+index c6c985fe7b1b..b60ae7024338 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
 @@ -1119,7 +1119,10 @@ static int __dev_alloc_name(struct net *net, const char *name, char *buf)
@@ -3943,7 +3965,7 @@ index e10bd680dc03..a2dcc975c179 100644
  	if (!__dev_get_by_name(net, buf))
  		return i;
  
-@@ -7348,8 +7354,11 @@ static int netdev_adjacent_sysfs_add(struct net_device *dev,
+@@ -7350,8 +7356,11 @@ static int netdev_adjacent_sysfs_add(struct net_device *dev,
  {
  	char linkname[IFNAMSIZ+7];
  
@@ -3955,7 +3977,7 @@ index e10bd680dc03..a2dcc975c179 100644
  	return sysfs_create_link(&(dev->dev.kobj), &(adj_dev->dev.kobj),
  				 linkname);
  }
-@@ -7359,8 +7368,11 @@ static void netdev_adjacent_sysfs_del(struct net_device *dev,
+@@ -7361,8 +7370,11 @@ static void netdev_adjacent_sysfs_del(struct net_device *dev,
  {
  	char linkname[IFNAMSIZ+7];
  
