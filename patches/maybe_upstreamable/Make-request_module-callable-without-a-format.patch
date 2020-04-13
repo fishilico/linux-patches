@@ -43,7 +43,7 @@ index 68f69362d427..c44a5c04feb2 100644
  #endif
  
 diff --git a/kernel/kmod.c b/kernel/kmod.c
-index cf46fdc0150a..21fa08966e51 100644
+index cbc111c933be..67c00e60f87a 100644
 --- a/kernel/kmod.c
 +++ b/kernel/kmod.c
 @@ -110,8 +110,7 @@ static int call_modprobe(const char *modname, int wait)
@@ -58,7 +58,7 @@ index cf46fdc0150a..21fa08966e51 100644
   * zero on success or a negative errno code or positive exit code from
 @@ -123,10 +122,8 @@ static int call_modprobe(const char *modname, int wait)
   * If module auto-loading support is disabled then this function
-  * becomes a no-operation.
+  * simply returns -ENOENT.
   */
 -int __request_module(bool wait, const char *fmt, ...)
 +int __request_module(bool wait, const char *module_name)
@@ -70,7 +70,7 @@ index cf46fdc0150a..21fa08966e51 100644
  	/*
 @@ -140,12 +137,6 @@ int __request_module(bool wait, const char *fmt, ...)
  	if (!modprobe_path[0])
- 		return 0;
+ 		return -ENOENT;
  
 -	va_start(args, fmt);
 -	ret = vsnprintf(module_name, MODULE_NAME_LEN, fmt, args);

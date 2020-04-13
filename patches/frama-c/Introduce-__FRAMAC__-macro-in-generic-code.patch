@@ -22,18 +22,18 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  include/linux/delay.h           |  15 +++-
  include/linux/flex_array.h      | 152 ++++++++++++++++++++++++++++++++
  include/linux/kernel.h          |   5 ++
- include/linux/limits.h          |   4 +
- include/linux/math64.h          |   2 +
+ include/linux/limits.h          |   6 +-
  include/linux/mfd/wl1273-core.h |   2 +
  include/linux/overflow.h        |   2 +-
  include/linux/pci.h             |   3 +
  include/linux/syscalls.h        |   7 ++
  include/uapi/linux/limits.h     |   8 +-
  include/uapi/linux/types.h      |   2 +-
+ include/vdso/limits.h           |   4 +
  kernel/signal.c                 |   2 +-
  kernel/time/time.c              |   4 +
  lib/hexdump.c                   |  10 ++-
- 21 files changed, 263 insertions(+), 13 deletions(-)
+ 21 files changed, 266 insertions(+), 14 deletions(-)
  create mode 100644 include/linux/flex_array.h
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
@@ -100,7 +100,7 @@ index e935318804f8..33cafe921495 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 53c8e5e4d8e7..c242f1b43e8e 100644
+index 1f75ab474fb7..4f61c50bfb98 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline notrace __used void __same_pointer_depths_with_volatile2_chk(con
@@ -132,7 +132,7 @@ index 53c8e5e4d8e7..c242f1b43e8e 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 72393a8c1a6c..827eb7753952 100644
+index e970f97a7fcb..61b8119db825 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -4,7 +4,7 @@
@@ -145,10 +145,10 @@ index 72393a8c1a6c..827eb7753952 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __safe		__attribute__((safe))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index d5cc88514aee..a4578aecaa82 100644
+index f0d895d6ac39..377d5a8f479e 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -855,9 +855,14 @@ set_cpu_active(unsigned int cpu, bool active)
+@@ -862,9 +862,14 @@ set_cpu_active(unsigned int cpu, bool active)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -366,10 +366,10 @@ index 000000000000..ffd6208aabbd
 +
 +#endif /* _FLEX_ARRAY_H */
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index ba9da3088184..d8156c80abbf 100644
+index 8a658ec6d273..07dc09e44d35 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
-@@ -265,6 +265,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
+@@ -272,6 +272,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
   *
   * Return: an absolute value of x.
   */
@@ -380,7 +380,7 @@ index ba9da3088184..d8156c80abbf 100644
  #define abs(x)	__abs_choose_expr(x, long long,				\
  		__abs_choose_expr(x, long,				\
  		__abs_choose_expr(x, int,				\
-@@ -279,6 +283,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
+@@ -286,6 +290,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
  	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
  	__builtin_types_compatible_p(typeof(x), unsigned type),		\
  	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
@@ -389,43 +389,23 @@ index ba9da3088184..d8156c80abbf 100644
  /**
   * reciprocal_scale - "scale" a value into range [0, ep_ro)
 diff --git a/include/linux/limits.h b/include/linux/limits.h
-index 76afcd24ff8c..20cc3cfb6725 100644
+index b568b9c30bbf..6fc31ffb1344 100644
 --- a/include/linux/limits.h
 +++ b/include/linux/limits.h
-@@ -5,6 +5,9 @@
+@@ -4,8 +4,12 @@
+ 
  #include <uapi/linux/limits.h>
  #include <linux/types.h>
+-#include <vdso/limits.h>
  
 +#ifdef __FRAMAC__
 +#include <libc/limits.h>
 +#else
- #define USHRT_MAX	((unsigned short)~0U)
- #define SHRT_MAX	((short)(USHRT_MAX >> 1))
- #define SHRT_MIN	((short)(-SHRT_MAX - 1))
-@@ -17,6 +20,7 @@
- #define LLONG_MAX	((long long)(~0ULL >> 1))
- #define LLONG_MIN	(-LLONG_MAX - 1)
- #define ULLONG_MAX	(~0ULL)
++#include <vdso/limits.h>
 +#endif /* __FRAMAC__ */
  #define SIZE_MAX	(~(size_t)0)
  #define PHYS_ADDR_MAX	(~(phys_addr_t)0)
  
-diff --git a/include/linux/math64.h b/include/linux/math64.h
-index 65bef21cdddb..e6cb757492f3 100644
---- a/include/linux/math64.h
-+++ b/include/linux/math64.h
-@@ -148,9 +148,11 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
- 	u32 ret = 0;
- 
- 	while (dividend >= divisor) {
-+#ifndef __FRAMAC__
- 		/* The following asm() prevents the compiler from
- 		   optimising this loop into a modulo operation.  */
- 		asm("" : "+rm"(dividend));
-+#endif
- 
- 		dividend -= divisor;
- 		ret++;
 diff --git a/include/linux/mfd/wl1273-core.h b/include/linux/mfd/wl1273-core.h
 index c28cf76d5c31..ac5f907262a2 100644
 --- a/include/linux/mfd/wl1273-core.h
@@ -455,10 +435,10 @@ index 659045046468..c60209574fc5 100644
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 3840a541a9de..e855ec7dff7c 100644
+index 83ce1cdf5676..470fd6228ad2 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -143,6 +143,8 @@ typedef int __bitwise pci_power_t;
+@@ -150,6 +150,8 @@ typedef int __bitwise pci_power_t;
  #define PCI_UNKNOWN	((pci_power_t __force) 5)
  #define PCI_POWER_ERROR	((pci_power_t __force) -1)
  
@@ -467,7 +447,7 @@ index 3840a541a9de..e855ec7dff7c 100644
  /* Remember to update this when the list above changes! */
  extern const char *pci_power_names[];
  
-@@ -150,6 +152,7 @@ static inline const char *pci_power_name(pci_power_t state)
+@@ -157,6 +159,7 @@ static inline const char *pci_power_name(pci_power_t state)
  {
  	return pci_power_names[1 + (__force int) state];
  }
@@ -537,8 +517,30 @@ index 2fce8b6876e9..357ff7b0ecdd 100644
  #define __bitwise__ __attribute__((bitwise))
  #else
  #define __bitwise__
+diff --git a/include/vdso/limits.h b/include/vdso/limits.h
+index 0197888ad0e0..ee5b03df8f9b 100644
+--- a/include/vdso/limits.h
++++ b/include/vdso/limits.h
+@@ -2,6 +2,9 @@
+ #ifndef __VDSO_LIMITS_H
+ #define __VDSO_LIMITS_H
+ 
++#ifdef __FRAMAC__
++#include <libc/limits.h>
++#else
+ #define USHRT_MAX	((unsigned short)~0U)
+ #define SHRT_MAX	((short)(USHRT_MAX >> 1))
+ #define SHRT_MIN	((short)(-SHRT_MAX - 1))
+@@ -14,6 +17,7 @@
+ #define LLONG_MAX	((long long)(~0ULL >> 1))
+ #define LLONG_MIN	(-LLONG_MAX - 1)
+ #define ULLONG_MAX	(~0ULL)
++#endif /* __FRAMAC__ */
+ #define UINTPTR_MAX	ULONG_MAX
+ 
+ #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 5b2396350dd1..e676baa578dd 100644
+index e58a6c619824..8483f329d3ec 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1246,7 +1246,7 @@ static void print_fatal_signal(int signr)

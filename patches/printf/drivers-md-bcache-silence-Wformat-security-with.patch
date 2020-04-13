@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 5 Apr 2020 12:27:14 +0200
+Subject: [PATCH] {PRINTF} drivers/md/bcache: silence -Wformat-security with
+ "%s"
+
+---
+ drivers/md/bcache/btree.c     | 2 +-
+ drivers/md/bcache/writeback.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/md/bcache/btree.c b/drivers/md/bcache/btree.c
+index 72856e5f23a3..aa6f1ca6f18c 100644
+--- a/drivers/md/bcache/btree.c
++++ b/drivers/md/bcache/btree.c
+@@ -2043,7 +2043,7 @@ int bch_btree_check(struct cache_set *c)
+ 		check_state->infos[i].thread =
+ 			kthread_run(bch_btree_check_thread,
+ 				    &check_state->infos[i],
+-				    name);
++				    "%s", name);
+ 		if (IS_ERR(check_state->infos[i].thread)) {
+ 			pr_err("fails to run thread bch_btrchk[%d]", i);
+ 			for (--i; i >= 0; i--)
+diff --git a/drivers/md/bcache/writeback.c b/drivers/md/bcache/writeback.c
+index 3f7641fb28d5..c9e34fc71e52 100644
+--- a/drivers/md/bcache/writeback.c
++++ b/drivers/md/bcache/writeback.c
+@@ -943,7 +943,7 @@ void bch_sectors_dirty_init(struct bcache_device *d)
+ 		state->infos[i].thread =
+ 			kthread_run(bch_dirty_init_thread,
+ 				    &state->infos[i],
+-				    name);
++				    "%s", name);
+ 		if (IS_ERR(state->infos[i].thread)) {
+ 			pr_err("fails to run thread bch_dirty_init[%d]", i);
+ 			for (--i; i >= 0; i--)
+-- 

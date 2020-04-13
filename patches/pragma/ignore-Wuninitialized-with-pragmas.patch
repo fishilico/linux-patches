@@ -15,10 +15,10 @@ Subject: [PATCH] {PRAGMA} ignore -Wuninitialized with pragmas
  8 files changed, 47 insertions(+)
 
 diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index 79e216446030..a32221bc4769 100644
+index c15e7083b13a..c9233b9ad809 100644
 --- a/drivers/block/drbd/drbd_receiver.c
 +++ b/drivers/block/drbd/drbd_receiver.c
-@@ -926,10 +926,13 @@ static int conn_connect(struct drbd_connection *connection)
+@@ -927,10 +927,13 @@ static int conn_connect(struct drbd_connection *connection)
  	int vnr, timeout, h;
  	bool discard_my_data, ok;
  	enum drbd_state_rv rv;
@@ -33,7 +33,7 @@ index 79e216446030..a32221bc4769 100644
  	clear_bit(DISCONNECT_SENT, &connection->flags);
  	if (conn_request_state(connection, NS(conn, C_WF_CONNECTION), CS_VERBOSE) < SS_SUCCESS)
 diff --git a/drivers/net/wimax/i2400m/driver.c b/drivers/net/wimax/i2400m/driver.c
-index f66c0f8f6f4a..c1b3f61376db 100644
+index ecb3fccca603..4a2f057832a9 100644
 --- a/drivers/net/wimax/i2400m/driver.c
 +++ b/drivers/net/wimax/i2400m/driver.c
 @@ -165,10 +165,13 @@ int i2400m_op_reset(struct wimax_dev *wimax_dev)
@@ -51,7 +51,7 @@ index f66c0f8f6f4a..c1b3f61376db 100644
  	d_fnstart(4, dev, "(wimax_dev %p)\n", wimax_dev);
  	mutex_lock(&i2400m->init_mutex);
 diff --git a/include/linux/completion.h b/include/linux/completion.h
-index 519e94915d18..cfad3b3d1644 100644
+index bf8e77001f18..9ce7cfe3da8a 100644
 --- a/include/linux/completion.h
 +++ b/include/linux/completion.h
 @@ -66,10 +66,23 @@ static inline void complete_release(struct completion *x) {}
@@ -79,7 +79,7 @@ index 519e94915d18..cfad3b3d1644 100644
  # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
  # define DECLARE_COMPLETION_ONSTACK_MAP(work, map) DECLARE_COMPLETION(work)
 diff --git a/include/linux/kthread.h b/include/linux/kthread.h
-index 0f9da966934e..604992517b90 100644
+index 8bbcaad7ef0f..dc4cfd1843ea 100644
 --- a/include/linux/kthread.h
 +++ b/include/linux/kthread.h
 @@ -139,8 +139,16 @@ struct kthread_delayed_work {
@@ -100,10 +100,10 @@ index 0f9da966934e..604992517b90 100644
  # define DEFINE_KTHREAD_WORKER_ONSTACK(worker) DEFINE_KTHREAD_WORKER(worker)
  #endif
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 3283c8d02137..06099998f38c 100644
+index feeb6be5cad6..6bd0d5183767 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
-@@ -70,8 +70,16 @@ extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *n
+@@ -71,8 +71,16 @@ extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *n
  #ifdef CONFIG_LOCKDEP
  # define __WAIT_QUEUE_HEAD_INIT_ONSTACK(name) \
  	({ init_waitqueue_head(&name); name; })
@@ -121,10 +121,10 @@ index 3283c8d02137..06099998f38c 100644
  # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
  #endif
 diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 94944856a157..14594a7f74a1 100644
+index 26c4d57e2b07..df26f0cf83f2 100644
 --- a/kernel/kthread.c
 +++ b/kernel/kthread.c
-@@ -954,10 +954,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
+@@ -967,10 +967,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
   */
  void kthread_flush_work(struct kthread_work *work)
  {
@@ -138,7 +138,7 @@ index 94944856a157..14594a7f74a1 100644
  	struct kthread_worker *worker;
  	bool noop = false;
  
-@@ -1161,10 +1164,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
+@@ -1174,10 +1177,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
   */
  void kthread_flush_worker(struct kthread_worker *worker)
  {
@@ -153,10 +153,10 @@ index 94944856a157..14594a7f74a1 100644
  	kthread_queue_work(worker, &fwork.work);
  	wait_for_completion(&fwork.done);
 diff --git a/kernel/smp.c b/kernel/smp.c
-index d0ada39eb4d4..616db4a11a3f 100644
+index 786092aabdcd..f8bd44ce273a 100644
 --- a/kernel/smp.c
 +++ b/kernel/smp.c
-@@ -786,12 +786,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
+@@ -787,12 +787,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
  
  int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par, bool phys)
  {
@@ -173,10 +173,10 @@ index d0ada39eb4d4..616db4a11a3f 100644
  	INIT_WORK_ONSTACK(&sscs.work, smp_call_on_cpu_callback);
  
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 4e01c448b4b4..965547d37ef1 100644
+index 891ccad5f271..7c99dddd1290 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -2764,11 +2764,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
+@@ -2766,11 +2766,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
   */
  void flush_workqueue(struct workqueue_struct *wq)
  {

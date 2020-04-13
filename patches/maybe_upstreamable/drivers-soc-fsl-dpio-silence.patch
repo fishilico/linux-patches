@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 9 Apr 2020 08:59:35 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/soc/fsl/dpio: silence
+ -Wpointer-to-int-cast
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc on x86-32 reports:
+
+    drivers/soc/fsl/dpio/qbman-portal.c: In function
+    ‘qbman_swp_enqueue_multiple_desc_direct’:
+    drivers/soc/fsl/dpio/qbman-portal.c:870:14: error: cast from
+    pointer to integer of different size
+    [-Werror=pointer-to-int-cast]
+      870 |  addr_cena = (uint64_t)s->addr_cena;
+          |              ^
+---
+ drivers/soc/fsl/dpio/qbman-portal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/soc/fsl/dpio/qbman-portal.c b/drivers/soc/fsl/dpio/qbman-portal.c
+index d1f49caa5b13..98f737fff55f 100644
+--- a/drivers/soc/fsl/dpio/qbman-portal.c
++++ b/drivers/soc/fsl/dpio/qbman-portal.c
+@@ -823,7 +823,7 @@ int qbman_swp_enqueue_multiple_desc_direct(struct qbman_swp *s,
+ 	const uint32_t *cl;
+ 	uint32_t eqcr_ci, eqcr_pi, half_mask, full_mask;
+ 	int i, num_enqueued = 0;
+-	uint64_t addr_cena;
++	size_t addr_cena;
+ 
+ 	half_mask = (s->eqcr.pi_ci_mask>>1);
+ 	full_mask = s->eqcr.pi_ci_mask;
+@@ -867,7 +867,7 @@ int qbman_swp_enqueue_multiple_desc_direct(struct qbman_swp *s,
+ 
+ 	/* Flush all the cacheline without load/store in between */
+ 	eqcr_pi = s->eqcr.pi;
+-	addr_cena = (uint64_t)s->addr_cena;
++	addr_cena = (size_t)s->addr_cena;
+ 	for (i = 0; i < num_enqueued; i++)
+ 		eqcr_pi++;
+ 	s->eqcr.pi = eqcr_pi & full_mask;
+-- 

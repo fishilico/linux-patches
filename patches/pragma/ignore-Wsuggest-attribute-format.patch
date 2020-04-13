@@ -9,9 +9,10 @@ Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
  .../broadcom/brcm80211/brcmfmac/tracepoint.h       | 14 ++++++++++++++
  .../brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h  | 14 ++++++++++++++
  .../net/wireless/intel/iwlwifi/iwl-devtrace-msg.h  | 14 ++++++++++++++
+ include/trace/events/qla.h                         |  7 +++++++
  kernel/panic.c                                     |  8 ++++++++
  lib/vsprintf.c                                     |  7 +++++++
- 7 files changed, 71 insertions(+)
+ 8 files changed, 78 insertions(+)
 
 diff --git a/drivers/hid/intel-ish-hid/ishtp/bus.c b/drivers/hid/intel-ish-hid/ishtp/bus.c
 index c47c3328a0f4..c36ca27c5b4f 100644
@@ -192,6 +193,31 @@ index 9ad93ef60890..a0649ece9f6d 100644
  #endif /* __IWLWIFI_DEVICE_TRACE_MSG */
  
  #undef TRACE_INCLUDE_PATH
+diff --git a/include/trace/events/qla.h b/include/trace/events/qla.h
+index b71f680968eb..b3b7b7d065ea 100644
+--- a/include/trace/events/qla.h
++++ b/include/trace/events/qla.h
+@@ -9,6 +9,10 @@
+ 
+ #define QLA_MSG_MAX 256
+ 
++#ifndef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
++#endif
+ DECLARE_EVENT_CLASS(qla_log_event,
+ 	TP_PROTO(const char *buf,
+ 		struct va_format *vaf),
+@@ -26,6 +30,9 @@ DECLARE_EVENT_CLASS(qla_log_event,
+ 
+ 	TP_printk("%s %s", __get_str(buf), __get_str(msg))
+ );
++#ifndef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ DEFINE_EVENT(qla_log_event, ql_dbg_log,
+ 	TP_PROTO(const char *buf, struct va_format *vaf),
 diff --git a/kernel/panic.c b/kernel/panic.c
 index b69ee9e76cb2..abe2f167d70d 100644
 --- a/kernel/panic.c

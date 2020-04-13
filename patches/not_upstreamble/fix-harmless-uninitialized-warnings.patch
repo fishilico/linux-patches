@@ -43,17 +43,17 @@ index 77c14671866c..25690300ada9 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i915_request.c
-index a18b2a244706..8532354d6e33 100644
+index c0df71d7d0ff..f68892e06025 100644
 --- a/drivers/gpu/drm/i915/i915_request.c
 +++ b/drivers/gpu/drm/i915/i915_request.c
-@@ -1430,7 +1430,7 @@ static unsigned long local_clock_us(unsigned int *cpu)
+@@ -1476,7 +1476,7 @@ static unsigned long local_clock_ns(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
 -	unsigned int this_cpu;
 +	unsigned int this_cpu = 0; /* clang -Wsometimes-uninitialized false positive, because time_after does a typecheck on local_clock_us return value */
  
- 	if (time_after(local_clock_us(&this_cpu), timeout))
+ 	if (time_after(local_clock_ns(&this_cpu), timeout))
  		return true;
 diff --git a/drivers/gpu/drm/qxl/qxl_draw.c b/drivers/gpu/drm/qxl/qxl_draw.c
 index 5bebf1ea1c5d..42ed3f4ec1af 100644
@@ -69,10 +69,10 @@ index 5bebf1ea1c5d..42ed3f4ec1af 100644
  	struct qxl_rect *rects;
  	int stride = fb->pitches[0];
 diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-index 73489a45decb..e6e33e9ceec4 100644
+index 367d5b87ee6a..6ea52e1c0184 100644
 --- a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
 +++ b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-@@ -3780,6 +3780,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
+@@ -4163,6 +4163,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
  		goto out_err;
  
  	vmw_query_bo_switch_commit(dev_priv, sw_context);
@@ -149,10 +149,10 @@ index e88af978f63c..5c9461988aab 100644
  	int ioaddr, ns;
  	unsigned int skbsize;
 diff --git a/drivers/scsi/qla2xxx/qla_mr.c b/drivers/scsi/qla2xxx/qla_mr.c
-index cad1fc2a1b28..9aca083b9486 100644
+index df99911b8bb9..79321abd9414 100644
 --- a/drivers/scsi/qla2xxx/qla_mr.c
 +++ b/drivers/scsi/qla2xxx/qla_mr.c
-@@ -2229,6 +2229,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
+@@ -2228,6 +2228,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
  		if (iocb_job->u.fxiocb.flags & SRB_FXDISC_RSP_DWRD_VALID)
  			iocb_job->u.fxiocb.req_data =
  			    pkt->dataword_r;
@@ -200,10 +200,10 @@ index 720e9f94957e..514e0fa3025d 100644
  	}
  
 diff --git a/fs/xfs/libxfs/xfs_dir2_node.c b/fs/xfs/libxfs/xfs_dir2_node.c
-index a0cc5e240306..173986c5558c 100644
+index 6ac4aad98cd7..7ba3083542ba 100644
 --- a/fs/xfs/libxfs/xfs_dir2_node.c
 +++ b/fs/xfs/libxfs/xfs_dir2_node.c
-@@ -550,6 +550,8 @@ xfs_dir2_leafn_add(
+@@ -553,6 +553,8 @@ xfs_dir2_leafn_add(
  		 */
  		lfloglow = leafhdr.count;
  		lfloghigh = -1;
@@ -213,11 +213,11 @@ index a0cc5e240306..173986c5558c 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index bf161e930f1d..28024bd09307 100644
+index 7fcf62b324b0..9823e7a87f27 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
 @@ -2082,7 +2082,7 @@ xfs_difree_finobt(
- 	struct xfs_agi			*agi = XFS_BUF_TO_AGI(agbp);
+ 	struct xfs_agi			*agi = agbp->b_addr;
  	xfs_agnumber_t			agno = be32_to_cpu(agi->agi_seqno);
  	struct xfs_btree_cur		*cur;
 -	struct xfs_inobt_rec_incore	rec;
@@ -226,7 +226,7 @@ index bf161e930f1d..28024bd09307 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index bdc216e2c2c6..7ba3046c7ef4 100644
+index c23df75bd06a..6ea4025e381b 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
 @@ -990,7 +990,7 @@ xlog_verify_tail(
@@ -239,10 +239,10 @@ index bdc216e2c2c6..7ba3046c7ef4 100644
  
  	buffer = xlog_alloc_buffer(log, 1);
 diff --git a/include/linux/sunrpc/cache.h b/include/linux/sunrpc/cache.h
-index 0f64de7caa39..30a00762e920 100644
+index 10891b70fc7b..8611de4e26ab 100644
 --- a/include/linux/sunrpc/cache.h
 +++ b/include/linux/sunrpc/cache.h
-@@ -297,7 +297,7 @@ static inline int get_time(char **bpp, time64_t *time)
+@@ -300,7 +300,7 @@ static inline int get_time(char **bpp, time64_t *time)
  
  static inline time64_t get_expiry(char **bpp)
  {
@@ -252,7 +252,7 @@ index 0f64de7caa39..30a00762e920 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/mm/filemap.c b/mm/filemap.c
-index 1784478270e1..533adea3c349 100644
+index 23a051a7ef0f..0c47ea9776e8 100644
 --- a/mm/filemap.c
 +++ b/mm/filemap.c
 @@ -832,7 +832,7 @@ static int __add_to_page_cache_locked(struct page *page,
@@ -265,10 +265,10 @@ index 1784478270e1..533adea3c349 100644
  	void *old;
  
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 88d7a692a965..5686bac3721e 100644
+index 16d75da0996a..c311d60742d0 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1530,7 +1530,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
+@@ -1557,7 +1557,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
  {
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;
@@ -278,10 +278,10 @@ index 88d7a692a965..5686bac3721e 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index d9cca6dbd870..4dbf522ba4d4 100644
+index 82846aca86d9..a85371fdc340 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2499,7 +2499,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
+@@ -2500,7 +2500,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
  	bool tdls_peer;
  	bool multicast;
  	u16 info_id = 0;

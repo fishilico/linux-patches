@@ -12,10 +12,10 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
  5 files changed, 39 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index f95ee99091e4..77c8252895f8 100644
+index b420c9dc444d..cb6e5e6cb12f 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
-@@ -432,6 +432,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
+@@ -431,6 +431,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
  	int flex_size = ext4_flex_bg_size(sbi);
  	struct dx_hash_info hinfo;
  
@@ -27,7 +27,7 @@ index f95ee99091e4..77c8252895f8 100644
  	ngroups = real_ngroups;
  	if (flex_size > 1) {
  		ngroups = (real_ngroups + flex_size - 1) >>
-@@ -559,6 +564,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
+@@ -558,6 +563,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
  	}
  
  	return -1;
@@ -38,10 +38,10 @@ index f95ee99091e4..77c8252895f8 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/mm/mmap.c b/mm/mmap.c
-index d681a20eb4ea..522fb327bef0 100644
+index f609e9ec4a25..bbf68b498c04 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -705,6 +705,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+@@ -708,6 +708,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
  	long adjust_next = 0;
  	int remove_next = 0;
  
@@ -53,7 +53,7 @@ index d681a20eb4ea..522fb327bef0 100644
  	if (next && !insert) {
  		struct vm_area_struct *exporter = NULL, *importer = NULL;
  
-@@ -976,6 +981,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+@@ -979,6 +984,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
  	validate_mm(mm);
  
  	return 0;
@@ -64,7 +64,7 @@ index d681a20eb4ea..522fb327bef0 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index e1101a4f90a6..aa6dda97b50e 100644
+index 7e29590482ce..ff481be287d7 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
 @@ -1934,6 +1934,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
@@ -90,10 +90,10 @@ index e1101a4f90a6..aa6dda97b50e 100644
  		for (; i < nfrags; i++)
  			skb_frag_unref(skb, i);
 diff --git a/net/ipv4/fib_trie.c b/net/ipv4/fib_trie.c
-index ff0c24371e33..1033b8dc97cc 100644
+index 4f334b425538..2470b5949ce9 100644
 --- a/net/ipv4/fib_trie.c
 +++ b/net/ipv4/fib_trie.c
-@@ -1403,6 +1403,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1398,6 +1398,10 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->gets);
  #endif
  
@@ -104,7 +104,7 @@ index ff0c24371e33..1033b8dc97cc 100644
  	/* Step 1: Travel to the longest prefix match in the trie */
  	for (;;) {
  		index = get_cindex(key, n);
-@@ -1577,6 +1581,9 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
+@@ -1572,6 +1576,9 @@ int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
  	this_cpu_inc(stats->semantic_match_miss);
  #endif
  	goto backtrace;

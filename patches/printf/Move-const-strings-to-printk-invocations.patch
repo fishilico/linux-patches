@@ -42,7 +42,6 @@ This fixes errors like:
  drivers/remoteproc/keystone_remoteproc.c     |   5 +-
  drivers/scsi/esas2r/esas2r_log.c             |   6 +-
  drivers/scsi/fnic/fnic_trace.c               |   5 +-
- drivers/tty/n_hdlc.c                         |  22 +--
  drivers/tty/serial/st-asc.c                  |   4 +-
  fs/ext4/super.c                              |   8 +-
  fs/nilfs2/sysfs.c                            | 168 +++++++++----------
@@ -53,7 +52,7 @@ This fixes errors like:
  net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
- 27 files changed, 166 insertions(+), 272 deletions(-)
+ 26 files changed, 161 insertions(+), 255 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 418a61ecb827..06b14af43421 100644
@@ -171,7 +170,7 @@ index a0c4c42e56b9..8b651f5f9cac 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 629fdf13f846..f5d55ae9fcf9 100644
+index a51df516b87b..6cb8c0d30979 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
 @@ -419,15 +419,6 @@ static noinline int vmalloc_fault(unsigned long address)
@@ -205,7 +204,7 @@ index 629fdf13f846..f5d55ae9fcf9 100644
  		return 1;
  	}
 diff --git a/arch/x86/platform/intel-quark/imr_selftest.c b/arch/x86/platform/intel-quark/imr_selftest.c
-index 4307830e1b6f..c28482293686 100644
+index 570e3062faac..c248df0feadc 100644
 --- a/arch/x86/platform/intel-quark/imr_selftest.c
 +++ b/arch/x86/platform/intel-quark/imr_selftest.c
 @@ -60,7 +60,6 @@ static void __init imr_self_test(void)
@@ -459,7 +458,7 @@ index 032e112c3dd9..bd1cf6e77c53 100644
  }
  
 diff --git a/drivers/remoteproc/keystone_remoteproc.c b/drivers/remoteproc/keystone_remoteproc.c
-index 5c4658f00b3d..03945f53eaf6 100644
+index cd266163a65f..a7afceedb644 100644
 --- a/drivers/remoteproc/keystone_remoteproc.c
 +++ b/drivers/remoteproc/keystone_remoteproc.c
 @@ -366,7 +366,6 @@ static int keystone_rproc_probe(struct platform_device *pdev)
@@ -511,7 +510,7 @@ index 3349670b09de..99a61ba3b070 100644
  				 (dev->driver ? dev->driver->name : "unknown"),
  				 (dev->bus ? dev->bus->name : "unknown"),
 diff --git a/drivers/scsi/fnic/fnic_trace.c b/drivers/scsi/fnic/fnic_trace.c
-index a0d01aea28f7..426c62f636ce 100644
+index 9d52d83161ed..db322aa8a760 100644
 --- a/drivers/scsi/fnic/fnic_trace.c
 +++ b/drivers/scsi/fnic/fnic_trace.c
 @@ -797,7 +797,7 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
@@ -528,71 +527,13 @@ index a0d01aea28f7..426c62f636ce 100644
  	time64_to_tm(tdata->time_stamp.tv_sec, 0, &tm);
  
 -	fmt = "%02d:%02d:%04ld %02d:%02d:%02d.%09lu ns%8x       %c%8x\t";
- 	len += snprintf(fnic_dbgfs_prt->buffer + len,
+ 	len += scnprintf(fnic_dbgfs_prt->buffer + len,
  		max_size - len,
 -		fmt,
 +		"%02d:%02d:%04ld %02d:%02d:%02d.%09lu ns%8x       %c%8x\t",
  		tm.tm_mon + 1, tm.tm_mday, tm.tm_year + 1900,
  		tm.tm_hour, tm.tm_min, tm.tm_sec,
  		tdata->time_stamp.tv_nsec, tdata->host_no,
-diff --git a/drivers/tty/n_hdlc.c b/drivers/tty/n_hdlc.c
-index 27b506bf03ce..53f54a4195c9 100644
---- a/drivers/tty/n_hdlc.c
-+++ b/drivers/tty/n_hdlc.c
-@@ -938,13 +938,6 @@ static struct n_hdlc_buf *n_hdlc_buf_get(struct n_hdlc_buf_list *buf_list)
- 	return buf;
- }	/* end of n_hdlc_buf_get() */
- 
--static const char hdlc_banner[] __initconst =
--	KERN_INFO "HDLC line discipline maxframe=%u\n";
--static const char hdlc_register_ok[] __initconst =
--	KERN_INFO "N_HDLC line discipline registered.\n";
--static const char hdlc_register_fail[] __initconst =
--	KERN_ERR "error registering line discipline: %d\n";
--
- static int __init n_hdlc_init(void)
- {
- 	int status;
-@@ -955,13 +948,13 @@ static int __init n_hdlc_init(void)
- 	else if (maxframe > 65535)
- 		maxframe = 65535;
- 
--	printk(hdlc_banner, maxframe);
-+	printk(KERN_INFO "HDLC line discipline maxframe=%u\n", maxframe);
- 
- 	status = tty_register_ldisc(N_HDLC, &n_hdlc_ldisc);
- 	if (!status)
--		printk(hdlc_register_ok);
-+		printk(KERN_INFO "N_HDLC line discipline registered.\n");
- 	else
--		printk(hdlc_register_fail, status);
-+		printk(KERN_ERR "error registering line discipline: %d\n", status);
- 
- 	return status;
- 	
-@@ -972,20 +965,15 @@ static int __init n_hdlc_init(void)
- #define __exitdata
- #endif
- 
--static const char hdlc_unregister_ok[] __exitdata =
--	KERN_INFO "N_HDLC: line discipline unregistered\n";
--static const char hdlc_unregister_fail[] __exitdata =
--	KERN_ERR "N_HDLC: can't unregister line discipline (err = %d)\n";
--
- static void __exit n_hdlc_exit(void)
- {
- 	/* Release tty registration of line discipline */
- 	int status = tty_unregister_ldisc(N_HDLC);
- 
- 	if (status)
--		printk(hdlc_unregister_fail, status);
-+		printk(KERN_ERR "N_HDLC: can't unregister line discipline (err = %d)\n", status);
- 	else
--		printk(hdlc_unregister_ok);
-+		printk("N_HDLC: line discipline unregistered\n");
- }
- 
- module_init(n_hdlc_init);
 diff --git a/drivers/tty/serial/st-asc.c b/drivers/tty/serial/st-asc.c
 index e7048515a79c..20415ec10c25 100644
 --- a/drivers/tty/serial/st-asc.c
@@ -610,10 +551,10 @@ index e7048515a79c..20415ec10c25 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 0c7c4adb664e..600a70ccddb9 100644
+index 9728e7b0e84f..f1633165964a 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1645,9 +1645,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1642,9 +1642,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  }
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
@@ -623,7 +564,7 @@ index 0c7c4adb664e..600a70ccddb9 100644
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -1879,7 +1876,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -1876,7 +1873,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -1046,7 +987,7 @@ index 790de9ddc1c7..4d30066422b3 100644
  	}
  
 diff --git a/net/802/psnap.c b/net/802/psnap.c
-index 40ab2aea7b31..688fb0e0cdb0 100644
+index 4492e8d7ad20..820f90e6b283 100644
 --- a/net/802/psnap.c
 +++ b/net/802/psnap.c
 @@ -92,14 +92,11 @@ static int snap_request(struct datalink_proto *dl,
@@ -1066,7 +1007,7 @@ index 40ab2aea7b31..688fb0e0cdb0 100644
  	}
  
 diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 4c826b8bf9b1..31bfcd45a57c 100644
+index cf0215734ceb..8e8c91d58a46 100644
 --- a/net/core/net-sysfs.c
 +++ b/net/core/net-sysfs.c
 @@ -26,11 +26,6 @@
@@ -1255,7 +1196,7 @@ index 0a46ea3bddd5..4b1a28ecdb56 100644
  	rc = proto_register(&dn_proto, 1);
  	if (rc != 0)
 diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
-index 2922d4150d88..7f35ca7290b7 100644
+index 54fb8d452a7b..5f858dc0b24c 100644
 --- a/net/llc/af_llc.c
 +++ b/net/llc/af_llc.c
 @@ -1206,13 +1206,6 @@ static const struct proto_ops llc_ui_ops = {

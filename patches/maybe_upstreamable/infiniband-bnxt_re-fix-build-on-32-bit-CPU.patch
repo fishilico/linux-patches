@@ -11,16 +11,17 @@ over-sized left shifts (-Wshift-count-overflow).
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/infiniband/hw/bnxt_re/qplib_fp.c b/drivers/infiniband/hw/bnxt_re/qplib_fp.c
-index 020f70e6865e..b1bdfc2ad90d 100644
+index 899a5d2c100e..cb12c4681cdc 100644
 --- a/drivers/infiniband/hw/bnxt_re/qplib_fp.c
 +++ b/drivers/infiniband/hw/bnxt_re/qplib_fp.c
-@@ -291,10 +291,10 @@ static void bnxt_qplib_service_nq(unsigned long data)
+@@ -359,11 +359,11 @@ static void bnxt_qplib_service_nq(unsigned long data)
  			q_handle = le32_to_cpu(nqsrqe->srq_handle_low);
  			q_handle |= (u64)le32_to_cpu(nqsrqe->srq_handle_high)
  				     << 32;
--			bnxt_qplib_arm_srq((struct bnxt_qplib_srq *)q_handle,
-+			bnxt_qplib_arm_srq((struct bnxt_qplib_srq *)(uintptr_t)q_handle,
- 					   DBC_DBC_TYPE_SRQ_ARMENA);
+-			srq = (struct bnxt_qplib_srq *)q_handle;
++			srq = (struct bnxt_qplib_srq *)(uintptr_t)q_handle;
+ 			bnxt_qplib_armen_db(&srq->dbinfo,
+ 					    DBC_DBC_TYPE_SRQ_ARMENA);
  			if (!nq->srqn_handler(nq,
 -					      (struct bnxt_qplib_srq *)q_handle,
 +					      (struct bnxt_qplib_srq *)(uintptr_t)q_handle,
