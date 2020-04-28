@@ -71,6 +71,7 @@ It has also detected some bugs reported and fixed by other people:
  drivers/usb/core/devio.c                      |  12 +-
  drivers/usb/dwc2/hcd.c                        |  22 +-
  drivers/usb/host/xhci-debugfs.c               |   4 +-
+ drivers/vhost/scsi.c                          |   6 +-
  drivers/xen/privcmd.c                         |  16 +-
  drivers/xen/xenbus/xenbus_xs.c                |   4 +-
  fs/afs/dir.c                                  |   3 +-
@@ -101,7 +102,7 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/deref_checker_plugin.c    | 458 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 72 files changed, 842 insertions(+), 124 deletions(-)
+ 73 files changed, 847 insertions(+), 125 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
@@ -974,6 +975,23 @@ index 76c3f29562d2..3d8cf58b556f 100644
  
  	return dir;
  }
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index c39952243fd3..a9afd1e814b3 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -1460,7 +1460,11 @@ vhost_scsi_set_endpoint(struct vhost_scsi *vs,
+ 		for (i = 0; i < VHOST_SCSI_MAX_VQ; i++) {
+ 			vq = &vs->vqs[i].vq;
+ 			mutex_lock(&vq->mutex);
+-			vhost_vq_set_backend(vq, vs_tpg);
++			/* Play nice with the pointer deref checker */
++			{
++				void *vs_tpg_p = (void *)vs_tpg;
++				vhost_vq_set_backend(vq, vs_tpg_p);
++			}
+ 			vhost_vq_init_access(vq);
+ 			mutex_unlock(&vq->mutex);
+ 		}
 diff --git a/drivers/xen/privcmd.c b/drivers/xen/privcmd.c
 index c6070e70dd73..686b2b79df10 100644
 --- a/drivers/xen/privcmd.c
@@ -1418,7 +1436,7 @@ index 7c99dddd1290..1ebad01f29d2 100644
  	char desc[WORKER_DESC_LEN] = { };
  	struct pool_workqueue *pwq = NULL;
 diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index cd459155d28a..71c3b2d0137e 100644
+index bcabbe02192b..57a476816e52 100644
 --- a/mm/hugetlb.c
 +++ b/mm/hugetlb.c
 @@ -1483,7 +1483,9 @@ void free_huge_page(struct page *page)
@@ -1451,7 +1469,7 @@ index a2b395acef89..af8e1419e7ce 100644
  }
  
 diff --git a/mm/slub.c b/mm/slub.c
-index 2c64168f89f7..b63e6d30047a 100644
+index 37dfd44c4d9b..914c30d88a48 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
 @@ -286,13 +286,15 @@ static void prefetch_freepointer(const struct kmem_cache *s, void *object)
