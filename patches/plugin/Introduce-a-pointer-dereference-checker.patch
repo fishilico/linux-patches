@@ -76,6 +76,7 @@ It has also detected some bugs reported and fixed by other people:
  drivers/xen/xenbus/xenbus_xs.c                |   4 +-
  fs/afs/dir.c                                  |   3 +-
  fs/cifs/cifsacl.c                             |  12 +-
+ fs/io_uring.c                                 |  15 +-
  include/asm-generic/asm-prototypes.h          |   6 +
  include/linux/compiler.h                      |  23 +
  include/linux/string.h                        |  18 +
@@ -102,7 +103,7 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/deref_checker_plugin.c    | 458 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 73 files changed, 847 insertions(+), 125 deletions(-)
+ 74 files changed, 858 insertions(+), 129 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
@@ -1077,6 +1078,39 @@ index ae421634aa42..acdc05d687bb 100644
  		gid = make_kgid(&init_user_ns, id);
  		if (gid_valid(gid))
  			fgid = gid;
+diff --git a/fs/io_uring.c b/fs/io_uring.c
+index 0b91b0631173..9522ab545002 100644
+--- a/fs/io_uring.c
++++ b/fs/io_uring.c
+@@ -1295,8 +1295,12 @@ static struct io_kiocb *io_get_fallback_req(struct io_ring_ctx *ctx)
+ 	struct io_kiocb *req;
+ 
+ 	req = ctx->fallback_req;
+-	if (!test_and_set_bit_lock(0, (unsigned long *) &ctx->fallback_req))
+-		return req;
++	{
++		/* Play nice with the pointer deref checker */
++		unsigned long *p_fallback_req = (unsigned long *) &ctx->fallback_req;
++		if (!test_and_set_bit_lock(0, p_fallback_req))
++			return req;
++	}
+ 
+ 	return NULL;
+ }
+@@ -1381,8 +1385,11 @@ static void __io_free_req(struct io_kiocb *req)
+ 	percpu_ref_put(&req->ctx->refs);
+ 	if (likely(!io_is_fallback_req(req)))
+ 		kmem_cache_free(req_cachep, req);
+-	else
+-		clear_bit_unlock(0, (unsigned long *) &req->ctx->fallback_req);
++	else {
++		/* Play nice with the pointer deref checker */
++		unsigned long *p_fallback_req = (unsigned long *) &req->ctx->fallback_req;
++		clear_bit_unlock(0, p_fallback_req);
++	}
+ }
+ 
+ struct req_batch {
 diff --git a/include/asm-generic/asm-prototypes.h b/include/asm-generic/asm-prototypes.h
 index 2fa2bc208383..7c392857a3d3 100644
 --- a/include/asm-generic/asm-prototypes.h
