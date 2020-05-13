@@ -6,17 +6,18 @@ Subject: [PATCH] {NOT UPSTREAMABLE} Remove disabled warnings
 Remove disabled warnings in Makefile so we have full control of the
 list of disabled warnings.
 ---
- Makefile                               | 31 +++++++++++++-------------
+ Makefile                               | 39 +++++++++++++-------------
  arch/x86/Makefile                      |  2 +-
- arch/x86/boot/compressed/Makefile      |  6 ++---
- drivers/gpu/drm/i915/Makefile          | 22 +++++++++---------
+ arch/x86/boot/compressed/Makefile      |  6 ++--
+ drivers/gpu/drm/i915/Makefile          | 22 +++++++--------
  drivers/misc/cxl/Makefile              |  2 +-
- drivers/staging/greybus/tools/Makefile |  8 ++++++-
- scripts/Makefile.extrawarn             | 14 ++++++------
- 7 files changed, 45 insertions(+), 40 deletions(-)
+ drivers/staging/greybus/tools/Makefile |  8 +++++-
+ mm/Makefile                            |  4 +--
+ scripts/Makefile.extrawarn             | 14 ++++-----
+ 8 files changed, 51 insertions(+), 46 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 3512f7b243dc..f22765b25049 100644
+index 11fe9b1535de..d2c48a60119e 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -449,7 +449,7 @@ CHECK		= sparse
@@ -66,16 +67,7 @@ index 3512f7b243dc..f22765b25049 100644
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
  KBUILD_CFLAGS += -O2
-@@ -730,7 +729,7 @@ KBUILD_CFLAGS += -Os
- endif
- 
- ifdef CONFIG_CC_DISABLE_WARN_MAYBE_UNINITIALIZED
--KBUILD_CFLAGS   += -Wno-maybe-uninitialized
-+#KBUILD_CFLAGS   += -Wno-maybe-uninitialized
- endif
- 
- # Tell gcc to never replace conditional load with a non-conditional one
-@@ -762,8 +761,8 @@ KBUILD_CFLAGS += $(stackp-flags-y)
+@@ -758,8 +757,8 @@ KBUILD_CFLAGS += $(stackp-flags-y)
  
  ifdef CONFIG_CC_IS_CLANG
  KBUILD_CPPFLAGS += -Qunused-arguments
@@ -86,7 +78,7 @@ index 3512f7b243dc..f22765b25049 100644
  # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
  # source of a reference will be _MergedGlobals and not on of the whitelisted names.
  # See modpost pattern 2
-@@ -772,7 +771,7 @@ else
+@@ -768,7 +767,7 @@ else
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
@@ -95,7 +87,7 @@ index 3512f7b243dc..f22765b25049 100644
  
  # Warn about unmarked fall-throughs in switch statement.
  # Disabled for clang while comment to attribute conversion happens and
-@@ -780,7 +779,7 @@ KBUILD_CFLAGS += -Wno-unused-but-set-variable
+@@ -776,7 +775,7 @@ KBUILD_CFLAGS += -Wno-unused-but-set-variable
  KBUILD_CFLAGS += $(call cc-option,-Wimplicit-fallthrough,)
  endif
  
@@ -104,7 +96,7 @@ index 3512f7b243dc..f22765b25049 100644
  ifdef CONFIG_FRAME_POINTER
  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
  else
-@@ -876,10 +875,10 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
+@@ -872,21 +871,21 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
  KBUILD_CFLAGS += -Wvla
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -114,6 +106,22 @@ index 3512f7b243dc..f22765b25049 100644
  # disable stringop warnings in gcc 8+
 -KBUILD_CFLAGS += $(call cc-disable-warning, stringop-truncation)
 +#KBUILD_CFLAGS += $(call cc-disable-warning, stringop-truncation)
+ 
+ # We'll want to enable this eventually, but it's not going away for 5.7 at least
+-KBUILD_CFLAGS += $(call cc-disable-warning, zero-length-bounds)
+-KBUILD_CFLAGS += $(call cc-disable-warning, array-bounds)
+-KBUILD_CFLAGS += $(call cc-disable-warning, stringop-overflow)
++#KBUILD_CFLAGS += $(call cc-disable-warning, zero-length-bounds)
++#KBUILD_CFLAGS += $(call cc-disable-warning, array-bounds)
++#KBUILD_CFLAGS += $(call cc-disable-warning, stringop-overflow)
+ 
+ # Another good warning that we'll want to enable eventually
+-KBUILD_CFLAGS += $(call cc-disable-warning, restrict)
++#KBUILD_CFLAGS += $(call cc-disable-warning, restrict)
+ 
+ # Enabled with W=2, disabled by default as noisy
+-KBUILD_CFLAGS += $(call cc-disable-warning, maybe-uninitialized)
++#KBUILD_CFLAGS += $(call cc-disable-warning, maybe-uninitialized)
  
  # disable invalid "can't wrap" optimizations for signed / pointers
  KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
@@ -221,6 +229,21 @@ index ad0ae8053b79..8da8cbb7c72a 100644
  
  CC	:= $(CROSS_COMPILE)gcc
  
+diff --git a/mm/Makefile b/mm/Makefile
+index fccd3756b25f..3202c78bde0f 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -23,8 +23,8 @@ KCOV_INSTRUMENT_mmzone.o := n
+ KCOV_INSTRUMENT_vmstat.o := n
+ KCOV_INSTRUMENT_failslab.o := n
+ 
+-CFLAGS_init-mm.o += $(call cc-disable-warning, override-init)
+-CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
++#CFLAGS_init-mm.o += $(call cc-disable-warning, override-init)
++#CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
+ 
+ mmu-y			:= nommu.o
+ mmu-$(CONFIG_MMU)	:= highmem.o memory.o mincore.o \
 diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
 index 4aea7cf71d11..f33146d330c2 100644
 --- a/scripts/Makefile.extrawarn

@@ -857,10 +857,10 @@ index 43fa351e2b9e..719538e52a42 100644
  };
  
 diff --git a/drivers/usb/core/devio.c b/drivers/usb/core/devio.c
-index 6833c918abce..39a229a519cb 100644
+index b9db9812d6c5..252afe3111eb 100644
 --- a/drivers/usb/core/devio.c
 +++ b/drivers/usb/core/devio.c
-@@ -1979,12 +1979,13 @@ static struct async *reap_as(struct usb_dev_state *ps)
+@@ -1978,12 +1978,13 @@ static struct async *reap_as(struct usb_dev_state *ps)
  static int proc_reapurb(struct usb_dev_state *ps, void __user *arg)
  {
  	struct async *as = reap_as(ps);
@@ -875,7 +875,7 @@ index 6833c918abce..39a229a519cb 100644
  		free_async(as);
  		return retval;
  	}
-@@ -1997,11 +1998,12 @@ static int proc_reapurbnonblock(struct usb_dev_state *ps, void __user *arg)
+@@ -1996,11 +1997,12 @@ static int proc_reapurbnonblock(struct usb_dev_state *ps, void __user *arg)
  {
  	int retval;
  	struct async *as;
@@ -889,7 +889,7 @@ index 6833c918abce..39a229a519cb 100644
  		free_async(as);
  	} else {
  		retval = (connected(ps) ? -EAGAIN : -ENODEV);
-@@ -2126,12 +2128,13 @@ static int processcompl_compat(struct async *as, void __user * __user *arg)
+@@ -2125,12 +2127,13 @@ static int processcompl_compat(struct async *as, void __user * __user *arg)
  static int proc_reapurb_compat(struct usb_dev_state *ps, void __user *arg)
  {
  	struct async *as = reap_as(ps);
@@ -904,7 +904,7 @@ index 6833c918abce..39a229a519cb 100644
  		free_async(as);
  		return retval;
  	}
-@@ -2144,11 +2147,12 @@ static int proc_reapurbnonblock_compat(struct usb_dev_state *ps, void __user *ar
+@@ -2143,11 +2146,12 @@ static int proc_reapurbnonblock_compat(struct usb_dev_state *ps, void __user *ar
  {
  	int retval;
  	struct async *as;
@@ -1079,10 +1079,10 @@ index ae421634aa42..acdc05d687bb 100644
  		if (gid_valid(gid))
  			fgid = gid;
 diff --git a/fs/io_uring.c b/fs/io_uring.c
-index 0b91b0631173..9522ab545002 100644
+index 979d9f977409..247a57839056 100644
 --- a/fs/io_uring.c
 +++ b/fs/io_uring.c
-@@ -1295,8 +1295,12 @@ static struct io_kiocb *io_get_fallback_req(struct io_ring_ctx *ctx)
+@@ -1287,8 +1287,12 @@ static struct io_kiocb *io_get_fallback_req(struct io_ring_ctx *ctx)
  	struct io_kiocb *req;
  
  	req = ctx->fallback_req;
@@ -1097,7 +1097,7 @@ index 0b91b0631173..9522ab545002 100644
  
  	return NULL;
  }
-@@ -1381,8 +1385,11 @@ static void __io_free_req(struct io_kiocb *req)
+@@ -1373,8 +1377,11 @@ static void __io_free_req(struct io_kiocb *req)
  	percpu_ref_put(&req->ctx->refs);
  	if (likely(!io_is_fallback_req(req)))
  		kmem_cache_free(req_cachep, req);
@@ -1350,10 +1350,10 @@ index c3512e7e0801..edbda11cf783 100644
  			return ret;
  
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 8d2b98812625..1dabd58447c7 100644
+index 29615f15a820..db6f8f902b8b 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -7951,7 +7951,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
+@@ -7952,7 +7952,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
  	 * We use the callback data field (which is a pointer)
  	 * as our counter.
  	 */
@@ -1396,7 +1396,7 @@ index 8a4c8d5c2c98..963205e686e4 100644
  	return ret < 0 ? ret : 0;
  }
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index d0568af4a0ef..6421a1b7c52a 100644
+index 35989383ae11..ed1f32ef0477 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
 @@ -793,28 +793,34 @@ static int trace_kprobe_create(int argc, const char *argv[])
@@ -1503,7 +1503,7 @@ index a2b395acef89..af8e1419e7ce 100644
  }
  
 diff --git a/mm/slub.c b/mm/slub.c
-index 37dfd44c4d9b..914c30d88a48 100644
+index c11b3fb5bf0b..07b86e8381eb 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
 @@ -286,13 +286,15 @@ static void prefetch_freepointer(const struct kmem_cache *s, void *object)
@@ -1525,31 +1525,31 @@ index 37dfd44c4d9b..914c30d88a48 100644
  }
  
 diff --git a/net/core/drop_monitor.c b/net/core/drop_monitor.c
-index 8e33cec9fc4e..f679d5a501d0 100644
+index 2ee7bc4c9e03..cb52884aa73b 100644
 --- a/net/core/drop_monitor.c
 +++ b/net/core/drop_monitor.c
-@@ -232,7 +232,9 @@ static void trace_drop_common(struct sk_buff *skb, void *location)
- 	nla = genlmsg_data(nlmsg_data(nlh));
+@@ -234,7 +234,9 @@ static void trace_drop_common(struct sk_buff *skb, void *location)
  	msg = nla_data(nla);
+ 	point = msg->points;
  	for (i = 0; i < msg->entries; i++) {
--		if (!memcmp(&location, msg->points[i].pc, sizeof(void *))) {
+-		if (!memcmp(&location, &point->pc, sizeof(void *))) {
 +		/* Play nice with the pointer deref checker */
-+		void **msg_points_pc = (void **)(msg->points[i].pc);
++		void **msg_points_pc = (void **)(&point->pc);
 +		if (!memcmp(&location, msg_points_pc, sizeof(void *))) {
- 			msg->points[i].count++;
+ 			point->count++;
  			goto out;
  		}
-@@ -244,7 +246,11 @@ static void trace_drop_common(struct sk_buff *skb, void *location)
+@@ -247,7 +249,11 @@ static void trace_drop_common(struct sk_buff *skb, void *location)
  	 */
  	__nla_reserve_nohdr(dskb, sizeof(struct net_dm_drop_point));
  	nla->nla_len += NLA_ALIGN(sizeof(struct net_dm_drop_point));
--	memcpy(msg->points[msg->entries].pc, &location, sizeof(void *));
+-	memcpy(point->pc, &location, sizeof(void *));
 +	{
 +		/* Play nice with the pointer deref checker */
-+		void **msg_points_pc = (void **)(msg->points[msg->entries].pc);
++		void **msg_points_pc = (void **)(point->pc);
 +		memcpy(msg_points_pc, &location, sizeof(void *));
 +	}
- 	msg->points[msg->entries].count = 1;
+ 	point->count = 1;
  	msg->entries++;
  
 diff --git a/net/core/sock_map.c b/net/core/sock_map.c

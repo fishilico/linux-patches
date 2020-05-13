@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 12 May 2020 21:27:01 +0200
+Subject: [PATCH] {PRINTF} mm/backing-dev: silence -Wformat-security using "%s"
+
+---
+ mm/backing-dev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index efc5b83acd2d..7c7635b03a7c 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -939,7 +939,7 @@ int bdi_register_va(struct backing_dev_info *bdi, const char *fmt, va_list args)
+ 		return 0;
+ 
+ 	vsnprintf(bdi->dev_name, sizeof(bdi->dev_name), fmt, args);
+-	dev = device_create(bdi_class, NULL, MKDEV(0, 0), bdi, bdi->dev_name);
++	dev = device_create(bdi_class, NULL, MKDEV(0, 0), bdi, "%s", bdi->dev_name);
+ 	if (IS_ERR(dev))
+ 		return PTR_ERR(dev);
+ 
+-- 
