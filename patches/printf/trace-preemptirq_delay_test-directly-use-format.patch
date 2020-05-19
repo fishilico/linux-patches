@@ -5,23 +5,25 @@ Subject: [PATCH] {PRINTF} trace/preemptirq_delay_test: directly use format
  string with kthread_run
 
 ---
- kernel/trace/preemptirq_delay_test.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ kernel/trace/preemptirq_delay_test.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/kernel/trace/preemptirq_delay_test.c b/kernel/trace/preemptirq_delay_test.c
-index c4c86de63cf9..1c935bc1489f 100644
+index 312d1a0ca3b6..b3360436b873 100644
 --- a/kernel/trace/preemptirq_delay_test.c
 +++ b/kernel/trace/preemptirq_delay_test.c
-@@ -129,10 +129,7 @@ static int preemptirq_run_test(void)
+@@ -133,12 +133,10 @@ static int preemptirq_delay_run(void *data)
+ static int preemptirq_run_test(void)
  {
  	struct task_struct *task;
- 
 -	char task_name[50];
--
+ 
+ 	init_completion(&done);
+ 
 -	snprintf(task_name, sizeof(task_name), "%s_test", test_mode);
 -	task =  kthread_run(preemptirq_delay_run, NULL, task_name);
 +	task = kthread_run(preemptirq_delay_run, NULL, "%s_test", test_mode);
  	if (IS_ERR(task))
  		return PTR_ERR(task);
- 	if (task)
+ 	if (task) {
 -- 
