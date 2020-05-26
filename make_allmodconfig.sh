@@ -312,6 +312,7 @@ then
     disable_in_hostcflags 'switch-enum' # Show values in switch on enum can be skipped
     disable_in_hostcflags 'unreachable-code-break'
     disable_in_hostcflags 'unused-macros'
+    disable_in_hostcflags 'used-but-marked-unused'
     disable_in_hostcflags 'variadic-macros'
     disable_in_hostcflags 'vla' # Variable-length arrays are used in some host programs
     disable_in_hostcflags 'zero-length-array' # Some structures has zero-length arrays
