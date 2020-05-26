@@ -132,6 +132,7 @@ disable_in_kcflags 'cast-align' # Many struct casts change the alignment
 disable_in_kcflags 'deprecated-declarations'
 disable_in_kcflags 'empty-body' # if (conf) print_debug(...); with empty print_debug
 disable_in_kcflags 'format-nonliteral'
+disable_in_kcflags 'implicit-fallthrough' # Many switch statements use fall-though cases
 disable_in_kcflags 'inline' # inline functions can make unlikely code bigger
 disable_in_kcflags 'missing-declarations' # Some drivers love inline without static
 disable_in_kcflags 'missing-field-initializers'
@@ -234,7 +235,6 @@ then
     disable_in_kcflags 'format-overflow' # Many calls to snprintf may overflow
     disable_in_kcflags 'format-truncation' # Many calls to snprintf may be truncated
     disable_in_kcflags 'frame-address' # __builtin_return_address is called with a nonzero argument
-    disable_in_kcflags 'implicit-fallthrough' # Many switch statements use fall-though cases
     disable_in_kcflags 'maybe-uninitialized' # There are too many false positives with gcc 5.2
     disable_in_kcflags 'old-style-declaration' # inline does not have to be at the beginning of declarations
     disable_in_kcflags 'override-init' # When defining syscall tables, overriding default value is mandatory
@@ -273,6 +273,7 @@ HOSTCFLAGS="$HOSTCFLAGS -Wwrite-strings"
 disable_in_hostcflags 'aggregate-return' # str_new() returns struct gstr
 disable_in_hostcflags 'cast-align'
 disable_in_hostcflags 'format-nonliteral'
+disable_in_hostcflags 'implicit-fallthrough' # Many switch statements use fall-though cases
 disable_in_hostcflags 'missing-field-initializers'
 disable_in_hostcflags 'missing-include-dirs' # same as KCFLAGS
 disable_in_hostcflags 'shadow'
@@ -325,7 +326,6 @@ then
     HOSTCC="${HOSTCC:-gcc}"
     disable_in_hostcflags 'clobbered' # Flase positives of clobbered variables
     disable_in_hostcflags 'discarded-qualifiers' # Many helper programs mix const char* in char* variables
-    disable_in_hostcflags 'implicit-fallthrough' # Many switch statements use fall-though cases
     disable_in_hostcflags 'inline' # Remove funny GCC warnings
     disable_in_hostcflags 'pointer-arith' # Linux does arithmetic on void pointers
     disable_in_hostcflags 'error=nested-externs'
