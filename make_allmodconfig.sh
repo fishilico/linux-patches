@@ -149,6 +149,7 @@ disable_in_kcflags 'type-limits' # Unsigned integers >= 0
 disable_in_kcflags 'unused-const-variable'
 disable_in_kcflags 'unused-function' # Make the build succeed when some static functions are not used
 disable_in_kcflags 'unused-parameter' # There is no __unused macro, and __maybe_unused is not the common headers
+disable_in_kcflags 'error=enum-conversion' # TODO ?!? (maybe not that important)
 disable_in_kcflags 'error=write-strings' # TODO, type acpi_string complicates things
 
 if $CC -v 2>&1 | grep -q clang
@@ -220,7 +221,6 @@ then
 
     disable_in_kcflags 'error=constant-conversion' # TODO ?!? (~0UL in unsigned int)
     disable_in_kcflags 'error=duplicate-enum' # TODO
-    disable_in_kcflags 'error=enum-conversion' # TODO ?!? (maybe not that important)
     disable_in_kcflags 'error=gcc-compat' # TODO
     disable_in_kcflags 'error=switch' # TODO, "overflow converting case value to switch condition type"
 elif $CC -v 2>&1 | grep -q 'gcc version'
@@ -229,6 +229,7 @@ then
     KCFLAGS="$KCFLAGS -Wjump-misses-init"
     KCFLAGS="$KCFLAGS -Wlogical-op"
     disable_in_kcflags 'aggressive-loop-optimizations' # gcc 9 warns about some loops in echoaudio_dsp, which looks fine
+    disable_in_kcflags 'array-bounds' # gcc 10 warns about array subscripts with negative value, which is used
     disable_in_kcflags 'attribute-alias' # gcc 8 warns about x86-32 syscall handler using incompatible types
     disable_in_kcflags 'builtin-declaration-mismatch' # gcc 9 warns about using speicific pointer types instead of void*
     disable_in_kcflags 'cast-function-type' # gcc 8 warns about many incompatible function casts used by Linux
@@ -239,10 +240,12 @@ then
     disable_in_kcflags 'old-style-declaration' # inline does not have to be at the beginning of declarations
     disable_in_kcflags 'override-init' # When defining syscall tables, overriding default value is mandatory
     disable_in_kcflags 'packed-not-aligned' # gcc 8 warns about __attribute__((packed, aligned(4))) because 4 < 8
+    disable_in_kcflags 'restrict' # gcc 10 warns about sprintf with overlapping arguments
     disable_in_kcflags 'sizeof-pointer-memaccess' # gcc 8 warns about using the size of the source buffer
     disable_in_kcflags 'stringop-truncation' # gcc 8 warns about using strncpy with a dest buffer having the specified size
     disable_in_kcflags 'stringop-overflow' # gcc 8 warns about using strncpy when "specified bound depends on the length of the source argument"
     disable_in_kcflags 'unused-but-set-variable' # Many variables are never used
+    disable_in_kcflags 'zero-length-bound' # bound-checking zero-length arrays does not work
 
     disable_in_kcflags 'error=jump-misses-init' # The compiler is not smart enough in many cases
     disable_in_kcflags 'error=logical-op'
