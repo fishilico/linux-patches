@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 14 Jun 2020 17:57:07 +0200
+Subject: [PATCH] {MAYBE UPS} arch/x86/purgatory: add -fno-stack-protector
+
+The purgatory needs to be explicitly linked without the stack protector,
+with clang. Otherwise clang on x86-64 reports:
+
+    ld: arch/x86/purgatory/purgatory.ro: in function `purgatory':
+    (.text+0x154): undefined reference to `__stack_chk_fail'
+    ld: arch/x86/purgatory/purgatory.ro: in function `sha256_update':
+    (.text+0x1d6e): undefined reference to `__stack_chk_fail'
+    ld: arch/x86/purgatory/purgatory.ro: in function `__sha256_final':
+    sha256.c:(.text+0x1e85): undefined reference to `__stack_chk_fail'
+---
+ arch/x86/purgatory/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/x86/purgatory/Makefile b/arch/x86/purgatory/Makefile
+index b04e6e72a592..183ac60e5990 100644
+--- a/arch/x86/purgatory/Makefile
++++ b/arch/x86/purgatory/Makefile
+@@ -34,6 +34,7 @@ KCOV_INSTRUMENT := n
+ PURGATORY_CFLAGS_REMOVE := -mcmodel=kernel
+ PURGATORY_CFLAGS := -mcmodel=large -ffreestanding -fno-zero-initialized-in-bss
+ PURGATORY_CFLAGS += $(DISABLE_STACKLEAK_PLUGIN) -DDISABLE_BRANCH_PROFILING
++PURGATORY_CFLAGS += -fno-stack-protector
+ 
+ # Default KBUILD_CFLAGS can have -pg option set when FTRACE is enabled. That
+ # in turn leaves some undefined symbols like __fentry__ in purgatory and not
+-- 

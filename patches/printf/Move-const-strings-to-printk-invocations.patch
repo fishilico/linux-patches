@@ -28,10 +28,11 @@ This fixes errors like:
 ---
  arch/arm/mach-omap2/board-n8x0.c             |   3 +-
  arch/arm/mach-omap2/usb-tusb6010.c           |  23 +--
- arch/x86/mm/fault.c                          |  16 +-
+ arch/x86/mm/fault.c                          |  15 +-
  arch/x86/platform/intel-quark/imr_selftest.c |   7 +-
  drivers/clk/ti/adpll.c                       |   3 +-
  drivers/iommu/omap-iommu-debug.c             |   3 +-
+ drivers/misc/habanalabs/gaudi/gaudi.c        |  10 +-
  drivers/misc/pti.c                           |   3 +-
  drivers/net/appletalk/ipddp.c                |   4 +-
  drivers/net/hamradio/6pack.c                 |  14 +-
@@ -48,11 +49,11 @@ This fixes errors like:
  fs/ntfs/super.c                              |   7 +-
  kernel/power/suspend_test.c                  |  33 +---
  net/802/psnap.c                              |   5 +-
- net/core/net-sysfs.c                         |  49 +++---
+ net/core/net-sysfs.c                         |  53 +++---
  net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
- 26 files changed, 161 insertions(+), 255 deletions(-)
+ 27 files changed, 167 insertions(+), 262 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 418a61ecb827..06b14af43421 100644
@@ -170,12 +171,12 @@ index a0c4c42e56b9..8b651f5f9cac 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index a51df516b87b..6cb8c0d30979 100644
+index 66be9bd60307..955e3912dd69 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
-@@ -419,15 +419,6 @@ static noinline int vmalloc_fault(unsigned long address)
- }
- NOKPROBE_SYMBOL(vmalloc_fault);
+@@ -279,14 +279,6 @@ static void dump_pagetable(unsigned long address)
+ 
+ #else /* CONFIG_X86_64: */
  
 -#ifdef CONFIG_CPU_SUP_AMD
 -static const char errata93_warning[] =
@@ -185,11 +186,10 @@ index a51df516b87b..6cb8c0d30979 100644
 -"******* Please consider a BIOS update.\n"
 -"******* Disabling USB legacy in the BIOS may also help.\n";
 -#endif
--
+ 
  /*
   * No vm86 mode in 64-bit mode:
-  */
-@@ -529,7 +520,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+@@ -389,7 +381,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  	address |= 0xffffffffUL << 32;
  	if ((address >= (u64)_stext && address <= (u64)_etext) ||
  	    (address >= MODULES_VADDR && address <= MODULES_END)) {
@@ -270,6 +270,51 @@ index 8e19bfa94121..4ba1b2fbe62f 100644
  				 iommu_read_reg(obj, MMU_##name));	\
  		p += bytes;						\
  		len -= bytes;						\
+diff --git a/drivers/misc/habanalabs/gaudi/gaudi.c b/drivers/misc/habanalabs/gaudi/gaudi.c
+index 61f88e9884ce..33ccf8222e16 100644
+--- a/drivers/misc/habanalabs/gaudi/gaudi.c
++++ b/drivers/misc/habanalabs/gaudi/gaudi.c
+@@ -6137,8 +6137,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u32 *mask,
+ 					struct seq_file *s)
+ {
+ 	struct gaudi_device *gaudi = hdev->asic_specific;
+-	const char *fmt = "%-5d%-9s%#-14x%#-12x%#x\n";
+-	const char *mme_slave_fmt = "%-5d%-9s%-14s%-12s%#x\n";
+ 	u32 qm_glbl_sts0, qm_cgm_sts, dma_core_sts0, tpc_cfg_sts, mme_arch_sts;
+ 	bool is_idle = true, is_eng_idle, is_slave;
+ 	u64 offset;
+@@ -6168,7 +6166,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u32 *mask,
+ 			*mask |= !is_eng_idle <<
+ 					(GAUDI_ENGINE_ID_DMA_0 + dma_id);
+ 		if (s)
+-			seq_printf(s, fmt, dma_id,
++			seq_printf(s, "%-5d%-9s%#-14x%#-12x%#x\n", dma_id,
+ 				is_eng_idle ? "Y" : "N", qm_glbl_sts0,
+ 				qm_cgm_sts, dma_core_sts0);
+ 	}
+@@ -6190,7 +6188,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u32 *mask,
+ 		if (mask)
+ 			*mask |= !is_eng_idle << (GAUDI_ENGINE_ID_TPC_0 + i);
+ 		if (s)
+-			seq_printf(s, fmt, i,
++			seq_printf(s, "%-5d%-9s%#-14x%#-12x%#x\n", i,
+ 				is_eng_idle ? "Y" : "N",
+ 				qm_glbl_sts0, qm_cgm_sts, tpc_cfg_sts);
+ 	}
+@@ -6219,11 +6217,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u32 *mask,
+ 			*mask |= !is_eng_idle << (GAUDI_ENGINE_ID_MME_0 + i);
+ 		if (s) {
+ 			if (!is_slave)
+-				seq_printf(s, fmt, i,
++				seq_printf(s, "%-5d%-9s%#-14x%#-12x%#x\n", i,
+ 					is_eng_idle ? "Y" : "N",
+ 					qm_glbl_sts0, qm_cgm_sts, mme_arch_sts);
+ 			else
+-				seq_printf(s, mme_slave_fmt, i,
++				seq_printf(s, "%-5d%-9s%-14s%-12s%#x\n", i,
+ 					is_eng_idle ? "Y" : "N", "-",
+ 					"-", mme_arch_sts);
+ 		}
 diff --git a/drivers/misc/pti.c b/drivers/misc/pti.c
 index b7f510676cd6..0e2a7e493803 100644
 --- a/drivers/misc/pti.c
@@ -437,10 +482,10 @@ index 7ad3d24195ba..6cd103cbd4dd 100644
  }
  module_init(z85230_init_driver);
 diff --git a/drivers/ptp/ptp_clockmatrix.c b/drivers/ptp/ptp_clockmatrix.c
-index 032e112c3dd9..bd1cf6e77c53 100644
+index ceb6bc58f3b4..cec72e36d44a 100644
 --- a/drivers/ptp/ptp_clockmatrix.c
 +++ b/drivers/ptp/ptp_clockmatrix.c
-@@ -1036,7 +1036,6 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
+@@ -1123,7 +1123,6 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
  	u16 product_id;
  	u8 hw_rev_id;
  	u8 config_select;
@@ -448,7 +493,7 @@ index 032e112c3dd9..bd1cf6e77c53 100644
  
  	idtcm_read_major_release(idtcm, &major);
  	idtcm_read_minor_release(idtcm, &minor);
-@@ -1047,7 +1046,7 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
+@@ -1134,7 +1133,7 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
  
  	idtcm_read_otp_scsr_config_select(idtcm, &config_select);
  
@@ -551,10 +596,10 @@ index e7048515a79c..20415ec10c25 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index bf5fcb477f66..e165e6cd5c0b 100644
+index c668f6b42374..77f8ab729c25 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1640,9 +1640,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1643,9 +1643,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  }
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
@@ -564,7 +609,7 @@ index bf5fcb477f66..e165e6cd5c0b 100644
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -1874,7 +1871,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -1919,7 +1916,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -1007,7 +1052,7 @@ index 4492e8d7ad20..820f90e6b283 100644
  	}
  
 diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 4773ad6ec111..51e27981501a 100644
+index e353b822bb15..4eeeac89a70a 100644
 --- a/net/core/net-sysfs.c
 +++ b/net/core/net-sysfs.c
 @@ -26,11 +26,6 @@
@@ -1076,7 +1121,16 @@ index 4773ad6ec111..51e27981501a 100644
  	}
  	rtnl_unlock();
  	return ret;
-@@ -249,7 +244,7 @@ static ssize_t dormant_show(struct device *dev,
+@@ -249,7 +244,7 @@ static ssize_t testing_show(struct device *dev,
+ 	struct net_device *netdev = to_net_dev(dev);
+ 
+ 	if (netif_running(netdev))
+-		return sprintf(buf, fmt_dec, !!netif_testing(netdev));
++		return sprintf(buf, "%d\n", !!netif_testing(netdev));
+ 
+ 	return -EINVAL;
+ }
+@@ -261,7 +256,7 @@ static ssize_t dormant_show(struct device *dev,
  	struct net_device *netdev = to_net_dev(dev);
  
  	if (netif_running(netdev))
@@ -1085,7 +1139,7 @@ index 4773ad6ec111..51e27981501a 100644
  
  	return -EINVAL;
  }
-@@ -290,7 +285,7 @@ static ssize_t carrier_changes_show(struct device *dev,
+@@ -302,7 +297,7 @@ static ssize_t carrier_changes_show(struct device *dev,
  {
  	struct net_device *netdev = to_net_dev(dev);
  
@@ -1094,7 +1148,7 @@ index 4773ad6ec111..51e27981501a 100644
  		       atomic_read(&netdev->carrier_up_count) +
  		       atomic_read(&netdev->carrier_down_count));
  }
-@@ -302,7 +297,7 @@ static ssize_t carrier_up_count_show(struct device *dev,
+@@ -314,7 +309,7 @@ static ssize_t carrier_up_count_show(struct device *dev,
  {
  	struct net_device *netdev = to_net_dev(dev);
  
@@ -1103,7 +1157,7 @@ index 4773ad6ec111..51e27981501a 100644
  }
  static DEVICE_ATTR_RO(carrier_up_count);
  
-@@ -312,7 +307,7 @@ static ssize_t carrier_down_count_show(struct device *dev,
+@@ -324,7 +319,7 @@ static ssize_t carrier_down_count_show(struct device *dev,
  {
  	struct net_device *netdev = to_net_dev(dev);
  
@@ -1112,7 +1166,7 @@ index 4773ad6ec111..51e27981501a 100644
  }
  static DEVICE_ATTR_RO(carrier_down_count);
  
-@@ -328,7 +323,7 @@ static ssize_t mtu_store(struct device *dev, struct device_attribute *attr,
+@@ -340,7 +335,7 @@ static ssize_t mtu_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_mtu);
  }
@@ -1121,7 +1175,7 @@ index 4773ad6ec111..51e27981501a 100644
  
  static int change_flags(struct net_device *dev, unsigned long new_flags)
  {
-@@ -340,7 +335,7 @@ static ssize_t flags_store(struct device *dev, struct device_attribute *attr,
+@@ -352,7 +347,7 @@ static ssize_t flags_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_flags);
  }
@@ -1130,7 +1184,7 @@ index 4773ad6ec111..51e27981501a 100644
  
  static ssize_t tx_queue_len_store(struct device *dev,
  				  struct device_attribute *attr,
-@@ -351,7 +346,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
+@@ -363,7 +358,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, dev_change_tx_queue_len);
  }
@@ -1139,16 +1193,25 @@ index 4773ad6ec111..51e27981501a 100644
  
  static int change_gro_flush_timeout(struct net_device *dev, unsigned long val)
  {
-@@ -368,7 +363,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
+@@ -380,7 +375,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, change_gro_flush_timeout);
  }
 -NETDEVICE_SHOW_RW(gro_flush_timeout, fmt_ulong);
 +NETDEVICE_SHOW_RW(gro_flush_timeout, "%lu\n");
  
+ static int change_napi_defer_hard_irqs(struct net_device *dev, unsigned long val)
+ {
+@@ -397,7 +392,7 @@ static ssize_t napi_defer_hard_irqs_store(struct device *dev,
+ 
+ 	return netdev_store(dev, attr, buf, len, change_napi_defer_hard_irqs);
+ }
+-NETDEVICE_SHOW_RW(napi_defer_hard_irqs, fmt_dec);
++NETDEVICE_SHOW_RW(napi_defer_hard_irqs, "%d\n");
+ 
  static ssize_t ifalias_store(struct device *dev, struct device_attribute *attr,
  			     const char *buf, size_t len)
-@@ -426,7 +421,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
+@@ -455,7 +450,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_group);
  }
@@ -1157,7 +1220,7 @@ index 4773ad6ec111..51e27981501a 100644
  static DEVICE_ATTR(netdev_group, 0644, group_show, group_store);
  
  static int change_proto_down(struct net_device *dev, unsigned long proto_down)
-@@ -440,7 +435,7 @@ static ssize_t proto_down_store(struct device *dev,
+@@ -469,7 +464,7 @@ static ssize_t proto_down_store(struct device *dev,
  {
  	return netdev_store(dev, attr, buf, len, change_proto_down);
  }
@@ -1166,7 +1229,7 @@ index 4773ad6ec111..51e27981501a 100644
  
  static ssize_t phys_port_id_show(struct device *dev,
  				 struct device_attribute *attr, char *buf)
-@@ -558,7 +553,7 @@ static ssize_t netstat_show(const struct device *d,
+@@ -589,7 +584,7 @@ static ssize_t netstat_show(const struct device *d,
  		struct rtnl_link_stats64 temp;
  		const struct rtnl_link_stats64 *stats = dev_get_stats(dev, &temp);
  

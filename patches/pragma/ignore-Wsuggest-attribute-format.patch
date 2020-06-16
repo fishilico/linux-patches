@@ -9,10 +9,10 @@ Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
  .../broadcom/brcm80211/brcmfmac/tracepoint.h       | 14 ++++++++++++++
  .../brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h  | 14 ++++++++++++++
  .../net/wireless/intel/iwlwifi/iwl-devtrace-msg.h  | 14 ++++++++++++++
- include/trace/events/qla.h                         |  7 +++++++
+ include/trace/events/qla.h                         |  1 -
  kernel/panic.c                                     |  8 ++++++++
  lib/vsprintf.c                                     |  7 +++++++
- 8 files changed, 78 insertions(+)
+ 8 files changed, 71 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/hid/intel-ish-hid/ishtp/bus.c b/drivers/hid/intel-ish-hid/ishtp/bus.c
 index c47c3328a0f4..c36ca27c5b4f 100644
@@ -194,35 +194,22 @@ index 9ad93ef60890..a0649ece9f6d 100644
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/include/trace/events/qla.h b/include/trace/events/qla.h
-index b71f680968eb..b3b7b7d065ea 100644
+index 5857cf682ee7..7fdd4197eb58 100644
 --- a/include/trace/events/qla.h
 +++ b/include/trace/events/qla.h
-@@ -9,6 +9,10 @@
- 
- #define QLA_MSG_MAX 256
- 
-+#ifndef __clang__
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
-+#endif
- DECLARE_EVENT_CLASS(qla_log_event,
- 	TP_PROTO(const char *buf,
- 		struct va_format *vaf),
-@@ -26,6 +30,9 @@ DECLARE_EVENT_CLASS(qla_log_event,
+@@ -31,7 +31,6 @@ DECLARE_EVENT_CLASS(qla_log_event,
  
  	TP_printk("%s %s", __get_str(buf), __get_str(msg))
  );
-+#ifndef __clang__
-+#pragma GCC diagnostic pop
-+#endif
+-
+ #pragma GCC diagnostic pop
  
  DEFINE_EVENT(qla_log_event, ql_dbg_log,
- 	TP_PROTO(const char *buf, struct va_format *vaf),
 diff --git a/kernel/panic.c b/kernel/panic.c
-index b69ee9e76cb2..abe2f167d70d 100644
+index e2157ca387c8..27cf8542ff15 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -555,6 +555,11 @@ struct warn_args {
+@@ -573,6 +573,11 @@ struct warn_args {
  	va_list args;
  };
  
@@ -234,7 +221,7 @@ index b69ee9e76cb2..abe2f167d70d 100644
  void __warn(const char *file, int line, void *caller, unsigned taint,
  	    struct pt_regs *regs, struct warn_args *args)
  {
-@@ -596,6 +601,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -614,6 +619,9 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  	/* Just a warning, don't kill lockdep. */
  	add_taint(taint, LOCKDEP_STILL_OK);
  }
@@ -245,10 +232,10 @@ index b69ee9e76cb2..abe2f167d70d 100644
  #ifndef __WARN_FLAGS
  void warn_slowpath_fmt(const char *file, int line, unsigned taint,
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 004badbb3ce4..59f9bee20274 100644
+index 0353235dda04..94e78e892e5b 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
-@@ -1656,7 +1656,14 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
+@@ -1657,7 +1657,14 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
  		return buf;
  
  	va_copy(va, *va_fmt->va);

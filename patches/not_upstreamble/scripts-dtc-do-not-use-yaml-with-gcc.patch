@@ -16,10 +16,10 @@ When testing HOSTCC="gcc -m32", linking dtc fails:
  1 file changed, 5 insertions(+)
 
 diff --git a/scripts/dtc/Makefile b/scripts/dtc/Makefile
-index ef85f8b7d4a7..64a23b71adc1 100644
+index 0b44917f981c..3dbf27dd2da0 100644
 --- a/scripts/dtc/Makefile
 +++ b/scripts/dtc/Makefile
-@@ -19,9 +19,14 @@ $(error dtc needs libyaml for DT schema validation support. \
+@@ -19,12 +19,17 @@ $(error dtc needs libyaml for DT schema validation support. \
  endif
  HOST_EXTRACFLAGS += -DNO_YAML
  else
@@ -28,6 +28,9 @@ index ef85f8b7d4a7..64a23b71adc1 100644
 +HOST_EXTRACFLAGS += -DNO_YAML
 +else
  dtc-objs	+= yamltree.o
+ # To include <yaml.h> installed in a non-default path
+ HOSTCFLAGS_yamltree.o := $(shell pkg-config --cflags yaml-0.1)
+ # To link libyaml installed in a non-default path
  HOSTLDLIBS_dtc	:= $(shell pkg-config yaml-0.1 --libs)
  endif
 +endif

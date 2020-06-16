@@ -10,10 +10,10 @@ Subject: [PATCH] {PRINTF} drivers/remoteproc: add __printf attribute
  3 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remoteproc_core.c
-index 066aa9b23a7a..36cc64639025 100644
+index 9f04c30c4aaf..f299f059daa6 100644
 --- a/drivers/remoteproc/remoteproc_core.c
 +++ b/drivers/remoteproc/remoteproc_core.c
-@@ -903,7 +903,7 @@ static int rproc_handle_carveout(struct rproc *rproc,
+@@ -904,7 +904,7 @@ static int rproc_handle_carveout(struct rproc *rproc,
  	 * Check carveout rsc already part of a registered carveout,
  	 * Search by name, then check the da and length
  	 */
@@ -22,7 +22,7 @@ index 066aa9b23a7a..36cc64639025 100644
  
  	if (carveout) {
  		if (carveout->rsc_offset != FW_RSC_ADDR_ANY) {
-@@ -925,7 +925,7 @@ static int rproc_handle_carveout(struct rproc *rproc,
+@@ -926,7 +926,7 @@ static int rproc_handle_carveout(struct rproc *rproc,
  	/* Register carveout in in list */
  	carveout = rproc_mem_entry_init(dev, NULL, 0, rsc->len, rsc->da,
  					rproc_alloc_carveout,
@@ -32,23 +32,23 @@ index 066aa9b23a7a..36cc64639025 100644
  		dev_err(dev, "Can't allocate memory entry structure\n");
  		return -ENOMEM;
 diff --git a/drivers/remoteproc/remoteproc_internal.h b/drivers/remoteproc/remoteproc_internal.h
-index b389dc79da81..9727f6905aae 100644
+index 4ba7cb59d3e8..7680e7800944 100644
 --- a/drivers/remoteproc/remoteproc_internal.h
 +++ b/drivers/remoteproc/remoteproc_internal.h
-@@ -62,7 +62,7 @@ int rproc_elf_load_rsc_table(struct rproc *rproc, const struct firmware *fw);
+@@ -61,7 +61,7 @@ int rproc_elf_load_rsc_table(struct rproc *rproc, const struct firmware *fw);
  struct resource_table *rproc_elf_find_loaded_rsc_table(struct rproc *rproc,
  						       const struct firmware *fw);
  struct rproc_mem_entry *
 -rproc_find_carveout_by_name(struct rproc *rproc, const char *name, ...);
 +rproc_find_carveout_by_name(struct rproc *rproc, const char *name, ...) __printf(2, 3);
  
- static inline
- int rproc_fw_sanity_check(struct rproc *rproc, const struct firmware *fw)
+ static inline int rproc_prepare_device(struct rproc *rproc)
+ {
 diff --git a/include/linux/remoteproc.h b/include/linux/remoteproc.h
-index 9c07d7958c53..fcd380ddddd1 100644
+index e7b7bab8b235..b8b1a3d46c5c 100644
 --- a/include/linux/remoteproc.h
 +++ b/include/linux/remoteproc.h
-@@ -606,11 +606,11 @@ rproc_mem_entry_init(struct device *dev,
+@@ -616,11 +616,11 @@ rproc_mem_entry_init(struct device *dev,
  		     void *va, dma_addr_t dma, size_t len, u32 da,
  		     int (*alloc)(struct rproc *, struct rproc_mem_entry *),
  		     int (*release)(struct rproc *, struct rproc_mem_entry *),

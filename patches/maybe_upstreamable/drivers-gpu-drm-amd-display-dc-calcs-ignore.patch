@@ -8,10 +8,12 @@ clang reports issues
 ---
  drivers/gpu/drm/amd/display/dc/calcs/Makefile |  6 +-
  .../drm/amd/display/dc/calcs/dcn_calc_math.c  |  4 +-
+ .../dc/dml/dcn20/display_mode_vba_20v2.c      |  2 +-
+ .../dc/dml/dcn21/display_mode_vba_21.c        |  6 +-
  drivers/gpu/drm/amd/display/dc/dsc/Makefile   |  2 +-
  drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c  | 56 +++++++++----------
  .../gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c  |  4 +-
- 5 files changed, 36 insertions(+), 36 deletions(-)
+ 7 files changed, 40 insertions(+), 40 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/display/dc/calcs/Makefile b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
 index cf7dde89e770..40ac4e733e91 100644
@@ -52,6 +54,43 @@ index 07d18e78de49..61e77cf6f333 100644
  		return (a + log_2) / dcn_bw_log(b, 2);
  	else
  		return (a + log_2);
+diff --git a/drivers/gpu/drm/amd/display/dc/dml/dcn20/display_mode_vba_20v2.c b/drivers/gpu/drm/amd/display/dc/dml/dcn20/display_mode_vba_20v2.c
+index 80170f9721ce..03fa562cc393 100644
+--- a/drivers/gpu/drm/amd/display/dc/dml/dcn20/display_mode_vba_20v2.c
++++ b/drivers/gpu/drm/amd/display/dc/dml/dcn20/display_mode_vba_20v2.c
+@@ -2628,7 +2628,7 @@ static void dml20v2_DISPCLKDPPCLKDCFCLKDeepSleepPrefetchParametersWatermarksAndP
+ 		if (!((k == PlaneWithMinActiveDRAMClockChangeMargin) && (mode_lib->vba.BlendingAndTiming[k] == k))
+ 				&& !(mode_lib->vba.BlendingAndTiming[k] == PlaneWithMinActiveDRAMClockChangeMargin)
+ 				&& mode_lib->vba.ActiveDRAMClockChangeLatencyMargin[k]
+-						< SecondMinActiveDRAMClockChangeMarginOneDisplayInVBLank) {
++						< (double)SecondMinActiveDRAMClockChangeMarginOneDisplayInVBLank) {
+ 			SecondMinActiveDRAMClockChangeMarginOneDisplayInVBLank =
+ 					mode_lib->vba.ActiveDRAMClockChangeLatencyMargin[k];
+ 		}
+diff --git a/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c b/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c
+index a576eed94d9b..35242f30c738 100644
+--- a/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c
++++ b/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c
+@@ -5946,7 +5946,7 @@ static void CalculateMetaAndPTETimes(
+ 						* PixelPTEReqHeightY[k];
+ 			}
+ 			dpte_groups_per_row_luma_ub = dml_ceil(
+-					(float) dpte_row_width_luma_ub[k] / dpte_group_width_luma,
++					(double) dpte_row_width_luma_ub[k] / dpte_group_width_luma,
+ 					1);
+ 			time_per_pte_group_nom_luma[k] = DST_Y_PER_PTE_ROW_NOM_L[k] * HTotal[k]
+ 					/ PixelClock[k] / dpte_groups_per_row_luma_ub;
+@@ -5970,8 +5970,8 @@ static void CalculateMetaAndPTETimes(
+ 							* PixelPTEReqHeightC[k];
+ 				}
+ 				dpte_groups_per_row_chroma_ub = dml_ceil(
+-						(float) dpte_row_width_chroma_ub[k]
+-								/ dpte_group_width_chroma,
++						(double) (dpte_row_width_chroma_ub[k]
++								/ dpte_group_width_chroma),
+ 						1);
+ 				time_per_pte_group_nom_chroma[k] = DST_Y_PER_PTE_ROW_NOM_C[k]
+ 						* HTotal[k] / PixelClock[k]
 diff --git a/drivers/gpu/drm/amd/display/dc/dsc/Makefile b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
 index 6c4c594f46de..3ac3f4f67dda 100644
 --- a/drivers/gpu/drm/amd/display/dc/dsc/Makefile

@@ -22,10 +22,9 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  fs/xfs/libxfs/xfs_ialloc.c                            | 2 +-
  fs/xfs/xfs_log_recover.c                              | 2 +-
  include/linux/sunrpc/cache.h                          | 2 +-
- mm/filemap.c                                          | 2 +-
  net/mac80211/mlme.c                                   | 2 +-
  net/mac80211/tx.c                                     | 2 +-
- 20 files changed, 30 insertions(+), 13 deletions(-)
+ 19 files changed, 29 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/powerplay/hwmgr/processpptables.c
 index 719597c5d27d..3f9ff3b4a67b 100644
@@ -43,10 +42,10 @@ index 719597c5d27d..3f9ff3b4a67b 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i915_request.c
-index e2b78db685ea..4d1d9272bdf0 100644
+index def62100e666..504fb4553101 100644
 --- a/drivers/gpu/drm/i915/i915_request.c
 +++ b/drivers/gpu/drm/i915/i915_request.c
-@@ -1482,7 +1482,7 @@ static unsigned long local_clock_ns(unsigned int *cpu)
+@@ -1624,7 +1624,7 @@ static unsigned long local_clock_ns(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
@@ -149,10 +148,10 @@ index e88af978f63c..5c9461988aab 100644
  	int ioaddr, ns;
  	unsigned int skbsize;
 diff --git a/drivers/scsi/qla2xxx/qla_mr.c b/drivers/scsi/qla2xxx/qla_mr.c
-index df99911b8bb9..79321abd9414 100644
+index a8fe4f725fa0..94e84a7ed545 100644
 --- a/drivers/scsi/qla2xxx/qla_mr.c
 +++ b/drivers/scsi/qla2xxx/qla_mr.c
-@@ -2228,6 +2228,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
+@@ -2225,6 +2225,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
  		if (iocb_job->u.fxiocb.flags & SRB_FXDISC_RSP_DWRD_VALID)
  			iocb_job->u.fxiocb.req_data =
  			    pkt->dataword_r;
@@ -161,7 +160,7 @@ index df99911b8bb9..79321abd9414 100644
  		bsg_job = sp->u.bsg_job;
  		bsg_reply = bsg_job->reply;
 diff --git a/drivers/scsi/qla4xxx/ql4_os.c b/drivers/scsi/qla4xxx/ql4_os.c
-index 5504ab11decc..e6588a4537ff 100644
+index 5dc697ce8b5d..350d7b23f50d 100644
 --- a/drivers/scsi/qla4xxx/ql4_os.c
 +++ b/drivers/scsi/qla4xxx/ql4_os.c
 @@ -5883,7 +5883,7 @@ static void qla4xxx_boot_release(void *data)
@@ -226,10 +225,10 @@ index 7fcf62b324b0..9823e7a87f27 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index c23df75bd06a..6ea4025e381b 100644
+index ec015df55b77..26aeb9900995 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
-@@ -990,7 +990,7 @@ xlog_verify_tail(
+@@ -971,7 +971,7 @@ xlog_verify_tail(
  	xfs_daddr_t		first_bad;
  	int			error = 0;
  	bool			wrapped;
@@ -251,24 +250,11 @@ index 10891b70fc7b..8611de4e26ab 100644
  	struct timespec64 boot;
  
  	if (get_time(bpp, &rv))
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 23a051a7ef0f..0c47ea9776e8 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -832,7 +832,7 @@ static int __add_to_page_cache_locked(struct page *page,
- {
- 	XA_STATE(xas, &mapping->i_pages, offset);
- 	int huge = PageHuge(page);
--	struct mem_cgroup *memcg;
-+	struct mem_cgroup *memcg = NULL; /* false positive of uninitialized warning: its uses depends on !huge */
- 	int error;
- 	void *old;
- 
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 16d75da0996a..c311d60742d0 100644
+index b2a9d47cf86d..b344f29438c2 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1557,7 +1557,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
+@@ -1593,7 +1593,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
  {
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;
@@ -278,10 +264,10 @@ index 16d75da0996a..c311d60742d0 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index 82846aca86d9..a85371fdc340 100644
+index e9ce658141f5..2e4257700a09 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2500,7 +2500,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
+@@ -2511,7 +2511,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
  	bool tdls_peer;
  	bool multicast;
  	u16 info_id = 0;

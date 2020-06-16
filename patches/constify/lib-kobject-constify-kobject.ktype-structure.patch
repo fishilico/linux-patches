@@ -44,11 +44,10 @@ grsecurity kernels warns:
  include/linux/module.h             |  2 +-
  kernel/params.c                    |  4 ++--
  lib/kobject.c                      | 12 ++++++------
- mm/slub.c                          |  2 +-
- 8 files changed, 19 insertions(+), 19 deletions(-)
+ 7 files changed, 18 insertions(+), 18 deletions(-)
 
 diff --git a/Documentation/core-api/kobject.rst b/Documentation/core-api/kobject.rst
-index 1f62d4d7d966..c2018682b27b 100644
+index e93dc8cf52dd..0d33b769b2bf 100644
 --- a/Documentation/core-api/kobject.rst
 +++ b/Documentation/core-api/kobject.rst
 @@ -118,7 +118,7 @@ Initialization of kobjects
@@ -91,10 +90,10 @@ index 886e9054999a..3d09edf5449d 100644
  	if (ktype == &bus_ktype)
  		return 1;
 diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 0cad34f1eede..482949a37539 100644
+index 67d39a90b45c..a322fe15258d 100644
 --- a/drivers/base/core.c
 +++ b/drivers/base/core.c
-@@ -1427,7 +1427,7 @@ static struct kobj_type device_ktype = {
+@@ -1592,7 +1592,7 @@ static struct kobj_type device_ktype = {
  
  static int dev_uevent_filter(struct kset *kset, struct kobject *kobj)
  {
@@ -104,7 +103,7 @@ index 0cad34f1eede..482949a37539 100644
  	if (ktype == &device_ktype) {
  		struct device *dev = kobj_to_dev(kobj);
 diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index e2ca0a292e21..b673a0bccbe1 100644
+index 6cba088bee24..0d34546b6b06 100644
 --- a/include/linux/kobject.h
 +++ b/include/linux/kobject.h
 @@ -67,7 +67,7 @@ struct kobject {
@@ -142,10 +141,10 @@ index e2ca0a292e21..b673a0bccbe1 100644
  	return kobj->ktype;
  }
 diff --git a/include/linux/module.h b/include/linux/module.h
-index 1ad393e62bef..4a6b80491799 100644
+index 2e6670860d27..6d58ad8a35f7 100644
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
-@@ -848,7 +848,7 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
+@@ -856,7 +856,7 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
  
  #ifdef CONFIG_SYSFS
  extern struct kset *module_kset;
@@ -177,7 +176,7 @@ index 8e56f8b12d8f..2807e1f7bdd5 100644
  	.sysfs_ops =	&module_sysfs_ops,
  };
 diff --git a/lib/kobject.c b/lib/kobject.c
-index 83198cb37d8d..ac6e6b12a414 100644
+index 1e4b7382a88e..52e9876cce18 100644
 --- a/lib/kobject.c
 +++ b/lib/kobject.c
 @@ -65,7 +65,7 @@ void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
@@ -207,7 +206,7 @@ index 83198cb37d8d..ac6e6b12a414 100644
  			 struct kobject *parent, const char *fmt, ...)
  {
  	va_list args;
-@@ -663,7 +663,7 @@ EXPORT_SYMBOL(kobject_get_unless_zero);
+@@ -670,7 +670,7 @@ EXPORT_SYMBOL(kobject_get_unless_zero);
   */
  static void kobject_cleanup(struct kobject *kobj)
  {
@@ -234,17 +233,4 @@ index 83198cb37d8d..ac6e6b12a414 100644
  	.sysfs_ops	= &kobj_sysfs_ops,
  	.release	= kset_release,
  	.get_ownership	= kset_get_ownership,
-diff --git a/mm/slub.c b/mm/slub.c
-index 07b86e8381eb..59a919e1e959 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -5696,7 +5696,7 @@ static struct kobj_type slab_ktype = {
- 
- static int uevent_filter(struct kset *kset, struct kobject *kobj)
- {
--	struct kobj_type *ktype = get_ktype(kobj);
-+	const struct kobj_type *ktype = get_ktype(kobj);
- 
- 	if (ktype == &slab_ktype)
- 		return 1;
 -- 

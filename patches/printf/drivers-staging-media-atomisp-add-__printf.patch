@@ -1,0 +1,69 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 14 Jun 2020 12:16:49 +0200
+Subject: [PATCH] {PRINTF} drivers/staging/media/atomisp: add __printf
+ attribute to structure fields
+
+---
+ drivers/staging/media/atomisp/pci/atomisp_compat_css20.c | 6 +++---
+ drivers/staging/media/atomisp/pci/ia_css_env.h           | 4 ++--
+ drivers/staging/media/atomisp/pci/sh_css.c               | 2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/staging/media/atomisp/pci/atomisp_compat_css20.c b/drivers/staging/media/atomisp/pci/atomisp_compat_css20.c
+index c1e282a974d0..9cbddbe47254 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp_compat_css20.c
++++ b/drivers/staging/media/atomisp/pci/atomisp_compat_css20.c
+@@ -158,19 +158,19 @@ static void atomisp_css2_hw_load(hrt_address addr, void *to, uint32_t n)
+ 	spin_unlock_irqrestore(&mmio_lock, flags);
+ }
+ 
+-static int atomisp_css2_dbg_print(const char *fmt, va_list args)
++static __printf(1, 0) int atomisp_css2_dbg_print(const char *fmt, va_list args)
+ {
+ 	vprintk(fmt, args);
+ 	return 0;
+ }
+ 
+-static int atomisp_css2_dbg_ftrace_print(const char *fmt, va_list args)
++static __printf(1, 0) int atomisp_css2_dbg_ftrace_print(const char *fmt, va_list args)
+ {
+ 	ftrace_vprintk(fmt, args);
+ 	return 0;
+ }
+ 
+-static int atomisp_css2_err_print(const char *fmt, va_list args)
++static __printf(1, 0) int atomisp_css2_err_print(const char *fmt, va_list args)
+ {
+ 	vprintk(fmt, args);
+ 	return 0;
+diff --git a/drivers/staging/media/atomisp/pci/ia_css_env.h b/drivers/staging/media/atomisp/pci/ia_css_env.h
+index 8debf334c15c..2b36c911505b 100644
+--- a/drivers/staging/media/atomisp/pci/ia_css_env.h
++++ b/drivers/staging/media/atomisp/pci/ia_css_env.h
+@@ -75,9 +75,9 @@ struct ia_css_hw_access_env {
+ /* Environment with function pointers to print error and debug messages.
+  */
+ struct ia_css_print_env {
+-	int (*debug_print)(const char *fmt, va_list args);
++	int (*__printf(1, 0) debug_print)(const char *fmt, va_list args);
+ 	/** Print a debug message. */
+-	int (*error_print)(const char *fmt, va_list args);
++	int (*__printf(1, 0) error_print)(const char *fmt, va_list args);
+ 	/** Print an error message.*/
+ };
+ 
+diff --git a/drivers/staging/media/atomisp/pci/sh_css.c b/drivers/staging/media/atomisp/pci/sh_css.c
+index 6676537f0e97..acb6cc5c284b 100644
+--- a/drivers/staging/media/atomisp/pci/sh_css.c
++++ b/drivers/staging/media/atomisp/pci/sh_css.c
+@@ -115,7 +115,7 @@ static int thread_alive;
+ 
+ struct sh_css my_css;
+ 
+-int (*sh_css_printf)(const char *fmt, va_list args) = NULL;
++int (*__printf(1, 0) sh_css_printf)(const char *fmt, va_list args) = NULL;
+ 
+ /* modes of work: stream_create and stream_destroy will update the save/restore data
+    only when in working mode, not suspend/resume
+-- 

@@ -9,19 +9,19 @@ list of disabled warnings.
  Makefile                               | 39 +++++++++++++-------------
  arch/x86/Makefile                      |  2 +-
  arch/x86/boot/compressed/Makefile      |  6 ++--
- drivers/gpu/drm/i915/Makefile          | 22 +++++++--------
+ drivers/gpu/drm/i915/Makefile          | 24 ++++++++--------
  drivers/misc/cxl/Makefile              |  2 +-
  drivers/staging/greybus/tools/Makefile |  8 +++++-
  mm/Makefile                            |  4 +--
  scripts/Makefile.extrawarn             | 14 ++++-----
- 8 files changed, 51 insertions(+), 46 deletions(-)
+ 8 files changed, 52 insertions(+), 47 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index b668725a2a62..0b76c3520696 100644
+index ae5d8220f431..8d7ef7d2241c 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -449,7 +449,7 @@ CHECK		= sparse
- BASH		= bash
+@@ -466,7 +466,7 @@ LZ4		= lz4c
+ XZ		= xz
  
  CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 -		  -Wbitwise -Wno-return-void -Wno-unknown-attribute $(CF)
@@ -29,7 +29,7 @@ index b668725a2a62..0b76c3520696 100644
  NOSTDINC_FLAGS :=
  CFLAGS_MODULE   =
  AFLAGS_MODULE   =
-@@ -476,10 +476,9 @@ LINUXINCLUDE    := \
+@@ -493,10 +493,9 @@ LINUXINCLUDE    := \
  		$(USERINCLUDE)
  
  KBUILD_AFLAGS   := -D__ASSEMBLY__ -fno-PIE
@@ -41,7 +41,7 @@ index b668725a2a62..0b76c3520696 100644
  		   -std=gnu89
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
-@@ -652,8 +651,8 @@ endif # KBUILD_EXTMOD
+@@ -664,8 +663,8 @@ endif # KBUILD_EXTMOD
  all: vmlinux
  
  CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage \
@@ -52,7 +52,7 @@ index b668725a2a62..0b76c3520696 100644
  export CFLAGS_GCOV
  
  # The arch Makefiles can override CC_FLAGS_FTRACE. We may also append it later.
-@@ -716,10 +715,10 @@ endif # may-sync-config
+@@ -728,10 +727,10 @@ endif # may-sync-config
  endif # need-config
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
@@ -67,7 +67,7 @@ index b668725a2a62..0b76c3520696 100644
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
  KBUILD_CFLAGS += -O2
-@@ -758,8 +757,8 @@ KBUILD_CFLAGS += $(stackp-flags-y)
+@@ -770,8 +769,8 @@ KBUILD_CFLAGS += $(stackp-flags-y)
  
  ifdef CONFIG_CC_IS_CLANG
  KBUILD_CPPFLAGS += -Qunused-arguments
@@ -78,7 +78,7 @@ index b668725a2a62..0b76c3520696 100644
  # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
  # source of a reference will be _MergedGlobals and not on of the whitelisted names.
  # See modpost pattern 2
-@@ -768,7 +767,7 @@ else
+@@ -780,7 +779,7 @@ else
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
@@ -87,7 +87,7 @@ index b668725a2a62..0b76c3520696 100644
  
  # Warn about unmarked fall-throughs in switch statement.
  # Disabled for clang while comment to attribute conversion happens and
-@@ -776,7 +775,7 @@ KBUILD_CFLAGS += -Wno-unused-but-set-variable
+@@ -788,7 +787,7 @@ KBUILD_CFLAGS += -Wno-unused-but-set-variable
  KBUILD_CFLAGS += $(call cc-option,-Wimplicit-fallthrough,)
  endif
  
@@ -96,7 +96,7 @@ index b668725a2a62..0b76c3520696 100644
  ifdef CONFIG_FRAME_POINTER
  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
  else
-@@ -872,21 +871,21 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
+@@ -896,21 +895,21 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
  KBUILD_CFLAGS += -Wvla
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -126,7 +126,7 @@ index b668725a2a62..0b76c3520696 100644
  # disable invalid "can't wrap" optimizations for signed / pointers
  KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index b65ec63c7db7..1a2f0d43e0c2 100644
+index 00e378de8bc0..2e0b8d176cc6 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
 @@ -189,7 +189,7 @@ KBUILD_LDFLAGS += $(call ld-option, -z max-page-size=0x200000)
@@ -139,10 +139,10 @@ index b65ec63c7db7..1a2f0d43e0c2 100644
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  
 diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
-index 5f7c262bcc99..ff4b20cc9a02 100644
+index 7619742f91c9..f51b517799ea 100644
 --- a/arch/x86/boot/compressed/Makefile
 +++ b/arch/x86/boot/compressed/Makefile
-@@ -35,9 +35,9 @@ KBUILD_CFLAGS += $(cflags-y)
+@@ -37,9 +37,9 @@ KBUILD_CFLAGS += $(cflags-y)
  KBUILD_CFLAGS += -mno-mmx -mno-sse
  KBUILD_CFLAGS += $(call cc-option,-ffreestanding)
  KBUILD_CFLAGS += $(call cc-option,-fno-stack-protector)
@@ -156,10 +156,10 @@ index 5f7c262bcc99..ff4b20cc9a02 100644
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  
 diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
-index 6cd1f6253814..14a697ff6484 100644
+index b0da6ea6e3f1..a54421ebd618 100644
 --- a/drivers/gpu/drm/i915/Makefile
 +++ b/drivers/gpu/drm/i915/Makefile
-@@ -12,21 +12,21 @@
+@@ -12,22 +12,22 @@
  # Note the danger in using -Wall -Wextra is that when CI updates gcc we
  # will most likely get a sudden build breakage... Hopefully we will fix
  # new warnings before CI updates!
@@ -178,10 +178,12 @@ index 6cd1f6253814..14a697ff6484 100644
 -subdir-ccflags-y += $(call cc-disable-warning, sometimes-uninitialized)
 -subdir-ccflags-y += $(call cc-disable-warning, initializer-overrides)
 -subdir-ccflags-y += $(call cc-disable-warning, uninitialized)
+-subdir-ccflags-y += $(call cc-disable-warning, frame-address)
 +#subdir-ccflags-y += $(call cc-disable-warning, sign-compare)
 +#subdir-ccflags-y += $(call cc-disable-warning, sometimes-uninitialized)
 +#subdir-ccflags-y += $(call cc-disable-warning, initializer-overrides)
 +#subdir-ccflags-y += $(call cc-disable-warning, uninitialized)
++#subdir-ccflags-y += $(call cc-disable-warning, frame-address)
  subdir-ccflags-$(CONFIG_DRM_I915_WERROR) += -Werror
  
  # Fine grained warnings disable
@@ -230,10 +232,10 @@ index ad0ae8053b79..8da8cbb7c72a 100644
  CC	:= $(CROSS_COMPILE)gcc
  
 diff --git a/mm/Makefile b/mm/Makefile
-index fccd3756b25f..3202c78bde0f 100644
+index 6e9d46b2efc9..2a16afb7ccbb 100644
 --- a/mm/Makefile
 +++ b/mm/Makefile
-@@ -23,8 +23,8 @@ KCOV_INSTRUMENT_mmzone.o := n
+@@ -31,8 +31,8 @@ KCOV_INSTRUMENT_mmzone.o := n
  KCOV_INSTRUMENT_vmstat.o := n
  KCOV_INSTRUMENT_failslab.o := n
  

@@ -14,9 +14,9 @@ It has also detected some bugs reported and fixed by other people:
 ---
  scripts/Makefile.gcc-plugins                  |   2 +
  scripts/gcc-plugins/Kconfig                   |   6 +
- scripts/gcc-plugins/string_ncmp_size_plugin.c | 238 ++++++++++++++++++
+ scripts/gcc-plugins/string_ncmp_size_plugin.c | 239 ++++++++++++++++++
  sound/soc/intel/boards/bxt_rt298.c            |   9 +-
- 4 files changed, 249 insertions(+), 6 deletions(-)
+ 4 files changed, 250 insertions(+), 6 deletions(-)
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
@@ -33,7 +33,7 @@ index 40efdfbb46fb..46211a40b50c 100644
  
  gcc-plugin-$(CONFIG_GCC_PLUGIN_STRUCTLEAK)	+= structleak_plugin.so
 diff --git a/scripts/gcc-plugins/Kconfig b/scripts/gcc-plugins/Kconfig
-index b948ce8dad4a..9183c7fa8695 100644
+index bf92cb9f3d03..a14b92d7168f 100644
 --- a/scripts/gcc-plugins/Kconfig
 +++ b/scripts/gcc-plugins/Kconfig
 @@ -117,4 +117,10 @@ config GCC_PLUGIN_DEREF_CHECKER
@@ -49,10 +49,10 @@ index b948ce8dad4a..9183c7fa8695 100644
  endif
 diff --git a/scripts/gcc-plugins/string_ncmp_size_plugin.c b/scripts/gcc-plugins/string_ncmp_size_plugin.c
 new file mode 100644
-index 000000000000..a43c42692b83
+index 000000000000..f455997aff7f
 --- /dev/null
 +++ b/scripts/gcc-plugins/string_ncmp_size_plugin.c
-@@ -0,0 +1,238 @@
+@@ -0,0 +1,239 @@
 +/*
 + * Copyright 2016-2018 by Nicolas Iooss
 + * Licensed under the GPL v2, or (at your option) v3
@@ -147,6 +147,7 @@ index 000000000000..a43c42692b83
 +	/* FIXME same thing for strdup/memdup ? */
 +	fnident = DECL_NAME(fndecl);
 +	is_memcmp = (identifier_is(fnident, "__builtin_memcmp") ||
++		     identifier_is(fnident, "__underlying_memcmp") ||
 +		     identifier_is(fnident, "memcmp") ||
 +		     identifier_is(fnident, "reverse_memcmp") ||
 +		     identifier_is(fnident, "stackdepot_memcmp"));

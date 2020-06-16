@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 14 Jun 2020 22:08:27 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/net/ethernet/3com: do not include
+ vermagic.h
+
+On x86-32, gcc warns:
+
+    In file included from drivers/net/ethernet/3com/3c515.c:56:
+    include/linux/vermagic.h:6:2: error: #error "This header can be
+    included from kernel/module.c or *.mod.c only"
+        6 | #error "This header can be included from kernel/module.c or *.mod.c only"
+          |  ^~~~~
+---
+ drivers/net/ethernet/3com/3c515.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/3com/3c515.c b/drivers/net/ethernet/3com/3c515.c
+index acdc94608693..47b4215bb93b 100644
+--- a/drivers/net/ethernet/3com/3c515.c
++++ b/drivers/net/ethernet/3com/3c515.c
+@@ -53,7 +53,6 @@ static int max_interrupt_work = 20;
+ #define PKT_BUF_SZ		1536	/* Size of each temporary Rx buffer. */
+ 
+ #include <linux/module.h>
+-#include <linux/vermagic.h>
+ #include <linux/isapnp.h>
+ #include <linux/kernel.h>
+ #include <linux/netdevice.h>
+-- 

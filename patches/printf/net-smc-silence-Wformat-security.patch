@@ -8,7 +8,7 @@ Subject: [PATCH] {PRINTF} net/smc: silence -Wformat-security
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/net/smc/smc_ism.c b/net/smc/smc_ism.c
-index 5c4727d5066e..dc362fad4e81 100644
+index 91f85fc09fb8..b7ef06697338 100644
 --- a/net/smc/smc_ism.c
 +++ b/net/smc/smc_ism.c
 @@ -294,7 +294,7 @@ struct smcd_dev *smcd_alloc_dev(struct device *parent, const char *name,
@@ -18,6 +18,6 @@ index 5c4727d5066e..dc362fad4e81 100644
 -	dev_set_name(&smcd->dev, name);
 +	dev_set_name(&smcd->dev, "%s", name);
  	smcd->ops = ops;
- 	smc_pnetid_by_dev_port(parent, 0, smcd->pnetid);
- 
+ 	if (smc_pnetid_by_dev_port(parent, 0, smcd->pnetid))
+ 		smc_pnetid_by_table_smcd(smcd);
 -- 

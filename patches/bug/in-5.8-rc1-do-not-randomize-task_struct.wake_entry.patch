@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 13 Jun 2020 14:21:26 +0200
+Subject: [PATCH] {BUG in 5.8-rc1} do not randomize task_struct.wake_entry
+
+Otherwise this BUILD_BUG_ON is triggered in kernel/smp.c:
+
+BUILD_BUG_ON(offsetof(struct task_struct, wake_entry_type) - offsetof(struct task_struct, wake_entry) !=
+         offsetof(struct __call_single_data, flags) - offsetof(struct __call_single_data, llist));
+---
+ include/linux/sched.h | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b62e6aaf28f0..4155afc77055 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -641,12 +641,6 @@ struct task_struct {
+ 	/* -1 unrunnable, 0 runnable, >0 stopped: */
+ 	volatile long			state;
+ 
+-	/*
+-	 * This begins the randomizable portion of task_struct. Only
+-	 * scheduling-critical items should be added above here.
+-	 */
+-	randomized_struct_fields_start
+-
+ 	void				*stack;
+ 	refcount_t			usage;
+ 	/* Per task flags (PF_*), defined further below: */
+@@ -661,6 +655,13 @@ struct task_struct {
+ 	/* Current CPU: */
+ 	unsigned int			cpu;
+ #endif
++
++	/*
++	 * This begins the randomizable portion of task_struct. Only
++	 * scheduling-critical items should be added above here.
++	 */
++	randomized_struct_fields_start
++
+ 	unsigned int			wakee_flips;
+ 	unsigned long			wakee_flip_decay_ts;
+ 	struct task_struct		*last_wakee;
+-- 
