@@ -192,7 +192,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  185 files changed, 884 insertions(+), 28 deletions(-)
 
 diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
-index 65a3b1e75480..dec2bbdcba84 100644
+index 17d5a785df28..798a8aaff356 100644
 --- a/arch/arm/kernel/traps.c
 +++ b/arch/arm/kernel/traps.c
 @@ -178,10 +178,13 @@ static void __dump_instr(const char *lvl, struct pt_regs *regs)
@@ -530,7 +530,7 @@ index d82b3b7658bd..218e46b7e119 100644
  		return 1;
  
 diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-index 31cae88a730b..c2755029287b 100644
+index 934c92dcb9ab..dfcb46291f90 100644
 --- a/drivers/char/mem.c
 +++ b/drivers/char/mem.c
 @@ -1058,8 +1058,11 @@ static int __init chr_dev_init(void)
@@ -1591,7 +1591,7 @@ index 1d27b2fb23af..2602e64600fe 100644
  	}
  
 diff --git a/drivers/net/ethernet/marvell/mvpp2/mvpp2_main.c b/drivers/net/ethernet/marvell/mvpp2/mvpp2_main.c
-index 2b5dad2ec650..ff29a660a143 100644
+index 24f4d8e0da98..bd759eaeacab 100644
 --- a/drivers/net/ethernet/marvell/mvpp2/mvpp2_main.c
 +++ b/drivers/net/ethernet/marvell/mvpp2/mvpp2_main.c
 @@ -1508,6 +1508,8 @@ static void mvpp2_ethtool_get_strings(struct net_device *netdev, u32 sset,
@@ -3688,7 +3688,7 @@ index 924bc9298a42..b4fb3283943c 100644
  	return kdb_read(buffer, bufsize);
  }
 diff --git a/kernel/debug/kdb/kdb_main.c b/kernel/debug/kdb/kdb_main.c
-index ec190569f690..d684257832d1 100644
+index 5c7949061671..37b6bcfd6ddd 100644
 --- a/kernel/debug/kdb/kdb_main.c
 +++ b/kernel/debug/kdb/kdb_main.c
 @@ -1306,8 +1306,12 @@ static int kdb_local(kdb_reason_t reason, int error, struct pt_regs *regs,
@@ -3716,7 +3716,7 @@ index ec190569f690..d684257832d1 100644
  			kdbnearsym(word, &symtab);
  		else
 diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 8e3d2d7fdf5e..40f277ee3360 100644
+index 132f84a5fde3..a1a04ed9472a 100644
 --- a/kernel/kthread.c
 +++ b/kernel/kthread.c
 @@ -486,8 +486,12 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
@@ -3733,7 +3733,7 @@ index 8e3d2d7fdf5e..40f277ee3360 100644
  		return p;
  	kthread_bind(p, cpu);
 diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index e729c9e587a0..f2866ad956b0 100644
+index dc05626979b8..c1942285a95b 100644
 --- a/kernel/trace/bpf_trace.c
 +++ b/kernel/trace/bpf_trace.c
 @@ -502,7 +502,10 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
@@ -3795,7 +3795,7 @@ index c6cca0d1d584..d7044e850055 100644
  		} else {
  			struct trace_print_flags __flags[] = {
 diff --git a/kernel/trace/trace_probe.c b/kernel/trace/trace_probe.c
-index b8a928e925c7..8b4ee39c889c 100644
+index d2867ccc6aca..f92786878be5 100644
 --- a/kernel/trace/trace_probe.c
 +++ b/kernel/trace/trace_probe.c
 @@ -875,6 +875,8 @@ static int __set_print_fmt(struct trace_probe *tp, char *buf, int len,
@@ -3891,7 +3891,7 @@ index a0dbe62f8042..123b13efb822 100644
  	return count;
  }
 diff --git a/mm/slub.c b/mm/slub.c
-index b8f798b50d44..c833bcb7bd1e 100644
+index fe81773fd97e..81a002d65849 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
 @@ -3775,7 +3775,11 @@ static void list_slab_objects(struct kmem_cache *s, struct page *page,
@@ -4009,7 +4009,7 @@ index 605e0f68f8bd..b8d1e1512648 100644
  			result = PTR_ERR(task);
  			goto out;
 diff --git a/net/netfilter/nf_tables_api.c b/net/netfilter/nf_tables_api.c
-index 073aa1051d43..0b8e3ca342cc 100644
+index 7647ecfa0d40..deda355c4a5a 100644
 --- a/net/netfilter/nf_tables_api.c
 +++ b/net/netfilter/nf_tables_api.c
 @@ -3535,7 +3535,11 @@ static int nf_tables_set_alloc_name(struct nft_ctx *ctx, struct nft_set *set,

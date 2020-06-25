@@ -12,8 +12,7 @@ clang reports issues
  .../dc/dml/dcn21/display_mode_vba_21.c        |  6 +-
  drivers/gpu/drm/amd/display/dc/dsc/Makefile   |  2 +-
  drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c  | 56 +++++++++----------
- .../gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c  |  4 +-
- 7 files changed, 40 insertions(+), 40 deletions(-)
+ 6 files changed, 38 insertions(+), 38 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/display/dc/calcs/Makefile b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
 index cf7dde89e770..40ac4e733e91 100644
@@ -92,7 +91,7 @@ index a576eed94d9b..35242f30c738 100644
  				time_per_pte_group_nom_chroma[k] = DST_Y_PER_PTE_ROW_NOM_C[k]
  						* HTotal[k] / PixelClock[k]
 diff --git a/drivers/gpu/drm/amd/display/dc/dsc/Makefile b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
-index 6c4c594f46de..3ac3f4f67dda 100644
+index 4bfd4a9a8a6f..28065561879c 100644
 --- a/drivers/gpu/drm/amd/display/dc/dsc/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
 @@ -27,7 +27,7 @@ dsc_ccflags += -msse2
@@ -101,14 +100,14 @@ index 6c4c594f46de..3ac3f4f67dda 100644
  
 -CFLAGS_$(AMDDALPATH)/dc/dsc/rc_calc.o := $(dsc_ccflags) -Wno-float-equal
 +CFLAGS_$(AMDDALPATH)/dc/dsc/rc_calc.o := $(dsc_ccflags) -Wno-float-equal -Wno-double-promotion
- CFLAGS_$(AMDDALPATH)/dc/dsc/rc_calc_dpi.o := $(dsc_ccflags)
- CFLAGS_$(AMDDALPATH)/dc/dsc/dc_dsc.o := $(dsc_ccflags)
+ 
+ DSC = dc_dsc.o rc_calc.o rc_calc_dpi.o
  
 diff --git a/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c b/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c
-index 03ae15946c6d..74d2871fdbbb 100644
+index 667afbc260f9..66864e87e146 100644
 --- a/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c
 +++ b/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c
-@@ -115,45 +115,45 @@ void get_ofs_set(qp_set ofs, enum colour_mode mode, float bpp)
+@@ -117,45 +117,45 @@ static void get_ofs_set(qp_set ofs, enum colour_mode mode, float bpp)
  		*p++ = (bpp <=  6) ? (-2) : ((((bpp >=  8) && (bpp <= 12))) ? (0) : ((bpp >= 15) ? (6) : ((((bpp > 6) && (bpp < 8))) ? (-2 + dsc_roundf((bpp -  6) * (2 / 2.0))) : (0 + dsc_roundf((bpp - 12) * (6 / 3.0))))));
  		*p++ = (bpp <=  6) ? (-4) : ((((bpp >=  8) && (bpp <= 12))) ? (-2) : ((bpp >= 15) ? (4) : ((((bpp > 6) && (bpp < 8))) ? (-4 + dsc_roundf((bpp -  6) * (2 / 2.0))) : (-2 + dsc_roundf((bpp - 12) * (6 / 3.0))))));
  		*p++ = (bpp <=  6) ? (-6) : ((((bpp >=  8) && (bpp <= 12))) ? (-4) : ((bpp >= 15) ? (2) : ((((bpp > 6) && (bpp < 8))) ? (-6 + dsc_roundf((bpp -  6) * (2 / 2.0))) : (-4 + dsc_roundf((bpp - 12) * (6 / 3.0))))));
@@ -182,25 +181,4 @@ index 03ae15946c6d..74d2871fdbbb 100644
  		*p++ = -12;
  		*p++ = -12;
  		*p++ = -12;
-diff --git a/drivers/gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c b/drivers/gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c
-index 1f6e63b71456..81e1a2dbed3e 100644
---- a/drivers/gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c
-+++ b/drivers/gpu/drm/amd/display/dc/dsc/rc_calc_dpi.c
-@@ -106,14 +106,14 @@ int dscc_compute_dsc_parameters(const struct drm_dsc_config *pps, struct dsc_par
- 							pps->native_420  ? CM_420 : CM_444));
- 	enum bits_per_comp bpc = (pps->bits_per_component == 8) ? BPC_8 :
- 							(pps->bits_per_component == 10) ? BPC_10 : BPC_12;
--	float            bpp = ((float) pps->bits_per_pixel / 16.0);
-+	float            bpp = ((float) pps->bits_per_pixel / 16.0f);
- 	int              slice_width  = pps->slice_width;
- 	int              slice_height = pps->slice_height;
- 	int              ret;
- 	struct rc_params rc;
- 	struct drm_dsc_config   dsc_cfg;
- 
--	double d_bytes_per_pixel = dsc_ceil(bpp * slice_width / 8.0) / slice_width;
-+	double d_bytes_per_pixel = dsc_ceil((double) bpp * slice_width / 8.0) / slice_width;
- 
- 	// TODO: Make sure the formula for calculating this is precise (ceiling vs. floor, and at what point they should be applied)
- 	if (pps->native_422 || pps->native_420)
 -- 

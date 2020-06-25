@@ -37,7 +37,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  create mode 100644 include/linux/flex_array.h
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 14345a87c7cc..613d4cd7665a 100644
+index 33d0831c99b6..fcb858f69691 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -39,7 +39,7 @@
@@ -132,7 +132,7 @@ index f31587a278da..89cb1663f756 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 21aed0981edf..ae3cdd0b95a7 100644
+index e368384445b6..f67d8800358f 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -4,7 +4,7 @@
@@ -141,8 +141,8 @@ index 21aed0981edf..ae3cdd0b95a7 100644
  
 -#ifdef __CHECKER__
 +#if defined(__CHECKER__) && !defined(__FRAMAC__)
- # define __user		__attribute__((noderef, address_space(1)))
  # define __kernel	__attribute__((address_space(0)))
+ # define __user		__attribute__((noderef, address_space(__user)))
  # define __safe		__attribute__((safe))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
 index f0d895d6ac39..377d5a8f479e 100644
@@ -422,7 +422,7 @@ index c28cf76d5c31..ac5f907262a2 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/overflow.h b/include/linux/overflow.h
-index 659045046468..c60209574fc5 100644
+index 93fcef105061..6cb15ecf510b 100644
 --- a/include/linux/overflow.h
 +++ b/include/linux/overflow.h
 @@ -43,7 +43,7 @@
