@@ -7,10 +7,9 @@ gcc on ARM reports -Wint-to-pointer-cast (cast to pointer from integer
 of different size) in several places.
 ---
  drivers/dma/iop-adma.c                  | 6 +++---
- drivers/infiniband/sw/siw/siw_qp_rx.c   | 2 +-
  drivers/media/platform/omap/omap_vout.c | 4 ++--
  drivers/mfd/altera-sysmgr.c             | 2 +-
- 4 files changed, 7 insertions(+), 7 deletions(-)
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
 index db0e274126fb..718ec1ce3391 100644
@@ -37,19 +36,6 @@ index db0e274126fb..718ec1ce3391 100644
  
  	adev->id = plat_data->hw_id;
  
-diff --git a/drivers/infiniband/sw/siw/siw_qp_rx.c b/drivers/infiniband/sw/siw/siw_qp_rx.c
-index 650520244ed0..28f9096312d8 100644
---- a/drivers/infiniband/sw/siw/siw_qp_rx.c
-+++ b/drivers/infiniband/sw/siw/siw_qp_rx.c
-@@ -139,7 +139,7 @@ static int siw_rx_pbl(struct siw_rx_stream *srx, int *pbl_idx,
- 			break;
- 
- 		bytes = min(bytes, len);
--		if (siw_rx_kva(srx, (void *)buf_addr, bytes) == bytes) {
-+		if (siw_rx_kva(srx, (void *)(uintptr_t)buf_addr, bytes) == bytes) {
- 			copied += bytes;
- 			offset += bytes;
- 			len -= bytes;
 diff --git a/drivers/media/platform/omap/omap_vout.c b/drivers/media/platform/omap/omap_vout.c
 index 21193f0b7f61..363d324401b1 100644
 --- a/drivers/media/platform/omap/omap_vout.c
