@@ -20,7 +20,7 @@ TODO: send fixes to dtc upstream:
  9 files changed, 51 insertions(+), 48 deletions(-)
 
 diff --git a/scripts/dtc/checks.c b/scripts/dtc/checks.c
-index 4b3c486f1399..6c946e9f7622 100644
+index b7955dbd71ca..b8435a75c6cc 100644
 --- a/scripts/dtc/checks.c
 +++ b/scripts/dtc/checks.c
 @@ -31,7 +31,7 @@ typedef void (*check_fn)(struct check *c, struct dt_info *dti, struct node *node
@@ -77,7 +77,7 @@ index 4b3c486f1399..6c946e9f7622 100644
  		data_free(prop->val);
  		free(prop);
  	}
-@@ -1851,7 +1851,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
+@@ -1884,7 +1884,7 @@ static void enable_warning_error(struct check *c, bool warn, bool error)
  
  static void disable_warning_error(struct check *c, bool warn, bool error)
  {
@@ -86,7 +86,7 @@ index 4b3c486f1399..6c946e9f7622 100644
  
  	/* Lowering level, also lower it for things this is the prereq
  	 * for */
-@@ -1872,7 +1872,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
+@@ -1905,7 +1905,7 @@ static void disable_warning_error(struct check *c, bool warn, bool error)
  
  void parse_checks_option(bool warn, bool error, const char *arg)
  {
@@ -95,7 +95,7 @@ index 4b3c486f1399..6c946e9f7622 100644
  	const char *name = arg;
  	bool enable = true;
  
-@@ -1899,7 +1899,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
+@@ -1932,7 +1932,7 @@ void parse_checks_option(bool warn, bool error, const char *arg)
  
  void process_checks(bool force, struct dt_info *dti)
  {
@@ -205,10 +205,10 @@ index bdb3f5945699..6795e80e2706 100644
  	fill_fullpaths(dti->dt, "");
  
 diff --git a/scripts/dtc/dtc.h b/scripts/dtc/dtc.h
-index 6e74ecea55a3..900068f256be 100644
+index a08f4159cd03..e0be4e160bbd 100644
 --- a/scripts/dtc/dtc.h
 +++ b/scripts/dtc/dtc.h
-@@ -72,7 +72,7 @@ enum markertype {
+@@ -103,7 +103,7 @@ enum markertype {
  };
  extern const char *markername(enum markertype markertype);
  
@@ -217,7 +217,7 @@ index 6e74ecea55a3..900068f256be 100644
  	enum markertype type;
  	int offset;
  	char *ref;
-@@ -138,7 +138,7 @@ struct bus_type {
+@@ -169,7 +169,7 @@ struct bus_type {
  
  struct property {
  	bool deleted;
@@ -226,7 +226,7 @@ index 6e74ecea55a3..900068f256be 100644
  	struct data val;
  
  	struct property *next;
-@@ -149,7 +149,7 @@ struct property {
+@@ -180,7 +180,7 @@ struct property {
  
  struct node {
  	bool deleted;
@@ -235,7 +235,7 @@ index 6e74ecea55a3..900068f256be 100644
  	struct property *proplist;
  	struct node *children;
  
-@@ -193,16 +193,16 @@ struct node {
+@@ -224,16 +224,16 @@ struct node {
  void add_label(struct label **labels, char *label);
  void delete_labels(struct label **labels);
  
@@ -255,7 +255,7 @@ index 6e74ecea55a3..900068f256be 100644
  struct node *omit_node_if_unused(struct node *node);
  struct node *reference_node(struct node *node);
  struct node *chain_node(struct node *first, struct node *list);
-@@ -210,10 +210,10 @@ struct node *merge_nodes(struct node *old_node, struct node *new_node);
+@@ -241,10 +241,10 @@ struct node *merge_nodes(struct node *old_node, struct node *new_node);
  struct node *add_orphan_node(struct node *old_node, struct node *new_node, char *ref);
  
  void add_property(struct node *node, struct property *prop);
@@ -269,10 +269,10 @@ index 6e74ecea55a3..900068f256be 100644
  void append_to_property(struct node *node,
  			char *name, const void *data, int len,
 diff --git a/scripts/dtc/libfdt/libfdt.h b/scripts/dtc/libfdt/libfdt.h
-index 36fadcdea516..0a729fb09734 100644
+index fe49b5d78938..da1752a1b188 100644
 --- a/scripts/dtc/libfdt/libfdt.h
 +++ b/scripts/dtc/libfdt/libfdt.h
-@@ -112,7 +112,8 @@ const void *fdt_offset_ptr(const void *fdt, int offset, unsigned int checklen);
+@@ -116,7 +116,8 @@ const void *fdt_offset_ptr(const void *fdt, int offset, unsigned int checklen);
  #endif
  static inline void *fdt_offset_ptr_w(void *fdt, int offset, int checklen)
  {
@@ -282,7 +282,7 @@ index 36fadcdea516..0a729fb09734 100644
  }
  
  uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
-@@ -691,8 +692,8 @@ static inline struct fdt_property *fdt_get_property_w(void *fdt, int nodeoffset,
+@@ -695,8 +696,8 @@ static inline struct fdt_property *fdt_get_property_w(void *fdt, int nodeoffset,
  						      const char *name,
  						      int *lenp)
  {
@@ -293,7 +293,7 @@ index 36fadcdea516..0a729fb09734 100644
  }
  
  /**
-@@ -749,8 +750,9 @@ static inline void *fdt_getprop_namelen_w(void *fdt, int nodeoffset,
+@@ -753,8 +754,9 @@ static inline void *fdt_getprop_namelen_w(void *fdt, int nodeoffset,
  					  const char *name, int namelen,
  					  int *lenp)
  {
@@ -304,7 +304,7 @@ index 36fadcdea516..0a729fb09734 100644
  }
  #endif
  
-@@ -787,7 +789,8 @@ const void *fdt_getprop(const void *fdt, int nodeoffset,
+@@ -791,7 +793,8 @@ const void *fdt_getprop(const void *fdt, int nodeoffset,
  static inline void *fdt_getprop_w(void *fdt, int nodeoffset,
  				  const char *name, int *lenp)
  {
@@ -413,7 +413,7 @@ index f5205fb9c1ff..a82157a5ebf2 100644
  
  		memcpy(dir, path, len);
 diff --git a/scripts/dtc/treesource.c b/scripts/dtc/treesource.c
-index c9d980c8abfc..48f4dee1688f 100644
+index 061ba8c9c5e8..066128cc5aab 100644
 --- a/scripts/dtc/treesource.c
 +++ b/scripts/dtc/treesource.c
 @@ -162,12 +162,12 @@ static const char *delim_end[] = {
