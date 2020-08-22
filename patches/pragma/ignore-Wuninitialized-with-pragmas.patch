@@ -15,7 +15,7 @@ Subject: [PATCH] {PRAGMA} ignore -Wuninitialized with pragmas
  8 files changed, 47 insertions(+)
 
 diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index 3a3f2b6a821f..78a5ba56b077 100644
+index 1d17593f5d2b..3ae686369c3d 100644
 --- a/drivers/block/drbd/drbd_receiver.c
 +++ b/drivers/block/drbd/drbd_receiver.c
 @@ -927,10 +927,13 @@ static int conn_connect(struct drbd_connection *connection)
@@ -121,10 +121,10 @@ index 898c890fc153..5b357020456e 100644
  # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
  #endif
 diff --git a/kernel/kthread.c b/kernel/kthread.c
-index a1a04ed9472a..88ed549ebdcd 100644
+index d87f5d25a48f..ed513f7f0732 100644
 --- a/kernel/kthread.c
 +++ b/kernel/kthread.c
-@@ -990,10 +990,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
+@@ -991,10 +991,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
   */
  void kthread_flush_work(struct kthread_work *work)
  {
@@ -138,7 +138,7 @@ index a1a04ed9472a..88ed549ebdcd 100644
  	struct kthread_worker *worker;
  	bool noop = false;
  
-@@ -1197,10 +1200,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
+@@ -1198,10 +1201,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
   */
  void kthread_flush_worker(struct kthread_worker *worker)
  {
@@ -153,10 +153,10 @@ index a1a04ed9472a..88ed549ebdcd 100644
  	kthread_queue_work(worker, &fwork.work);
  	wait_for_completion(&fwork.done);
 diff --git a/kernel/smp.c b/kernel/smp.c
-index aa17eedff5be..b27780e1423f 100644
+index d0ae8eb6bf8b..8baa420f3f31 100644
 --- a/kernel/smp.c
 +++ b/kernel/smp.c
-@@ -858,12 +858,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
+@@ -857,12 +857,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
  
  int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par, bool phys)
  {

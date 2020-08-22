@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 21 Aug 2020 20:33:23 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/remoteproc/qcom_pil_info: do not use
+ __aeabi_uldivmod
+
+gcc on ARM report:
+
+    ERROR: modpost: "__aeabi_uldivmod" [drivers/remoteproc/qcom_pil_info.ko] undefined!
+
+Because:
+
+    _reloc.num_entries = ((size_t)resource_size(&imem)) / PIL_RELOC_ENTRY_SIZE;
+
+became
+
+    _reloc.num_entries = resource_size(&imem) / (8 + sizeof(__le64) + sizeof(__le32));
+
+and
+
+    mov r3, #20     @ tmp2,
+    mov r2, #0      @,
+    bl __aeabi_uldivmod  @
+
+Convert to size_t (32-bit) before division.
+---
+ drivers/remoteproc/qcom_pil_info.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/remoteproc/qcom_pil_info.c b/drivers/remoteproc/qcom_pil_info.c
+index 5521c4437ffa..1be2bb5a1a51 100644
+--- a/drivers/remoteproc/qcom_pil_info.c
++++ b/drivers/remoteproc/qcom_pil_info.c
+@@ -56,7 +56,7 @@ static int qcom_pil_info_init(void)
+ 	memset_io(base, 0, resource_size(&imem));
+ 
+ 	_reloc.base = base;
+-	_reloc.num_entries = resource_size(&imem) / PIL_RELOC_ENTRY_SIZE;
++	_reloc.num_entries = ((size_t)resource_size(&imem)) / PIL_RELOC_ENTRY_SIZE;
+ 
+ 	return 0;
+ }
+-- 

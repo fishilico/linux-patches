@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 15 Aug 2020 20:41:19 +0200
+Subject: [PATCH] {For LLVMLinux} drivers/gpu/drm/amd/display/dc: disable
+ -mpreferred-stack-boundary=4 with clang
+
+clang-10: error: unknown argument: '-mpreferred-stack-boundary=4'
+---
+ drivers/gpu/drm/amd/display/dc/dcn30/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/amd/display/dc/dcn30/Makefile b/drivers/gpu/drm/amd/display/dc/dcn30/Makefile
+index 025637a83c3b..94ac871bc0cd 100644
+--- a/drivers/gpu/drm/amd/display/dc/dcn30/Makefile
++++ b/drivers/gpu/drm/amd/display/dc/dcn30/Makefile
+@@ -31,7 +31,7 @@ DCN30 = dcn30_init.o dcn30_hubbub.o dcn30_hubp.o dcn30_dpp.o dcn30_optc.o \
+ 	dcn30_dio_link_encoder.o dcn30_resource.o
+ 
+ 
+-CFLAGS_$(AMDDALPATH)/dc/dcn30/dcn30_optc.o := -mhard-float -msse -mpreferred-stack-boundary=4
++CFLAGS_$(AMDDALPATH)/dc/dcn30/dcn30_optc.o := -mhard-float -msse $(call cc-option,-mpreferred-stack-boundary=4)
+ 
+ CFLAGS_$(AMDDALPATH)/dc/dcn30/dcn30_resource.o := -mhard-float -msse
+ ifdef CONFIG_CC_IS_GCC
+-- 

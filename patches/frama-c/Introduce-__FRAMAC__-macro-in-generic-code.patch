@@ -37,7 +37,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  create mode 100644 include/linux/flex_array.h
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 33d0831c99b6..fcb858f69691 100644
+index fe6cb99eb917..258238cd13ab 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -39,7 +39,7 @@
@@ -67,7 +67,7 @@ index 2b625ebef914..64d22256b358 100644
  #include <linux/i8253.h>
  
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
-index e935318804f8..33cafe921495 100644
+index ba68ee4dabfa..2b8c5b493470 100644
 --- a/include/asm-generic/uaccess.h
 +++ b/include/asm-generic/uaccess.h
 @@ -129,6 +129,20 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
@@ -100,7 +100,7 @@ index e935318804f8..33cafe921495 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 6662e526bd59..edfbd7428507 100644
+index 3497910ec001..ef86fde928f1 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline notrace __used void __same_pointer_depths_with_volatile2_chk(con
@@ -132,7 +132,7 @@ index 6662e526bd59..edfbd7428507 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 01dd58c74d80..29859370806f 100644
+index 4b33cb385f96..58fb55eab429 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -4,7 +4,7 @@
@@ -141,9 +141,9 @@ index 01dd58c74d80..29859370806f 100644
  
 -#ifdef __CHECKER__
 +#if defined(__CHECKER__) && !defined(__FRAMAC__)
+ /* address spaces */
  # define __kernel	__attribute__((address_space(0)))
  # define __user		__attribute__((noderef, address_space(__user)))
- # define __safe		__attribute__((safe))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
 index f0d895d6ac39..377d5a8f479e 100644
 --- a/include/linux/cpumask.h
@@ -164,10 +164,10 @@ index f0d895d6ac39..377d5a8f479e 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 45461446a391..3ea2053b2818 100644
+index 6175660c1190..a95dd5a24dfa 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -600,7 +600,12 @@ struct crypto_tfm {
+@@ -633,7 +633,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -182,7 +182,7 @@ index 45461446a391..3ea2053b2818 100644
  
  struct crypto_cipher {
 diff --git a/include/linux/delay.h b/include/linux/delay.h
-index 5e016a4029d9..bf325a0a3a2a 100644
+index 1d0e2ce6b6d9..5aa8890cd260 100644
 --- a/include/linux/delay.h
 +++ b/include/linux/delay.h
 @@ -40,9 +40,18 @@ extern unsigned long loops_per_jiffy;
@@ -366,7 +366,7 @@ index 000000000000..ffd6208aabbd
 +
 +#endif /* _FLEX_ARRAY_H */
 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index ea9f9161fc7a..329f02ae6359 100644
+index 5d18a4009b26..d886fd81dada 100644
 --- a/include/linux/kernel.h
 +++ b/include/linux/kernel.h
 @@ -272,6 +272,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
@@ -435,7 +435,7 @@ index 93fcef105061..6cb15ecf510b 100644
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 34c1c4f45288..daad53b16095 100644
+index 835530605c0d..06de41b7eef2 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -162,6 +162,8 @@ typedef int __bitwise pci_power_t;
@@ -456,10 +456,10 @@ index 34c1c4f45288..daad53b16095 100644
  /**
   * typedef pci_channel_state_t
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 4c62359cbd08..f003c98d794b 100644
+index a959ae028d8d..37c1a4ebaa02 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -232,6 +232,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -231,6 +231,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
   * done within __do_sys_*().
   */
  #ifndef __SYSCALL_DEFINEx
@@ -472,7 +472,7 @@ index 4c62359cbd08..f003c98d794b 100644
  #define __SYSCALL_DEFINEx(x, name, ...)					\
  	__diag_push();							\
  	__diag_ignore(GCC, 8, "-Wattribute-alias",			\
-@@ -250,6 +256,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -249,6 +255,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  	}								\
  	__diag_pop();							\
  	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
@@ -505,7 +505,7 @@ index 6bcbe3068761..5bfdfa419121 100644
  #define XATTR_NAME_MAX   255	/* # chars in an extended attribute name */
  #define XATTR_SIZE_MAX 65536	/* size of an extended attribute value (64k) */
 diff --git a/include/uapi/linux/types.h b/include/uapi/linux/types.h
-index 2fce8b6876e9..357ff7b0ecdd 100644
+index f6d2f83cbe29..ae19149149d6 100644
 --- a/include/uapi/linux/types.h
 +++ b/include/uapi/linux/types.h
 @@ -19,7 +19,7 @@
@@ -540,7 +540,7 @@ index 0197888ad0e0..ee5b03df8f9b 100644
  
  #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 6f16f7c5d375..89f035eb79f2 100644
+index 42b67d2cea37..532266f4e091 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1246,7 +1246,7 @@ static void print_fatal_signal(int signr)

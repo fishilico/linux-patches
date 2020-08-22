@@ -1,0 +1,150 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 15 Aug 2020 12:38:23 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/net/phy/mdio: add casts to pointer
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc on x86-64 complains:
+
+    In file included from drivers/net/phy/mdio-octeon.c:14:
+    drivers/net/phy/mdio-octeon.c: In function ‘octeon_mdiobus_probe’:
+    drivers/net/phy/mdio-octeon.c:55:60: error: passing argument 2 of
+    ‘writeq’ makes pointer from integer without a cast [-Werror=int-conversion]
+       55 |  oct_mdio_writeq(smi_en.u64, (uintptr_t)bus->register_base + SMI_EN);
+    drivers/net/phy/mdio-cavium.h:113:48: note: in definition of macro
+    ‘oct_mdio_writeq’
+      113 | #define oct_mdio_writeq(val, addr) writeq(val, addr)
+          |                                                ^~~~
+    In file included from include/linux/io.h:13,
+                     from include/linux/of_address.h:7,
+                     from drivers/net/phy/mdio-octeon.c:7:
+    arch/x86/include/asm/io.h:53:58: note: expected ‘volatile void *’
+    but argument is of type ‘long unsigned int’
+       53 | static inline void name(type val, volatile void __iomem *addr) \
+          |                                   ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+    arch/x86/include/asm/io.h:97:1: note: in expansion of macro ‘build_mmio_write’
+       97 | build_mmio_write(writeq, "q", u64, "r", :"memory")
+          | ^~~~~~~~~~~~~~~~
+---
+ drivers/net/phy/mdio-cavium.c | 20 ++++++++++----------
+ drivers/net/phy/mdio-octeon.c |  6 +++---
+ 2 files changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/net/phy/mdio-cavium.c b/drivers/net/phy/mdio-cavium.c
+index 0cc430bbd197..030124ea375e 100644
+--- a/drivers/net/phy/mdio-cavium.c
++++ b/drivers/net/phy/mdio-cavium.c
+@@ -18,10 +18,10 @@ static void cavium_mdiobus_set_mode(struct cavium_mdiobus *p,
+ 	if (m == p->mode)
+ 		return;
+ 
+-	smi_clk.u64 = oct_mdio_readq((uintptr_t)p->register_base + SMI_CLK);
++	smi_clk.u64 = oct_mdio_readq((volatile void __iomem *)((uintptr_t)p->register_base + SMI_CLK));
+ 	smi_clk.s.mode = (m == C45) ? 1 : 0;
+ 	smi_clk.s.preamble = 1;
+-	oct_mdio_writeq(smi_clk.u64, (uintptr_t)p->register_base + SMI_CLK);
++	oct_mdio_writeq(smi_clk.u64, (volatile void __iomem *)((uintptr_t)p->register_base + SMI_CLK));
+ 	p->mode = m;
+ }
+ 
+@@ -36,7 +36,7 @@ static int cavium_mdiobus_c45_addr(struct cavium_mdiobus *p,
+ 
+ 	smi_wr.u64 = 0;
+ 	smi_wr.s.dat = regnum & 0xffff;
+-	oct_mdio_writeq(smi_wr.u64, (uintptr_t)p->register_base + SMI_WR_DAT);
++	oct_mdio_writeq(smi_wr.u64, (volatile void __iomem *)((uintptr_t)p->register_base + SMI_WR_DAT));
+ 
+ 	regnum = (regnum >> 16) & 0x1f;
+ 
+@@ -44,14 +44,14 @@ static int cavium_mdiobus_c45_addr(struct cavium_mdiobus *p,
+ 	smi_cmd.s.phy_op = 0; /* MDIO_CLAUSE_45_ADDRESS */
+ 	smi_cmd.s.phy_adr = phy_id;
+ 	smi_cmd.s.reg_adr = regnum;
+-	oct_mdio_writeq(smi_cmd.u64, (uintptr_t)p->register_base + SMI_CMD);
++	oct_mdio_writeq(smi_cmd.u64, (volatile void __iomem *)((uintptr_t)p->register_base + SMI_CMD));
+ 
+ 	do {
+ 		/* Wait 1000 clocks so we don't saturate the RSL bus
+ 		 * doing reads.
+ 		 */
+ 		__delay(1000);
+-		smi_wr.u64 = oct_mdio_readq((uintptr_t)p->register_base + SMI_WR_DAT);
++		smi_wr.u64 = oct_mdio_readq((volatile void __iomem *)((uintptr_t)p->register_base + SMI_WR_DAT));
+ 	} while (smi_wr.s.pending && --timeout);
+ 
+ 	if (timeout <= 0)
+@@ -83,14 +83,14 @@ int cavium_mdiobus_read(struct mii_bus *bus, int phy_id, int regnum)
+ 	smi_cmd.s.phy_op = op;
+ 	smi_cmd.s.phy_adr = phy_id;
+ 	smi_cmd.s.reg_adr = regnum;
+-	oct_mdio_writeq(smi_cmd.u64, (uintptr_t)p->register_base + SMI_CMD);
++	oct_mdio_writeq(smi_cmd.u64, (volatile void __iomem *)((uintptr_t)p->register_base + SMI_CMD));
+ 
+ 	do {
+ 		/* Wait 1000 clocks so we don't saturate the RSL bus
+ 		 * doing reads.
+ 		 */
+ 		__delay(1000);
+-		smi_rd.u64 = oct_mdio_readq((uintptr_t)p->register_base + SMI_RD_DAT);
++		smi_rd.u64 = oct_mdio_readq((volatile void __iomem *)((uintptr_t)p->register_base + SMI_RD_DAT));
+ 	} while (smi_rd.s.pending && --timeout);
+ 
+ 	if (smi_rd.s.val)
+@@ -122,20 +122,20 @@ int cavium_mdiobus_write(struct mii_bus *bus, int phy_id, int regnum, u16 val)
+ 
+ 	smi_wr.u64 = 0;
+ 	smi_wr.s.dat = val;
+-	oct_mdio_writeq(smi_wr.u64, (uintptr_t)p->register_base + SMI_WR_DAT);
++	oct_mdio_writeq(smi_wr.u64, (volatile void __iomem *)((uintptr_t)p->register_base + SMI_WR_DAT));
+ 
+ 	smi_cmd.u64 = 0;
+ 	smi_cmd.s.phy_op = op;
+ 	smi_cmd.s.phy_adr = phy_id;
+ 	smi_cmd.s.reg_adr = regnum;
+-	oct_mdio_writeq(smi_cmd.u64, (uintptr_t)p->register_base + SMI_CMD);
++	oct_mdio_writeq(smi_cmd.u64, (volatile void __iomem *)((uintptr_t)p->register_base + SMI_CMD));
+ 
+ 	do {
+ 		/* Wait 1000 clocks so we don't saturate the RSL bus
+ 		 * doing reads.
+ 		 */
+ 		__delay(1000);
+-		smi_wr.u64 = oct_mdio_readq((uintptr_t)p->register_base + SMI_WR_DAT);
++		smi_wr.u64 = oct_mdio_readq((volatile void __iomem *)((uintptr_t)p->register_base + SMI_WR_DAT));
+ 	} while (smi_wr.s.pending && --timeout);
+ 
+ 	if (timeout <= 0)
+diff --git a/drivers/net/phy/mdio-octeon.c b/drivers/net/phy/mdio-octeon.c
+index 7ed064e7d35f..076bb2dbd7a0 100644
+--- a/drivers/net/phy/mdio-octeon.c
++++ b/drivers/net/phy/mdio-octeon.c
+@@ -52,7 +52,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
+ 
+ 	smi_en.u64 = 0;
+ 	smi_en.s.en = 1;
+-	oct_mdio_writeq(smi_en.u64, (uintptr_t)bus->register_base + SMI_EN);
++	oct_mdio_writeq(smi_en.u64, (volatile void __iomem *)((uintptr_t)bus->register_base + SMI_EN));
+ 
+ 	bus->mii_bus->name = KBUILD_MODNAME;
+ 	snprintf(bus->mii_bus->id, MII_BUS_ID_SIZE, "%px", bus->register_base);
+@@ -73,7 +73,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
+ fail_register:
+ 	mdiobus_free(bus->mii_bus);
+ 	smi_en.u64 = 0;
+-	oct_mdio_writeq(smi_en.u64, (uintptr_t)bus->register_base + SMI_EN);
++	oct_mdio_writeq(smi_en.u64, (volatile void __iomem *)((uintptr_t)bus->register_base + SMI_EN));
+ 	return err;
+ }
+ 
+@@ -87,7 +87,7 @@ static int octeon_mdiobus_remove(struct platform_device *pdev)
+ 	mdiobus_unregister(bus->mii_bus);
+ 	mdiobus_free(bus->mii_bus);
+ 	smi_en.u64 = 0;
+-	oct_mdio_writeq(smi_en.u64, (uintptr_t)bus->register_base + SMI_EN);
++	oct_mdio_writeq(smi_en.u64, (volatile void __iomem *)((uintptr_t)bus->register_base + SMI_EN));
+ 	return 0;
+ }
+ 
+-- 

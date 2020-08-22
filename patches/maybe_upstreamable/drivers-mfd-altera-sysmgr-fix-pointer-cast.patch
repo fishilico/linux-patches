@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 21 Aug 2020 20:15:45 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/mfd/altera-sysmgr: fix pointer cast
+
+gcc on ARM reports:
+
+    In file included from drivers/mfd/altera-sysmgr.c:19:
+    drivers/mfd/altera-sysmgr.c: In function 'sysmgr_probe':
+    drivers/mfd/altera-sysmgr.c:148:40: error: cast to pointer from
+    integer of different size [-Werror=int-to-pointer-cast]
+      148 |   regmap = devm_regmap_init(dev, NULL, (void *)res->start,
+          |                                        ^
+    include/linux/regmap.h:635:6: note: in definition of macro '__regmap_lockdep_wrapper'
+      635 |   fn(__VA_ARGS__, &_key,     \
+          |      ^~~~~~~~~~~
+    drivers/mfd/altera-sysmgr.c:148:12: note: in expansion of macro 'devm_regmap_init'
+      148 |   regmap = devm_regmap_init(dev, NULL, (void *)res->start,
+          |            ^~~~~~~~~~~~~~~~
+---
+ drivers/mfd/altera-sysmgr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/mfd/altera-sysmgr.c b/drivers/mfd/altera-sysmgr.c
+index 41076d121dd5..0e7e7455d7de 100644
+--- a/drivers/mfd/altera-sysmgr.c
++++ b/drivers/mfd/altera-sysmgr.c
+@@ -145,7 +145,7 @@ static int sysmgr_probe(struct platform_device *pdev)
+ 		sysmgr_config.reg_write = s10_protected_reg_write;
+ 
+ 		/* Need physical address for SMCC call */
+-		regmap = devm_regmap_init(dev, NULL, (void *)res->start,
++		regmap = devm_regmap_init(dev, NULL, (void *)(uintptr_t)res->start,
+ 					  &sysmgr_config);
+ 	} else {
+ 		base = devm_ioremap(dev, res->start, resource_size(res));
+-- 

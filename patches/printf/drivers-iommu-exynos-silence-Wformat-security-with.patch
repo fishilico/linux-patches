@@ -6,16 +6,29 @@ Subject: [PATCH] {PRINTF} drivers/iommu/exynos: silence -Wformat-security with
 
 FIXME: does it come from the plugin?
 ---
- drivers/iommu/exynos-iommu.c | 2 +-
- drivers/iommu/ipmmu-vmsa.c   | 2 +-
- drivers/iommu/mtk_iommu_v1.c | 2 +-
- drivers/iommu/omap-iommu.c   | 2 +-
- drivers/iommu/qcom_iommu.c   | 2 +-
- drivers/iommu/tegra-smmu.c   | 2 +-
+ drivers/iommu/arm/arm-smmu/qcom_iommu.c | 2 +-
+ drivers/iommu/exynos-iommu.c            | 2 +-
+ drivers/iommu/ipmmu-vmsa.c              | 2 +-
+ drivers/iommu/mtk_iommu_v1.c            | 2 +-
+ drivers/iommu/omap-iommu.c              | 2 +-
+ drivers/iommu/tegra-smmu.c              | 2 +-
  6 files changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/iommu/arm/arm-smmu/qcom_iommu.c b/drivers/iommu/arm/arm-smmu/qcom_iommu.c
+index af6bec3ace00..0c8a1535ea47 100644
+--- a/drivers/iommu/arm/arm-smmu/qcom_iommu.c
++++ b/drivers/iommu/arm/arm-smmu/qcom_iommu.c
+@@ -845,7 +845,7 @@ static int qcom_iommu_device_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	ret = iommu_device_sysfs_add(&qcom_iommu->iommu, dev, NULL,
+-				     dev_name(dev));
++				     "%s", dev_name(dev));
+ 	if (ret) {
+ 		dev_err(dev, "Failed to register iommu in sysfs\n");
+ 		return ret;
 diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
-index 60c8a56e4a3f..49fbf5c41f71 100644
+index bad3c0ce10cb..1e44abfe1c81 100644
 --- a/drivers/iommu/exynos-iommu.c
 +++ b/drivers/iommu/exynos-iommu.c
 @@ -626,7 +626,7 @@ static int exynos_sysmmu_probe(struct platform_device *pdev)
@@ -28,10 +41,10 @@ index 60c8a56e4a3f..49fbf5c41f71 100644
  		return ret;
  
 diff --git a/drivers/iommu/ipmmu-vmsa.c b/drivers/iommu/ipmmu-vmsa.c
-index 4c2972f3153b..2b0df639dd08 100644
+index 0f18abda0e20..81c74fa9b042 100644
 --- a/drivers/iommu/ipmmu-vmsa.c
 +++ b/drivers/iommu/ipmmu-vmsa.c
-@@ -1073,7 +1073,7 @@ static int ipmmu_probe(struct platform_device *pdev)
+@@ -1082,7 +1082,7 @@ static int ipmmu_probe(struct platform_device *pdev)
  	 */
  	if (!mmu->features->has_cache_leaf_nodes || !ipmmu_is_root(mmu)) {
  		ret = iommu_device_sysfs_add(&mmu->iommu, &pdev->dev, NULL,
@@ -41,10 +54,10 @@ index 4c2972f3153b..2b0df639dd08 100644
  			return ret;
  
 diff --git a/drivers/iommu/mtk_iommu_v1.c b/drivers/iommu/mtk_iommu_v1.c
-index c9d79cff4d17..1c0f966f6167 100644
+index 82ddfe9170d4..6f2b8ac01420 100644
 --- a/drivers/iommu/mtk_iommu_v1.c
 +++ b/drivers/iommu/mtk_iommu_v1.c
-@@ -618,7 +618,7 @@ static int mtk_iommu_probe(struct platform_device *pdev)
+@@ -616,7 +616,7 @@ static int mtk_iommu_probe(struct platform_device *pdev)
  		return ret;
  
  	ret = iommu_device_sysfs_add(&data->iommu, &pdev->dev, NULL,
@@ -54,7 +67,7 @@ index c9d79cff4d17..1c0f966f6167 100644
  		return ret;
  
 diff --git a/drivers/iommu/omap-iommu.c b/drivers/iommu/omap-iommu.c
-index c8282cc212cb..5ee87a0f7e45 100644
+index 71f29c0927fc..7910537020c2 100644
 --- a/drivers/iommu/omap-iommu.c
 +++ b/drivers/iommu/omap-iommu.c
 @@ -1231,7 +1231,7 @@ static int omap_iommu_probe(struct platform_device *pdev)
@@ -66,21 +79,8 @@ index c8282cc212cb..5ee87a0f7e45 100644
  		if (err)
  			goto out_group;
  
-diff --git a/drivers/iommu/qcom_iommu.c b/drivers/iommu/qcom_iommu.c
-index d176df569af8..4793136d3f00 100644
---- a/drivers/iommu/qcom_iommu.c
-+++ b/drivers/iommu/qcom_iommu.c
-@@ -855,7 +855,7 @@ static int qcom_iommu_device_probe(struct platform_device *pdev)
- 	}
- 
- 	ret = iommu_device_sysfs_add(&qcom_iommu->iommu, dev, NULL,
--				     dev_name(dev));
-+				     "%s", dev_name(dev));
- 	if (ret) {
- 		dev_err(dev, "Failed to register iommu in sysfs\n");
- 		return ret;
 diff --git a/drivers/iommu/tegra-smmu.c b/drivers/iommu/tegra-smmu.c
-index 7426b7666e2b..cbe376a760d6 100644
+index 124c8848ab7e..84b08279c6cd 100644
 --- a/drivers/iommu/tegra-smmu.c
 +++ b/drivers/iommu/tegra-smmu.c
 @@ -1048,7 +1048,7 @@ struct tegra_smmu *tegra_smmu_probe(struct device *dev,

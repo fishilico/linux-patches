@@ -6,8 +6,8 @@ Subject: [PATCH] {MAYBE UPS} drivers/staging/octeon: fix ptr cast
 gcc on x86-32 warns about casting pointers to u64.
 ---
  drivers/net/phy/mdio-cavium.c | 20 ++++++++++----------
- drivers/net/phy/mdio-octeon.c |  8 ++++----
- 2 files changed, 14 insertions(+), 14 deletions(-)
+ drivers/net/phy/mdio-octeon.c |  6 +++---
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/net/phy/mdio-cavium.c b/drivers/net/phy/mdio-cavium.c
 index 1afd6fc1a351..0cc430bbd197 100644
@@ -94,19 +94,10 @@ index 1afd6fc1a351..0cc430bbd197 100644
  
  	if (timeout <= 0)
 diff --git a/drivers/net/phy/mdio-octeon.c b/drivers/net/phy/mdio-octeon.c
-index 8327382aa568..55db604df6fc 100644
+index d1e1009d51af..7ed064e7d35f 100644
 --- a/drivers/net/phy/mdio-octeon.c
 +++ b/drivers/net/phy/mdio-octeon.c
-@@ -45,7 +45,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
- 	}
- 
- 	bus->register_base =
--		(u64)devm_ioremap(&pdev->dev, mdio_phys, regsize);
-+		(u64)(uintptr_t)devm_ioremap(&pdev->dev, mdio_phys, regsize);
- 	if (!bus->register_base) {
- 		dev_err(&pdev->dev, "dev_ioremap failed\n");
- 		return -ENOMEM;
-@@ -53,7 +53,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
+@@ -52,7 +52,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
  
  	smi_en.u64 = 0;
  	smi_en.s.en = 1;
@@ -114,8 +105,8 @@ index 8327382aa568..55db604df6fc 100644
 +	oct_mdio_writeq(smi_en.u64, (uintptr_t)bus->register_base + SMI_EN);
  
  	bus->mii_bus->name = KBUILD_MODNAME;
- 	snprintf(bus->mii_bus->id, MII_BUS_ID_SIZE, "%llx", bus->register_base);
-@@ -74,7 +74,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
+ 	snprintf(bus->mii_bus->id, MII_BUS_ID_SIZE, "%px", bus->register_base);
+@@ -73,7 +73,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
  fail_register:
  	mdiobus_free(bus->mii_bus);
  	smi_en.u64 = 0;
@@ -124,7 +115,7 @@ index 8327382aa568..55db604df6fc 100644
  	return err;
  }
  
-@@ -88,7 +88,7 @@ static int octeon_mdiobus_remove(struct platform_device *pdev)
+@@ -87,7 +87,7 @@ static int octeon_mdiobus_remove(struct platform_device *pdev)
  	mdiobus_unregister(bus->mii_bus);
  	mdiobus_free(bus->mii_bus);
  	smi_en.u64 = 0;

@@ -392,8 +392,10 @@ then
         # Enable config that was not selected with KCOV_INSTRUMENT_ALL
         echo 'CONFIG_DRM_AMD_DC_DCN2_0=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_DRM_AMD_DC_DCN2_1=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_DRM_AMD_DC_DCN3_0=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_DRM_AMD_DC_DSC_SUPPORT=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_UBSAN_BOUNDS=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_TEST_FPU=m' >> "$KBUILD_OUTPUT/.config"
     fi
 
     if [ "${BUILDCONF:-}" = 'xgcc-arm' ]

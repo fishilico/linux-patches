@@ -8,14 +8,13 @@ of different size) in several places.
 ---
  drivers/dma/iop-adma.c                  | 6 +++---
  drivers/media/platform/omap/omap_vout.c | 4 ++--
- drivers/mfd/altera-sysmgr.c             | 2 +-
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index db0e274126fb..718ec1ce3391 100644
+index 3350bffb2e93..bfa999a15aea 100644
 --- a/drivers/dma/iop-adma.c
 +++ b/drivers/dma/iop-adma.c
-@@ -445,9 +445,9 @@ static int iop_adma_alloc_chan_resources(struct dma_chan *chan)
+@@ -444,9 +444,9 @@ static int iop_adma_alloc_chan_resources(struct dma_chan *chan)
  		INIT_LIST_HEAD(&slot->tx_list);
  		INIT_LIST_HEAD(&slot->chain_node);
  		INIT_LIST_HEAD(&slot->slot_node);
@@ -27,7 +26,7 @@ index db0e274126fb..718ec1ce3391 100644
  		slot->idx = idx;
  
  		spin_lock_bh(&iop_chan->lock);
-@@ -1299,7 +1299,7 @@ static int iop_adma_probe(struct platform_device *pdev)
+@@ -1298,7 +1298,7 @@ static int iop_adma_probe(struct platform_device *pdev)
  
  	dev_dbg(&pdev->dev, "%s: allocated descriptor pool virt %p phys %p\n",
  		__func__, adev->dma_desc_pool_virt,
@@ -58,17 +57,4 @@ index 21193f0b7f61..363d324401b1 100644
  
  		/* Set VRFB as rotation_type for omap2 and omap3 */
  		if (omap_vout_dss_omap24xx() || omap_vout_dss_omap34xx())
-diff --git a/drivers/mfd/altera-sysmgr.c b/drivers/mfd/altera-sysmgr.c
-index d2a13a547a3c..6f78095d9795 100644
---- a/drivers/mfd/altera-sysmgr.c
-+++ b/drivers/mfd/altera-sysmgr.c
-@@ -140,7 +140,7 @@ static int sysmgr_probe(struct platform_device *pdev)
- 				     sysmgr_config.reg_stride;
- 	if (of_device_is_compatible(np, "altr,sys-mgr-s10")) {
- 		/* Need physical address for SMCC call */
--		sysmgr->base = (resource_size_t *)res->start;
-+		sysmgr->base = (resource_size_t *)(uintptr_t)res->start;
- 		sysmgr_config.reg_read = s10_protected_reg_read;
- 		sysmgr_config.reg_write = s10_protected_reg_write;
- 
 -- 
