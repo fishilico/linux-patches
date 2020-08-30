@@ -175,12 +175,12 @@ index c36f977b2ccb..4081dd5ffe42 100644
  
  	/*
 diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-index 39e592d0e0b4..1ba7a1f12d45 100644
+index e478e40fbe5a..d118d9b6d69d 100644
 --- a/arch/x86/boot/compressed/misc.c
 +++ b/arch/x86/boot/compressed/misc.c
-@@ -37,6 +37,10 @@
- #undef memcpy
- #undef memset
+@@ -34,6 +34,10 @@
+  * try to define their own functions if these are not defined as macros.
+  */
  #define memzero(s, n)	memset((s), 0, (n))
 +#ifdef CONFIG_GCC_PLUGIN_DEREF_CHECKER
 +/* The macro conflicts with the function definition below */
@@ -206,12 +206,12 @@ index 81fc1eaa3229..dc0247d6937d 100644
  static void *____memcpy(void *dest, const void *src, size_t n)
  {
 diff --git a/arch/x86/boot/string.h b/arch/x86/boot/string.h
-index 57baccb8fb99..9586f7d2ae2c 100644
+index 1e62d9b4ec78..93a18b5cc180 100644
 --- a/arch/x86/boot/string.h
 +++ b/arch/x86/boot/string.h
-@@ -16,7 +16,11 @@ int memcmp(const void *s1, const void *s2, size_t len);
-  * do "undef memcpy" in .c file and link against right string.c
-  */
+@@ -13,7 +13,11 @@ int memcmp(const void *s1, const void *s2, size_t len);
+ 
+ /* Access builtin version by default. */
  #ifndef __clang__ /* PR18415 */
 +#ifdef CONFIG_GCC_PLUGIN_DEREF_CHECKER
 +#define memcpy(d,s,l) ({ __same_pointer_depths_chk(d, s);__builtin_memcpy(d,s,l);})
@@ -1067,10 +1067,10 @@ index fcff14ef1c70..2b70451cb34d 100644
  		if (gid_valid(gid))
  			fgid = gid;
 diff --git a/fs/io_uring.c b/fs/io_uring.c
-index dc506b75659c..cbaedee01a27 100644
+index 91e2cc8414f9..003706bb6ec3 100644
 --- a/fs/io_uring.c
 +++ b/fs/io_uring.c
-@@ -1504,8 +1504,12 @@ static struct io_kiocb *io_get_fallback_req(struct io_ring_ctx *ctx)
+@@ -1500,8 +1500,12 @@ static struct io_kiocb *io_get_fallback_req(struct io_ring_ctx *ctx)
  	struct io_kiocb *req;
  
  	req = ctx->fallback_req;
@@ -1085,7 +1085,7 @@ index dc506b75659c..cbaedee01a27 100644
  
  	return NULL;
  }
-@@ -1584,8 +1588,11 @@ static void __io_free_req_finish(struct io_kiocb *req)
+@@ -1569,8 +1573,11 @@ static void __io_free_req_finish(struct io_kiocb *req)
  	__io_put_req_task(req);
  	if (likely(!io_is_fallback_req(req)))
  		kmem_cache_free(req_cachep, req);

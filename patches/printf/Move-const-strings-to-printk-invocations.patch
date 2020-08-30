@@ -39,7 +39,7 @@ This fixes errors like:
  drivers/net/hamradio/baycom_epp.c            |   5 +-
  drivers/net/hamradio/mkiss.c                 |  14 +-
  drivers/net/wan/z85230.c                     |   4 +-
- drivers/ptp/ptp_clockmatrix.c                |   9 +-
+ drivers/ptp/ptp_clockmatrix.c                |  12 +-
  drivers/remoteproc/keystone_remoteproc.c     |   5 +-
  drivers/scsi/esas2r/esas2r_log.c             |   6 +-
  drivers/scsi/fnic/fnic_trace.c               |   5 +-
@@ -53,7 +53,7 @@ This fixes errors like:
  net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
- 27 files changed, 170 insertions(+), 267 deletions(-)
+ 27 files changed, 171 insertions(+), 269 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 418a61ecb827..06b14af43421 100644
@@ -482,27 +482,44 @@ index 138930c66ad2..576e8327d633 100644
  }
  module_init(z85230_init_driver);
 diff --git a/drivers/ptp/ptp_clockmatrix.c b/drivers/ptp/ptp_clockmatrix.c
-index 73aaae5574ed..fdd2885ebfdd 100644
+index e020faff7da5..437c5526607b 100644
 --- a/drivers/ptp/ptp_clockmatrix.c
 +++ b/drivers/ptp/ptp_clockmatrix.c
-@@ -151,7 +151,6 @@ static int idtcm_xfer(struct idtcm *idtcm,
+@@ -150,7 +150,6 @@ static int idtcm_xfer_read(struct idtcm *idtcm,
  	struct i2c_client *client = idtcm->client;
  	struct i2c_msg msg[2];
  	int cnt;
--	char *fmt = "i2c_transfer failed at %d in %s for %s, at addr: %04X!\n";
+-	char *fmt = "i2c_transfer failed at %d in %s, at addr: %04X!\n";
  
  	msg[0].addr = client->addr;
  	msg[0].flags = 0;
-@@ -167,7 +166,7 @@ static int idtcm_xfer(struct idtcm *idtcm,
+@@ -166,7 +165,7 @@ static int idtcm_xfer_read(struct idtcm *idtcm,
  
  	if (cnt < 0) {
  		dev_err(&client->dev,
 -			fmt,
-+			"i2c_transfer failed at %d in %s for %s, at addr: %04X!\n",
++			"i2c_transfer failed at %d in %s, at addr: %04X!\n",
  			__LINE__,
  			__func__,
- 			write ? "write" : "read",
-@@ -1808,7 +1807,6 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
+ 			regaddr);
+@@ -189,7 +188,6 @@ static int idtcm_xfer_write(struct idtcm *idtcm,
+ 	/* we add 1 byte for device register */
+ 	u8 msg[IDTCM_MAX_WRITE_COUNT + 1];
+ 	int cnt;
+-	char *fmt = "i2c_master_send failed at %d in %s, at addr: %04X!\n";
+ 
+ 	if (count > IDTCM_MAX_WRITE_COUNT)
+ 		return -EINVAL;
+@@ -201,7 +199,7 @@ static int idtcm_xfer_write(struct idtcm *idtcm,
+ 
+ 	if (cnt < 0) {
+ 		dev_err(&client->dev,
+-			fmt,
++			"i2c_master_send failed at %d in %s, at addr: %04X!\n",
+ 			__LINE__,
+ 			__func__,
+ 			regaddr);
+@@ -1838,7 +1836,6 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
  	u16 product_id;
  	u8 hw_rev_id;
  	u8 config_select;
@@ -510,7 +527,7 @@ index 73aaae5574ed..fdd2885ebfdd 100644
  
  	idtcm_read_major_release(idtcm, &major);
  	idtcm_read_minor_release(idtcm, &minor);
-@@ -1822,7 +1820,7 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
+@@ -1852,7 +1849,7 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
  	snprintf(idtcm->version, sizeof(idtcm->version), "%u.%u.%u",
  		 major, minor, hotfix);
  
@@ -519,7 +536,7 @@ index 73aaae5574ed..fdd2885ebfdd 100644
  		 product_id, hw_rev_id, config_select);
  }
  
-@@ -2062,7 +2060,6 @@ static int idtcm_probe(struct i2c_client *client,
+@@ -2092,7 +2089,6 @@ static int idtcm_probe(struct i2c_client *client,
  	struct idtcm *idtcm;
  	int err;
  	u8 i;
@@ -527,7 +544,7 @@ index 73aaae5574ed..fdd2885ebfdd 100644
  
  	/* Unused for now */
  	(void)id;
-@@ -2095,7 +2092,7 @@ static int idtcm_probe(struct i2c_client *client,
+@@ -2125,7 +2121,7 @@ static int idtcm_probe(struct i2c_client *client,
  				err = idtcm_enable_channel(idtcm, i);
  				if (err) {
  					dev_err(&idtcm->client->dev,
@@ -630,10 +647,10 @@ index e7048515a79c..20415ec10c25 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 0907f907c47d..ef592041b65d 100644
+index ea425b49b345..b3085e1b1229 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1646,9 +1646,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1653,9 +1653,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  }
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
@@ -643,7 +660,7 @@ index 0907f907c47d..ef592041b65d 100644
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -1929,7 +1926,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -1938,7 +1935,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:

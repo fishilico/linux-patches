@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 26 Aug 2020 20:58:08 +0200
+Subject: [PATCH] {MAYBE UPS} crypto/aegis128: add explicit cast to silence gcc
+ warning
+
+gcc on ARM reports:
+
+    crypto/aegis128-neon-inner.c: In function 'crypto_aegis128_init_neon':
+    crypto/aegis128-neon-inner.c:151:3: error: incompatible types when
+    initializing type 'unsigned char' using type 'uint8x16_t'
+      151 |   k ^ vld1q_u8(const0),
+          |   ^
+    crypto/aegis128-neon-inner.c:152:3: error: incompatible types when
+    initializing type 'unsigned char' using type 'uint8x16_t'
+      152 |   k ^ vld1q_u8(const1),
+          |   ^
+    crypto/aegis128-neon-inner.c:147:29: error: missing braces around
+    initializer [-Werror=missing-braces]
+      147 |  struct aegis128_state st = {{
+          |                             ^
+    ......
+      151 |   k ^ vld1q_u8(const0),
+          |   {
+      152 |   k ^ vld1q_u8(const1),
+      153 |  }};
+          |  }
+---
+ crypto/aegis128-neon-inner.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/crypto/aegis128-neon-inner.c b/crypto/aegis128-neon-inner.c
+index 2a660ac1bc3a..3ca4838534f5 100644
+--- a/crypto/aegis128-neon-inner.c
++++ b/crypto/aegis128-neon-inner.c
+@@ -148,8 +148,8 @@ void crypto_aegis128_init_neon(void *state, const void *key, const void *iv)
+ 		kiv,
+ 		vld1q_u8(const1),
+ 		vld1q_u8(const0),
+-		k ^ vld1q_u8(const0),
+-		k ^ vld1q_u8(const1),
++		(uint8x16_t)(k ^ vld1q_u8(const0)),
++		(uint8x16_t)(k ^ vld1q_u8(const1)),
+ 	}};
+ 	int i;
+ 
+-- 
