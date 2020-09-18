@@ -48,11 +48,11 @@ It has also detected some bugs reported and fixed by other people:
  net/ipv4/sysctl_net_ipv4.c                    |   2 +-
  scripts/Makefile.gcc-plugins                  |   5 +
  scripts/gcc-plugins/Kconfig                   |   7 +
- scripts/gcc-plugins/printk_format_plugin.c    | 869 ++++++++++++++++++
+ scripts/gcc-plugins/printk_format_plugin.c    | 871 ++++++++++++++++++
  security/apparmor/mount.c                     |  10 +-
  sound/soc/stm/stm32_sai_sub.c                 |   2 +-
  sound/soc/ti/omap-mcbsp-st.c                  |   3 +
- 39 files changed, 992 insertions(+), 42 deletions(-)
+ 39 files changed, 994 insertions(+), 42 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
@@ -69,7 +69,7 @@ index f936530a19b0..9bba3d13e4d6 100644
  }
  
 diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index 011539039693..285d14db46f1 100644
+index e77eaab5cf23..3258d3c28efa 100644
 --- a/drivers/block/rbd.c
 +++ b/drivers/block/rbd.c
 @@ -1493,9 +1493,15 @@ __rbd_obj_add_osd_request(struct rbd_obj_request *obj_req,
@@ -688,10 +688,10 @@ index ae19fb0243b9..29a0abb06e23 100644
  endif
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..06b6035205d4
+index 000000000000..b31e9ab38867
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,869 @@
+@@ -0,0 +1,871 @@
 +/*
 + * Copyright 2016-2018 by Nicolas Iooss
 + *
@@ -703,7 +703,7 @@ index 000000000000..06b6035205d4
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info printk_format_plugin_info = {
-+	.version	= "20200613",
++	.version	= "20200913",
 +	.help		= "Printk format checker\n",
 +};
 +
@@ -819,7 +819,7 @@ index 000000000000..06b6035205d4
 +
 +/**
 + * Verify that the associated pointer type is valid
-+ * c.f. Documentation/printk-formats.txt
++ * c.f. Documentation/core-api/printk-formats.rst
 + */
 +static bool is_fmtpointer_type(const_tree value, const char *ptr_format)
 +{
@@ -902,6 +902,8 @@ index 000000000000..06b6035205d4
 +		if (is_8bit_int_type(subtype))
 +			return true;
 +		if (TREE_CODE(subtype) == ARRAY_TYPE && is_8bit_int_type(TREE_TYPE(subtype)))
++			return true;
++		if (TREE_CODE(subtype) == INTEGER_TYPE)
 +			return true;
 +		if (TREE_CODE(subtype) == VOID_TYPE)
 +			return true;
