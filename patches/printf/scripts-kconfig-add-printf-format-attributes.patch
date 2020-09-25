@@ -40,10 +40,17 @@ index a39d93e3c6ae..64697287e33e 100644
  	va_list ap;
  	char buf[4096];
 diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
-index d4ca8297364f..a225ba14b528 100644
+index 8454649b17bd..cc689205e318 100644
 --- a/scripts/kconfig/lkc.h
 +++ b/scripts/kconfig/lkc.h
-@@ -68,7 +68,8 @@ static inline void xfwrite(const void *str, size_t len, size_t count, FILE *out)
+@@ -89,12 +89,14 @@ struct gstr {
+ struct gstr str_new(void);
+ void str_free(struct gstr *gs);
+ void str_append(struct gstr *gs, const char *s);
+-void str_printf(struct gstr *gs, const char *fmt, ...);
++void str_printf(struct gstr *gs, const char *fmt, ...)
++	__attribute__ ((format(printf, 2, 3)));
+ const char *str_get(struct gstr *gs);
  
  /* menu.c */
  void _menu_init(void);
@@ -53,16 +60,6 @@ index d4ca8297364f..a225ba14b528 100644
  struct menu *menu_add_menu(void);
  void menu_end_menu(void);
  void menu_add_entry(struct symbol *sym);
-@@ -106,7 +107,8 @@ struct gstr {
- struct gstr str_new(void);
- void str_free(struct gstr *gs);
- void str_append(struct gstr *gs, const char *s);
--void str_printf(struct gstr *gs, const char *fmt, ...);
-+void str_printf(struct gstr *gs, const char *fmt, ...)
-+	__attribute__ ((format(printf, 2, 3)));
- const char *str_get(struct gstr *gs);
- 
- /* symbol.c */
 diff --git a/scripts/kconfig/lxdialog/dialog.h b/scripts/kconfig/lxdialog/dialog.h
 index 68b565e3c495..965c22593608 100644
 --- a/scripts/kconfig/lxdialog/dialog.h
