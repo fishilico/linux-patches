@@ -6,35 +6,9 @@ Subject: [PATCH] {MAYBE UPS} drivers: fix pointer casts on ARM32
 gcc on ARM reports -Wint-to-pointer-cast (cast to pointer from integer
 of different size) in several places.
 ---
- drivers/dma/iop-adma.c                  | 6 +++---
  drivers/media/platform/omap/omap_vout.c | 4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index 3350bffb2e93..bfa999a15aea 100644
---- a/drivers/dma/iop-adma.c
-+++ b/drivers/dma/iop-adma.c
-@@ -444,9 +444,9 @@ static int iop_adma_alloc_chan_resources(struct dma_chan *chan)
- 		INIT_LIST_HEAD(&slot->tx_list);
- 		INIT_LIST_HEAD(&slot->chain_node);
- 		INIT_LIST_HEAD(&slot->slot_node);
--		hw_desc = (char *) iop_chan->device->dma_desc_pool;
-+		hw_desc = (char *)(uintptr_t) iop_chan->device->dma_desc_pool;
- 		slot->async_tx.phys =
--			(dma_addr_t) &hw_desc[idx * IOP_ADMA_SLOT_SIZE];
-+			(dma_addr_t)(uintptr_t) &hw_desc[idx * IOP_ADMA_SLOT_SIZE];
- 		slot->idx = idx;
- 
- 		spin_lock_bh(&iop_chan->lock);
-@@ -1298,7 +1298,7 @@ static int iop_adma_probe(struct platform_device *pdev)
- 
- 	dev_dbg(&pdev->dev, "%s: allocated descriptor pool virt %p phys %p\n",
- 		__func__, adev->dma_desc_pool_virt,
--		(void *) adev->dma_desc_pool);
-+		(void *)(uintptr_t) adev->dma_desc_pool);
- 
- 	adev->id = plat_data->hw_id;
- 
 diff --git a/drivers/media/platform/omap/omap_vout.c b/drivers/media/platform/omap/omap_vout.c
 index 21193f0b7f61..363d324401b1 100644
 --- a/drivers/media/platform/omap/omap_vout.c

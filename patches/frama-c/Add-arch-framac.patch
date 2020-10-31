@@ -4,7 +4,7 @@ Date: Tue, 27 Dec 2016 19:09:50 +0100
 Subject: [PATCH] {FRAMA-C} Add arch/framac
 
 ---
- arch/framac/Kconfig                    |  58 +++++++++++
+ arch/framac/Kconfig                    |  59 ++++++++++++
  arch/framac/Kconfig.debug              |   1 +
  arch/framac/Makefile                   |  29 ++++++
  arch/framac/extra/Makefile             |  13 +++
@@ -13,21 +13,19 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/include/abstract_structs.h |  73 ++++++++++++++
  arch/framac/include/asm/Kbuild         |  88 +++++++++++++++++
  arch/framac/include/asm/byteorder.h    |   6 ++
- arch/framac/include/asm/dma-mapping.h  |  11 +++
  arch/framac/include/asm/elf.h          |  33 +++++++
  arch/framac/include/asm/irqflags.h     |  15 +++
  arch/framac/include/asm/pgtable.h      |  74 ++++++++++++++
  arch/framac/include/asm/processor.h    |  40 ++++++++
  arch/framac/include/asm/ptrace.h       |  32 +++++++
  arch/framac/include/asm/sigcontext.h   |  10 ++
- arch/framac/include/asm/thread_info.h  |  68 +++++++++++++
+ arch/framac/include/asm/thread_info.h  |  64 +++++++++++++
  arch/framac/include/asm/tlb.h          |   6 ++
  arch/framac/include/asm/uaccess.h      |  22 +++++
  arch/framac/include/asm/vmalloc.h      |   6 ++
  arch/framac/include/uapi/asm/Kbuild    |   0
- arch/framac/kernel/Makefile            |  12 +++
+ arch/framac/kernel/Makefile            |  11 +++
  arch/framac/kernel/asm-offsets.c       |  13 +++
- arch/framac/kernel/dma.c               |  57 +++++++++++
  arch/framac/kernel/head.c              |   6 ++
  arch/framac/kernel/irq.c               |   5 +
  arch/framac/kernel/panic.c             |  14 +++
@@ -42,7 +40,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/delay.c                |  27 ++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 +++
- 38 files changed, 1046 insertions(+)
+ 36 files changed, 974 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Kconfig.debug
  create mode 100644 arch/framac/Makefile
@@ -52,7 +50,6 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  create mode 100644 arch/framac/include/abstract_structs.h
  create mode 100644 arch/framac/include/asm/Kbuild
  create mode 100644 arch/framac/include/asm/byteorder.h
- create mode 100644 arch/framac/include/asm/dma-mapping.h
  create mode 100644 arch/framac/include/asm/elf.h
  create mode 100644 arch/framac/include/asm/irqflags.h
  create mode 100644 arch/framac/include/asm/pgtable.h
@@ -66,7 +63,6 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  create mode 100644 arch/framac/include/uapi/asm/Kbuild
  create mode 100644 arch/framac/kernel/Makefile
  create mode 100644 arch/framac/kernel/asm-offsets.c
- create mode 100644 arch/framac/kernel/dma.c
  create mode 100644 arch/framac/kernel/head.c
  create mode 100644 arch/framac/kernel/irq.c
  create mode 100644 arch/framac/kernel/panic.c
@@ -84,10 +80,10 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
 
 diff --git a/arch/framac/Kconfig b/arch/framac/Kconfig
 new file mode 100644
-index 000000000000..523117fc877b
+index 000000000000..3d57bde1c781
 --- /dev/null
 +++ b/arch/framac/Kconfig
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,59 @@
 +comment "Linux Kernel Configuration for Frama-C"
 +
 +config FRAMA_C
@@ -101,6 +97,7 @@ index 000000000000..523117fc877b
 +	select GENERIC_IRQ_PROBE
 +	select GENERIC_IRQ_SHOW
 +	select HAVE_COPY_THREAD_TLS
++	select SET_FS
 +	help
 +	  Frama-C is a static C program checker
 +
@@ -559,23 +556,6 @@ index 000000000000..4516d312c49d
 +#include <linux/byteorder/little_endian.h>
 +
 +#endif /* _ASM_FRAMA_C_BYTEORDER_H */
-diff --git a/arch/framac/include/asm/dma-mapping.h b/arch/framac/include/asm/dma-mapping.h
-new file mode 100644
-index 000000000000..7ca7032fce66
---- /dev/null
-+++ b/arch/framac/include/asm/dma-mapping.h
-@@ -0,0 +1,11 @@
-+#ifndef _ASM_FRAMA_C_DMA_MAPPING_H
-+#define _ASM_FRAMA_C_DMA_MAPPING_H
-+
-+extern struct dma_map_ops framac_dma_ops;
-+
-+static inline struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
-+{
-+	return &framac_dma_ops;
-+}
-+
-+#endif /* _ASM_FRAMA_C_DMA_MAPPING_H */
 diff --git a/arch/framac/include/asm/elf.h b/arch/framac/include/asm/elf.h
 new file mode 100644
 index 000000000000..9d7ea895c701
@@ -818,10 +798,10 @@ index 000000000000..797b8392aa72
 +#endif /* _ASM_FRAMA_C_SIGCONTEXT_H */
 diff --git a/arch/framac/include/asm/thread_info.h b/arch/framac/include/asm/thread_info.h
 new file mode 100644
-index 000000000000..5ef8cb601217
+index 000000000000..88597ae6a4b7
 --- /dev/null
 +++ b/arch/framac/include/asm/thread_info.h
-@@ -0,0 +1,68 @@
+@@ -0,0 +1,64 @@
 +#ifndef _ASM_FRAMA_C_THREAD_INFO_H
 +#define _ASM_FRAMA_C_THREAD_INFO_H
 +
@@ -854,7 +834,6 @@ index 000000000000..5ef8cb601217
 +	__u32                   cpu;            /* current cpu */
 +	int                     preempt_count;  /* 0=>preemptible,<0=>BUG */
 +	mm_segment_t            addr_limit;     /* segmentation sux */
-+	struct restart_block	restart_block;
 +	struct pt_regs		*regs;
 +};
 +
@@ -865,9 +844,6 @@ index 000000000000..5ef8cb601217
 +	.cpu            = 0,                    \
 +	.preempt_count  = INIT_PREEMPT_COUNT,   \
 +	.addr_limit     = KERNEL_DS,            \
-+	.restart_block	= {			\
-+		.fn = do_no_restart_syscall,	\
-+	},					\
 +}
 +
 +extern struct thread_info init_thread_info;
@@ -947,13 +923,12 @@ new file mode 100644
 index 000000000000..e69de29bb2d1
 diff --git a/arch/framac/kernel/Makefile b/arch/framac/kernel/Makefile
 new file mode 100644
-index 000000000000..3127d15767e3
+index 000000000000..a10cc27d17b5
 --- /dev/null
 +++ b/arch/framac/kernel/Makefile
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,11 @@
 +extra-y += vmlinux.lds
 +
-+obj-y += dma.o
 +obj-y += head.o
 +obj-y += irq.o
 +obj-y += panic.o
@@ -982,69 +957,6 @@ index 000000000000..d0671b9f90c0
 +	BLANK();
 +	return 0;
 +}
-diff --git a/arch/framac/kernel/dma.c b/arch/framac/kernel/dma.c
-new file mode 100644
-index 000000000000..4a703735e8d9
---- /dev/null
-+++ b/arch/framac/kernel/dma.c
-@@ -0,0 +1,57 @@
-+#include <linux/dma-mapping.h>
-+#include <linux/kernel.h>
-+#include <linux/scatterlist.h>
-+#include <linux/module.h>
-+#include <asm/pgalloc.h>
-+
-+static void *dma_alloc(struct device *dev, size_t size,
-+		       dma_addr_t *dma_handle, gfp_t gfp,
-+		       unsigned long attrs)
-+{
-+	void *ret;
-+
-+	ret = (void *)__get_free_pages(gfp, get_order(size));
-+	if (ret) {
-+		memset(ret, 0, size);
-+		*dma_handle = virt_to_phys(ret);
-+	}
-+	return ret;
-+}
-+
-+static void dma_free(struct device *dev, size_t size,
-+		     void *vaddr, dma_addr_t dma_handle,
-+		     unsigned long attrs)
-+
-+{
-+	free_pages((unsigned long)vaddr, get_order(size));
-+}
-+
-+static dma_addr_t map_page(struct device *dev, struct page *page,
-+				  unsigned long offset, size_t size,
-+				  enum dma_data_direction direction,
-+				  unsigned long attrs)
-+{
-+	return page_to_phys(page) + offset;
-+}
-+
-+static int map_sg(struct device *dev, struct scatterlist *sgl,
-+		  int nents, enum dma_data_direction direction,
-+		  unsigned long attrs)
-+{
-+	struct scatterlist *sg;
-+	int i;
-+
-+	for_each_sg(sgl, sg, nents, i) {
-+		sg->dma_address = sg_phys(sg);
-+	}
-+
-+	return nents;
-+}
-+
-+struct dma_map_ops framac_dma_ops = {
-+	.alloc = dma_alloc,
-+	.free = dma_free,
-+	.map_page = map_page,
-+	.map_sg = map_sg,
-+};
-+EXPORT_SYMBOL(framac_dma_ops);
 diff --git a/arch/framac/kernel/head.c b/arch/framac/kernel/head.c
 new file mode 100644
 index 000000000000..b40bfd7ca799

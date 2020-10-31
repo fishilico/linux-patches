@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 19 Oct 2020 21:49:07 +0200
+Subject: [PATCH] {MAYBE UPS} fs/btrfs: cast sizeof() to unsigned long to
+ silence -Wformat
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc on x86-32 reports:
+
+    fs/btrfs/extent-tree.c: In function ‘__btrfs_free_extent’:
+    include/linux/kern_levels.h:5:18: error: format ‘%lu’ expects
+    argument of type ‘long unsigned int’, but argument 8 has type
+    ‘unsigned int’ [-Werror=format=]
+        5 | #define KERN_SOH "\001"  /* ASCII Start Of Header */
+          |                  ^~~~~~
+    include/linux/kern_levels.h:10:19: note: in expansion of macro
+    ‘KERN_SOH’
+       10 | #define KERN_CRIT KERN_SOH "2" /* critical conditions */
+          |                   ^~~~~~~~
+    fs/btrfs/ctree.h:3148:24: note: in expansion of macro ‘KERN_CRIT’
+     3148 |  btrfs_printk(fs_info, KERN_CRIT fmt, ##args)
+          |                        ^~~~~~~~~
+    fs/btrfs/extent-tree.c:3187:4: note: in expansion of macro ‘btrfs_crit’
+     3187 |    btrfs_crit(info,
+          |    ^~~~~~~~~~
+---
+ fs/btrfs/extent-tree.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+index 3b21fee13e77..e13584ba7a6a 100644
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
+@@ -3188,7 +3188,7 @@ static int __btrfs_free_extent(struct btrfs_trans_handle *trans,
+ "invalid extent item size for key (%llu, %u, %llu) owner %llu, has %u expect >= %lu",
+ 				   key.objectid, key.type, key.offset,
+ 				   owner_objectid, item_size,
+-				   sizeof(*ei) + sizeof(*bi));
++				   (unsigned long)(sizeof(*ei) + sizeof(*bi)));
+ 			btrfs_abort_transaction(trans, -EUCLEAN);
+ 			goto err_dump;
+ 		}
+-- 

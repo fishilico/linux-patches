@@ -395,6 +395,7 @@ then
         echo 'CONFIG_DRM_AMD_DC_DCN3_0=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_DRM_AMD_DC_DSC_SUPPORT=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_UBSAN_BOUNDS=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_UBSAN_LOCAL_BOUNDS=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_TEST_FPU=m' >> "$KBUILD_OUTPUT/.config"
     fi
 

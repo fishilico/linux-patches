@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 27 Oct 2020 22:27:42 +0100
+Subject: [PATCH] {BUG in 5.10-rc1} arch/x86/kvm/cpuid: do not dereference a
+ pointer
+
+Issue found using dereference checker.
+---
+ arch/x86/kvm/cpuid.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/x86/kvm/cpuid.c b/arch/x86/kvm/cpuid.c
+index 06a278b3701d..2f42799bffbf 100644
+--- a/arch/x86/kvm/cpuid.c
++++ b/arch/x86/kvm/cpuid.c
+@@ -309,7 +309,7 @@ int kvm_vcpu_ioctl_get_cpuid2(struct kvm_vcpu *vcpu,
+ 	if (cpuid->nent < vcpu->arch.cpuid_nent)
+ 		goto out;
+ 	r = -EFAULT;
+-	if (copy_to_user(entries, &vcpu->arch.cpuid_entries,
++	if (copy_to_user(entries, vcpu->arch.cpuid_entries,
+ 			 vcpu->arch.cpuid_nent * sizeof(struct kvm_cpuid_entry2)))
+ 		goto out;
+ 	return 0;
+-- 

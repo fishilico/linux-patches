@@ -13,10 +13,10 @@ There are float equalities in these files.
  4 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/display/dc/calcs/Makefile b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-index 4674aca8f206..cf7dde89e770 100644
+index 64f515d74410..63d5eba90896 100644
 --- a/drivers/gpu/drm/amd/display/dc/calcs/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-@@ -50,9 +50,9 @@ calcs_ccflags += -msse2
+@@ -54,9 +54,9 @@ calcs_ccflags += -msse2
  endif
  endif
  
@@ -26,14 +26,14 @@ index 4674aca8f206..cf7dde89e770 100644
 +CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calcs.o := $(calcs_ccflags) -Wno-float-equal
 +CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_auto.o := $(calcs_ccflags) -Wno-float-equal
 +CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_math.o := $(calcs_ccflags) -Wno-tautological-compare -Wno-float-equal
- 
- BW_CALCS = dce_calcs.o bw_fixed.o custom_float.o
- 
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/calcs/dcn_calcs.o := $(calcs_rcflags)
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/calcs/dcn_calc_auto.o := $(calcs_rcflags)
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/calcs/dcn_calc_math.o := $(calcs_rcflags)
 diff --git a/drivers/gpu/drm/amd/display/dc/dcn20/Makefile b/drivers/gpu/drm/amd/display/dc/dcn20/Makefile
-index 5fcaf78334ff..24ecb4e804e5 100644
+index 624cb1341ef1..5a8ac44be4c0 100644
 --- a/drivers/gpu/drm/amd/display/dc/dcn20/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/dcn20/Makefile
-@@ -28,9 +28,9 @@ ifdef IS_OLD_GCC
+@@ -32,9 +32,9 @@ ifdef IS_OLD_GCC
  # Stack alignment mismatch, proceed with caution.
  # GCC < 7.1 cannot compile code using `double` and -mpreferred-stack-boundary=3
  # (8B stack alignment).
@@ -46,10 +46,10 @@ index 5fcaf78334ff..24ecb4e804e5 100644
  endif
  
 diff --git a/drivers/gpu/drm/amd/display/dc/dml/Makefile b/drivers/gpu/drm/amd/display/dc/dml/Makefile
-index 417331438c30..6dd5f0fe9469 100644
+index dbc7e2abe379..5c6cc24b550a 100644
 --- a/drivers/gpu/drm/amd/display/dc/dml/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/dml/Makefile
-@@ -53,19 +53,19 @@ endif
+@@ -57,12 +57,12 @@ endif
  CFLAGS_$(AMDDALPATH)/dc/dml/display_mode_lib.o := $(dml_ccflags)
  
  ifdef CONFIG_DRM_AMD_DC_DCN
@@ -64,6 +64,10 @@ index 417331438c30..6dd5f0fe9469 100644
 -CFLAGS_$(AMDDALPATH)/dc/dml/dcn21/display_mode_vba_21.o := $(dml_ccflags)
 +CFLAGS_$(AMDDALPATH)/dc/dml/dcn21/display_mode_vba_21.o := $(dml_ccflags) -Wno-float-equal
  CFLAGS_$(AMDDALPATH)/dc/dml/dcn21/display_rq_dlg_calc_21.o := $(dml_ccflags)
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/display_mode_vba.o := $(dml_rcflags)
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/dcn20/display_mode_vba_20.o := $(dml_rcflags)
+@@ -73,10 +73,10 @@ CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/dcn21/display_mode_vba_21.o := $(dml_rcflags)
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/dcn21/display_rq_dlg_calc_21.o := $(dml_rcflags)
  endif
  ifdef CONFIG_DRM_AMD_DC_DCN3_0
 -CFLAGS_$(AMDDALPATH)/dc/dml/dcn30/display_mode_vba_30.o := $(dml_ccflags) -Wframe-larger-than=2048
@@ -73,19 +77,19 @@ index 417331438c30..6dd5f0fe9469 100644
 -CFLAGS_$(AMDDALPATH)/dc/dml/dml1_display_rq_dlg_calc.o := $(dml_ccflags)
 +CFLAGS_$(AMDDALPATH)/dc/dml/dml1_display_rq_dlg_calc.o := $(dml_ccflags) -Wno-float-equal
  CFLAGS_$(AMDDALPATH)/dc/dml/display_rq_dlg_helpers.o := $(dml_ccflags)
- 
- DML = display_mode_lib.o display_rq_dlg_helpers.o dml1_display_rq_dlg_calc.o \
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/dml1_display_rq_dlg_calc.o := $(dml_rcflags)
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/display_rq_dlg_helpers.o := $(dml_rcflags)
 diff --git a/drivers/gpu/drm/amd/display/dc/dsc/Makefile b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
-index ea29cf95d470..4bfd4a9a8a6f 100644
+index f2624a1156e5..cdce570b83bf 100644
 --- a/drivers/gpu/drm/amd/display/dc/dsc/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
-@@ -27,7 +27,7 @@ dsc_ccflags += -msse2
+@@ -31,7 +31,7 @@ dsc_ccflags += -msse2
  endif
  endif
  
 -CFLAGS_$(AMDDALPATH)/dc/dsc/rc_calc.o := $(dsc_ccflags)
 +CFLAGS_$(AMDDALPATH)/dc/dsc/rc_calc.o := $(dsc_ccflags) -Wno-float-equal
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/dsc/rc_calc.o := $(dsc_rcflags)
  
  DSC = dc_dsc.o rc_calc.o rc_calc_dpi.o
- 
 -- 

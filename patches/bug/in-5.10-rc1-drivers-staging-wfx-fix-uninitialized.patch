@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 19 Oct 2020 09:09:15 +0200
+Subject: [PATCH] {BUG in 5.10-rc1} drivers/staging/wfx: fix uninitialized
+ variable
+
+clang on x86-64 reports:
+
+    drivers/staging/wfx/data_tx.c:34:19: error: variable 'band' is
+    uninitialized when used here [-Werror,-Wuninitialized]
+            if (rate->idx >= band->n_bitrates) {
+                             ^~~~
+    drivers/staging/wfx/data_tx.c:23:39: note: initialize the variable
+    'band' to silence this warning
+            struct ieee80211_supported_band *band;
+                                                 ^
+                                                  = NULL
+---
+ drivers/staging/wfx/data_tx.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/staging/wfx/data_tx.c b/drivers/staging/wfx/data_tx.c
+index 41f6a604a697..36b36ef39d05 100644
+--- a/drivers/staging/wfx/data_tx.c
++++ b/drivers/staging/wfx/data_tx.c
+@@ -31,13 +31,13 @@ static int wfx_get_hw_rate(struct wfx_dev *wdev,
+ 		}
+ 		return rate->idx + 14;
+ 	}
++	// WFx only support 2GHz, else band information should be retrieved
++	// from ieee80211_tx_info
++	band = wdev->hw->wiphy->bands[NL80211_BAND_2GHZ];
+ 	if (rate->idx >= band->n_bitrates) {
+ 		WARN(1, "wrong rate->idx value: %d", rate->idx);
+ 		return -1;
+ 	}
+-	// WFx only support 2GHz, else band information should be retrieved
+-	// from ieee80211_tx_info
+-	band = wdev->hw->wiphy->bands[NL80211_BAND_2GHZ];
+ 	return band->bitrates[rate->idx].hw_value;
+ }
+ 
+-- 

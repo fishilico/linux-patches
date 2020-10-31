@@ -4,33 +4,30 @@ Date: Sun, 28 Jun 2015 15:24:06 +0800
 Subject: [PATCH] {PRINTF} Add many printf format attributes
 
 ---
- arch/x86/boot/tools/build.c          |  3 ++-
- drivers/acpi/acpica/nsrepair2.c      |  2 +-
- drivers/clk/clkdev.c                 |  7 ++++---
- drivers/iio/industrialio-trigger.c   |  3 ++-
- drivers/isdn/capi/capiutil.c         |  4 ++--
- drivers/pnp/interface.c              |  2 +-
- drivers/scsi/BusLogic.c              |  6 +++---
- drivers/scsi/esas2r/esas2r_log.c     |  8 ++++----
- drivers/staging/fbtft/fbtft.h        |  2 +-
- drivers/xen/xenbus/xenbus_client.c   | 10 ++++++----
- include/acpi/acpiosxf.h              |  2 +-
- include/linux/iio/iio.h              |  2 +-
- include/linux/iio/trigger_consumer.h |  2 +-
- include/linux/trace_events.h         |  3 ++-
- kernel/audit.c                       |  4 ++--
- kernel/trace/trace.h                 |  6 +++---
- kernel/trace/trace_output.c          |  6 +++---
- net/dccp/ccid.c                      |  3 ++-
- net/tipc/netlink_compat.c            |  2 +-
- scripts/mod/modpost.h                |  2 +-
- scripts/unifdef.c                    |  2 +-
- security/tomoyo/common.c             |  3 ++-
- security/tomoyo/common.h             |  4 ++--
- 23 files changed, 48 insertions(+), 40 deletions(-)
+ arch/x86/boot/tools/build.c        |  3 ++-
+ drivers/acpi/acpica/nsrepair2.c    |  2 +-
+ drivers/clk/clkdev.c               |  7 ++++---
+ drivers/isdn/capi/capiutil.c       |  4 ++--
+ drivers/pnp/interface.c            |  2 +-
+ drivers/scsi/BusLogic.c            |  6 +++---
+ drivers/scsi/esas2r/esas2r_log.c   |  8 ++++----
+ drivers/staging/fbtft/fbtft.h      |  2 +-
+ drivers/xen/xenbus/xenbus_client.c | 10 ++++++----
+ include/acpi/acpiosxf.h            |  2 +-
+ include/linux/trace_events.h       |  3 ++-
+ kernel/audit.c                     |  4 ++--
+ kernel/trace/trace.h               |  6 +++---
+ kernel/trace/trace_output.c        |  6 +++---
+ net/dccp/ccid.c                    |  3 ++-
+ net/tipc/netlink_compat.c          |  2 +-
+ scripts/mod/modpost.h              |  2 +-
+ scripts/unifdef.c                  |  2 +-
+ security/tomoyo/common.c           |  3 ++-
+ security/tomoyo/common.h           |  4 ++--
+ 20 files changed, 44 insertions(+), 37 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
-index c8b8c1a8d1fc..492d18853961 100644
+index a3725ad46c5a..04616745d029 100644
 --- a/arch/x86/boot/tools/build.c
 +++ b/arch/x86/boot/tools/build.c
 @@ -137,7 +137,8 @@ static u32 partial_crc32(const u8 *s, int len, u32 crc)
@@ -88,20 +85,6 @@ index 0f2e3fcf0f19..4dfcf9de41f8 100644
  						const char *con_id,
  						const char *dev_id, ...)
  {
-diff --git a/drivers/iio/industrialio-trigger.c b/drivers/iio/industrialio-trigger.c
-index 6f16357fd732..583bb51f65a7 100644
---- a/drivers/iio/industrialio-trigger.c
-+++ b/drivers/iio/industrialio-trigger.c
-@@ -516,7 +516,8 @@ static void iio_trig_subirqunmask(struct irq_data *d)
- 	trig->subirqs[d->irq - trig->subirq_base].enabled = true;
- }
- 
--static struct iio_trigger *viio_trigger_alloc(const char *fmt, va_list vargs)
-+static __printf(1, 0)
-+struct iio_trigger *viio_trigger_alloc(const char *fmt, va_list vargs)
- {
- 	struct iio_trigger *trig;
- 	int i;
 diff --git a/drivers/isdn/capi/capiutil.c b/drivers/isdn/capi/capiutil.c
 index f26bf3c66d7e..94d7ce148a81 100644
 --- a/drivers/isdn/capi/capiutil.c
@@ -194,10 +177,10 @@ index 76f8c090a837..ba4fd1a98325 100644
  					struct device *dev,
  					struct fbtft_platform_data *pdata);
 diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
-index 2690318ad50f..1442b42a1718 100644
+index fd80e318b99c..961984f7dec7 100644
 --- a/drivers/xen/xenbus/xenbus_client.c
 +++ b/drivers/xen/xenbus/xenbus_client.c
-@@ -275,8 +275,9 @@ int xenbus_frontend_closed(struct xenbus_device *dev)
+@@ -272,8 +272,9 @@ int xenbus_frontend_closed(struct xenbus_device *dev)
  }
  EXPORT_SYMBOL_GPL(xenbus_frontend_closed);
  
@@ -209,7 +192,7 @@ index 2690318ad50f..1442b42a1718 100644
  {
  	unsigned int len;
  	char *printf_buffer;
-@@ -347,8 +348,9 @@ EXPORT_SYMBOL_GPL(xenbus_dev_fatal);
+@@ -344,8 +345,9 @@ EXPORT_SYMBOL_GPL(xenbus_dev_fatal);
   * Equivalent to xenbus_dev_fatal(dev, err, fmt, args), but helps
   * avoiding recursion within xenbus_switch_state.
   */
@@ -234,34 +217,8 @@ index 33bb8c9a089d..96b838924d62 100644
  #endif
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
-diff --git a/include/linux/iio/iio.h b/include/linux/iio/iio.h
-index e2df67a3b9ab..1698557cd0b5 100644
---- a/include/linux/iio/iio.h
-+++ b/include/linux/iio/iio.h
-@@ -691,7 +691,7 @@ static inline void *iio_priv(const struct iio_dev *indio_dev)
- 
- void iio_device_free(struct iio_dev *indio_dev);
- struct iio_dev *devm_iio_device_alloc(struct device *parent, int sizeof_priv);
--struct iio_trigger *devm_iio_trigger_alloc(struct device *dev,
-+__printf(2, 3) struct iio_trigger *devm_iio_trigger_alloc(struct device *dev,
- 						const char *fmt, ...);
- /**
-  * iio_buffer_enabled() - helper function to test if the buffer is enabled
-diff --git a/include/linux/iio/trigger_consumer.h b/include/linux/iio/trigger_consumer.h
-index 3aa2f132dd67..2c05dfad88d7 100644
---- a/include/linux/iio/trigger_consumer.h
-+++ b/include/linux/iio/trigger_consumer.h
-@@ -38,7 +38,7 @@ struct iio_poll_func {
- };
- 
- 
--struct iio_poll_func
-+__printf(5, 6) struct iio_poll_func
- *iio_alloc_pollfunc(irqreturn_t (*h)(int irq, void *p),
- 		    irqreturn_t (*thread)(int irq, void *p),
- 		    int type,
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index 5c6943354049..c54c120ecfe9 100644
+index d321fe5ad1a1..a8539752e86c 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
 @@ -170,7 +170,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
@@ -275,10 +232,10 @@ index 5c6943354049..c54c120ecfe9 100644
  struct event_filter;
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index 7efaece534a9..df88820cd92c 100644
+index 68cee3bc8cfe..02df5a15275e 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
-@@ -1902,8 +1902,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
+@@ -1901,8 +1901,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
   * will be called a second time.  Currently, we assume that a printk
   * can't format message larger than 1024 bytes, so we don't either.
   */
@@ -290,10 +247,10 @@ index 7efaece534a9..df88820cd92c 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 610d21355526..3442f1311c7c 100644
+index f3f5e77123ad..fb26bad0cf1b 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -904,11 +904,11 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -905,11 +905,11 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -347,7 +304,7 @@ index 1e9bb121ba72..e265a1c5e1ea 100644
  	struct kmem_cache *slab;
  	va_list args;
 diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
-index 90e3c70a91ad..c9e051c08ad2 100644
+index 1c7aa51cc2a3..7a3d456f3948 100644
 --- a/net/tipc/netlink_compat.c
 +++ b/net/tipc/netlink_compat.c
 @@ -118,7 +118,7 @@ static void tipc_tlv_init(struct sk_buff *skb, u16 type)

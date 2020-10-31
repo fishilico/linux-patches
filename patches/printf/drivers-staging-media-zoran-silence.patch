@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 18 Oct 2020 10:48:07 +0200
+Subject: [PATCH] {PRINTF} drivers/staging/media/zoran: silence
+ -Wformat-security with %s
+
+---
+ drivers/staging/media/zoran/zoran_card.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/media/zoran/zoran_card.c b/drivers/staging/media/zoran/zoran_card.c
+index dfc60e2e9dd7..b7aa21782059 100644
+--- a/drivers/staging/media/zoran/zoran_card.c
++++ b/drivers/staging/media/zoran/zoran_card.c
+@@ -1150,7 +1150,7 @@ static int zoran_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto zr_pci_release;
+ 	}
+ 
+-	result = pci_request_irq(pdev, 0, zoran_irq, NULL, zr, ZR_DEVNAME(zr));
++	result = pci_request_irq(pdev, 0, zoran_irq, NULL, zr, "%s", ZR_DEVNAME(zr));
+ 	if (result < 0) {
+ 		if (result == -EINVAL) {
+ 			pci_err(pdev, "%s - bad IRQ number or handler\n", __func__);
+-- 

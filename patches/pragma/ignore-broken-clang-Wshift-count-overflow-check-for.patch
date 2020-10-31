@@ -32,12 +32,12 @@ index 149faeeeeaf2..001f12033690 100644
  /*
   * Interface for known constant arguments
 diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index b6a95838193a..a108c78d1dc5 100644
+index da3ca46ff04e..52700840cdc1 100644
 --- a/include/linux/dma-mapping.h
 +++ b/include/linux/dma-mapping.h
-@@ -136,7 +136,15 @@ struct dma_map_ops {
- extern const struct dma_map_ops dma_virt_ops;
- extern const struct dma_map_ops dma_dummy_ops;
+@@ -73,7 +73,15 @@
+  */
+ #define DMA_MAPPING_ERROR		(~(dma_addr_t)0)
  
 +#ifdef __clang__
 +#define DMA_BIT_MASK(n) \
@@ -49,6 +49,6 @@ index b6a95838193a..a108c78d1dc5 100644
  #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
 +#endif
  
- #define DMA_MASK_NONE	0x0ULL
- 
+ #ifdef CONFIG_DMA_API_DEBUG
+ void debug_dma_mapping_error(struct device *dev, dma_addr_t dma_addr);
 -- 

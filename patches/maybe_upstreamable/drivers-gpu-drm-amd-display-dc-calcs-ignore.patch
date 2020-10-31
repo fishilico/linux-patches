@@ -15,10 +15,10 @@ clang reports issues
  6 files changed, 38 insertions(+), 38 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/display/dc/calcs/Makefile b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-index cf7dde89e770..40ac4e733e91 100644
+index 63d5eba90896..0db1aabc89fd 100644
 --- a/drivers/gpu/drm/amd/display/dc/calcs/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-@@ -50,9 +50,9 @@ calcs_ccflags += -msse2
+@@ -54,9 +54,9 @@ calcs_ccflags += -msse2
  endif
  endif
  
@@ -26,11 +26,11 @@ index cf7dde89e770..40ac4e733e91 100644
 -CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_auto.o := $(calcs_ccflags) -Wno-float-equal
 -CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_math.o := $(calcs_ccflags) -Wno-tautological-compare -Wno-float-equal
 +CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calcs.o := $(calcs_ccflags) -Wno-float-equal -Wno-double-promotion
-+CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_auto.o := $(calcs_ccflags) -Wno-float-equal -Wno-double-promotion 
++CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_auto.o := $(calcs_ccflags) -Wno-float-equal -Wno-double-promotion
 +CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_math.o := $(calcs_ccflags) -Wno-tautological-compare -Wno-float-equal -Wno-double-promotion
- 
- BW_CALCS = dce_calcs.o bw_fixed.o custom_float.o
- 
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/calcs/dcn_calcs.o := $(calcs_rcflags)
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/calcs/dcn_calc_auto.o := $(calcs_rcflags)
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/calcs/dcn_calc_math.o := $(calcs_rcflags)
 diff --git a/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c b/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c
 index 07d18e78de49..61e77cf6f333 100644
 --- a/drivers/gpu/drm/amd/display/dc/calcs/dcn_calc_math.c
@@ -54,7 +54,7 @@ index 07d18e78de49..61e77cf6f333 100644
  	else
  		return (a + log_2);
 diff --git a/drivers/gpu/drm/amd/display/dc/dml/dcn20/display_mode_vba_20v2.c b/drivers/gpu/drm/amd/display/dc/dml/dcn20/display_mode_vba_20v2.c
-index 80170f9721ce..03fa562cc393 100644
+index 860e72a51534..5fa46fb3a657 100644
 --- a/drivers/gpu/drm/amd/display/dc/dml/dcn20/display_mode_vba_20v2.c
 +++ b/drivers/gpu/drm/amd/display/dc/dml/dcn20/display_mode_vba_20v2.c
 @@ -2628,7 +2628,7 @@ static void dml20v2_DISPCLKDPPCLKDCFCLKDeepSleepPrefetchParametersWatermarksAndP
@@ -67,7 +67,7 @@ index 80170f9721ce..03fa562cc393 100644
  					mode_lib->vba.ActiveDRAMClockChangeLatencyMargin[k];
  		}
 diff --git a/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c b/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c
-index a576eed94d9b..35242f30c738 100644
+index 367c82b5ab4c..9f36abda02a1 100644
 --- a/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c
 +++ b/drivers/gpu/drm/amd/display/dc/dml/dcn21/display_mode_vba_21.c
 @@ -5946,7 +5946,7 @@ static void CalculateMetaAndPTETimes(
@@ -91,18 +91,18 @@ index a576eed94d9b..35242f30c738 100644
  				time_per_pte_group_nom_chroma[k] = DST_Y_PER_PTE_ROW_NOM_C[k]
  						* HTotal[k] / PixelClock[k]
 diff --git a/drivers/gpu/drm/amd/display/dc/dsc/Makefile b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
-index 4bfd4a9a8a6f..28065561879c 100644
+index cdce570b83bf..921f81be17ac 100644
 --- a/drivers/gpu/drm/amd/display/dc/dsc/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/dsc/Makefile
-@@ -27,7 +27,7 @@ dsc_ccflags += -msse2
+@@ -31,7 +31,7 @@ dsc_ccflags += -msse2
  endif
  endif
  
 -CFLAGS_$(AMDDALPATH)/dc/dsc/rc_calc.o := $(dsc_ccflags) -Wno-float-equal
 +CFLAGS_$(AMDDALPATH)/dc/dsc/rc_calc.o := $(dsc_ccflags) -Wno-float-equal -Wno-double-promotion
+ CFLAGS_REMOVE_$(AMDDALPATH)/dc/dsc/rc_calc.o := $(dsc_rcflags)
  
  DSC = dc_dsc.o rc_calc.o rc_calc_dpi.o
- 
 diff --git a/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c b/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c
 index 4da21966ddce..4b6ba1e79284 100644
 --- a/drivers/gpu/drm/amd/display/dc/dsc/rc_calc.c

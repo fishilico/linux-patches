@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 18 Oct 2020 10:48:57 +0200
+Subject: [PATCH] {PRINTF} drivers/usb/typec/tcpm: silence -Wformat-security
+ with %s
+
+---
+ drivers/usb/typec/tcpm/tcpm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
+index 55535c4f66bf..ea773b81b981 100644
+--- a/drivers/usb/typec/tcpm/tcpm.c
++++ b/drivers/usb/typec/tcpm/tcpm.c
+@@ -5086,7 +5086,7 @@ struct tcpm_port *tcpm_register_port(struct device *dev, struct tcpc_dev *tcpc)
+ 	mutex_init(&port->lock);
+ 	mutex_init(&port->swap_lock);
+ 
+-	port->wq = kthread_create_worker(0, dev_name(dev));
++	port->wq = kthread_create_worker(0, "%s", dev_name(dev));
+ 	if (IS_ERR(port->wq))
+ 		return ERR_CAST(port->wq);
+ 	sched_set_fifo(port->wq->task);
+-- 

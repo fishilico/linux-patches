@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 18 Oct 2020 11:05:45 +0200
+Subject: [PATCH] {PRINTF} drivers/staging/media/atomisp: silence
+ -Wformat-security with %s
+
+---
+ .../media/atomisp/pci/runtime/debug/src/ia_css_debug.c        | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/media/atomisp/pci/runtime/debug/src/ia_css_debug.c b/drivers/staging/media/atomisp/pci/runtime/debug/src/ia_css_debug.c
+index 05ce0f73f5ae..0646c0f5f062 100644
+--- a/drivers/staging/media/atomisp/pci/runtime/debug/src/ia_css_debug.c
++++ b/drivers/staging/media/atomisp/pci/runtime/debug/src/ia_css_debug.c
+@@ -2602,7 +2602,7 @@ ia_css_debug_pipe_graph_dump_prologue(void)
+ void ia_css_debug_pipe_graph_dump_epilogue(void)
+ {
+ 	if (strlen(ring_buffer) > 0) {
+-		dtrace_dot(ring_buffer);
++		dtrace_dot("%s", ring_buffer);
+ 	}
+ 
+ 	if (pg_inst.stream_format != N_ATOMISP_INPUT_FORMAT) {
+@@ -2873,7 +2873,7 @@ ia_css_debug_pipe_graph_dump_sp_raw_copy(
+ 		 out_frame->info.padded_width,
+ 		 out_frame->info.res.height);
+ 
+-	dtrace_dot(ring_buffer);
++	dtrace_dot("%s", ring_buffer);
+ 
+ 	dtrace_dot(
+ 	    "\"%s(pipe%d)\"->\"%p\" [label = out_frame];",
+-- 
