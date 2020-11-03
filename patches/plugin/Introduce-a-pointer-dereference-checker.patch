@@ -53,7 +53,6 @@ It has also detected some bugs reported and fixed by other people:
  drivers/media/pci/intel/ipu3/ipu3-cio2.c      |   8 +-
  drivers/media/platform/omap3isp/ispstat.c     |   8 +-
  drivers/misc/ibmasm/lowlevel.c                |   4 +-
- drivers/misc/mic/scif/scif_fd.c               |   6 +-
  drivers/net/ethernet/ti/davinci_cpdma.c       |   2 +-
  drivers/net/virtio_net.c                      |   2 +-
  drivers/net/wireless/ti/wlcore/main.c         |  15 +-
@@ -105,7 +104,7 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/deref_checker_plugin.c    | 475 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 76 files changed, 902 insertions(+), 148 deletions(-)
+ 75 files changed, 897 insertions(+), 147 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
@@ -624,23 +623,6 @@ index 6922dc6c10db..bf7f5ec335df 100644
  	} else
  		dbg("didn't get a valid MFA\n");
  
-diff --git a/drivers/misc/mic/scif/scif_fd.c b/drivers/misc/mic/scif/scif_fd.c
-index 3f08646cd78a..8fb09ec14a13 100644
---- a/drivers/misc/mic/scif/scif_fd.c
-+++ b/drivers/misc/mic/scif/scif_fd.c
-@@ -164,7 +164,11 @@ static long scif_fdioctl(struct file *f, unsigned int cmd, unsigned long arg)
- 		struct list_head *pos, *tmpq;
- 
- 		/* Finally replace the pointer to the accepted endpoint */
--		if (copy_from_user(&newep, argp, sizeof(void *)))
-+		/* Slient the pointer deref checker here even though the code looks strange:
-+		 * how is the kernel pointer which is obtained by userspace sanitized?
-+		 */
-+		void *__user *argpp = (void *__user *)argp;
-+		if (copy_from_user(&newep, argpp, sizeof(void *)))
- 			return -EFAULT;
- 
- 		/* Remove form the user accept queue */
 diff --git a/drivers/net/ethernet/ti/davinci_cpdma.c b/drivers/net/ethernet/ti/davinci_cpdma.c
 index d2eab5cd1e0c..0d149be7c66f 100644
 --- a/drivers/net/ethernet/ti/davinci_cpdma.c
@@ -1050,7 +1032,7 @@ index 3a06eb699f33..c168b2231695 100644
  
  	strings = (char *)&ret[*num];
 diff --git a/fs/afs/dir.c b/fs/afs/dir.c
-index 1d2e61e0ab04..4f68d9ab28e0 100644
+index 1bb5b9d7f0a2..a1959ec23849 100644
 --- a/fs/afs/dir.c
 +++ b/fs/afs/dir.c
 @@ -179,7 +179,8 @@ static bool afs_dir_check_pages(struct afs_vnode *dvnode, struct afs_read *req)
@@ -1093,10 +1075,10 @@ index 23b21e943652..ae932fc11a4e 100644
  		if (gid_valid(gid))
  			fgid = gid;
 diff --git a/fs/io_uring.c b/fs/io_uring.c
-index b42dfa0243bf..4d478f91ab8c 100644
+index a7429c977eb3..e377e252134c 100644
 --- a/fs/io_uring.c
 +++ b/fs/io_uring.c
-@@ -1770,8 +1770,12 @@ static struct io_kiocb *io_get_fallback_req(struct io_ring_ctx *ctx)
+@@ -1773,8 +1773,12 @@ static struct io_kiocb *io_get_fallback_req(struct io_ring_ctx *ctx)
  	struct io_kiocb *req;
  
  	req = ctx->fallback_req;
@@ -1111,7 +1093,7 @@ index b42dfa0243bf..4d478f91ab8c 100644
  
  	return NULL;
  }
-@@ -1841,8 +1845,11 @@ static void __io_free_req(struct io_kiocb *req)
+@@ -1844,8 +1848,11 @@ static void __io_free_req(struct io_kiocb *req)
  
  	if (likely(!io_is_fallback_req(req)))
  		kmem_cache_free(req_cachep, req);
@@ -1350,10 +1332,10 @@ index 6226502ce049..a7d3263f5134 100644
  			debug_kfree(knt1);
  			knt1 = kdb_name_table[i];
 diff --git a/kernel/futex.c b/kernel/futex.c
-index be68ac0d49ad..594ab3ea7886 100644
+index f8614ef4ff31..d9be9df1b28b 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -3883,8 +3883,10 @@ static void compat_exit_robust_list(struct task_struct *curr)
+@@ -3885,8 +3885,10 @@ static void compat_exit_robust_list(struct task_struct *curr)
  		 * Fetch the next entry in the list before calling
  		 * handle_futex_death:
  		 */

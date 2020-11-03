@@ -64,8 +64,6 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  drivers/misc/altera-stapl/altera.c            |  4 ++
  drivers/misc/cb710/debug.c                    |  3 ++
  drivers/misc/habanalabs/goya/goya.c           |  3 ++
- drivers/misc/mic/scif/scif_main.c             |  3 ++
- drivers/misc/mic/scif/scif_nodeqp.c           |  3 ++
  drivers/mmc/core/mmc.c                        |  4 ++
  drivers/net/ethernet/8390/smc-ultra.c         |  3 ++
  drivers/net/ethernet/8390/wd.c                |  3 ++
@@ -188,7 +186,7 @@ Subject: [PATCH] {PRAGMA} disable -Wformat-security where it is safe
  sound/usb/midi.c                              |  3 ++
  sound/usb/mixer_quirks.c                      |  3 ++
  sound/usb/mixer_scarlett_gen2.c               |  9 +++-
- 184 files changed, 895 insertions(+), 28 deletions(-)
+ 182 files changed, 889 insertions(+), 28 deletions(-)
 
 diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
 index 17d5a785df28..798a8aaff356 100644
@@ -1427,38 +1425,6 @@ index 5db52064ed9e..deb8d0d7c6fe 100644
  }
  
  static void goya_print_razwi_info(struct hl_device *hdev)
-diff --git a/drivers/misc/mic/scif/scif_main.c b/drivers/misc/mic/scif/scif_main.c
-index e2278bf9f11d..eaf2d8c3ff9f 100644
---- a/drivers/misc/mic/scif/scif_main.c
-+++ b/drivers/misc/mic/scif/scif_main.c
-@@ -45,8 +45,11 @@ int scif_setup_intr_wq(struct scif_dev *scifdev)
- 	if (!scifdev->intr_wq) {
- 		snprintf(scifdev->intr_wqname, sizeof(scifdev->intr_wqname),
- 			 "SCIF INTR %d", scifdev->node);
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 		scifdev->intr_wq =
- 			alloc_ordered_workqueue(scifdev->intr_wqname, 0);
-+#pragma GCC diagnostic pop
- 		if (!scifdev->intr_wq)
- 			return -ENOMEM;
- 		INIT_WORK(&scifdev->intr_bh, scif_intr_bh_handler);
-diff --git a/drivers/misc/mic/scif/scif_nodeqp.c b/drivers/misc/mic/scif/scif_nodeqp.c
-index 384ce08fa98a..4a416ca335ec 100644
---- a/drivers/misc/mic/scif/scif_nodeqp.c
-+++ b/drivers/misc/mic/scif/scif_nodeqp.c
-@@ -1229,8 +1229,11 @@ int scif_setup_loopback_qp(struct scif_dev *scifdev)
- 	INIT_LIST_HEAD(&scif_info.loopb_recv_q);
- 	snprintf(scif_info.loopb_wqname, sizeof(scif_info.loopb_wqname),
- 		 "SCIF LOOPB %d", scifdev->node);
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 	scif_info.loopb_wq =
- 		alloc_ordered_workqueue(scif_info.loopb_wqname, 0);
-+#pragma GCC diagnostic pop
- 	if (!scif_info.loopb_wq) {
- 		err = -ENOMEM;
- 		goto destroy_intr;
 diff --git a/drivers/mmc/core/mmc.c b/drivers/mmc/core/mmc.c
 index ff3063ce2acd..cb1730f70da0 100644
 --- a/drivers/mmc/core/mmc.c
@@ -3481,10 +3447,10 @@ index 279d9262b676..1a28b39da4c7 100644
  
  	return ret;
 diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
-index 58b9c419a2b6..0801447731e4 100644
+index b1e48078c318..c530b6bf0ee2 100644
 --- a/fs/btrfs/volumes.c
 +++ b/fs/btrfs/volumes.c
-@@ -3045,7 +3045,10 @@ static int btrfs_relocate_chunk(struct btrfs_fs_info *fs_info, u64 chunk_offset)
+@@ -3048,7 +3048,10 @@ static int btrfs_relocate_chunk(struct btrfs_fs_info *fs_info, u64 chunk_offset)
  						     chunk_offset);
  	if (IS_ERR(trans)) {
  		ret = PTR_ERR(trans);
@@ -3792,7 +3758,7 @@ index 4517c8b66518..1224fbfc4312 100644
  	err = seq_has_overflowed(m) ? -EOVERFLOW : 0;
  out:
 diff --git a/kernel/trace/trace_events_synth.c b/kernel/trace/trace_events_synth.c
-index 3212e2c653b3..5ae4ebb58aa1 100644
+index 84b7cab55291..9b6903778792 100644
 --- a/kernel/trace/trace_events_synth.c
 +++ b/kernel/trace/trace_events_synth.c
 @@ -289,6 +289,8 @@ static void print_synth_event_num_val(struct trace_seq *s,
