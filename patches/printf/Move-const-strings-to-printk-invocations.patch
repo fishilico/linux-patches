@@ -271,10 +271,10 @@ index a99afb5d9011..60dab42e6538 100644
  		p += bytes;						\
  		len -= bytes;						\
 diff --git a/drivers/misc/habanalabs/gaudi/gaudi.c b/drivers/misc/habanalabs/gaudi/gaudi.c
-index 2519a34e25b7..588df6f341be 100644
+index 7ea6b4368a91..c4cba132c1c3 100644
 --- a/drivers/misc/habanalabs/gaudi/gaudi.c
 +++ b/drivers/misc/habanalabs/gaudi/gaudi.c
-@@ -6095,8 +6095,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask,
+@@ -6097,8 +6097,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask,
  					struct seq_file *s)
  {
  	struct gaudi_device *gaudi = hdev->asic_specific;
@@ -283,7 +283,7 @@ index 2519a34e25b7..588df6f341be 100644
  	u32 qm_glbl_sts0, qm_cgm_sts, dma_core_sts0, tpc_cfg_sts, mme_arch_sts;
  	bool is_idle = true, is_eng_idle, is_slave;
  	u64 offset;
-@@ -6126,7 +6124,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask,
+@@ -6128,7 +6126,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask,
  			*mask |= ((u64) !is_eng_idle) <<
  					(GAUDI_ENGINE_ID_DMA_0 + dma_id);
  		if (s)
@@ -292,7 +292,7 @@ index 2519a34e25b7..588df6f341be 100644
  				is_eng_idle ? "Y" : "N", qm_glbl_sts0,
  				qm_cgm_sts, dma_core_sts0);
  	}
-@@ -6149,7 +6147,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask,
+@@ -6151,7 +6149,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask,
  			*mask |= ((u64) !is_eng_idle) <<
  						(GAUDI_ENGINE_ID_TPC_0 + i);
  		if (s)
@@ -301,7 +301,7 @@ index 2519a34e25b7..588df6f341be 100644
  				is_eng_idle ? "Y" : "N",
  				qm_glbl_sts0, qm_cgm_sts, tpc_cfg_sts);
  	}
-@@ -6179,11 +6177,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask,
+@@ -6181,11 +6179,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask,
  						(GAUDI_ENGINE_ID_MME_0 + i);
  		if (s) {
  			if (!is_slave)
@@ -482,10 +482,10 @@ index 138930c66ad2..576e8327d633 100644
  }
  module_init(z85230_init_driver);
 diff --git a/drivers/ptp/ptp_clockmatrix.c b/drivers/ptp/ptp_clockmatrix.c
-index e020faff7da5..437c5526607b 100644
+index 663255774c0b..019465db37d3 100644
 --- a/drivers/ptp/ptp_clockmatrix.c
 +++ b/drivers/ptp/ptp_clockmatrix.c
-@@ -150,7 +150,6 @@ static int idtcm_xfer_read(struct idtcm *idtcm,
+@@ -133,7 +133,6 @@ static int idtcm_xfer_read(struct idtcm *idtcm,
  	struct i2c_client *client = idtcm->client;
  	struct i2c_msg msg[2];
  	int cnt;
@@ -493,7 +493,7 @@ index e020faff7da5..437c5526607b 100644
  
  	msg[0].addr = client->addr;
  	msg[0].flags = 0;
-@@ -166,7 +165,7 @@ static int idtcm_xfer_read(struct idtcm *idtcm,
+@@ -149,7 +148,7 @@ static int idtcm_xfer_read(struct idtcm *idtcm,
  
  	if (cnt < 0) {
  		dev_err(&client->dev,
@@ -502,7 +502,7 @@ index e020faff7da5..437c5526607b 100644
  			__LINE__,
  			__func__,
  			regaddr);
-@@ -189,7 +188,6 @@ static int idtcm_xfer_write(struct idtcm *idtcm,
+@@ -172,7 +171,6 @@ static int idtcm_xfer_write(struct idtcm *idtcm,
  	/* we add 1 byte for device register */
  	u8 msg[IDTCM_MAX_WRITE_COUNT + 1];
  	int cnt;
@@ -510,7 +510,7 @@ index e020faff7da5..437c5526607b 100644
  
  	if (count > IDTCM_MAX_WRITE_COUNT)
  		return -EINVAL;
-@@ -201,7 +199,7 @@ static int idtcm_xfer_write(struct idtcm *idtcm,
+@@ -184,7 +182,7 @@ static int idtcm_xfer_write(struct idtcm *idtcm,
  
  	if (cnt < 0) {
  		dev_err(&client->dev,
@@ -519,7 +519,7 @@ index e020faff7da5..437c5526607b 100644
  			__LINE__,
  			__func__,
  			regaddr);
-@@ -1838,7 +1836,6 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
+@@ -1821,7 +1819,6 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
  	u16 product_id;
  	u8 hw_rev_id;
  	u8 config_select;
@@ -527,7 +527,7 @@ index e020faff7da5..437c5526607b 100644
  
  	idtcm_read_major_release(idtcm, &major);
  	idtcm_read_minor_release(idtcm, &minor);
-@@ -1852,7 +1849,7 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
+@@ -1835,7 +1832,7 @@ static void idtcm_display_version_info(struct idtcm *idtcm)
  	snprintf(idtcm->version, sizeof(idtcm->version), "%u.%u.%u",
  		 major, minor, hotfix);
  
@@ -536,7 +536,7 @@ index e020faff7da5..437c5526607b 100644
  		 product_id, hw_rev_id, config_select);
  }
  
-@@ -2092,7 +2089,6 @@ static int idtcm_probe(struct i2c_client *client,
+@@ -2075,7 +2072,6 @@ static int idtcm_probe(struct i2c_client *client,
  	struct idtcm *idtcm;
  	int err;
  	u8 i;
@@ -544,7 +544,7 @@ index e020faff7da5..437c5526607b 100644
  
  	/* Unused for now */
  	(void)id;
-@@ -2125,7 +2121,7 @@ static int idtcm_probe(struct i2c_client *client,
+@@ -2108,7 +2104,7 @@ static int idtcm_probe(struct i2c_client *client,
  				err = idtcm_enable_channel(idtcm, i);
  				if (err) {
  					dev_err(&idtcm->client->dev,
