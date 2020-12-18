@@ -206,6 +206,7 @@ then
     disable_in_kcflags 'varargs' # There are functions with u8 args before "...", which leads to undefined behavior
     disable_in_kcflags 'variadic-macros' # Macros with ... in arguments
     disable_in_kcflags 'vla' # Variable-length arrays are used in compile-time asserts
+    disable_in_kcflags 'void-pointer-to-enum-cast' # Many "any" field can carry the value of an enum
 
     # Some things which maybe buggy but whose overhead would be too big to be patches
     disable_in_kcflags 'assign-enum'
