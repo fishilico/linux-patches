@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 26 Dec 2020 19:14:50 +0100
+Subject: [PATCH] {PRINTF} drivers/net/ethernet/marvell/octeontx2/af: silence
+ -Wformat-security with "%s"
+
+---
+ drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c b/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c
+index bc0e4113370e..af29eac2152a 100644
+--- a/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c
++++ b/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c
+@@ -41,7 +41,7 @@ static bool rvu_common_request_irq(struct rvu *rvu, int offset,
+ 	struct rvu_devlink *rvu_dl = rvu->rvu_dl;
+ 	int rc;
+ 
+-	sprintf(&rvu->irq_name[offset * NAME_SIZE], name);
++	sprintf(&rvu->irq_name[offset * NAME_SIZE], "%s", name);
+ 	rc = request_irq(pci_irq_vector(rvu->pdev, offset), fn, 0,
+ 			 &rvu->irq_name[offset * NAME_SIZE], rvu_dl);
+ 	if (rc)
+-- 

@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 27 Dec 2020 21:50:18 +0100
+Subject: [PATCH] {For LLVMLinux} mm/remap: replace BUILD_BUG with BUG for
+ clang
+
+clang on x86_64 fails to link because:
+
+    ld: mm/mremap.o: in function `get_extent':
+    mremap.c:(.text+0xab9): undefined reference to `__compiletime_assert_1280'
+
+get_extent() is not constant-inlined enough, when using clang.
+---
+ mm/mremap.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/mremap.c b/mm/mremap.c
+index c5590afe7165..ce1ea184fbbe 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -352,7 +352,7 @@ static unsigned long get_extent(enum pgt_entry entry, unsigned long old_addr,
+ 		size = PUD_SIZE;
+ 		break;
+ 	default:
+-		BUILD_BUG();
++		BUG();/* BUILD_BUG();  clang does not optimize enough */
+ 		break;
+ 	}
+ 
+-- 

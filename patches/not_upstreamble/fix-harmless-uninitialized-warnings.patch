@@ -27,10 +27,10 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  19 files changed, 29 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c
-index 6606511891e3..6b1c8a3e7c33 100644
+index 182118e3fd5f..6ae5527e3392 100644
 --- a/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c
 +++ b/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c
-@@ -1201,6 +1201,10 @@ static int init_overdrive_limits(struct pp_hwmgr *hwmgr,
+@@ -1197,6 +1197,10 @@ static int init_overdrive_limits(struct pp_hwmgr *hwmgr,
  		result = init_overdrive_limits_V2_1(hwmgr,
  				powerplay_table,
  				(const ATOM_FIRMWARE_INFO_V2_1 *)fw_info);
@@ -42,7 +42,7 @@ index 6606511891e3..6b1c8a3e7c33 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i915_request.c
-index 0e813819b041..a41f9ef06c7a 100644
+index 5385b081a376..82d8a58a61c0 100644
 --- a/drivers/gpu/drm/i915/i915_request.c
 +++ b/drivers/gpu/drm/i915/i915_request.c
 @@ -1651,7 +1651,7 @@ static unsigned long local_clock_ns(unsigned int *cpu)
@@ -55,10 +55,10 @@ index 0e813819b041..a41f9ef06c7a 100644
  	if (time_after(local_clock_ns(&this_cpu), timeout))
  		return true;
 diff --git a/drivers/gpu/drm/qxl/qxl_draw.c b/drivers/gpu/drm/qxl/qxl_draw.c
-index 3599db096973..f398cc4285c2 100644
+index 7b7acb910780..0336b034fe0d 100644
 --- a/drivers/gpu/drm/qxl/qxl_draw.c
 +++ b/drivers/gpu/drm/qxl/qxl_draw.c
-@@ -136,7 +136,7 @@ void qxl_draw_dirty_fb(struct qxl_device *qdev,
+@@ -140,7 +140,7 @@ void qxl_draw_dirty_fb(struct qxl_device *qdev,
  	int i;
  	int left, right, top, bottom;
  	int width, height;
@@ -160,10 +160,10 @@ index ca7306685325..45c9799401ce 100644
  		bsg_job = sp->u.bsg_job;
  		bsg_reply = bsg_job->reply;
 diff --git a/drivers/scsi/qla4xxx/ql4_os.c b/drivers/scsi/qla4xxx/ql4_os.c
-index 2c23b692e318..4ced998bea5b 100644
+index a4b014e1cd8c..a7ec38285522 100644
 --- a/drivers/scsi/qla4xxx/ql4_os.c
 +++ b/drivers/scsi/qla4xxx/ql4_os.c
-@@ -5909,7 +5909,7 @@ static void qla4xxx_boot_release(void *data)
+@@ -5906,7 +5906,7 @@ static void qla4xxx_boot_release(void *data)
  
  static int get_fw_boot_info(struct scsi_qla_host *ha, uint16_t ddb_index[])
  {
@@ -173,10 +173,10 @@ index 2c23b692e318..4ced998bea5b 100644
  	uint32_t offset;
  	uint16_t func_num;
 diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
-index 9d426deb7b8f..832a06e2dc8d 100644
+index 4ce7cba2b48a..7d373d657ac4 100644
 --- a/drivers/usb/atm/cxacru.c
 +++ b/drivers/usb/atm/cxacru.c
-@@ -1111,7 +1111,8 @@ static int cxacru_heavy_init(struct usbatm_data *usbatm_instance,
+@@ -1108,7 +1108,8 @@ static int cxacru_heavy_init(struct usbatm_data *usbatm_instance,
  			release_firmware(fw);
  			return ret;
  		}
@@ -212,10 +212,10 @@ index 5d51265d29d6..b4d7d38d6d6b 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index 974e71bc4a3a..f3d393de42b4 100644
+index 69b228fce81a..8e8caecfe934 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
-@@ -2069,7 +2069,7 @@ xfs_difree_finobt(
+@@ -2075,7 +2075,7 @@ xfs_difree_finobt(
  	struct xfs_agi			*agi = agbp->b_addr;
  	xfs_agnumber_t			agno = be32_to_cpu(agi->agi_seqno);
  	struct xfs_btree_cur		*cur;
@@ -225,7 +225,7 @@ index 974e71bc4a3a..f3d393de42b4 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 87886b7f77da..610e9a1619d1 100644
+index 97f31308de03..a6919f73834e 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
 @@ -949,7 +949,7 @@ xlog_verify_tail(
@@ -251,10 +251,10 @@ index d0965e2997b0..33386cb24d22 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 6adfcb9c06dc..775adcf5604f 100644
+index 0e4d950cf907..47b2763280d5 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1618,7 +1618,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
+@@ -1639,7 +1639,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
  {
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;
@@ -264,10 +264,10 @@ index 6adfcb9c06dc..775adcf5604f 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index 56a4d0d20a26..bb3c898c1ad9 100644
+index 6422da6690f7..44dedf415bd2 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2523,7 +2523,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
+@@ -2510,7 +2510,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
  	bool tdls_peer;
  	bool multicast;
  	u16 info_id = 0;

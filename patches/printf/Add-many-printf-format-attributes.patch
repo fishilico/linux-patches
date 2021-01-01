@@ -18,13 +18,11 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  kernel/audit.c                     |  4 ++--
  kernel/trace/trace.h               |  6 +++---
  kernel/trace/trace_output.c        |  6 +++---
- net/dccp/ccid.c                    |  3 ++-
- net/tipc/netlink_compat.c          |  2 +-
  scripts/mod/modpost.h              |  2 +-
  scripts/unifdef.c                  |  2 +-
  security/tomoyo/common.c           |  3 ++-
  security/tomoyo/common.h           |  4 ++--
- 20 files changed, 44 insertions(+), 37 deletions(-)
+ 18 files changed, 41 insertions(+), 35 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index a3725ad46c5a..04616745d029 100644
@@ -41,10 +39,10 @@ index a3725ad46c5a..04616745d029 100644
  	va_list args;
  	va_start(args, str);
 diff --git a/drivers/acpi/acpica/nsrepair2.c b/drivers/acpi/acpica/nsrepair2.c
-index 125143c41bb8..3449c2317696 100644
+index d2c8d8279e7a..9484b452d45b 100644
 --- a/drivers/acpi/acpica/nsrepair2.c
 +++ b/drivers/acpi/acpica/nsrepair2.c
-@@ -271,7 +271,7 @@ acpi_ns_repair_FDE(struct acpi_evaluate_info *info,
+@@ -273,7 +273,7 @@ acpi_ns_repair_FDE(struct acpi_evaluate_info *info,
  			ACPI_WARN_PREDEFINED((AE_INFO,
  					      info->full_pathname,
  					      info->node_flags,
@@ -177,10 +175,10 @@ index 76f8c090a837..ba4fd1a98325 100644
  					struct device *dev,
  					struct fbtft_platform_data *pdata);
 diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
-index fd80e318b99c..961984f7dec7 100644
+index 0cd728961fce..f77d1a22c61f 100644
 --- a/drivers/xen/xenbus/xenbus_client.c
 +++ b/drivers/xen/xenbus/xenbus_client.c
-@@ -272,8 +272,9 @@ int xenbus_frontend_closed(struct xenbus_device *dev)
+@@ -278,8 +278,9 @@ int xenbus_frontend_closed(struct xenbus_device *dev)
  }
  EXPORT_SYMBOL_GPL(xenbus_frontend_closed);
  
@@ -192,7 +190,7 @@ index fd80e318b99c..961984f7dec7 100644
  {
  	unsigned int len;
  	char *printf_buffer;
-@@ -344,8 +345,9 @@ EXPORT_SYMBOL_GPL(xenbus_dev_fatal);
+@@ -350,8 +351,9 @@ EXPORT_SYMBOL_GPL(xenbus_dev_fatal);
   * Equivalent to xenbus_dev_fatal(dev, err, fmt, args), but helps
   * avoiding recursion within xenbus_switch_state.
   */
@@ -232,10 +230,10 @@ index d321fe5ad1a1..a8539752e86c 100644
  struct event_filter;
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index 68cee3bc8cfe..02df5a15275e 100644
+index 1ffc2e059027..49f9d5b19799 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
-@@ -1901,8 +1901,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
+@@ -1904,8 +1904,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
   * will be called a second time.  Currently, we assume that a printk
   * can't format message larger than 1024 bytes, so we don't either.
   */
@@ -247,10 +245,10 @@ index 68cee3bc8cfe..02df5a15275e 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 1dadef445cd1..e1e828749414 100644
+index e448d2da0b99..193f7bbd84f5 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -925,11 +925,11 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+@@ -753,11 +753,11 @@ static inline void __init disable_tracing_selftest(const char *reason)
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -266,7 +264,7 @@ index 1dadef445cd1..e1e828749414 100644
  		    unsigned long ip, const char *fmt, va_list args);
  int trace_array_printk_buf(struct trace_buffer *buffer,
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 000e9dc224c6..acf2f5fcac66 100644
+index 92b1575ae0ca..0233c70d4fee 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
 @@ -312,8 +312,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
@@ -289,35 +287,8 @@ index 000e9dc224c6..acf2f5fcac66 100644
  {
  	va_list ap;
  	int ret;
-diff --git a/net/dccp/ccid.c b/net/dccp/ccid.c
-index 1e9bb121ba72..e265a1c5e1ea 100644
---- a/net/dccp/ccid.c
-+++ b/net/dccp/ccid.c
-@@ -76,7 +76,8 @@ int ccid_getsockopt_builtin_ccids(struct sock *sk, int len,
- 	return err;
- }
- 
--static struct kmem_cache *ccid_kmem_cache_create(int obj_size, char *slab_name_fmt, const char *fmt,...)
-+static __printf(3, 4)
-+struct kmem_cache *ccid_kmem_cache_create(int obj_size, char *slab_name_fmt, const char *fmt,...)
- {
- 	struct kmem_cache *slab;
- 	va_list args;
-diff --git a/net/tipc/netlink_compat.c b/net/tipc/netlink_compat.c
-index 1c7aa51cc2a3..7a3d456f3948 100644
---- a/net/tipc/netlink_compat.c
-+++ b/net/tipc/netlink_compat.c
-@@ -118,7 +118,7 @@ static void tipc_tlv_init(struct sk_buff *skb, u16 type)
- 	skb_put(skb, sizeof(struct tlv_desc));
- }
- 
--static int tipc_tlv_sprintf(struct sk_buff *skb, const char *fmt, ...)
-+static __printf(2, 3) int tipc_tlv_sprintf(struct sk_buff *skb, const char *fmt, ...)
- {
- 	int n;
- 	u16 len;
 diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
-index 3aa052722233..f510c8497be0 100644
+index e6f46eee0af0..9a8bfca9ffea 100644
 --- a/scripts/mod/modpost.h
 +++ b/scripts/mod/modpost.h
 @@ -199,7 +199,7 @@ enum loglevel {
@@ -327,8 +298,8 @@ index 3aa052722233..f510c8497be0 100644
 -void modpost_log(enum loglevel loglevel, const char *fmt, ...);
 +void modpost_log(enum loglevel loglevel, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
  
- #define warn(fmt, args...)	modpost_log(LOG_WARN, fmt, ##args)
- #define merror(fmt, args...)	modpost_log(LOG_ERROR, fmt, ##args)
+ /*
+  * warn - show the given message, then let modpost continue running, still
 diff --git a/scripts/unifdef.c b/scripts/unifdef.c
 index db00e3e30a59..67d4e1b13f3d 100644
 --- a/scripts/unifdef.c
@@ -343,7 +314,7 @@ index db00e3e30a59..67d4e1b13f3d 100644
  {
  	va_list ap;
 diff --git a/security/tomoyo/common.c b/security/tomoyo/common.c
-index 4bee32bfe16d..3fe132de5a14 100644
+index 5c64927bf2b3..f13541979038 100644
 --- a/security/tomoyo/common.c
 +++ b/security/tomoyo/common.c
 @@ -193,7 +193,8 @@ const char *tomoyo_yesno(const unsigned int value)

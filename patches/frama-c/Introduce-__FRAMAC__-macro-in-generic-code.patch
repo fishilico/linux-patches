@@ -21,7 +21,6 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  include/linux/crypto.h          |   7 +-
  include/linux/delay.h           |  15 +++-
  include/linux/flex_array.h      | 152 ++++++++++++++++++++++++++++++++
- include/linux/kernel.h          |   5 ++
  include/linux/limits.h          |   6 +-
  include/linux/mfd/wl1273-core.h |   2 +
  include/linux/overflow.h        |   2 +-
@@ -33,7 +32,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  kernel/signal.c                 |   2 +-
  kernel/time/time.c              |   4 +
  lib/hexdump.c                   |  10 ++-
- 21 files changed, 266 insertions(+), 14 deletions(-)
+ 20 files changed, 261 insertions(+), 14 deletions(-)
  create mode 100644 include/linux/flex_array.h
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
@@ -50,7 +49,7 @@ index 8f879e5c2f67..2816fdd519c7 100644
  # define __protected_read_by(x)  __attribute__((require_context(x,1,999,"read")))
  # define __protected_write_by(x) __attribute__((require_context(x,1,999,"write")))
 diff --git a/drivers/input/joystick/analog.c b/drivers/input/joystick/analog.c
-index 2b625ebef914..64d22256b358 100644
+index f798922a4598..01b58c7a227e 100644
 --- a/drivers/input/joystick/analog.c
 +++ b/drivers/input/joystick/analog.c
 @@ -123,7 +123,11 @@ struct analog_port {
@@ -132,7 +131,7 @@ index 4af30bc6639b..1255b6cfa5a2 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index ac3fa37a84f9..cce1ed0e3660 100644
+index bbaa39e98f9f..8c1a2b90bae6 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -4,7 +4,7 @@
@@ -145,10 +144,10 @@ index ac3fa37a84f9..cce1ed0e3660 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __user		__attribute__((noderef, address_space(__user)))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index f0d895d6ac39..377d5a8f479e 100644
+index 383684e30f12..305a84b40f73 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -862,9 +862,14 @@ set_cpu_active(unsigned int cpu, bool active)
+@@ -868,9 +868,14 @@ set_cpu_active(unsigned int cpu, bool active)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -365,29 +364,6 @@ index 000000000000..ffd6208aabbd
 +void *flex_array_get_ptr(struct flex_array *fa, unsigned int element_nr);
 +
 +#endif /* _FLEX_ARRAY_H */
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 01e310c88f81..25bf0d9c8025 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -273,6 +273,10 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
-  *
-  * Return: an absolute value of x.
-  */
-+#ifdef __FRAMAC__
-+/* Frama-C does not like abs(): [kernel] failure: cannot cast from void to int */
-+#define abs(x) ({ __typeof__(x) __x = (x); __x < 0 ? -__x : __x; })
-+#else
- #define abs(x)	__abs_choose_expr(x, long long,				\
- 		__abs_choose_expr(x, long,				\
- 		__abs_choose_expr(x, int,				\
-@@ -287,6 +291,7 @@ extern void __cant_sleep(const char *file, int line, int preempt_offset);
- 	__builtin_types_compatible_p(typeof(x),   signed type) ||	\
- 	__builtin_types_compatible_p(typeof(x), unsigned type),		\
- 	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
-+#endif
- 
- /**
-  * reciprocal_scale - "scale" a value into range [0, ep_ro)
 diff --git a/include/linux/limits.h b/include/linux/limits.h
 index b568b9c30bbf..6fc31ffb1344 100644
 --- a/include/linux/limits.h
@@ -435,7 +411,7 @@ index ef74051d5cfe..b5d58fba4a9c 100644
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 22207a79762c..420ff4a15058 100644
+index b32126d26997..d2de0a41e8d1 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -162,6 +162,8 @@ typedef int __bitwise pci_power_t;
@@ -456,7 +432,7 @@ index 22207a79762c..420ff4a15058 100644
  /**
   * typedef pci_channel_state_t
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 70d67e103f6c..ac5d8f11e66f 100644
+index c080a36fa65b..c1ed112e15c7 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -231,6 +231,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
@@ -540,7 +516,7 @@ index 0197888ad0e0..ee5b03df8f9b 100644
  
  #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index ef8f2a28d37c..e63cbad74754 100644
+index 5736c55aaa1a..ada6977ca6da 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1247,7 +1247,7 @@ static void print_fatal_signal(int signr)

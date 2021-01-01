@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 26 Dec 2020 19:26:36 +0100
+Subject: [PATCH] {PRINTF} drivers/regulator/da9121-regulator: silence
+ -Wformat-security with "%s"
+
+---
+ drivers/regulator/da9121-regulator.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/regulator/da9121-regulator.c b/drivers/regulator/da9121-regulator.c
+index a2ede7d7897e..5b2420b32b58 100644
+--- a/drivers/regulator/da9121-regulator.c
++++ b/drivers/regulator/da9121-regulator.c
+@@ -643,7 +643,7 @@ static irqreturn_t da9121_irq_handler(int irq, void *data)
+ 				chip->persistent[reg_idx] |= item->event_bit;
+ 				regulator_notifier_call_chain(rdev, item->notification, NULL);
+ 			} else {
+-				dev_warn(chip->dev, item->warn);
++				dev_warn(chip->dev, "%s", item->warn);
+ 				handled[reg_idx] |= item->event_bit;
+ 				ret = IRQ_HANDLED;
+ 			}
+-- 

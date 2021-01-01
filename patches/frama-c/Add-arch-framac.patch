@@ -11,15 +11,16 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/extra/gen_lds_vars.sh      |  27 ++++++
  arch/framac/extra/lds_vars.c           | 128 +++++++++++++++++++++++++
  arch/framac/include/abstract_structs.h |  73 ++++++++++++++
- arch/framac/include/asm/Kbuild         |  88 +++++++++++++++++
+ arch/framac/include/asm/Kbuild         |  87 +++++++++++++++++
  arch/framac/include/asm/byteorder.h    |   6 ++
  arch/framac/include/asm/elf.h          |  33 +++++++
  arch/framac/include/asm/irqflags.h     |  15 +++
+ arch/framac/include/asm/mmu_context.h  |  16 ++++
  arch/framac/include/asm/pgtable.h      |  74 ++++++++++++++
  arch/framac/include/asm/processor.h    |  40 ++++++++
  arch/framac/include/asm/ptrace.h       |  32 +++++++
  arch/framac/include/asm/sigcontext.h   |  10 ++
- arch/framac/include/asm/thread_info.h  |  64 +++++++++++++
+ arch/framac/include/asm/thread_info.h  |  69 +++++++++++++
  arch/framac/include/asm/tlb.h          |   6 ++
  arch/framac/include/asm/uaccess.h      |  22 +++++
  arch/framac/include/asm/vmalloc.h      |   6 ++
@@ -40,7 +41,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/delay.c                |  27 ++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 +++
- 36 files changed, 974 insertions(+)
+ 37 files changed, 994 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Kconfig.debug
  create mode 100644 arch/framac/Makefile
@@ -52,6 +53,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  create mode 100644 arch/framac/include/asm/byteorder.h
  create mode 100644 arch/framac/include/asm/elf.h
  create mode 100644 arch/framac/include/asm/irqflags.h
+ create mode 100644 arch/framac/include/asm/mmu_context.h
  create mode 100644 arch/framac/include/asm/pgtable.h
  create mode 100644 arch/framac/include/asm/processor.h
  create mode 100644 arch/framac/include/asm/ptrace.h
@@ -239,7 +241,7 @@ index 000000000000..6259dfb9a576
 +done
 diff --git a/arch/framac/extra/lds_vars.c b/arch/framac/extra/lds_vars.c
 new file mode 100644
-index 000000000000..4a7d8ddc80c5
+index 000000000000..c4afe78b9e98
 --- /dev/null
 +++ b/arch/framac/extra/lds_vars.c
 @@ -0,0 +1,128 @@
@@ -282,8 +284,8 @@ index 000000000000..4a7d8ddc80c5
 +char __dtb_start[1];
 +char __dtb_end[1];
 +struct of_device_id __irqchip_of_table[1];
-+const struct earlycon_id *__earlycon_table[1];
-+const struct earlycon_id *__earlycon_table_end[1];
++const struct earlycon_id __earlycon_table[1];
++const struct earlycon_id __earlycon_table_end[1];
 +const struct obs_kernel_param __setup_start[1];
 +const struct obs_kernel_param __setup_end[1];
 +initcall_t __initcall_start[1];
@@ -452,10 +454,10 @@ index 000000000000..73c6bb86722a
 +#endif /* _ASM_FRAMA_C_ABSTRACT_STRUCT_H */
 diff --git a/arch/framac/include/asm/Kbuild b/arch/framac/include/asm/Kbuild
 new file mode 100644
-index 000000000000..e904c508edd2
+index 000000000000..5fe1d5332130
 --- /dev/null
 +++ b/arch/framac/include/asm/Kbuild
-@@ -0,0 +1,88 @@
+@@ -0,0 +1,87 @@
 +generic-y += atomic.h
 +generic-y += auxvec.h
 +generic-y += barrier.h
@@ -500,7 +502,6 @@ index 000000000000..e904c508edd2
 +generic-y += mcs_spinlock.h
 +generic-y += mman.h
 +generic-y += mmiowb.h
-+generic-y += mmu_context.h
 +generic-y += mmu.h
 +generic-y += module.h
 +generic-y += msgbuf.h
@@ -616,6 +617,28 @@ index 000000000000..2cf4035657f4
 +#include <asm-generic/irqflags.h>
 +
 +#endif /* _ASM_FRAMA_C_IRQFLAGS_H */
+diff --git a/arch/framac/include/asm/mmu_context.h b/arch/framac/include/asm/mmu_context.h
+new file mode 100644
+index 000000000000..e0e9063faea0
+--- /dev/null
++++ b/arch/framac/include/asm/mmu_context.h
+@@ -0,0 +1,16 @@
++#ifndef _ASM_FRAMA_C_MMU_CONTEXT_H
++#define _ASM_FRAMA_C_MMU_CONTEXT_H
++
++static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
++			     struct task_struct *tsk)
++{
++	unsigned int cpu = smp_processor_id();
++
++	if (!cpumask_test_and_set_cpu(cpu, mm_cpumask(next)) || prev != next) {
++		/* cpu_switch_mm(next); */
++	}
++}
++
++#include <asm-generic/mmu_context.h>
++
++#endif /* _ASM_FRAMA_C_MMU_CONTEXT_H */
 diff --git a/arch/framac/include/asm/pgtable.h b/arch/framac/include/asm/pgtable.h
 new file mode 100644
 index 000000000000..8dec05ef14f0
@@ -798,10 +821,10 @@ index 000000000000..797b8392aa72
 +#endif /* _ASM_FRAMA_C_SIGCONTEXT_H */
 diff --git a/arch/framac/include/asm/thread_info.h b/arch/framac/include/asm/thread_info.h
 new file mode 100644
-index 000000000000..88597ae6a4b7
+index 000000000000..c93b13dd5a82
 --- /dev/null
 +++ b/arch/framac/include/asm/thread_info.h
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,69 @@
 +#ifndef _ASM_FRAMA_C_THREAD_INFO_H
 +#define _ASM_FRAMA_C_THREAD_INFO_H
 +
@@ -813,6 +836,7 @@ index 000000000000..88597ae6a4b7
 +#define THREAD_SIZE_ORDER	1
 +#define THREAD_SIZE		8192 /* 2 * PAGE_SIZE */
 +
++/* Use the same definitions as arch/nios2/include/asm/thread_info.h */
 +#define TIF_SYSCALL_TRACE	0	/* syscall trace active */
 +#define TIF_NOTIFY_RESUME	1	/* resumption notification requested */
 +#define TIF_SIGPENDING		2	/* signal pending */
@@ -820,7 +844,11 @@ index 000000000000..88597ae6a4b7
 +#define TIF_MEMDIE		4	/* is terminating due to OOM killer */
 +#define TIF_SECCOMP		5	/* secure computing */
 +#define TIF_SYSCALL_AUDIT	6	/* syscall auditing active */
-+#define TIF_RESTORE_SIGMASK	7	/* restore signal mask in do_signal() */
++#define TIF_NOTIFY_SIGNAL	7	/* signal notifications exist */
++#define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal() */
++
++#define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling
++					   TIF_NEED_RESCHED */
 +
 +#ifndef __ASSEMBLY__
 +

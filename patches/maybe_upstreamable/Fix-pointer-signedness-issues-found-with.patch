@@ -12,12 +12,12 @@ Signed-off-by: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
  3 files changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/include/linux/seq_buf.h b/include/linux/seq_buf.h
-index 3dc910438db1..4eb3f6935ec8 100644
+index 7938c66ca46a..2a5cca5b9ff0 100644
 --- a/include/linux/seq_buf.h
 +++ b/include/linux/seq_buf.h
 @@ -32,7 +32,7 @@ static inline void seq_buf_clear(struct seq_buf *s)
  static inline void
- seq_buf_init(struct seq_buf *s, unsigned char *buf, unsigned int size)
+ seq_buf_init(struct seq_buf *s, char *buf, unsigned int size)
  {
 -	s->buffer = buf;
 +	s->buffer = (char *)buf;
@@ -25,10 +25,10 @@ index 3dc910438db1..4eb3f6935ec8 100644
  	seq_buf_clear(s);
  }
 diff --git a/include/net/sock.h b/include/net/sock.h
-index a5c6ae78df77..d482be87bed2 100644
+index bdc4323ce53c..11e5e1497f29 100644
 --- a/include/net/sock.h
 +++ b/include/net/sock.h
-@@ -2044,8 +2044,9 @@ static inline int skb_add_data_nocache(struct sock *sk, struct sk_buff *skb,
+@@ -2062,8 +2062,9 @@ static inline int skb_add_data_nocache(struct sock *sk, struct sk_buff *skb,
  {
  	int err, offset = skb->len;
  
@@ -41,10 +41,10 @@ index a5c6ae78df77..d482be87bed2 100644
  		__skb_trim(skb, offset);
  
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 6d266388d380..d1f2c6ca6fe9 100644
+index 37720a6d04ea..8771befb132b 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
-@@ -1303,7 +1303,7 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
+@@ -1307,7 +1307,7 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
  			 * not set up a proper pointer then tough luck.
  			 */
  			put_user(0, tsk->clear_child_tid);
