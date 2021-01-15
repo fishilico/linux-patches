@@ -10,7 +10,6 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  drivers/atm/ambassador.c                      | 20 +++++++++----------
  drivers/atm/firestream.c                      |  2 +-
  drivers/atm/horizon.c                         | 10 +++++-----
- drivers/dma/qcom/gpi.c                        |  4 ++--
  drivers/edac/aspeed_edac.c                    |  2 +-
  drivers/gpio/gpiolib-acpi.c                   |  2 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c       |  2 +-
@@ -81,7 +80,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  net/netfilter/xt_TPROXY.c                     |  4 ++--
  net/rxrpc/rxkad.c                             |  2 +-
  security/tomoyo/common.c                      |  2 +-
- 77 files changed, 132 insertions(+), 132 deletions(-)
+ 76 files changed, 130 insertions(+), 130 deletions(-)
 
 diff --git a/arch/x86/entry/vdso/vdso2c.h b/arch/x86/entry/vdso/vdso2c.h
 index 1c7cfac7e64a..5264daa8859f 100644
@@ -278,27 +277,6 @@ index 4f2951cbe69c..8fd1da9538d6 100644
  	    max_rx_size = RX_AAL5_LIMIT);
    
    return;
-diff --git a/drivers/dma/qcom/gpi.c b/drivers/dma/qcom/gpi.c
-index d2334f535de2..d77552d23c7d 100644
---- a/drivers/dma/qcom/gpi.c
-+++ b/drivers/dma/qcom/gpi.c
-@@ -1418,14 +1418,14 @@ static int gpi_alloc_ring(struct gpi_ring *ring, u32 elements,
- 	dev_dbg(gpii->gpi_dev->dev,
- 		"#el:%u el_size:%u len:%u actual_len:%llu alloc_size:%lu\n",
- 		  elements, el_size, (elements * el_size), len,
--		  ring->alloc_size);
-+		  (unsigned long)ring->alloc_size);
- 
- 	ring->pre_aligned = dma_alloc_coherent(gpii->gpi_dev->dev,
- 					       ring->alloc_size,
- 					       &ring->dma_handle, GFP_KERNEL);
- 	if (!ring->pre_aligned) {
- 		dev_err(gpii->gpi_dev->dev, "could not alloc size:%lu mem for ring\n",
--			ring->alloc_size);
-+			(unsigned long)ring->alloc_size);
- 		return -ENOMEM;
- 	}
- 
 diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
 index a46da56d6d54..d83a1d1f1194 100644
 --- a/drivers/edac/aspeed_edac.c
@@ -796,7 +774,7 @@ index 1f33947e2088..29f64315a3b5 100644
  	msdu = pkt_addr->vaddr;
  	dma_unmap_single(ar->dev, pkt_addr->paddr,
 diff --git a/drivers/net/wireless/ath/ath11k/dp_rx.c b/drivers/net/wireless/ath/ath11k/dp_rx.c
-index 205c0f1a40e9..419d51439cfb 100644
+index 920e5026a635..6b8bdf9bbd11 100644
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
 @@ -1292,7 +1292,7 @@ int ath11k_dp_htt_tlv_iter(struct ath11k_base *ab, const void *ptr, size_t len,
@@ -809,10 +787,10 @@ index 205c0f1a40e9..419d51439cfb 100644
  			return -EINVAL;
  		}
 diff --git a/drivers/net/wireless/ath/ath11k/mac.c b/drivers/net/wireless/ath/ath11k/mac.c
-index 5c175e3e09b2..e57692530747 100644
+index c1608f64ea95..c82cfb887e5d 100644
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -4848,7 +4848,7 @@ static int ath11k_mac_op_add_chanctx(struct ieee80211_hw *hw,
+@@ -4849,7 +4849,7 @@ static int ath11k_mac_op_add_chanctx(struct ieee80211_hw *hw,
  	struct ath11k_base *ab = ar->ab;
  
  	ath11k_dbg(ab, ATH11K_DBG_MAC,
@@ -821,7 +799,7 @@ index 5c175e3e09b2..e57692530747 100644
  		   ctx->def.chan->center_freq, ctx->def.width, ctx);
  
  	mutex_lock(&ar->conf_mutex);
-@@ -4872,7 +4872,7 @@ static void ath11k_mac_op_remove_chanctx(struct ieee80211_hw *hw,
+@@ -4873,7 +4873,7 @@ static void ath11k_mac_op_remove_chanctx(struct ieee80211_hw *hw,
  	struct ath11k_base *ab = ar->ab;
  
  	ath11k_dbg(ab, ATH11K_DBG_MAC,
@@ -830,7 +808,7 @@ index 5c175e3e09b2..e57692530747 100644
  		   ctx->def.chan->center_freq, ctx->def.width, ctx);
  
  	mutex_lock(&ar->conf_mutex);
-@@ -5116,7 +5116,7 @@ ath11k_mac_update_vif_chan(struct ath11k *ar,
+@@ -5117,7 +5117,7 @@ ath11k_mac_update_vif_chan(struct ath11k *ar,
  		arvif = (void *)vifs[i].vif->drv_priv;
  
  		ath11k_dbg(ab, ATH11K_DBG_MAC,
@@ -839,7 +817,7 @@ index 5c175e3e09b2..e57692530747 100644
  			   arvif->vdev_id,
  			   vifs[i].old_ctx->def.chan->center_freq,
  			   vifs[i].new_ctx->def.chan->center_freq,
-@@ -5213,7 +5213,7 @@ static void ath11k_mac_op_change_chanctx(struct ieee80211_hw *hw,
+@@ -5214,7 +5214,7 @@ static void ath11k_mac_op_change_chanctx(struct ieee80211_hw *hw,
  	mutex_lock(&ar->conf_mutex);
  
  	ath11k_dbg(ab, ATH11K_DBG_MAC,
@@ -848,7 +826,7 @@ index 5c175e3e09b2..e57692530747 100644
  		   ctx->def.chan->center_freq, ctx->def.width, ctx, changed);
  
  	/* This shouldn't really happen because channel switching should use
-@@ -5579,7 +5579,7 @@ static int ath11k_mac_set_fixed_rate_params(struct ath11k_vif *arvif,
+@@ -5583,7 +5583,7 @@ static int ath11k_mac_set_fixed_rate_params(struct ath11k_vif *arvif,
  
  	lockdep_assert_held(&ar->conf_mutex);
  
@@ -858,7 +836,7 @@ index 5c175e3e09b2..e57692530747 100644
  
  	vdev_param = WMI_VDEV_PARAM_FIXED_RATE;
 diff --git a/drivers/net/wireless/ath/ath11k/wmi.c b/drivers/net/wireless/ath/ath11k/wmi.c
-index da4b546b62cb..50e9d5a9715b 100644
+index 73869d445c5b..1de985046b3e 100644
 --- a/drivers/net/wireless/ath/ath11k/wmi.c
 +++ b/drivers/net/wireless/ath/ath11k/wmi.c
 @@ -169,7 +169,7 @@ ath11k_wmi_tlv_iter(struct ath11k_base *ab, const void *ptr, size_t len,
