@@ -89,7 +89,7 @@ It has also detected some bugs reported and fixed by other people:
  kernel/livepatch/core.c                       |   4 +-
  kernel/trace/trace.c                          |   7 +-
  kernel/trace/trace_functions.c                |   6 +-
- kernel/trace/trace_kprobe.c                   |  74 +--
+ kernel/trace/trace_kprobe.c                   |  78 +--
  kernel/workqueue.c                            |   2 +-
  mm/hugetlb.c                                  |   4 +-
  mm/memcontrol.c                               |   2 +-
@@ -104,7 +104,7 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/deref_checker_plugin.c    | 479 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 75 files changed, 920 insertions(+), 148 deletions(-)
+ 75 files changed, 922 insertions(+), 150 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
@@ -1091,7 +1091,7 @@ index 562913e2b3f2..485fb434d573 100644
  		if (gid_valid(gid))
  			fgid = gid;
 diff --git a/fs/io_uring.c b/fs/io_uring.c
-index 38c6cbe1ab38..66adc672f52e 100644
+index 1f68105a41ed..b0c8657cb2cb 100644
 --- a/fs/io_uring.c
 +++ b/fs/io_uring.c
 @@ -1961,8 +1961,12 @@ static struct io_kiocb *io_get_fallback_req(struct io_ring_ctx *ctx)
@@ -1427,10 +1427,10 @@ index c5095dd28e20..f00390f9121f 100644
  	return ret < 0 ? ret : 0;
  }
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index e6fba1798771..7594ce986681 100644
+index 56c7fbff7bd7..176187f4f194 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
-@@ -797,42 +797,48 @@ static int trace_kprobe_create(int argc, const char *argv[])
+@@ -797,44 +797,50 @@ static int trace_kprobe_create(int argc, const char *argv[])
  
  	/* try to parse an address. if that fails, try to read the
  	 * input as a symbol. */
@@ -1489,9 +1489,11 @@ index e6fba1798771..7594ce986681 100644
 -		}
 -		if (is_return)
 -			flags |= TPARG_FL_RETURN;
--		if (kprobe_on_func_entry(NULL, symbol, offset))
+-		ret = kprobe_on_func_entry(NULL, symbol, offset);
+-		if (ret == 0)
 -			flags |= TPARG_FL_FENTRY;
--		if (offset && is_return && !(flags & TPARG_FL_FENTRY)) {
+-		/* Defer the ENOENT case until register kprobe */
+-		if (ret == -EINVAL && is_return) {
 -			trace_probe_log_err(0, BAD_RETPROBE);
 -			goto parse_error;
 +			/* TODO: support .init module functions */
@@ -1502,9 +1504,11 @@ index e6fba1798771..7594ce986681 100644
 +			}
 +			if (is_return)
 +				flags |= TPARG_FL_RETURN;
-+			if (kprobe_on_func_entry(NULL, symbol, offset))
++			ret = kprobe_on_func_entry(NULL, symbol, offset);
++			if (ret == 0)
 +				flags |= TPARG_FL_FENTRY;
-+			if (offset && is_return && !(flags & TPARG_FL_FENTRY)) {
++			/* Defer the ENOENT case until register kprobe */
++			if (ret == -EINVAL && is_return) {
 +				trace_probe_log_err(0, BAD_RETPROBE);
 +				goto parse_error;
 +			}
@@ -1527,10 +1531,10 @@ index d317183ca13f..45a2b5b47bb0 100644
  	char desc[WORKER_DESC_LEN] = { };
  	struct pool_workqueue *pwq = NULL;
 diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 18f6ee317900..612ea259f82c 100644
+index 4bdb58ab14cb..435e8c741e61 100644
 --- a/mm/hugetlb.c
 +++ b/mm/hugetlb.c
-@@ -1487,7 +1487,9 @@ void free_huge_page(struct page *page)
+@@ -1503,7 +1503,9 @@ void free_huge_page(struct page *page)
  		 * empty. Otherwise, schedule_work() had been called but the
  		 * workfn hasn't retrieved the list yet.
  		 */
