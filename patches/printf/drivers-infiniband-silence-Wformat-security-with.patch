@@ -9,16 +9,16 @@ Subject: [PATCH] {PRINTF} drivers/infiniband: silence -Wformat-security with
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/infiniband/ulp/rtrs/rtrs-clt.c b/drivers/infiniband/ulp/rtrs/rtrs-clt.c
-index 67f86c405a26..e30eee38ab11 100644
+index 0a08b4b742a3..4aab4ca049f0 100644
 --- a/drivers/infiniband/ulp/rtrs/rtrs-clt.c
 +++ b/drivers/infiniband/ulp/rtrs/rtrs-clt.c
-@@ -1740,7 +1740,7 @@ static int rtrs_rdma_conn_established(struct rtrs_clt_con *con,
+@@ -1746,7 +1746,7 @@ static int rtrs_rdma_conn_established(struct rtrs_clt_con *con,
  		 */
  		sess->hca_port = con->c.cm_id->port_num;
  		scnprintf(sess->hca_name, sizeof(sess->hca_name),
 -			  sess->s.dev->ib_dev->name);
 +			  "%s", sess->s.dev->ib_dev->name);
  		sess->s.src_addr = con->c.cm_id->route.addr.src_addr;
- 	}
- 
+ 		/* set for_new_clt, to allow future reconnect on any path */
+ 		sess->for_new_clt = 1;
 -- 

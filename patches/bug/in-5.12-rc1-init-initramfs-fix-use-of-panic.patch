@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 27 Feb 2021 16:40:16 +0100
+Subject: [PATCH] {BUG in 5.12-rc1} init/initramfs: fix use of panic
+
+panic(fmt, args); does not magically unwraps the arguments!
+---
+ init/initramfs.c | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/init/initramfs.c b/init/initramfs.c
+index d677e8e717f1..39c02fdef042 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -46,14 +46,10 @@ static void __init error(char *x)
+ 		message = x;
+ }
+ 
+-static void panic_show_mem(const char *fmt, ...)
++static void panic_show_mem(const char *message)
+ {
+-	va_list args;
+-
+ 	show_mem(0, NULL);
+-	va_start(args, fmt);
+-	panic(fmt, args);
+-	va_end(args);
++	panic("%s", message);
+ }
+ 
+ /* link hash */
+@@ -663,7 +659,7 @@ static int __init populate_rootfs(void)
+ 	/* Load the built in initramfs */
+ 	char *err = unpack_to_rootfs(__initramfs_start, __initramfs_size);
+ 	if (err)
+-		panic_show_mem("%s", err); /* Failed to decompress INTERNAL initramfs */
++		panic_show_mem(err); /* Failed to decompress INTERNAL initramfs */
+ 
+ 	if (!initrd_start || IS_ENABLED(CONFIG_INITRAMFS_FORCE))
+ 		goto done;
+-- 

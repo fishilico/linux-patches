@@ -8,7 +8,6 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  drivers/acpi/acpica/nsrepair2.c    |  2 +-
  drivers/clk/clkdev.c               |  7 ++++---
  drivers/isdn/capi/capiutil.c       |  4 ++--
- drivers/pnp/interface.c            |  2 +-
  drivers/scsi/BusLogic.c            |  6 +++---
  drivers/scsi/esas2r/esas2r_log.c   |  8 ++++----
  drivers/staging/fbtft/fbtft.h      |  2 +-
@@ -22,7 +21,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  scripts/unifdef.c                  |  2 +-
  security/tomoyo/common.c           |  3 ++-
  security/tomoyo/common.h           |  4 ++--
- 18 files changed, 41 insertions(+), 35 deletions(-)
+ 17 files changed, 40 insertions(+), 34 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index a3725ad46c5a..04616745d029 100644
@@ -39,7 +38,7 @@ index a3725ad46c5a..04616745d029 100644
  	va_list args;
  	va_start(args, str);
 diff --git a/drivers/acpi/acpica/nsrepair2.c b/drivers/acpi/acpica/nsrepair2.c
-index 24c197d91f29..3ab664c59550 100644
+index 14b71b41e845..4f1760717abc 100644
 --- a/drivers/acpi/acpica/nsrepair2.c
 +++ b/drivers/acpi/acpica/nsrepair2.c
 @@ -273,7 +273,7 @@ acpi_ns_repair_FDE(struct acpi_evaluate_info *info,
@@ -105,19 +104,6 @@ index f26bf3c66d7e..94d7ce148a81 100644
  			cmsg->l += 4;
  			break;
  		case _CSTRUCT:
-diff --git a/drivers/pnp/interface.c b/drivers/pnp/interface.c
-index 187e4a1175b0..553fb28c2d7f 100644
---- a/drivers/pnp/interface.c
-+++ b/drivers/pnp/interface.c
-@@ -33,7 +33,7 @@ struct pnp_info_buffer {
- 
- typedef struct pnp_info_buffer pnp_info_buffer_t;
- 
--static int pnp_printf(pnp_info_buffer_t * buffer, char *fmt, ...)
-+static __printf(2, 3) int pnp_printf(pnp_info_buffer_t * buffer, char *fmt, ...)
- {
- 	va_list args;
- 	int res;
 diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
 index ccb061ab0a0a..0d1d9275979b 100644
 --- a/drivers/scsi/BusLogic.c
@@ -203,7 +189,7 @@ index 0cd728961fce..f77d1a22c61f 100644
  	va_list ap;
  
 diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
-index 33bb8c9a089d..96b838924d62 100644
+index 690c369b717a..2937a801eacf 100644
 --- a/include/acpi/acpiosxf.h
 +++ b/include/acpi/acpiosxf.h
 @@ -335,7 +335,7 @@ void ACPI_INTERNAL_VAR_XFACE acpi_os_printf(const char *format, ...);
@@ -216,10 +202,10 @@ index 33bb8c9a089d..96b838924d62 100644
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index d321fe5ad1a1..a8539752e86c 100644
+index 7077fec653bb..127d16914011 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
-@@ -170,7 +170,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
+@@ -232,7 +232,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
  void tracing_record_cmdline(struct task_struct *task);
  void tracing_record_tgid(struct task_struct *task);
  
@@ -230,7 +216,7 @@ index d321fe5ad1a1..a8539752e86c 100644
  struct event_filter;
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index 1ffc2e059027..49f9d5b19799 100644
+index 551a394bc8f4..f0a645d4cb57 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
 @@ -1904,8 +1904,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
@@ -245,10 +231,10 @@ index 1ffc2e059027..49f9d5b19799 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index e448d2da0b99..193f7bbd84f5 100644
+index dec13ff66077..79dfc9d22c06 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -753,11 +753,11 @@ static inline void __init disable_tracing_selftest(const char *reason)
+@@ -734,11 +734,11 @@ static inline void __init disable_tracing_selftest(const char *reason)
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -264,21 +250,21 @@ index e448d2da0b99..193f7bbd84f5 100644
  		    unsigned long ip, const char *fmt, va_list args);
  int trace_array_printk_buf(struct trace_buffer *buffer,
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 92b1575ae0ca..0233c70d4fee 100644
+index 61255bad7e01..869ce8daebae 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
-@@ -312,8 +312,8 @@ int trace_raw_output_prep(struct trace_iterator *iter,
+@@ -322,8 +322,8 @@ void trace_event_printf(struct trace_iterator *iter, const char *fmt, ...)
  }
- EXPORT_SYMBOL(trace_raw_output_prep);
+ EXPORT_SYMBOL(trace_event_printf);
  
 -static int trace_output_raw(struct trace_iterator *iter, char *name,
 -			    char *fmt, va_list ap)
-+static __printf(3, 0) int trace_output_raw(struct trace_iterator *iter,
-+					   char *name, const char *fmt, va_list ap)
++static __printf(3, 0) int trace_output_raw(struct trace_iterator *iter, char *name,
++			    const char *fmt, va_list ap)
  {
  	struct trace_seq *s = &iter->seq;
  
-@@ -323,7 +323,7 @@ static int trace_output_raw(struct trace_iterator *iter, char *name,
+@@ -333,7 +333,7 @@ static int trace_output_raw(struct trace_iterator *iter, char *name,
  	return trace_handle_return(s);
  }
  
@@ -288,10 +274,10 @@ index 92b1575ae0ca..0233c70d4fee 100644
  	va_list ap;
  	int ret;
 diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
-index e6f46eee0af0..9a8bfca9ffea 100644
+index c1a895c0d682..b689a88e550c 100644
 --- a/scripts/mod/modpost.h
 +++ b/scripts/mod/modpost.h
-@@ -199,7 +199,7 @@ enum loglevel {
+@@ -205,7 +205,7 @@ enum loglevel {
  	LOG_FATAL
  };
  

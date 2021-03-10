@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 22 Feb 2021 22:39:48 +0100
+Subject: [PATCH] {BUG in 5.12-rc1} drivers/gpu/drm/drm_dp_helper: do not
+ dereference a stack pointer
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The deref checker plugin reports:
+
+    drivers/gpu/drm/drm_dp_helper.c: In function ‘drm_dp_pcon_pps_override_buf’:
+    drivers/gpu/drm/drm_dp_helper.c:3014:8: error: Invalid pointer depth
+    in function call ‘drm_dp_dpcd_write’: type of argument 3 says 1 but
+    value is 2
+        [-Werror]
+     3014 |  ret = drm_dp_dpcd_write(aux, DP_PCON_HDMI_PPS_OVERRIDE_BASE, &pps_buf, 128);
+          |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Because the type of pps_buf is u8[128]... in the function argument :'(
+---
+ drivers/gpu/drm/drm_dp_helper.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/drm_dp_helper.c b/drivers/gpu/drm/drm_dp_helper.c
+index eedbb48815b7..394601e7e997 100644
+--- a/drivers/gpu/drm/drm_dp_helper.c
++++ b/drivers/gpu/drm/drm_dp_helper.c
+@@ -3011,7 +3011,7 @@ int drm_dp_pcon_pps_override_buf(struct drm_dp_aux *aux, u8 pps_buf[128])
+ {
+ 	int ret;
+ 
+-	ret = drm_dp_dpcd_write(aux, DP_PCON_HDMI_PPS_OVERRIDE_BASE, &pps_buf, 128);
++	ret = drm_dp_dpcd_write(aux, DP_PCON_HDMI_PPS_OVERRIDE_BASE, pps_buf, 128);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-- 

@@ -14,6 +14,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
 ---
  drivers/block/drbd/drbd_int.h   |   2 +-
  drivers/input/joystick/analog.c |   6 +-
+ include/asm-generic/page.h      |   8 ++
  include/asm-generic/uaccess.h   |  15 ++++
  include/linux/compiler.h        |  21 +++++
  include/linux/compiler_types.h  |   2 +-
@@ -32,11 +33,11 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  kernel/signal.c                 |   2 +-
  kernel/time/time.c              |   4 +
  lib/hexdump.c                   |  10 ++-
- 20 files changed, 261 insertions(+), 14 deletions(-)
+ 21 files changed, 269 insertions(+), 14 deletions(-)
  create mode 100644 include/linux/flex_array.h
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 8f879e5c2f67..2816fdd519c7 100644
+index 7d9cc433b758..5c2efda42887 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -39,7 +39,7 @@
@@ -64,6 +65,27 @@ index f798922a4598..01b58c7a227e 100644
 +#elif defined(__i386__)
  
  #include <linux/i8253.h>
+ 
+diff --git a/include/asm-generic/page.h b/include/asm-generic/page.h
+index 6fc47561814c..70ea99f1931b 100644
+--- a/include/asm-generic/page.h
++++ b/include/asm-generic/page.h
+@@ -86,8 +86,16 @@ extern unsigned long memory_end;
+ 
+ #define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && ((pfn) - ARCH_PFN_OFFSET) < max_mapnr)
+ 
++#ifdef __FRAMAC__
++/* Prevent Frama-C from reporting errors about:
++ * "ordered comparison of pointer with null pointer [-Werror=extra]"
++ * because PAGE_OFFSET is 0.
++ */
++#define virt_addr_valid(kaddr) ((void *)(kaddr) != NULL)
++#else
+ #define	virt_addr_valid(kaddr)	(((void *)(kaddr) >= (void *)PAGE_OFFSET) && \
+ 				((void *)(kaddr) < (void *)memory_end))
++#endif
+ 
+ #endif /* __ASSEMBLY__ */
  
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
 index 4973328f3c6e..08b9c053d102 100644
@@ -99,7 +121,7 @@ index 4973328f3c6e..08b9c053d102 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 4af30bc6639b..1255b6cfa5a2 100644
+index 0b6ca9728c91..6f7a0938b43c 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline notrace __used void __same_pointer_depths_with_volatile2_chk(con
@@ -163,10 +185,10 @@ index 383684e30f12..305a84b40f73 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 6175660c1190..a95dd5a24dfa 100644
+index 36883fabb47a..a89979a75521 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -633,7 +633,12 @@ struct crypto_tfm {
+@@ -636,7 +636,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -179,7 +201,7 @@ index 6175660c1190..a95dd5a24dfa 100644
 +*/
  };
  
- struct crypto_cipher {
+ struct crypto_comp {
 diff --git a/include/linux/delay.h b/include/linux/delay.h
 index 1d0e2ce6b6d9..5aa8890cd260 100644
 --- a/include/linux/delay.h
@@ -411,7 +433,7 @@ index ef74051d5cfe..b5d58fba4a9c 100644
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index b32126d26997..d2de0a41e8d1 100644
+index 86c799c97b77..14291b248379 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -162,6 +162,8 @@ typedef int __bitwise pci_power_t;
@@ -432,10 +454,10 @@ index b32126d26997..d2de0a41e8d1 100644
  /**
   * typedef pci_channel_state_t
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 262cf61c9c66..0527e09471b0 100644
+index 281b7b76a60d..cad55f28e49e 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -231,6 +231,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -232,6 +232,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
   * done within __do_sys_*().
   */
  #ifndef __SYSCALL_DEFINEx
@@ -448,7 +470,7 @@ index 262cf61c9c66..0527e09471b0 100644
  #define __SYSCALL_DEFINEx(x, name, ...)					\
  	__diag_push();							\
  	__diag_ignore(GCC, 8, "-Wattribute-alias",			\
-@@ -249,6 +255,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -250,6 +256,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  	}								\
  	__diag_pop();							\
  	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
@@ -516,7 +538,7 @@ index 0197888ad0e0..ee5b03df8f9b 100644
  
  #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 5ad8566534e7..7c0d3188bfb6 100644
+index ba4d1ef39a9e..7a7d67667871 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1247,7 +1247,7 @@ static void print_fatal_signal(int signr)

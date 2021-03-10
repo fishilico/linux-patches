@@ -9,7 +9,7 @@ TODO: send fixes to dtc upstream:
     https://github.com/dgibson/dtc
 ---
  scripts/dtc/checks.c        | 18 +++++++++---------
- scripts/dtc/data.c          |  8 ++++----
+ scripts/dtc/data.c          |  6 +++---
  scripts/dtc/dtc-lexer.l     |  2 +-
  scripts/dtc/dtc.c           | 14 +++++++-------
  scripts/dtc/dtc.h           | 16 ++++++++--------
@@ -17,7 +17,7 @@ TODO: send fixes to dtc upstream:
  scripts/dtc/livetree.c      | 18 +++++++++---------
  scripts/dtc/srcpos.c        |  2 +-
  scripts/dtc/treesource.c    |  8 ++++----
- 9 files changed, 51 insertions(+), 48 deletions(-)
+ 9 files changed, 50 insertions(+), 47 deletions(-)
 
 diff --git a/scripts/dtc/checks.c b/scripts/dtc/checks.c
 index 17cb6890d45a..8121bf0682b2 100644
@@ -105,18 +105,9 @@ index 17cb6890d45a..8121bf0682b2 100644
  
  	for (i = 0; i < ARRAY_SIZE(check_table); i++) {
 diff --git a/scripts/dtc/data.c b/scripts/dtc/data.c
-index 0a43b6de3264..6c4a19a87d1d 100644
+index 14734233ad8b..65c2a129eb09 100644
 --- a/scripts/dtc/data.c
 +++ b/scripts/dtc/data.c
-@@ -84,7 +84,7 @@ struct data data_copy_file(FILE *f, size_t maxlen)
- 	while (!feof(f) && (d.len < maxlen)) {
- 		size_t chunksize, ret;
- 
--		if (maxlen == -1)
-+		if (maxlen == (size_t)-1)
- 			chunksize = 4096;
- 		else
- 			chunksize = maxlen - d.len;
 @@ -164,15 +164,15 @@ struct data data_append_integer(struct data d, uint64_t value, int bits)
  
  	switch (bits) {
@@ -150,7 +141,7 @@ index b3b7270300de..b23b269b9b3f 100644
  	va_list ap;
  
 diff --git a/scripts/dtc/dtc.c b/scripts/dtc/dtc.c
-index bdb3f5945699..6795e80e2706 100644
+index 838c5df96c00..879739572bcb 100644
 --- a/scripts/dtc/dtc.c
 +++ b/scripts/dtc/dtc.c
 @@ -37,7 +37,7 @@ static void fill_fullpaths(struct node *tree, const char *prefix)
@@ -162,7 +153,7 @@ index bdb3f5945699..6795e80e2706 100644
  	else
  		tree->basenamelen = strlen(tree->name);
  
-@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
+@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
  	const char *arg;
  	int opt;
  	FILE *outf = NULL;
@@ -171,7 +162,7 @@ index bdb3f5945699..6795e80e2706 100644
  	long long cmdline_boot_cpuid = -1;
  
  	quiet      = 0;
-@@ -189,19 +189,19 @@ int main(int argc, char *argv[])
+@@ -191,19 +191,19 @@ int main(int argc, char *argv[])
  			outname = optarg;
  			break;
  		case 'V':
@@ -195,7 +186,7 @@ index bdb3f5945699..6795e80e2706 100644
  			break;
  		case 'a':
  			alignsize = strtol(optarg, NULL, 0);
-@@ -313,7 +313,7 @@ int main(int argc, char *argv[])
+@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
  	}
  
  	if (cmdline_boot_cpuid != -1)
@@ -205,7 +196,7 @@ index bdb3f5945699..6795e80e2706 100644
  	fill_fullpaths(dti->dt, "");
  
 diff --git a/scripts/dtc/dtc.h b/scripts/dtc/dtc.h
-index a08f4159cd03..e0be4e160bbd 100644
+index d3e82fb8e3db..ad5010d138bb 100644
 --- a/scripts/dtc/dtc.h
 +++ b/scripts/dtc/dtc.h
 @@ -103,7 +103,7 @@ enum markertype {
@@ -215,7 +206,7 @@ index a08f4159cd03..e0be4e160bbd 100644
 -struct  marker {
 +struct marker {
  	enum markertype type;
- 	int offset;
+ 	unsigned int offset;
  	char *ref;
 @@ -169,7 +169,7 @@ struct bus_type {
  
@@ -269,10 +260,10 @@ index a08f4159cd03..e0be4e160bbd 100644
  void append_to_property(struct node *node,
  			char *name, const void *data, int len,
 diff --git a/scripts/dtc/libfdt/libfdt.h b/scripts/dtc/libfdt/libfdt.h
-index fe49b5d78938..da1752a1b188 100644
+index c42807a7663e..fd9dbe9001d1 100644
 --- a/scripts/dtc/libfdt/libfdt.h
 +++ b/scripts/dtc/libfdt/libfdt.h
-@@ -116,7 +116,8 @@ const void *fdt_offset_ptr(const void *fdt, int offset, unsigned int checklen);
+@@ -121,7 +121,8 @@ const void *fdt_offset_ptr(const void *fdt, int offset, unsigned int checklen);
  #endif
  static inline void *fdt_offset_ptr_w(void *fdt, int offset, int checklen)
  {
@@ -282,7 +273,7 @@ index fe49b5d78938..da1752a1b188 100644
  }
  
  uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
-@@ -695,8 +696,8 @@ static inline struct fdt_property *fdt_get_property_w(void *fdt, int nodeoffset,
+@@ -709,8 +710,8 @@ static inline struct fdt_property *fdt_get_property_w(void *fdt, int nodeoffset,
  						      const char *name,
  						      int *lenp)
  {
@@ -293,7 +284,7 @@ index fe49b5d78938..da1752a1b188 100644
  }
  
  /**
-@@ -753,8 +754,9 @@ static inline void *fdt_getprop_namelen_w(void *fdt, int nodeoffset,
+@@ -769,8 +770,9 @@ static inline void *fdt_getprop_namelen_w(void *fdt, int nodeoffset,
  					  const char *name, int namelen,
  					  int *lenp)
  {
@@ -304,7 +295,7 @@ index fe49b5d78938..da1752a1b188 100644
  }
  #endif
  
-@@ -791,7 +793,8 @@ const void *fdt_getprop(const void *fdt, int nodeoffset,
+@@ -807,7 +809,8 @@ const void *fdt_getprop(const void *fdt, int nodeoffset,
  static inline void *fdt_getprop_w(void *fdt, int nodeoffset,
  				  const char *name, int *lenp)
  {
@@ -315,7 +306,7 @@ index fe49b5d78938..da1752a1b188 100644
  
  /**
 diff --git a/scripts/dtc/livetree.c b/scripts/dtc/livetree.c
-index 032df5878ccc..7c6a0752733a 100644
+index 7eacd0248641..1e1c825ad4b3 100644
 --- a/scripts/dtc/livetree.c
 +++ b/scripts/dtc/livetree.c
 @@ -36,7 +36,7 @@ void delete_labels(struct label **labels)
@@ -400,7 +391,7 @@ index 032df5878ccc..7c6a0752733a 100644
  
  	for_each_child_withdel(node, subnode)
 diff --git a/scripts/dtc/srcpos.c b/scripts/dtc/srcpos.c
-index f5205fb9c1ff..a82157a5ebf2 100644
+index 4fdb22a019bd..5526ab8fe3d5 100644
 --- a/scripts/dtc/srcpos.c
 +++ b/scripts/dtc/srcpos.c
 @@ -28,7 +28,7 @@ static char *get_dirname(const char *path)

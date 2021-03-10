@@ -1,0 +1,74 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 27 Feb 2021 21:01:31 +0100
+Subject: [PATCH] {BUG in 5.12-rc1} drivers/net/wireless/mediatek/mt76: fix
+ uninitialized variable bugs
+
+clang on x86-64 reports:
+
+    In file included from drivers/net/wireless/mediatek/mt76/mt7915/testmode.c:4:
+    drivers/net/wireless/mediatek/mt76/mt7915/mt7915.h:61:2: warning:
+    element 'MT7915_RXQ_BAND1' has been implicitly assigned 1 which
+    another element has been assigned [-Wduplicate-enum]
+            MT7915_RXQ_BAND1,
+            ^~~~~~~~~~~~~~~~
+    drivers/net/wireless/mediatek/mt76/mt7915/mt7915.h:63:2: note:
+    element 'MT7915_RXQ_MCU_WA' also has value 1
+            MT7915_RXQ_MCU_WA,
+            ^~~~~~~~~~~~~~~~~
+    drivers/net/wireless/mediatek/mt76/mt7921/mcu.c:409:3: error:
+    variable 'stats' is uninitialized when used here
+    [-Werror,-Wuninitialized]
+                    stats->tx_rate = rate;
+                    ^~~~~
+    drivers/net/wireless/mediatek/mt76/mt7921/mcu.c:401:32: note:
+    initialize the variable 'stats' to silence this warning
+            struct mt7921_sta_stats *stats;
+                                          ^
+                                           = NULL
+    drivers/net/wireless/mediatek/mt76/mt7915/testmode.c:593:2: error:
+    variable 'mode' is used uninitialized whenever switch default is
+    taken [-Werror,-Wsometimes-uninitialized]
+            default:
+            ^~~~~~~
+    drivers/net/wireless/mediatek/mt76/mt7915/testmode.c:597:13: note:
+    uninitialized use occurs here
+            rateval =  mode << 6 | rate_idx;
+                       ^~~~
+    drivers/net/wireless/mediatek/mt76/mt7915/testmode.c:506:37: note:
+    initialize the variable 'mode' to silence this warning
+            u8 rate_idx = td->tx_rate_idx, mode;
+                                               ^
+                                                = '\0'
+---
+ drivers/net/wireless/mediatek/mt76/mt7915/testmode.c | 2 +-
+ drivers/net/wireless/mediatek/mt76/mt7921/mcu.c      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/wireless/mediatek/mt76/mt7915/testmode.c b/drivers/net/wireless/mediatek/mt76/mt7915/testmode.c
+index 7fb2170a9561..581b0612f7be 100644
+--- a/drivers/net/wireless/mediatek/mt76/mt7915/testmode.c
++++ b/drivers/net/wireless/mediatek/mt76/mt7915/testmode.c
+@@ -591,7 +591,7 @@ mt7915_tm_set_tx_cont(struct mt7915_phy *phy, bool en)
+ 		mode = MT_PHY_TYPE_HE_MU;
+ 		break;
+ 	default:
+-		break;
++		goto out;
+ 	}
+ 
+ 	rateval =  mode << 6 | rate_idx;
+diff --git a/drivers/net/wireless/mediatek/mt76/mt7921/mcu.c b/drivers/net/wireless/mediatek/mt76/mt7921/mcu.c
+index db125cd22b91..5152c9c669c2 100644
+--- a/drivers/net/wireless/mediatek/mt76/mt7921/mcu.c
++++ b/drivers/net/wireless/mediatek/mt76/mt7921/mcu.c
+@@ -406,7 +406,7 @@ mt7921_mcu_tx_rate_report(struct mt7921_dev *dev, struct sk_buff *skb,
+ 		return;
+ 	wcid = rcu_dereference(dev->mt76.wcid[wlan_idx]);
+ 	if (!wcid) {
+-		stats->tx_rate = rate;
++		/* stats->tx_rate = rate; // BUG! */
+ 		return;
+ 	}
+ 
+-- 
