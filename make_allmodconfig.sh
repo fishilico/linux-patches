@@ -289,6 +289,7 @@ if $HOSTCC -v 2>&1 | grep -q clang
 then
     HOSTCFLAGS="$HOSTCFLAGS -Weverything"
     disable_in_hostcflags 'alloca' # host programs may use alloca()
+    disable_in_hostcflags 'bad-function-cast' # (void *)(uintptr_t)function(...) in scripts/dtc
     disable_in_hostcflags 'c99-extensions'
     disable_in_hostcflags 'c++-compat' # Empty structs are used in ARRAY_SIZE
     disable_in_hostcflags 'cast-qual' # Some pointer casts don't specify const
