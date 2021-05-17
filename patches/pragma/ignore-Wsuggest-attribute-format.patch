@@ -9,10 +9,14 @@ Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
  .../broadcom/brcm80211/brcmfmac/tracepoint.h       | 14 ++++++++++++++
  .../brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h  | 14 ++++++++++++++
  .../net/wireless/intel/iwlwifi/iwl-devtrace-msg.h  | 14 ++++++++++++++
+ include/linux/compiler-gcc.h                       |  2 ++
  include/trace/events/qla.h                         |  1 -
+ kernel/bpf/helpers.c                               |  7 +++++++
  kernel/panic.c                                     |  8 ++++++++
+ kernel/trace/bpf_trace.c                           |  8 ++++++++
+ kernel/trace/trace.c                               |  7 +++++++
  lib/vsprintf.c                                     |  7 +++++++
- 8 files changed, 71 insertions(+), 1 deletion(-)
+ 12 files changed, 95 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/hid/intel-ish-hid/ishtp/bus.c b/drivers/hid/intel-ish-hid/ishtp/bus.c
 index bba29cd36d29..644fe4afeabb 100644
@@ -193,6 +197,19 @@ index d0467da5af03..9e2136f82ac5 100644
  #endif /* __IWLWIFI_DEVICE_TRACE_MSG */
  
  #undef TRACE_INCLUDE_PATH
+diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+index 5d97ef738a57..c8ef6b2f18a7 100644
+--- a/include/linux/compiler-gcc.h
++++ b/include/linux/compiler-gcc.h
+@@ -142,6 +142,8 @@
+ #define __diag_str(s)		__diag_str1(s)
+ #define __diag(s)		_Pragma(__diag_str(GCC diagnostic s))
+ 
++#define __diag_GCC_4(s)		__diag(s)
++
+ #if GCC_VERSION >= 80000
+ #define __diag_GCC_8(s)		__diag(s)
+ #else
 diff --git a/include/trace/events/qla.h b/include/trace/events/qla.h
 index 5857cf682ee7..7fdd4197eb58 100644
 --- a/include/trace/events/qla.h
@@ -205,6 +222,31 @@ index 5857cf682ee7..7fdd4197eb58 100644
  #pragma GCC diagnostic pop
  
  DEFINE_EVENT(qla_log_event, ql_dbg_log,
+diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
+index 544773970dbc..8fd659ca7d3a 100644
+--- a/kernel/bpf/helpers.c
++++ b/kernel/bpf/helpers.c
+@@ -949,6 +949,10 @@ int bpf_bprintf_prepare(char *fmt, u32 fmt_size, const u64 *raw_args,
+ 
+ #define MAX_SNPRINTF_VARARGS		12
+ 
++#ifndef __clang__
++__diag_push()
++__diag(ignored "-Wsuggest-attribute=format")
++#endif
+ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
+ 	   const void *, data, u32, data_len)
+ {
+@@ -973,6 +977,9 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
+ 
+ 	return err + 1;
+ }
++#ifndef __clang__
++__diag_pop()
++#endif
+ 
+ const struct bpf_func_proto bpf_snprintf_proto = {
+ 	.func		= bpf_snprintf,
 diff --git a/kernel/panic.c b/kernel/panic.c
 index 332736a72a58..4b3775e5930e 100644
 --- a/kernel/panic.c
@@ -231,8 +273,73 @@ index 332736a72a58..4b3775e5930e 100644
  
  #ifndef __WARN_FLAGS
  void warn_slowpath_fmt(const char *file, int line, unsigned taint,
+diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
+index d2d7cf6cfe83..bab65ac9cc2c 100644
+--- a/kernel/trace/bpf_trace.c
++++ b/kernel/trace/bpf_trace.c
+@@ -377,6 +377,9 @@ static DEFINE_RAW_SPINLOCK(trace_printk_lock);
+ #define MAX_TRACE_PRINTK_VARARGS	3
+ #define BPF_TRACE_PRINTK_SIZE		1024
+ 
++__diag_push()
++__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
++	      "This function does not behave like printf even though it calls bstr_printf")
+ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
+ 	   u64, arg2, u64, arg3)
+ {
+@@ -401,6 +404,7 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
+ 
+ 	return ret;
+ }
++__diag_pop()
+ 
+ static const struct bpf_func_proto bpf_trace_printk_proto = {
+ 	.func		= bpf_trace_printk,
+@@ -428,6 +432,9 @@ const struct bpf_func_proto *bpf_get_trace_printk_proto(void)
+ 
+ #define MAX_SEQ_PRINTF_VARARGS		12
+ 
++__diag_push()
++__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
++	      "This function does not behave like printf even though it calls seq_bprintf")
+ BPF_CALL_5(bpf_seq_printf, struct seq_file *, m, char *, fmt, u32, fmt_size,
+ 	   const void *, data, u32, data_len)
+ {
+@@ -449,6 +456,7 @@ BPF_CALL_5(bpf_seq_printf, struct seq_file *, m, char *, fmt, u32, fmt_size,
+ 
+ 	return seq_has_overflowed(m) ? -EOVERFLOW : 0;
+ }
++__diag_pop()
+ 
+ BTF_ID_LIST_SINGLE(btf_seq_file_ids, struct, seq_file)
+ 
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 560e4c8d3825..836e2d00c3f8 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3686,6 +3686,10 @@ static void test_can_verify(void)
+  * warn and print "[UNSAFE MEMORY]" in place of the dereferenced string
+  * pointer.
+  */
++#ifndef __clang__
++__diag_push()
++__diag(ignored "-Wsuggest-attribute=format")
++#endif
+ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
+ 			 va_list ap)
+ {
+@@ -3783,6 +3787,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
+ 	if (*p)
+ 		trace_seq_vprintf(&iter->seq, p, ap);
+ }
++#ifndef __clang__
++__diag_pop()
++#endif
+ 
+ const char *trace_event_format(struct trace_iterator *iter, const char *fmt)
+ {
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 07b132f737b4..7810ef258ff0 100644
+index 74c7adbb2ae8..17aa698dcde9 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
 @@ -1660,7 +1660,14 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,

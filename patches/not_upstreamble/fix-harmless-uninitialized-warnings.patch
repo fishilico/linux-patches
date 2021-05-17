@@ -27,7 +27,7 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  19 files changed, 29 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c
-index 182118e3fd5f..6ae5527e3392 100644
+index 182118e3fd5f..e6ec76cd1c01 100644
 --- a/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c
 +++ b/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c
 @@ -1197,6 +1197,10 @@ static int init_overdrive_limits(struct pp_hwmgr *hwmgr,
@@ -35,17 +35,17 @@ index 182118e3fd5f..6ae5527e3392 100644
  				powerplay_table,
  				(const ATOM_FIRMWARE_INFO_V2_1 *)fw_info);
 +	else {
-+		/* Should not happen, but silent compiler warnings about unitialized variable */
++		/* Should not happen, but silent compiler warnings about uninitialized variable */
 +		result = 0;
 +	}
  
  	return result;
  }
 diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i915_request.c
-index 22e39d938f17..e79ac0d312d7 100644
+index bec9c3652188..d46783fbce8d 100644
 --- a/drivers/gpu/drm/i915/i915_request.c
 +++ b/drivers/gpu/drm/i915/i915_request.c
-@@ -1675,7 +1675,7 @@ static unsigned long local_clock_ns(unsigned int *cpu)
+@@ -1800,7 +1800,7 @@ static unsigned long local_clock_ns(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
@@ -55,7 +55,7 @@ index 22e39d938f17..e79ac0d312d7 100644
  	if (time_after(local_clock_ns(&this_cpu), timeout))
  		return true;
 diff --git a/drivers/gpu/drm/qxl/qxl_draw.c b/drivers/gpu/drm/qxl/qxl_draw.c
-index 7b7acb910780..0336b034fe0d 100644
+index 7d27891e87fa..68fd677ba75c 100644
 --- a/drivers/gpu/drm/qxl/qxl_draw.c
 +++ b/drivers/gpu/drm/qxl/qxl_draw.c
 @@ -140,7 +140,7 @@ void qxl_draw_dirty_fb(struct qxl_device *qdev,
@@ -68,10 +68,10 @@ index 7b7acb910780..0336b034fe0d 100644
  	struct qxl_rect *rects;
  	int stride = fb->pitches[0];
 diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-index 462f17320708..b8be2639e700 100644
+index 7a24196f92c3..4d87d0141652 100644
 --- a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
 +++ b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-@@ -4159,6 +4159,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
+@@ -4163,6 +4163,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
  		goto out_err;
  
  	vmw_query_bo_switch_commit(dev_priv, sw_context);
@@ -94,7 +94,7 @@ index 5336db81ba0a..115818d1714c 100644
  	return iio_push_to_buffers_with_timestamp(indio_dev, spd->buffer,
  						  calculated_time);
 diff --git a/drivers/md/bcache/alloc.c b/drivers/md/bcache/alloc.c
-index 8c371d5eef8e..3561f8eb5017 100644
+index 097577ae3c47..3f646cf2f730 100644
 --- a/drivers/md/bcache/alloc.c
 +++ b/drivers/md/bcache/alloc.c
 @@ -327,7 +327,7 @@ static int bch_allocator_thread(void *arg)
@@ -148,7 +148,7 @@ index e88af978f63c..5c9461988aab 100644
  	int ioaddr, ns;
  	unsigned int skbsize;
 diff --git a/drivers/scsi/qla2xxx/qla_mr.c b/drivers/scsi/qla2xxx/qla_mr.c
-index ca7306685325..45c9799401ce 100644
+index 6e920da64863..d35bae6fe7c5 100644
 --- a/drivers/scsi/qla2xxx/qla_mr.c
 +++ b/drivers/scsi/qla2xxx/qla_mr.c
 @@ -2224,6 +2224,7 @@ qlafx00_ioctl_iosb_entry(scsi_qla_host_t *vha, struct req_que *req,
@@ -160,10 +160,10 @@ index ca7306685325..45c9799401ce 100644
  		bsg_job = sp->u.bsg_job;
  		bsg_reply = bsg_job->reply;
 diff --git a/drivers/scsi/qla4xxx/ql4_os.c b/drivers/scsi/qla4xxx/ql4_os.c
-index 7bd9a4a04ad5..0a7b88db06b6 100644
+index ad3afe30f617..4b5b4d8414d0 100644
 --- a/drivers/scsi/qla4xxx/ql4_os.c
 +++ b/drivers/scsi/qla4xxx/ql4_os.c
-@@ -5906,7 +5906,7 @@ static void qla4xxx_boot_release(void *data)
+@@ -5903,7 +5903,7 @@ static void qla4xxx_boot_release(void *data)
  
  static int get_fw_boot_info(struct scsi_qla_host *ha, uint16_t ddb_index[])
  {
@@ -187,10 +187,10 @@ index 4ce7cba2b48a..7d373d657ac4 100644
  	cxacru_upload_firmware(instance, fw, bp);
  
 diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
-index fc8252a28cb1..71df81b5f4a3 100644
+index 5f6bacbeef6b..1774d7527dfb 100644
 --- a/fs/ocfs2/localalloc.c
 +++ b/fs/ocfs2/localalloc.c
-@@ -834,6 +834,7 @@ static int ocfs2_local_alloc_find_clear_bits(struct ocfs2_super *osb,
+@@ -832,6 +832,7 @@ static int ocfs2_local_alloc_find_clear_bits(struct ocfs2_super *osb,
  
  	if (!alloc->id1.bitmap1.i_total) {
  		bitoff = -1;
@@ -199,7 +199,7 @@ index fc8252a28cb1..71df81b5f4a3 100644
  	}
  
 diff --git a/fs/xfs/libxfs/xfs_dir2_node.c b/fs/xfs/libxfs/xfs_dir2_node.c
-index 5d51265d29d6..b4d7d38d6d6b 100644
+index d0520afb913a..833998841319 100644
 --- a/fs/xfs/libxfs/xfs_dir2_node.c
 +++ b/fs/xfs/libxfs/xfs_dir2_node.c
 @@ -553,6 +553,8 @@ xfs_dir2_leafn_add(
@@ -212,7 +212,7 @@ index 5d51265d29d6..b4d7d38d6d6b 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index 69b228fce81a..8e8caecfe934 100644
+index eefdb518fe64..43187e56401b 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
 @@ -2075,7 +2075,7 @@ xfs_difree_finobt(
@@ -225,7 +225,7 @@ index 69b228fce81a..8e8caecfe934 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 97f31308de03..a6919f73834e 100644
+index e5dd1c0c2f03..7107f98d17f1 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
 @@ -949,7 +949,7 @@ xlog_verify_tail(
@@ -251,10 +251,10 @@ index d0965e2997b0..33386cb24d22 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 96f487fc0071..c33de98a6f47 100644
+index 2480bd0577bb..58412f1e2cd1 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1639,7 +1639,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
+@@ -1641,7 +1641,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
  {
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;
@@ -264,10 +264,10 @@ index 96f487fc0071..c33de98a6f47 100644
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
 diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index 3b3bcefbf657..333d1c9f43f3 100644
+index 0b719f3d2dec..fee8c032213b 100644
 --- a/net/mac80211/tx.c
 +++ b/net/mac80211/tx.c
-@@ -2508,7 +2508,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
+@@ -2518,7 +2518,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
  	bool tdls_peer;
  	bool multicast;
  	u16 info_id = 0;

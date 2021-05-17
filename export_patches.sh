@@ -29,7 +29,7 @@ if ! [ -d linux ] ; then
     exit 1
 fi
 
-# Find the base git commit for the patchs
+# Find the base git commit for the patches
 FIRST_CUSTOM_COMMIT="$(git -C linux log --format=%H origin/master..master |tail -n1)"
 if [ $? != 0 ] || [ -z "$FIRST_CUSTOM_COMMIT" ] ; then
     echo >&2 "Unable to find the first custom git commit"

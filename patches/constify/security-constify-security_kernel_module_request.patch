@@ -46,10 +46,10 @@ index cd23355d2271..2200fc1fc2b8 100644
  		struct file *file;
  		struct lsm_ibpkey_audit *ibpkey;
 diff --git a/include/linux/lsm_hook_defs.h b/include/linux/lsm_hook_defs.h
-index 477a597db013..bb0a23099e2d 100644
+index 04c01794de83..8250e1baebfe 100644
 --- a/include/linux/lsm_hook_defs.h
 +++ b/include/linux/lsm_hook_defs.h
-@@ -188,7 +188,7 @@ LSM_HOOK(void, LSM_RET_VOID, cred_transfer, struct cred *new,
+@@ -190,7 +190,7 @@ LSM_HOOK(void, LSM_RET_VOID, cred_transfer, struct cred *new,
  LSM_HOOK(void, LSM_RET_VOID, cred_getsecid, const struct cred *c, u32 *secid)
  LSM_HOOK(int, 0, kernel_act_as, struct cred *new, u32 secid)
  LSM_HOOK(int, 0, kernel_create_files_as, struct cred *new, struct inode *inode)
@@ -59,10 +59,10 @@ index 477a597db013..bb0a23099e2d 100644
  LSM_HOOK(int, 0, kernel_post_load_data, char *buf, loff_t size,
  	 enum kernel_load_data_id id, char *description)
 diff --git a/include/linux/security.h b/include/linux/security.h
-index 8aeebd6646dc..442a55526518 100644
+index 06f7c50ce77f..b2d7c90c2e71 100644
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -398,7 +398,7 @@ void security_transfer_creds(struct cred *new, const struct cred *old);
+@@ -400,7 +400,7 @@ void security_transfer_creds(struct cred *new, const struct cred *old);
  void security_cred_getsecid(const struct cred *c, u32 *secid);
  int security_kernel_act_as(struct cred *new, u32 secid);
  int security_kernel_create_files_as(struct cred *new, struct inode *inode);
@@ -71,7 +71,7 @@ index 8aeebd6646dc..442a55526518 100644
  int security_kernel_load_data(enum kernel_load_data_id id, bool contents);
  int security_kernel_post_load_data(char *buf, loff_t size,
  				   enum kernel_load_data_id id,
-@@ -1038,7 +1038,7 @@ static inline int security_kernel_create_files_as(struct cred *cred,
+@@ -1051,7 +1051,7 @@ static inline int security_kernel_create_files_as(struct cred *cred,
  	return 0;
  }
  
@@ -81,10 +81,10 @@ index 8aeebd6646dc..442a55526518 100644
  	return 0;
  }
 diff --git a/security/integrity/digsig_asymmetric.c b/security/integrity/digsig_asymmetric.c
-index a662024b4c70..ad62e273ebe6 100644
+index 23240d793b07..02303b368712 100644
 --- a/security/integrity/digsig_asymmetric.c
 +++ b/security/integrity/digsig_asymmetric.c
-@@ -147,7 +147,7 @@ int asymmetric_verify(struct key *keyring, const char *sig,
+@@ -145,7 +145,7 @@ int asymmetric_verify(struct key *keyring, const char *sig,
   * and avoid possible deadlock if modprobe and/or it's dependencies
   * also signed with digsig.
   */
@@ -94,10 +94,10 @@ index a662024b4c70..ad62e273ebe6 100644
  	if (strncmp(kmod_name, "crypto-pkcs1pad(rsa,", 20) == 0)
  		return -EINVAL;
 diff --git a/security/security.c b/security/security.c
-index 5ac96b16f8fa..1c3c77a71120 100644
+index b38155b2de83..61f29af948ab 100644
 --- a/security/security.c
 +++ b/security/security.c
-@@ -1676,7 +1676,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
+@@ -1720,7 +1720,7 @@ int security_kernel_create_files_as(struct cred *new, struct inode *inode)
  	return call_int_hook(kernel_create_files_as, 0, new, inode);
  }
  
@@ -107,10 +107,10 @@ index 5ac96b16f8fa..1c3c77a71120 100644
  	int ret;
  
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index ddd097790d47..da8aa3344ba2 100644
+index eaea837d89d1..1eca041ea414 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -4059,7 +4059,7 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
+@@ -4130,7 +4130,7 @@ static int selinux_kernel_create_files_as(struct cred *new, struct inode *inode)
  	return ret;
  }
  

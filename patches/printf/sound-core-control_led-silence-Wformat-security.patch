@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 15 May 2021 10:07:46 +0200
+Subject: [PATCH] {PRINTF} sound/core/control_led: silence -Wformat-security
+ with "%s"
+
+---
+ sound/core/control_led.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/core/control_led.c b/sound/core/control_led.c
+index 25f57c14f294..3a5e38b95e0d 100644
+--- a/sound/core/control_led.c
++++ b/sound/core/control_led.c
+@@ -734,7 +734,7 @@ static int __init snd_ctl_led_init(void)
+ 		device_initialize(&led->dev);
+ 		led->dev.parent = &snd_ctl_led_dev;
+ 		led->dev.groups = snd_ctl_led_dev_attr_groups;
+-		dev_set_name(&led->dev, led->name);
++		dev_set_name(&led->dev, "%s", led->name);
+ 		if (device_add(&led->dev)) {
+ 			put_device(&led->dev);
+ 			for (; group > 0; group--) {
+-- 

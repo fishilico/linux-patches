@@ -12,7 +12,7 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
  5 files changed, 39 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 633ae7becd61..02f4d52afc53 100644
+index 81a17a3cd80e..8d35d17122db 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
 @@ -435,6 +435,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
@@ -38,10 +38,10 @@ index 633ae7becd61..02f4d52afc53 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 3f287599a7a3..3a86cb84614c 100644
+index 0584e540246e..457622679b03 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -748,6 +748,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+@@ -754,6 +754,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
  	long adjust_next = 0;
  	int remove_next = 0;
  
@@ -53,7 +53,7 @@ index 3f287599a7a3..3a86cb84614c 100644
  	if (next && !insert) {
  		struct vm_area_struct *exporter = NULL, *importer = NULL;
  
-@@ -1018,6 +1023,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+@@ -1024,6 +1029,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
  	validate_mm(mm);
  
  	return 0;
@@ -64,10 +64,10 @@ index 3f287599a7a3..3a86cb84614c 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index c421c8f80925..c355cae19507 100644
+index 3ad22870298c..a1bf860431d5 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -1983,6 +1983,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -1984,6 +1984,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  	    unlikely((err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC))))
  		return err;
  
@@ -79,7 +79,7 @@ index c421c8f80925..c355cae19507 100644
  	i = 0;
  	if (offset >= len)
  		goto drop_pages;
-@@ -1999,6 +2004,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -2000,6 +2005,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  
  drop_pages:
  		skb_shinfo(skb)->nr_frags = i;

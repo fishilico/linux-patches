@@ -1,10 +1,9 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
 Date: Fri, 22 May 2015 10:55:41 +0800
-Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
+Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correctly to fix clang warnings
 
 ---
- arch/x86/entry/vdso/vdso2c.h                  |  2 +-
  drivers/acpi/acpica/nsdump.c                  |  4 ++--
  drivers/acpi/acpica/nsrepair2.c               |  2 +-
  drivers/atm/ambassador.c                      | 20 +++++++++----------
@@ -12,9 +11,9 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  drivers/atm/horizon.c                         | 10 +++++-----
  drivers/edac/aspeed_edac.c                    |  2 +-
  drivers/gpio/gpiolib-acpi.c                   |  2 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c       |  2 +-
  drivers/gpu/drm/amd/amdgpu/atombios_dp.c      |  4 ++--
  drivers/gpu/drm/radeon/atombios_dp.c          |  4 ++--
+ drivers/hid/hid-ft260.c                       |  2 +-
  drivers/hid/i2c-hid/i2c-hid-core.c            |  2 +-
  drivers/hwmon/smsc47m1.c                      |  2 +-
  drivers/iio/light/si1133.c                    |  4 ++--
@@ -38,18 +37,13 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  .../net/wireless/mediatek/mt7601u/debugfs.c   |  2 +-
  .../net/wireless/mediatek/mt7601u/eeprom.c    |  2 +-
  drivers/ntb/hw/idt/ntb_hw_idt.c               |  6 +++---
- drivers/platform/chrome/cros_ec_typec.c       |  2 +-
  drivers/platform/x86/thinkpad_acpi.c          |  2 +-
- drivers/remoteproc/stm32_rproc.c              |  2 +-
- drivers/scsi/libfc/fc_lport.c                 |  2 +-
  drivers/scsi/qedi/qedi_main.c                 |  4 ++--
  drivers/scsi/scsi_sysfs.c                     |  2 +-
  drivers/soc/qcom/smem.c                       |  4 ++--
  drivers/target/iscsi/iscsi_target.c           |  2 +-
  drivers/target/iscsi/iscsi_target_login.c     |  4 ++--
  .../target/iscsi/iscsi_target_parameters.c    |  2 +-
- drivers/target/target_core_configfs.c         |  6 +++---
- drivers/target/target_core_pr.c               |  4 ++--
  drivers/w1/slaves/w1_therm.c                  |  2 +-
  fs/afs/flock.c                                |  2 +-
  fs/nfsd/flexfilelayout.c                      |  2 +-
@@ -70,21 +64,8 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correcly to fix clang warnings
  net/netfilter/xt_TPROXY.c                     |  4 ++--
  net/rxrpc/rxkad.c                             |  2 +-
  security/tomoyo/common.c                      |  2 +-
- 66 files changed, 109 insertions(+), 109 deletions(-)
+ 60 files changed, 100 insertions(+), 100 deletions(-)
 
-diff --git a/arch/x86/entry/vdso/vdso2c.h b/arch/x86/entry/vdso/vdso2c.h
-index 1c7cfac7e64a..5264daa8859f 100644
---- a/arch/x86/entry/vdso/vdso2c.h
-+++ b/arch/x86/entry/vdso/vdso2c.h
-@@ -35,7 +35,7 @@ static void BITSFUNC(extract)(const unsigned char *data, size_t data_len,
- 	if (offset + len > data_len)
- 		fail("section to extract overruns input data");
- 
--	fprintf(outfile, "static const unsigned char %s[%lu] = {", name, len);
-+	fprintf(outfile, "static const unsigned char %s[%zu] = {", name, len);
- 	BITSFUNC(copy)(outfile, data + offset, len);
- 	fprintf(outfile, "\n};\n\n");
- }
 diff --git a/drivers/acpi/acpica/nsdump.c b/drivers/acpi/acpica/nsdump.c
 index 2f66f3ed1810..7efe407bc1cd 100644
 --- a/drivers/acpi/acpica/nsdump.c
@@ -214,7 +195,7 @@ index c039b8a4fefe..483e81018810 100644
      else
        max_rx_size = rxs_bs[pool];
 diff --git a/drivers/atm/firestream.c b/drivers/atm/firestream.c
-index 0ddd611b4277..0c322e79779a 100644
+index 3bc3c314a467..921cabd2fe7a 100644
 --- a/drivers/atm/firestream.c
 +++ b/drivers/atm/firestream.c
 @@ -541,7 +541,7 @@ static int make_rate(unsigned int rate, int r,
@@ -281,7 +262,7 @@ index a46da56d6d54..d83a1d1f1194 100644
  
  	csrow->first_page = r.start >> PAGE_SHIFT;
 diff --git a/drivers/gpio/gpiolib-acpi.c b/drivers/gpio/gpiolib-acpi.c
-index 1aacd2a5a1fd..fd9cc30881a5 100644
+index 3ef22a3c104d..d739ad26669e 100644
 --- a/drivers/gpio/gpiolib-acpi.c
 +++ b/drivers/gpio/gpiolib-acpi.c
 @@ -341,7 +341,7 @@ static acpi_status acpi_gpiochip_alloc_event(struct acpi_resource *ares,
@@ -293,19 +274,6 @@ index 1aacd2a5a1fd..fd9cc30881a5 100644
  		if (ACPI_SUCCESS(acpi_get_handle(handle, ev_name, &evt_handle)))
  			handler = acpi_gpio_irq_handler;
  	}
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
-index e2ed4689118a..c6dbc0801604 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_uvd.c
-@@ -259,7 +259,7 @@ int amdgpu_uvd_sw_init(struct amdgpu_device *adev)
- 		if ((adev->asic_type == CHIP_POLARIS10 ||
- 		     adev->asic_type == CHIP_POLARIS11) &&
- 		    (adev->uvd.fw_version < FW_1_66_16))
--			DRM_ERROR("POLARIS10/11 UVD firmware version %hu.%hu is too old.\n",
-+			DRM_ERROR("POLARIS10/11 UVD firmware version %u.%u is too old.\n",
- 				  version_major, version_minor);
- 	} else {
- 		unsigned int enc_major, enc_minor, dec_minor;
 diff --git a/drivers/gpu/drm/amd/amdgpu/atombios_dp.c b/drivers/gpu/drm/amd/amdgpu/atombios_dp.c
 index a3ba9ca11e98..75976ab1cc5e 100644
 --- a/drivers/gpu/drm/amd/amdgpu/atombios_dp.c
@@ -342,6 +310,19 @@ index 15b00a347560..dc4dbe4b5620 100644
  			      buf[0], buf[1], buf[2]);
  }
  
+diff --git a/drivers/hid/hid-ft260.c b/drivers/hid/hid-ft260.c
+index a5751607ce24..ba2dcceadba7 100644
+--- a/drivers/hid/hid-ft260.c
++++ b/drivers/hid/hid-ft260.c
+@@ -780,7 +780,7 @@ static int ft260_byte_show(struct hid_device *hdev, int id, u8 *cfg, int len,
+ 	if (ret != len && ret >= 0)
+ 		return -EIO;
+ 
+-	return scnprintf(buf, PAGE_SIZE, "%hi\n", *field);
++	return scnprintf(buf, PAGE_SIZE, "%hhu\n", *field);
+ }
+ 
+ static int ft260_word_show(struct hid_device *hdev, int id, u8 *cfg, int len,
 diff --git a/drivers/hid/i2c-hid/i2c-hid-core.c b/drivers/hid/i2c-hid/i2c-hid-core.c
 index 9993133989a5..2f9c30ac634f 100644
 --- a/drivers/hid/i2c-hid/i2c-hid-core.c
@@ -578,10 +559,10 @@ index bfa2826c5545..f4acaa50cf09 100644
  		return 0xffff;
  	}
 diff --git a/drivers/net/ethernet/mellanox/mlx5/core/wq.c b/drivers/net/ethernet/mellanox/mlx5/core/wq.c
-index 01f075fac276..1a33109c393e 100644
+index 3091dd014650..26682040a0c5 100644
 --- a/drivers/net/ethernet/mellanox/mlx5/core/wq.c
 +++ b/drivers/net/ethernet/mellanox/mlx5/core/wq.c
-@@ -89,8 +89,8 @@ void mlx5_wq_cyc_wqe_dump(struct mlx5_wq_cyc *wq, u16 ix, u8 nstrides)
+@@ -84,8 +84,8 @@ void mlx5_wq_cyc_wqe_dump(struct mlx5_wq_cyc *wq, u16 ix, u8 nstrides)
  	len = nstrides << wq->fbc.log_stride;
  	wqe = mlx5_wq_cyc_get_wqe(wq, ix);
  
@@ -654,10 +635,10 @@ index 5bd58c65e163..f1fe53d82863 100644
  		cdev->int_params.in.num_vectors =
  			cdev->int_params.in.min_msix_cnt;
 diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/ftm-initiator.c b/drivers/net/wireless/intel/iwlwifi/mvm/ftm-initiator.c
-index a4fd0bf9ba19..af7197e124ee 100644
+index a456b8a0ae58..f7f96d22aae0 100644
 --- a/drivers/net/wireless/intel/iwlwifi/mvm/ftm-initiator.c
 +++ b/drivers/net/wireless/intel/iwlwifi/mvm/ftm-initiator.c
-@@ -949,10 +949,10 @@ static void iwl_mvm_debug_range_resp(struct iwl_mvm *mvm, u8 index,
+@@ -1030,10 +1030,10 @@ static void iwl_mvm_debug_range_resp(struct iwl_mvm *mvm, u8 index,
  	IWL_DEBUG_INFO(mvm, "\tstatus: %d\n", res->status);
  	IWL_DEBUG_INFO(mvm, "\tBSSID: %pM\n", res->addr);
  	IWL_DEBUG_INFO(mvm, "\thost time: %llu\n", res->host_time);
@@ -684,7 +665,7 @@ index 20669eacb66e..3151e7d99dc7 100644
  
  	seq_puts(file, "Per rate power:\n");
 diff --git a/drivers/net/wireless/mediatek/mt7601u/eeprom.c b/drivers/net/wireless/mediatek/mt7601u/eeprom.c
-index c868582c5d22..e4b76195ceb4 100644
+index aa3b64902cf9..4c532ead0035 100644
 --- a/drivers/net/wireless/mediatek/mt7601u/eeprom.c
 +++ b/drivers/net/wireless/mediatek/mt7601u/eeprom.c
 @@ -188,7 +188,7 @@ mt7601u_set_country_reg(struct mt7601u_dev *dev, u8 *eeprom)
@@ -727,24 +708,11 @@ index e7a4c2aa8baa..9656e4ae1370 100644
  	}
  	off += scnprintf(strbuf + off, size - off, "\n");
  
-diff --git a/drivers/platform/chrome/cros_ec_typec.c b/drivers/platform/chrome/cros_ec_typec.c
-index 0811562deecc..26a05ed5f058 100644
---- a/drivers/platform/chrome/cros_ec_typec.c
-+++ b/drivers/platform/chrome/cros_ec_typec.c
-@@ -1027,7 +1027,7 @@ static int cros_typec_get_cmd_version(struct cros_typec_data *typec)
- 	else
- 		typec->pd_ctrl_ver = 0;
- 
--	dev_dbg(typec->dev, "PD Control has version mask 0x%hhx\n",
-+	dev_dbg(typec->dev, "PD Control has version mask 0x%x\n",
- 		typec->pd_ctrl_ver);
- 
- 	return 0;
 diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index 0d9e2ddbf904..31b979dc2199 100644
+index dd60c9397d35..4f192915d2fd 100644
 --- a/drivers/platform/x86/thinkpad_acpi.c
 +++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -7471,7 +7471,7 @@ static void volume_exit_software_mute(void)
+@@ -7529,7 +7529,7 @@ static void volume_exit_software_mute(void)
  static int volume_alsa_set_volume(const u8 vol)
  {
  	dbg_printk(TPACPI_DBG_MIXER,
@@ -753,37 +721,11 @@ index 0d9e2ddbf904..31b979dc2199 100644
  	return __volume_set_volume_ec(vol);
  }
  
-diff --git a/drivers/remoteproc/stm32_rproc.c b/drivers/remoteproc/stm32_rproc.c
-index ccb3c14a0023..6ff6b1fb829b 100644
---- a/drivers/remoteproc/stm32_rproc.c
-+++ b/drivers/remoteproc/stm32_rproc.c
-@@ -711,7 +711,7 @@ static int stm32_rproc_da_to_pa(struct platform_device *pdev,
- 			continue;
- 
- 		*pa = da - p_mem->dev_addr + p_mem->bus_addr;
--		dev_dbg(dev, "da %llx to pa %#x\n", da, *pa);
-+		dev_dbg(dev, "da %llx to pa %#llx\n", da, *pa);
- 
- 		return 0;
- 	}
-diff --git a/drivers/scsi/libfc/fc_lport.c b/drivers/scsi/libfc/fc_lport.c
-index 22826544da7e..9989669beec3 100644
---- a/drivers/scsi/libfc/fc_lport.c
-+++ b/drivers/scsi/libfc/fc_lport.c
-@@ -1731,7 +1731,7 @@ void fc_lport_flogi_resp(struct fc_seq *sp, struct fc_frame *fp,
- 
- 	if (mfs < FC_SP_MIN_MAX_PAYLOAD || mfs > FC_SP_MAX_MAX_PAYLOAD) {
- 		FC_LPORT_DBG(lport, "FLOGI bad mfs:%hu response, "
--			     "lport->mfs:%hu\n", mfs, lport->mfs);
-+			     "lport->mfs:%u\n", mfs, lport->mfs);
- 		fc_lport_error(lport, fp);
- 		goto out;
- 	}
 diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index 69c5b5ee2169..35c25b2d79d2 100644
+index 2455d1448a7e..292f6e9f8e7c 100644
 --- a/drivers/scsi/qedi/qedi_main.c
 +++ b/drivers/scsi/qedi/qedi_main.c
-@@ -2090,7 +2090,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
+@@ -2088,7 +2088,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
  		rc = snprintf(buf, ip_len, fmt, gw);
  		break;
  	case ISCSI_BOOT_ETH_FLAGS:
@@ -792,7 +734,7 @@ index 69c5b5ee2169..35c25b2d79d2 100644
  			      SYSFS_FLAG_FW_SEL_BOOT);
  		break;
  	case ISCSI_BOOT_ETH_INDEX:
-@@ -2258,7 +2258,7 @@ qedi_show_boot_tgt_info(struct qedi_ctx *qedi, int type,
+@@ -2256,7 +2256,7 @@ qedi_show_boot_tgt_info(struct qedi_ctx *qedi, int type,
  			     mchap_secret);
  		break;
  	case ISCSI_BOOT_TGT_FLAGS:
@@ -802,12 +744,12 @@ index 69c5b5ee2169..35c25b2d79d2 100644
  	case ISCSI_BOOT_TGT_NIC_ASSOC:
  		rc = snprintf(buf, 3, "0\n");
 diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index b6378c8ca783..94eeaff4e5fc 100644
+index 32489d25158f..10f4cce8bd0d 100644
 --- a/drivers/scsi/scsi_sysfs.c
 +++ b/drivers/scsi/scsi_sysfs.c
-@@ -375,7 +375,7 @@ shost_rd_attr(sg_tablesize, "%hu\n");
+@@ -374,7 +374,7 @@ shost_rd_attr(can_queue, "%d\n");
+ shost_rd_attr(sg_tablesize, "%hu\n");
  shost_rd_attr(sg_prot_tablesize, "%hu\n");
- shost_rd_attr(unchecked_isa_dma, "%d\n");
  shost_rd_attr(prot_capabilities, "%u\n");
 -shost_rd_attr(prot_guard_type, "%hd\n");
 +shost_rd_attr(prot_guard_type, "%hhu\n");
@@ -815,7 +757,7 @@ index b6378c8ca783..94eeaff4e5fc 100644
  
  static ssize_t
 diff --git a/drivers/soc/qcom/smem.c b/drivers/soc/qcom/smem.c
-index cc4e0655a47b..78df5dc76988 100644
+index 4fb5aeeb0843..e37a66a6741b 100644
 --- a/drivers/soc/qcom/smem.c
 +++ b/drivers/soc/qcom/smem.c
 @@ -843,12 +843,12 @@ qcom_smem_enumerate_partitions(struct qcom_smem *smem, u16 local_host)
@@ -834,10 +776,10 @@ index cc4e0655a47b..78df5dc76988 100644
  		}
  
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index e5c443bfbdf9..ebbbafdab8c6 100644
+index 2c54c5d8412d..37ac177b8ad6 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4276,7 +4276,7 @@ int iscsit_close_connection(
+@@ -4278,7 +4278,7 @@ int iscsit_close_connection(
  
  	spin_lock_bh(&sess->conn_lock);
  	atomic_dec(&sess->nconn);
@@ -881,64 +823,11 @@ index 7a461fbb1566..e069782e05a3 100644
  			sess_ops->ErrorRecoveryLevel);
  	pr_debug("SessionType: %s\n", (sess_ops->SessionType) ?
  			"Discovery" : "Normal");
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index f04352285155..0a5711a2a73d 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -2754,7 +2754,7 @@ static ssize_t target_tg_pt_gp_alua_access_state_store(struct config_item *item,
- 
- 	if (!tg_pt_gp->tg_pt_gp_valid_id) {
- 		pr_err("Unable to do implicit ALUA on non valid"
--			" tg_pt_gp ID: %hu\n", tg_pt_gp->tg_pt_gp_valid_id);
-+			" tg_pt_gp ID: %d\n", tg_pt_gp->tg_pt_gp_valid_id);
- 		return -EINVAL;
- 	}
- 	if (!target_dev_configured(dev)) {
-@@ -2806,7 +2806,7 @@ static ssize_t target_tg_pt_gp_alua_access_status_store(
- 
- 	if (!tg_pt_gp->tg_pt_gp_valid_id) {
- 		pr_err("Unable to do set ALUA access status on non"
--			" valid tg_pt_gp ID: %hu\n",
-+			" valid tg_pt_gp ID: %d\n",
- 			tg_pt_gp->tg_pt_gp_valid_id);
- 		return -EINVAL;
- 	}
-@@ -2861,7 +2861,7 @@ static ssize_t target_tg_pt_gp_alua_support_##_name##_store(		\
- 									\
- 	if (!t->tg_pt_gp_valid_id) {					\
- 		pr_err("Unable to do set " #_name " ALUA state on non"	\
--		       " valid tg_pt_gp ID: %hu\n",			\
-+		       " valid tg_pt_gp ID: %d\n",			\
- 		       t->tg_pt_gp_valid_id);				\
- 		return -EINVAL;						\
- 	}								\
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index d4cc43afe05b..48c1dca08981 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -1643,7 +1643,7 @@ core_scsi3_decode_spec_i_port(
- 
- 			dest_tpg = tmp_tpg;
- 			pr_debug("SPC-3 PR SPEC_I_PT: Located %s Node:"
--				" %s Port RTPI: %hu\n",
-+				" %s Port RTPI: %u\n",
- 				dest_tpg->se_tpg_tfo->fabric_name,
- 				dest_node_acl->initiatorname, dest_rtpi);
- 
-@@ -1681,7 +1681,7 @@ core_scsi3_decode_spec_i_port(
- 					dest_rtpi);
- 		if (!dest_se_deve) {
- 			pr_err("Unable to locate %s dest_se_deve"
--				" from destination RTPI: %hu\n",
-+				" from destination RTPI: %u\n",
- 				dest_tpg->se_tpg_tfo->fabric_name,
- 				dest_rtpi);
- 
 diff --git a/drivers/w1/slaves/w1_therm.c b/drivers/w1/slaves/w1_therm.c
-index 976eea28f268..5115bf401da0 100644
+index 9d08a1c9c445..2a3a8e143a00 100644
 --- a/drivers/w1/slaves/w1_therm.c
 +++ b/drivers/w1/slaves/w1_therm.c
-@@ -1775,7 +1775,7 @@ static ssize_t alarms_show(struct device *device,
+@@ -1774,7 +1774,7 @@ static ssize_t alarms_show(struct device *device,
  			__func__, ret);
  	}
  
@@ -987,10 +876,10 @@ index d563abc3e136..31113ce69fec 100644
  	BUG_ON(ofs < 0);
  	BUG_ON(cnt < 0);
 diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-index e98f99338f8f..7648b6214dd4 100644
+index 9edc8e2b154e..decb15d65463 100644
 --- a/fs/reiserfs/journal.c
 +++ b/fs/reiserfs/journal.c
-@@ -2544,7 +2544,7 @@ static int journal_read(struct super_block *sb)
+@@ -2542,7 +2542,7 @@ static int journal_read(struct super_block *sb)
  	journal->j_first_unflushed_offset = journal->j_start;
  	if (replay_count > 0) {
  		reiserfs_info(sb,
@@ -1000,7 +889,7 @@ index e98f99338f8f..7648b6214dd4 100644
  	}
  	/* needed to satisfy the locking in _update_journal_header_block */
 diff --git a/lib/test_printf.c b/lib/test_printf.c
-index 95a2f82427c7..a9b01368d5fb 100644
+index ec0d5976bb69..134d8f1b7399 100644
 --- a/lib/test_printf.c
 +++ b/lib/test_printf.c
 @@ -154,9 +154,9 @@ test_number(void)
@@ -1052,7 +941,7 @@ index 36ed85bf2ad5..cc063bbfadd6 100644
  	}
  
 diff --git a/net/ipv4/esp4.c b/net/ipv4/esp4.c
-index 4b834bbf95e0..181b1348cc4d 100644
+index 35803ab7ac80..fe93846cb6df 100644
 --- a/net/ipv4/esp4.c
 +++ b/net/ipv4/esp4.c
 @@ -1114,7 +1114,7 @@ static int esp_init_authenc(struct xfrm_state *x)
@@ -1065,12 +954,12 @@ index 4b834bbf95e0..181b1348cc4d 100644
  		}
  
 diff --git a/net/ipv6/ah6.c b/net/ipv6/ah6.c
-index 080ee7f44c64..bbb501e9ee7a 100644
+index 20d492da725a..5fde1c195f15 100644
 --- a/net/ipv6/ah6.c
 +++ b/net/ipv6/ah6.c
 @@ -707,7 +707,7 @@ static int ah6_init_state(struct xfrm_state *x)
  	    crypto_ahash_digestsize(ahash)) {
- 		pr_info("AH: %s digestsize %u != %hu\n",
+ 		pr_info("AH: %s digestsize %u != %u\n",
  			x->aalg->alg_name, crypto_ahash_digestsize(ahash),
 -			aalg_desc->uinfo.auth.icv_fullbits/8);
 +			(u16)(aalg_desc->uinfo.auth.icv_fullbits/8));
@@ -1078,11 +967,11 @@ index 080ee7f44c64..bbb501e9ee7a 100644
  	}
  
 diff --git a/net/ipv6/esp6.c b/net/ipv6/esp6.c
-index 727d791ed5e6..cbcafb642618 100644
+index 393ae2b78e7d..55e3758e3485 100644
 --- a/net/ipv6/esp6.c
 +++ b/net/ipv6/esp6.c
 @@ -1150,7 +1150,7 @@ static int esp_init_authenc(struct xfrm_state *x)
- 			pr_info("ESP: %s digestsize %u != %hu\n",
+ 			pr_info("ESP: %s digestsize %u != %u\n",
  				x->aalg->alg_name,
  				crypto_aead_authsize(aead),
 -				aalg_desc->uinfo.auth.icv_fullbits / 8);
@@ -1135,10 +1024,10 @@ index aea85f91f059..f8372c22d8be 100644
  		   atomic_long_read(&session->stats.tx_packets),
  		   atomic_long_read(&session->stats.tx_bytes),
 diff --git a/net/netfilter/nf_conntrack_h323_main.c b/net/netfilter/nf_conntrack_h323_main.c
-index 8ba037b76ad3..e4c541ef194b 100644
+index aafaff00baf1..13e8d1126191 100644
 --- a/net/netfilter/nf_conntrack_h323_main.c
 +++ b/net/netfilter/nf_conntrack_h323_main.c
-@@ -193,8 +193,8 @@ static int get_tpkt_data(struct sk_buff *skb, unsigned int protoff,
+@@ -194,8 +194,8 @@ static int get_tpkt_data(struct sk_buff *skb, unsigned int protoff,
  		if (tcpdatalen == 4) {	/* Separate TPKT header */
  			/* Netmeeting sends TPKT header and data separately */
  			pr_debug("nf_ct_h323: separate TPKT header indicates "
@@ -1176,10 +1065,10 @@ index 76acecf3e757..5bbf78e7c9f6 100644
  	}
  
 diff --git a/net/netfilter/xt_SECMARK.c b/net/netfilter/xt_SECMARK.c
-index 75625d13e976..ec0d3955643b 100644
+index 498a0bf6f044..43d7701d0dc5 100644
 --- a/net/netfilter/xt_SECMARK.c
 +++ b/net/netfilter/xt_SECMARK.c
-@@ -86,7 +86,7 @@ static int secmark_tg_check(const struct xt_tgchk_param *par)
+@@ -85,7 +85,7 @@ secmark_tg_check(const char *table, struct xt_secmark_target_info_v1 *info)
  	}
  
  	if (mode && mode != info->mode) {
@@ -1188,7 +1077,7 @@ index 75625d13e976..ec0d3955643b 100644
  				    mode, info->mode);
  		return -EINVAL;
  	}
-@@ -95,7 +95,7 @@ static int secmark_tg_check(const struct xt_tgchk_param *par)
+@@ -94,7 +94,7 @@ secmark_tg_check(const char *table, struct xt_secmark_target_info_v1 *info)
  	case SECMARK_MODE_SEL:
  		break;
  	default:
@@ -1198,7 +1087,7 @@ index 75625d13e976..ec0d3955643b 100644
  	}
  
 diff --git a/net/netfilter/xt_TPROXY.c b/net/netfilter/xt_TPROXY.c
-index 194dc03341f3..d549a02b72b2 100644
+index 459d0696c91a..5d74abffc94f 100644
 --- a/net/netfilter/xt_TPROXY.c
 +++ b/net/netfilter/xt_TPROXY.c
 @@ -169,7 +169,7 @@ tproxy_tg6_v1(struct sk_buff *skb, const struct xt_action_param *par)
@@ -1220,7 +1109,7 @@ index 194dc03341f3..d549a02b72b2 100644
  		 &iph->daddr, ntohs(hp->dest), skb->mark);
  
 diff --git a/net/rxrpc/rxkad.c b/net/rxrpc/rxkad.c
-index e2e9e9b0a6d7..47788d0bfb05 100644
+index 08aab5c01437..258917a714c8 100644
 --- a/net/rxrpc/rxkad.c
 +++ b/net/rxrpc/rxkad.c
 @@ -431,7 +431,7 @@ static int rxkad_secure_packet(struct rxrpc_call *call,

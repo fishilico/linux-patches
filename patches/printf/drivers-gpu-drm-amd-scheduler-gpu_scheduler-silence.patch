@@ -5,18 +5,20 @@ Subject: [PATCH] {PRINTF} drivers/gpu/drm/amd/scheduler/gpu_scheduler: silence
  -Wformat-security
 
 ---
- drivers/gpu/drm/scheduler/sched_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/scheduler/sched_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/gpu/drm/scheduler/sched_main.c b/drivers/gpu/drm/scheduler/sched_main.c
-index 92637b70c9bf..2ca29add1728 100644
+index 92d8de24d0a1..24094e6b4df3 100644
 --- a/drivers/gpu/drm/scheduler/sched_main.c
 +++ b/drivers/gpu/drm/scheduler/sched_main.c
-@@ -874,7 +874,7 @@ int drm_sched_init(struct drm_gpu_scheduler *sched,
+@@ -865,8 +865,8 @@ int drm_sched_init(struct drm_gpu_scheduler *sched,
+ 	atomic_set(&sched->_score, 0);
  	atomic64_set(&sched->job_id_count, 0);
  
- 	/* Each scheduler will run on a seperate kernel thread */
+-	/* Each scheduler will run on a seperate kernel thread */
 -	sched->thread = kthread_run(drm_sched_main, sched, sched->name);
++	/* Each scheduler will run on a separate kernel thread */
 +	sched->thread = kthread_run(drm_sched_main, sched, "%s", sched->name); /* not a vulnerability because ring->name is initialized by callers of amdgpu_ring_init with strings without %s */
  	if (IS_ERR(sched->thread)) {
  		ret = PTR_ERR(sched->thread);

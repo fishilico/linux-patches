@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 15 May 2021 10:08:34 +0200
+Subject: [PATCH] {BUG in 5.13-rc1} drivers/hwmon/pmbus/bpa-rs600: fix strncmp
+ size
+
+---
+ drivers/hwmon/pmbus/bpa-rs600.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/hwmon/pmbus/bpa-rs600.c b/drivers/hwmon/pmbus/bpa-rs600.c
+index f6558ee9dec3..fe2745e2cd52 100644
+--- a/drivers/hwmon/pmbus/bpa-rs600.c
++++ b/drivers/hwmon/pmbus/bpa-rs600.c
+@@ -135,7 +135,7 @@ static int bpa_rs600_probe(struct i2c_client *client)
+ 		return ret;
+ 	}
+ 
+-	if (strncmp(buf, "BPA-RS600", 8)) {
++	if (strncmp(buf, "BPA-RS600", 9)) {
+ 		buf[ret] = '\0';
+ 		dev_err(dev, "Unsupported Manufacturer Model '%s'\n", buf);
+ 		return -ENODEV;
+-- 

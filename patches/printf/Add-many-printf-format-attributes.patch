@@ -8,7 +8,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  drivers/acpi/acpica/nsrepair2.c    |  2 +-
  drivers/clk/clkdev.c               |  7 ++++---
  drivers/isdn/capi/capiutil.c       |  4 ++--
- drivers/scsi/BusLogic.c            |  6 +++---
+ drivers/scsi/BusLogic.c            |  2 +-
  drivers/scsi/esas2r/esas2r_log.c   |  8 ++++----
  drivers/staging/fbtft/fbtft.h      |  2 +-
  drivers/xen/xenbus/xenbus_client.c | 10 ++++++----
@@ -21,7 +21,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  scripts/unifdef.c                  |  2 +-
  security/tomoyo/common.c           |  3 ++-
  security/tomoyo/common.h           |  4 ++--
- 17 files changed, 40 insertions(+), 34 deletions(-)
+ 17 files changed, 38 insertions(+), 32 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index a3725ad46c5a..04616745d029 100644
@@ -105,34 +105,23 @@ index f26bf3c66d7e..94d7ce148a81 100644
  			break;
  		case _CSTRUCT:
 diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
-index ccb061ab0a0a..0d1d9275979b 100644
+index 3ee46a843cb5..b0f728d44dc2 100644
 --- a/drivers/scsi/BusLogic.c
 +++ b/drivers/scsi/BusLogic.c
-@@ -1845,7 +1845,7 @@ static bool __init blogic_reportconfig(struct blogic_adapter *adapter)
- 		else
- 			blogic_info("None, ", adapter);
+@@ -1711,7 +1711,7 @@ static bool __init blogic_reportconfig(struct blogic_adapter *adapter)
+ 	if (adapter->adapter_bus_type != BLOGIC_PCI_BUS) {
+ 		blogic_info("  DMA Channel: None, ", adapter);
  		if (adapter->bios_addr > 0)
 -			blogic_info("BIOS Address: 0x%lX, ", adapter,
 +			blogic_info("BIOS Address: 0x%X, ", adapter,
  					adapter->bios_addr);
  		else
  			blogic_info("BIOS Address: None, ", adapter);
-@@ -3579,8 +3579,8 @@ Target	Requested Completed  Requested Completed  Requested Completed\n\
-   blogic_msg prints Driver Messages.
- */
- 
--static void blogic_msg(enum blogic_msglevel msglevel, char *fmt,
--			struct blogic_adapter *adapter, ...)
-+static __printf(2, 4) void blogic_msg(enum blogic_msglevel msglevel, char *fmt,
-+				      struct blogic_adapter *adapter, ...)
- {
- 	static char buf[BLOGIC_LINEBUF_SIZE];
- 	static bool begin = true;
 diff --git a/drivers/scsi/esas2r/esas2r_log.c b/drivers/scsi/esas2r/esas2r_log.c
-index b545798e400c..83614c103df6 100644
+index d6c87a0bae09..1672c52f855d 100644
 --- a/drivers/scsi/esas2r/esas2r_log.c
 +++ b/drivers/scsi/esas2r/esas2r_log.c
-@@ -113,10 +113,10 @@ static const char *translate_esas2r_event_level_to_kernel(const long level)
+@@ -118,10 +118,10 @@ static const char *translate_esas2r_event_level_to_kernel(const long level)
   *
   * @return 0 on success, or -1 if an error occurred.
   */
@@ -202,7 +191,7 @@ index 690c369b717a..2937a801eacf 100644
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index 28e7af1406f2..46f4b46d338c 100644
+index ad413b382a3c..cc3c9fa2e554 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
 @@ -232,7 +232,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
@@ -216,7 +205,7 @@ index 28e7af1406f2..46f4b46d338c 100644
  struct event_filter;
  
 diff --git a/kernel/audit.c b/kernel/audit.c
-index 551a394bc8f4..f0a645d4cb57 100644
+index 121d37e700a6..a910baf1813b 100644
 --- a/kernel/audit.c
 +++ b/kernel/audit.c
 @@ -1904,8 +1904,8 @@ static inline int audit_expand(struct audit_buffer *ab, int extra)
@@ -231,10 +220,10 @@ index 551a394bc8f4..f0a645d4cb57 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index a6446c03cfbc..d03dbecbdcf7 100644
+index cd80d046c7a5..128ec8c322cf 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -733,11 +733,11 @@ static inline void __init disable_tracing_selftest(const char *reason)
+@@ -756,11 +756,11 @@ static inline void __init disable_tracing_selftest(const char *reason)
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -250,7 +239,7 @@ index a6446c03cfbc..d03dbecbdcf7 100644
  		    unsigned long ip, const char *fmt, va_list args);
  int trace_array_printk_buf(struct trace_buffer *buffer,
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 61255bad7e01..869ce8daebae 100644
+index d0368a569bfa..ac33627a3906 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
 @@ -322,8 +322,8 @@ void trace_event_printf(struct trace_iterator *iter, const char *fmt, ...)

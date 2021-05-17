@@ -50,7 +50,7 @@ do
     fi
 
     # Don't show false positive (non-returning functions)
-    # Buggy fall-through functions would be catched by the compiler before Frama-C
+    # Buggy fall-through functions would be caught by the compiler before Frama-C
     RE='^\[kernel\] warning: Body of function [a-zA-Z0-9_]* falls-through. Adding a return statement'
     [[ "$MESSAGE" =~ $RE ]] && continue
 

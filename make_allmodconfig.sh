@@ -190,7 +190,7 @@ then
     disable_in_kcflags 'pedantic' # Use modern C
     disable_in_kcflags 'pointer-bool-conversion' # Some vectors are tested as null pointers
     disable_in_kcflags 'redundant-parens' # Some macros expand with redundant parentheses
-    disable_in_kcflags 'reserved-id-macro' # Linux uses macros begining with underscore
+    disable_in_kcflags 'reserved-id-macro' # Linux uses macros beginning with underscore
     disable_in_kcflags 'shift-negative-value' # Shifted negative numbers are like unsigned for Linux
     disable_in_kcflags 'switch-bool' # It happens that bool are used in switch statements
     disable_in_kcflags 'switch-enum' # Show values in switch on enum can be skipped
@@ -232,7 +232,7 @@ then
     disable_in_kcflags 'aggressive-loop-optimizations' # gcc 9 warns about some loops in echoaudio_dsp, which looks fine
     disable_in_kcflags 'array-bounds' # gcc 10 warns about array subscripts with negative value, which is used
     disable_in_kcflags 'attribute-alias' # gcc 8 warns about x86-32 syscall handler using incompatible types
-    disable_in_kcflags 'builtin-declaration-mismatch' # gcc 9 warns about using speicific pointer types instead of void*
+    disable_in_kcflags 'builtin-declaration-mismatch' # gcc 9 warns about using specific pointer types instead of void*
     disable_in_kcflags 'cast-function-type' # gcc 8 warns about many incompatible function casts used by Linux
     disable_in_kcflags 'format-overflow' # Many calls to snprintf may overflow
     disable_in_kcflags 'format-truncation' # Many calls to snprintf may be truncated
@@ -318,7 +318,7 @@ then
     disable_in_hostcflags 'variadic-macros'
     disable_in_hostcflags 'vla' # Variable-length arrays are used in some host programs
     disable_in_hostcflags 'zero-length-array' # Some structures has zero-length arrays
-    # Too many occurences to have these in -Werror:
+    # Too many occurrences to have these in -Werror:
     disable_in_hostcflags 'error=conditional-uninitialized'
     disable_in_hostcflags 'error=conversion'
     disable_in_hostcflags 'error=declaration-after-statement'
@@ -396,6 +396,7 @@ then
         echo 'CONFIG_DRM_AMD_DC_DCN2_1=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_DRM_AMD_DC_DCN3_0=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_DRM_AMD_DC_DSC_SUPPORT=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_DRM_AMD_SECURE_DISPLAY=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_UBSAN_BOUNDS=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_UBSAN_LOCAL_BOUNDS=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_TEST_FPU=m' >> "$KBUILD_OUTPUT/.config"

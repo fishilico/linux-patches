@@ -33,7 +33,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/kernel/process.c           |  40 ++++++++
  arch/framac/kernel/ptrace.c            |  11 +++
  arch/framac/kernel/reboot.c            |  22 +++++
- arch/framac/kernel/setup.c             |  12 +++
+ arch/framac/kernel/setup.c             |  16 ++++
  arch/framac/kernel/time.c              |   5 +
  arch/framac/kernel/traps.c             |  10 ++
  arch/framac/kernel/vmlinux.lds.S       |  56 +++++++++++
@@ -41,7 +41,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/lib/delay.c                |  27 ++++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 +++
- 37 files changed, 994 insertions(+)
+ 37 files changed, 998 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Kconfig.debug
  create mode 100644 arch/framac/Makefile
@@ -1121,12 +1121,13 @@ index 000000000000..14e28943325e
 +}
 diff --git a/arch/framac/kernel/setup.c b/arch/framac/kernel/setup.c
 new file mode 100644
-index 000000000000..3b39b1af6d41
+index 000000000000..b509adaf3939
 --- /dev/null
 +++ b/arch/framac/kernel/setup.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,16 @@
 +#include <linux/init.h>
 +#include <linux/mm.h>
++#include <linux/seq_file.h>
 +
 +unsigned long memory_start;
 +EXPORT_SYMBOL(memory_start);
@@ -1137,6 +1138,9 @@ index 000000000000..3b39b1af6d41
 +void __init setup_arch(char **cmdline_p)
 +{
 +}
++
++const struct seq_operations cpuinfo_op = {
++};
 diff --git a/arch/framac/kernel/time.c b/arch/framac/kernel/time.c
 new file mode 100644
 index 000000000000..b400db694d39

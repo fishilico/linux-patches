@@ -57,7 +57,7 @@ do_build_test() {
     fi
 }
 
-# List of tests which were not run becase something is missing
+# List of tests which were not run because something is missing
 UNSUPPORTED_TESTS=''
 
 # First compile with gcc
@@ -101,7 +101,7 @@ else
     UNSUPPORTED_TESTS="$UNSUPPORTED_TESTS gcc-framac"
 fi
 
-msg_green 'Compiling with all configurations succeded :)'
+msg_green 'Compiling with all configurations succeeded :)'
 
 # Print a warning for unsupported tests
 if [ -n "$UNSUPPORTED_TESTS" ]

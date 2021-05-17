@@ -1,0 +1,86 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 15 May 2021 14:15:08 +0200
+Subject: [PATCH] {PRAGMA} include/linux/randomize_kstack: ignore -Walloca
+ warning
+
+clang 11.1.0 reports warning about using alloca(). This is fine, so
+ignore it.
+
+While at it, add the infrastructure to ignore warnings when building
+with clang.
+---
+ include/linux/compiler-clang.h   | 22 ++++++++++++++++++++++
+ include/linux/compiler_types.h   |  4 ++++
+ include/linux/randomize_kstack.h |  4 ++++
+ 3 files changed, 30 insertions(+)
+
+diff --git a/include/linux/compiler-clang.h b/include/linux/compiler-clang.h
+index adbe76b203e2..34c9099ff76a 100644
+--- a/include/linux/compiler-clang.h
++++ b/include/linux/compiler-clang.h
+@@ -5,6 +5,10 @@
+ 
+ /* Compiler specific definitions for Clang compiler */
+ 
++#define CLANG_VERSION (__clang_major__ * 10000		\
++		     + __clang_minor__ * 100	\
++		     + __clang_patchlevel__)
++
+ /* same as gcc, this was present in clang-2.6 so we can assume it works
+  * with any version that can compile the kernel
+  */
+@@ -64,3 +68,21 @@
+ 
+ #define __nocfi		__attribute__((__no_sanitize__("cfi")))
+ #define __cficanonical	__attribute__((__cfi_canonical_jump_table__))
++
++/* Copy from compiler-gcc.h */
++#define __diag_CLANG(version, severity, s) \
++	__diag_CLANG_ ## version(__diag_CLANG_ ## severity s)
++
++#define __diag_CLANG_ignore	ignored
++#define __diag_CLANG_warn	warning
++#define __diag_CLANG_error	error
++
++#define __diag_str1(s)		#s
++#define __diag_str(s)		__diag_str1(s)
++#define __diag(s)		_Pragma(__diag_str(GCC diagnostic s))
++
++#if CLANG_VERSION >= 100000
++#define __diag_CLANG_10(s)	__diag(s)
++#else
++#define __diag_CLANG_10(s)
++#endif
+diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
+index ed46a0ba31fb..630a60993e10 100644
+--- a/include/linux/compiler_types.h
++++ b/include/linux/compiler_types.h
+@@ -340,6 +340,10 @@ struct ftrace_likely_data {
+ #define __diag_GCC(version, severity, string)
+ #endif
+ 
++#ifndef __diag_CLANG
++#define __diag_CLANG(version, severity, string)
++#endif
++
+ #define __diag_push()	__diag(push)
+ #define __diag_pop()	__diag(pop)
+ 
+diff --git a/include/linux/randomize_kstack.h b/include/linux/randomize_kstack.h
+index fd80fab663a9..04df2b36e051 100644
+--- a/include/linux/randomize_kstack.h
++++ b/include/linux/randomize_kstack.h
+@@ -36,7 +36,11 @@ void *__builtin_alloca(size_t size);
+ 	if (static_branch_maybe(CONFIG_RANDOMIZE_KSTACK_OFFSET_DEFAULT,	\
+ 				&randomize_kstack_offset)) {		\
+ 		u32 offset = raw_cpu_read(kstack_offset);		\
++		__diag_push() \
++		__diag_ignore(CLANG, 10, "-Walloca", \
++			      "Using alloc is fine here") \
+ 		u8 *ptr = __builtin_alloca(KSTACK_OFFSET_MAX(offset));	\
++		__diag_pop() \
+ 		/* Keep allocation even after "ptr" loses scope. */	\
+ 		asm volatile("" : "=o"(*ptr) :: "memory");		\
+ 	}								\
+-- 

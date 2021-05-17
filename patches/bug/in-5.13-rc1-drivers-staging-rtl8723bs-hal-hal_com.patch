@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 15 May 2021 10:10:06 +0200
+Subject: [PATCH] {BUG in 5.13-rc1} drivers/staging/rtl8723bs/hal/hal_com:
+ remove buggy &
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Found with deref checker plugin:
+
+    include/linux/dynamic_debug.h:175:8: error: Invalid pointer depth in
+    function call ‘print_hex_dump’: type of argument 6 says 1 but value
+    is 2
+---
+ drivers/staging/rtl8723bs/hal/hal_com.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/rtl8723bs/hal/hal_com.c b/drivers/staging/rtl8723bs/hal/hal_com.c
+index e82f59fc5e9b..1cb276f2c2b5 100644
+--- a/drivers/staging/rtl8723bs/hal/hal_com.c
++++ b/drivers/staging/rtl8723bs/hal/hal_com.c
+@@ -917,7 +917,7 @@ s32 c2h_evt_read_88xx(struct adapter *adapter, u8 *buf)
+ 	c2h_evt->plen = rtw_read8(adapter, REG_C2HEVT_CMD_LEN_88XX);
+ 
+ 	print_hex_dump_debug(DRIVER_PREFIX ": c2h_evt_read(): ", DUMP_PREFIX_NONE,
+-			     16, 1, &c2h_evt, sizeof(c2h_evt), false);
++			     16, 1, /* BUG in 5.13-rc1? */c2h_evt, sizeof(c2h_evt), false);
+ 
+ 	/* Read the content */
+ 	for (i = 0; i < c2h_evt->plen; i++)
+-- 

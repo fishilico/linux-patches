@@ -17,10 +17,10 @@ list of disabled warnings.
  8 files changed, 52 insertions(+), 46 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 3a10a8e08b6d..4f51e7a83d39 100644
+index 53d09c414635..52ad83a38885 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -464,7 +464,7 @@ XZ		= xz
+@@ -472,7 +472,7 @@ XZ		= xz
  ZSTD		= zstd
  
  CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
@@ -29,7 +29,7 @@ index 3a10a8e08b6d..4f51e7a83d39 100644
  NOSTDINC_FLAGS :=
  CFLAGS_MODULE   =
  AFLAGS_MODULE   =
-@@ -492,10 +492,10 @@ LINUXINCLUDE    := \
+@@ -500,10 +500,10 @@ LINUXINCLUDE    := \
  		$(USERINCLUDE)
  
  KBUILD_AFLAGS   := -D__ASSEMBLY__ -fno-PIE
@@ -42,7 +42,7 @@ index 3a10a8e08b6d..4f51e7a83d39 100644
  		   -std=gnu89
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
-@@ -661,8 +661,8 @@ endif # KBUILD_EXTMOD
+@@ -673,8 +673,8 @@ endif # KBUILD_EXTMOD
  all: vmlinux
  
  CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage \
@@ -53,7 +53,7 @@ index 3a10a8e08b6d..4f51e7a83d39 100644
  export CFLAGS_GCOV
  
  # The arch Makefiles can override CC_FLAGS_FTRACE. We may also append it later.
-@@ -728,10 +728,10 @@ endif # may-sync-config
+@@ -740,10 +740,10 @@ endif # may-sync-config
  endif # need-config
  
  KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
@@ -68,7 +68,7 @@ index 3a10a8e08b6d..4f51e7a83d39 100644
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
  KBUILD_CFLAGS += -O2
-@@ -767,8 +767,8 @@ KBUILD_CFLAGS += $(stackp-flags-y)
+@@ -779,8 +779,8 @@ KBUILD_CFLAGS += $(stackp-flags-y)
  
  ifdef CONFIG_CC_IS_CLANG
  KBUILD_CPPFLAGS += -Qunused-arguments
@@ -79,25 +79,19 @@ index 3a10a8e08b6d..4f51e7a83d39 100644
  # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
  # source of a reference will be _MergedGlobals and not on of the whitelisted names.
  # See modpost pattern 2
-@@ -777,7 +777,7 @@ else
+@@ -795,9 +795,9 @@ endif
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
--KBUILD_CFLAGS += -Wno-unused-but-set-variable
-+#KBUILD_CFLAGS += -Wno-unused-but-set-variable
- 
- # Warn about unmarked fall-throughs in switch statement.
- # Disabled for clang while comment to attribute conversion happens and
-@@ -785,7 +785,7 @@ KBUILD_CFLAGS += -Wno-unused-but-set-variable
- KBUILD_CFLAGS += $(call cc-option,-Wimplicit-fallthrough,)
- endif
+-KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
++#KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
  
 -KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
 +#KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
  ifdef CONFIG_FRAME_POINTER
  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
  else
-@@ -934,21 +934,21 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
+@@ -967,21 +967,21 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
  KBUILD_CFLAGS += -Wvla
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -127,10 +121,10 @@ index 3a10a8e08b6d..4f51e7a83d39 100644
  # disable invalid "can't wrap" optimizations for signed / pointers
  KBUILD_CFLAGS	+= -fno-strict-overflow
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 9a85eae37b17..0919eefc4c18 100644
+index c77c5d8a7b3e..11f7913a6de0 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
-@@ -175,7 +175,7 @@ KBUILD_LDFLAGS	+= -plugin-opt=-code-model=kernel \
+@@ -184,7 +184,7 @@ KBUILD_LDFLAGS	+= -plugin-opt=-code-model=kernel \
  endif
  
  # Workaround for a gcc prelease that unfortunately was shipped in a suse release
@@ -140,7 +134,7 @@ index 9a85eae37b17..0919eefc4c18 100644
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  
 diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
-index e0bc3988c3fa..a6c59232d9fb 100644
+index 6e5522aebbbd..4c2cc79081cb 100644
 --- a/arch/x86/boot/compressed/Makefile
 +++ b/arch/x86/boot/compressed/Makefile
 @@ -37,9 +37,9 @@ KBUILD_CFLAGS += $(cflags-y)
@@ -157,7 +151,7 @@ index e0bc3988c3fa..a6c59232d9fb 100644
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  KBUILD_CFLAGS += -D__DISABLE_EXPORTS
 diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
-index 2385a7505f5d..6eb9ad99aadc 100644
+index d0d936d9137b..b04c9e144d30 100644
 --- a/drivers/gpu/drm/i915/Makefile
 +++ b/drivers/gpu/drm/i915/Makefile
 @@ -12,21 +12,21 @@
@@ -231,7 +225,7 @@ index ad0ae8053b79..8da8cbb7c72a 100644
  CC	:= $(CROSS_COMPILE)gcc
  
 diff --git a/mm/Makefile b/mm/Makefile
-index 72227b24a616..d4eeb6a99983 100644
+index bf71e295e9f6..dedf44b144fe 100644
 --- a/mm/Makefile
 +++ b/mm/Makefile
 @@ -31,8 +31,8 @@ KCOV_INSTRUMENT_mmzone.o := n
