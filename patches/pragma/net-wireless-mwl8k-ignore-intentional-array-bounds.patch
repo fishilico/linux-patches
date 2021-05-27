@@ -5,26 +5,22 @@ Subject: [PATCH] {PRAGMA} net/wireless/mwl8k: ignore intentional array bounds
  violation
 
 ---
- drivers/net/wireless/marvell/mwl8k.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/net/wireless/marvell/mwl8k.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/drivers/net/wireless/marvell/mwl8k.c b/drivers/net/wireless/marvell/mwl8k.c
-index 84b32a5f01ee..be211a9175c3 100644
+index 84b32a5f01ee..76ed2c5ff971 100644
 --- a/drivers/net/wireless/marvell/mwl8k.c
 +++ b/drivers/net/wireless/marvell/mwl8k.c
-@@ -822,7 +822,15 @@ static inline void mwl8k_remove_dma_header(struct sk_buff *skb, __le16 qos)
+@@ -822,7 +822,11 @@ static inline void mwl8k_remove_dma_header(struct sk_buff *skb, __le16 qos)
  	if (hdrlen != sizeof(tr->wh)) {
  		if (ieee80211_is_data_qos(tr->wh.frame_control)) {
  			memmove(tr->data - hdrlen, &tr->wh, hdrlen - 2);
-+/* clang doesn't like to reference 2 bytes before the beginning of the array */
-+#ifdef __clang__
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Warray-bounds-pointer-arithmetic"
-+#endif
++			__diag_push()
++			__diag_ignore(CLANG, 10, "-Warray-bounds-pointer-arithmetic",
++				      "It is normal to reference 2 bytes before the beginning of the array")
  			*((__le16 *)(tr->data - 2)) = qos;
-+#ifdef __clang__
-+#pragma GCC diagnostic pop
-+#endif
++			__diag_pop()
  		} else {
  			memmove(tr->data - hdrlen, &tr->wh, hdrlen);
  		}

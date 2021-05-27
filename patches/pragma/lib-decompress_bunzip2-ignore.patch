@@ -5,42 +5,36 @@ Subject: [PATCH] {PRAGMA} lib/decompress_bunzip2: ignore
  -Warray-bounds-pointer-arithmetic
 
 ---
- lib/decompress_bunzip2.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ lib/decompress_bunzip2.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
-index c72c865032fa..d0f538cb8d47 100644
+index c72c865032fa..8b191cff2927 100644
 --- a/lib/decompress_bunzip2.c
 +++ b/lib/decompress_bunzip2.c
-@@ -300,8 +300,15 @@ static int INIT get_next_block(struct bunzip_data *bd)
+@@ -300,8 +300,12 @@ static int INIT get_next_block(struct bunzip_data *bd)
  		   adjust the base and limit array pointers so we're
  		   not always wasting the first entry.  We do this
  		   again when using them (during symbol decoding).*/
-+#ifdef __clang__
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Warray-bounds-pointer-arithmetic"
-+#endif
++		__diag_push()
++		__diag_ignore(CLANG, 10, "-Warray-bounds-pointer-arithmetic",
++			      "This is all right")
  		base = hufGroup->base-1;
  		limit = hufGroup->limit-1;
-+#ifdef __clang__
-+#pragma GCC diagnostic pop
-+#endif
++		__diag_pop()
  		/* Calculate permute[].  Concurrently, initialize
  		 * temp[] and limit[]. */
  		pp = 0;
-@@ -362,8 +369,15 @@ static int INIT get_next_block(struct bunzip_data *bd)
+@@ -362,8 +366,12 @@ static int INIT get_next_block(struct bunzip_data *bd)
  			if (selector >= nSelectors)
  				return RETVAL_DATA_ERROR;
  			hufGroup = bd->groups+selectors[selector++];
-+#ifdef __clang__
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Warray-bounds-pointer-arithmetic"
-+#endif
++			__diag_push()
++			__diag_ignore(CLANG, 10, "-Warray-bounds-pointer-arithmetic",
++				      "This is all right")
  			base = hufGroup->base-1;
  			limit = hufGroup->limit-1;
-+#ifdef __clang__
-+#pragma GCC diagnostic pop
-+#endif
++			__diag_pop()
  		}
  		/* Read next Huffman-coded symbol. */
  		/* Note: It is far cheaper to read maxLen bits and

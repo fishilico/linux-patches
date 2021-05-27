@@ -3292,7 +3292,7 @@ index 0b7f1edd9eec..ef73fa58ce29 100644
  		next += temp;
  		if (i == HCS_DEBUG_PORT(ehci->hcs_params) && ehci->debug) {
 diff --git a/drivers/usb/host/fotg210-hcd.c b/drivers/usb/host/fotg210-hcd.c
-index 6cac642520fc..bc164f0a7605 100644
+index 9c2eda0918e1..dacdb50b4317 100644
 --- a/drivers/usb/host/fotg210-hcd.c
 +++ b/drivers/usb/host/fotg210-hcd.c
 @@ -693,19 +693,28 @@ static ssize_t fill_registers_buffer(struct debug_buffer *buf)
@@ -3623,7 +3623,7 @@ index 2dafd7dbe893..26eabf272170 100644
  
  /**
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
-index 8fd659ca7d3a..a5a4ae9e8ac6 100644
+index 7cb9e7e6f623..55ee61f16764 100644
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
 @@ -862,8 +862,11 @@ int bpf_bprintf_prepare(char *fmt, u32 fmt_size, const u64 *raw_args,
@@ -3769,27 +3769,30 @@ index fe3f2a40d61e..a31713f746cf 100644
  		return p;
  	kthread_bind(p, cpu);
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 836e2d00c3f8..d6126eed44b9 100644
+index ce29e604cf1e..080b1726f900 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -3746,7 +3746,10 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
+@@ -3753,7 +3753,10 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  		/* Copy up to the %s, and print that */
  		strncpy(iter->fmt, p, i);
  		iter->fmt[i] = '\0';
 +__diag_push()
-+__diag(ignored "-Wformat-security")
++__diag_ignore(GCC, 4, "-Wformat-security", "The format is checked as being %s")
  		trace_seq_vprintf(&iter->seq, iter->fmt, ap);
 +__diag_pop()
  
- 		/* The ap now points to the string data of the %s */
- 		str = va_arg(ap, const char *);
-@@ -3779,7 +3782,10 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
+ 		if (star)
+ 			len = va_arg(ap, int);
+@@ -3799,10 +3802,13 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  			strncpy(iter->fmt, p + i, j + 1);
  			iter->fmt[j+1] = '\0';
  		}
 +__diag_push()
-+__diag(ignored "-Wformat-security")
- 		trace_seq_printf(&iter->seq, iter->fmt, str);
++__diag_ignore(GCC, 4, "-Wformat-security", "The format is checked beforehand")
+ 		if (star)
+ 			trace_seq_printf(&iter->seq, iter->fmt, len, str);
+ 		else
+ 			trace_seq_printf(&iter->seq, iter->fmt, str);
 +__diag_pop()
  
  		p += i + j + 1;
@@ -3932,10 +3935,10 @@ index 14bd51ea2348..5f99516575c3 100644
  		 * We should not pass a shadow pointer to generic
  		 * function, because generic functions may try to
 diff --git a/mm/shmem.c b/mm/shmem.c
-index a08cedefbfaa..1e03ca4d5ca8 100644
+index 5d46611cba8d..4f8f0f671c74 100644
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
-@@ -3983,10 +3983,13 @@ static ssize_t shmem_enabled_show(struct kobject *kobj,
+@@ -3979,10 +3979,13 @@ static ssize_t shmem_enabled_show(struct kobject *kobj,
  	int i;
  
  	for (i = 0; i < ARRAY_SIZE(values); i++) {
@@ -3950,10 +3953,10 @@ index a08cedefbfaa..1e03ca4d5ca8 100644
  
  	len += sysfs_emit_at(buf, len, "\n");
 diff --git a/mm/slub.c b/mm/slub.c
-index feda53ae62ba..c516bc168a31 100644
+index 438fa8d4c970..6a152ad5996d 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -3901,7 +3901,11 @@ static void list_slab_objects(struct kmem_cache *s, struct page *page,
+@@ -3892,7 +3892,11 @@ static void list_slab_objects(struct kmem_cache *s, struct page *page,
  	unsigned long *map;
  	void *p;
  
