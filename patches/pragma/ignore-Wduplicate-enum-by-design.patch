@@ -19,10 +19,10 @@ Subject: [PATCH] {PRAGMA} ignore -Wduplicate-enum by design
  drivers/net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h | 5 +++++
  drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h         | 3 +++
  include/linux/mfd/max77686-private.h                        | 3 +++
- include/uapi/linux/netfilter/nf_conntrack_common.h          | 3 +++
- include/uapi/linux/nl80211.h                                | 3 +++
+ include/uapi/linux/netfilter/nf_conntrack_common.h          | 2 +-
+ include/uapi/linux/nl80211.h                                | 2 +-
  sound/pci/pcxhr/pcxhr.h                                     | 4 ++++
- 18 files changed, 60 insertions(+)
+ 18 files changed, 56 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
 index d0dcefb5cc59..01711567394b 100644
@@ -357,47 +357,31 @@ index 833e578e051e..dd4fe0499276 100644
  #define MAX77686_INT1_PWRONF_MSK	BIT(0)
  #define MAX77686_INT1_PWRONR_MSK	BIT(1)
 diff --git a/include/uapi/linux/netfilter/nf_conntrack_common.h b/include/uapi/linux/netfilter/nf_conntrack_common.h
-index 4b3395082d15..25c3364ba900 100644
+index 4b3395082d15..8ff99955fb1c 100644
 --- a/include/uapi/linux/netfilter/nf_conntrack_common.h
 +++ b/include/uapi/linux/netfilter/nf_conntrack_common.h
-@@ -4,6 +4,8 @@
- /* Connection state tracking for netfilter.  This is separated from,
-    but required by, the NAT layer; it can also be used by an iptables
-    extension. */
-+__diag_push()
-+__diag_ignore(CLANG, 10, "-Wduplicate-enum", "Some entries are duplicated")
- enum ip_conntrack_info {
- 	/* Part of an established connection (either direction). */
- 	IP_CT_ESTABLISHED,
-@@ -33,6 +35,7 @@ enum ip_conntrack_info {
- 	IP_CT_UNTRACKED = 7,
- #endif
- };
-+__diag_pop()
+@@ -17,7 +17,7 @@ enum ip_conntrack_info {
+ 	IP_CT_NEW,
  
- #define NF_CT_STATE_INVALID_BIT			(1 << 0)
- #define NF_CT_STATE_BIT(ctinfo)			(1 << ((ctinfo) % IP_CT_IS_REPLY + 1))
+ 	/* >= this indicates reply direction */
+-	IP_CT_IS_REPLY,
++	IP_CT_IS_REPLY = 3,
+ 
+ 	IP_CT_ESTABLISHED_REPLY = IP_CT_ESTABLISHED + IP_CT_IS_REPLY,
+ 	IP_CT_RELATED_REPLY = IP_CT_RELATED + IP_CT_IS_REPLY,
 diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
-index f962c06e9818..b474996d2e11 100644
+index f962c06e9818..82e363705c4f 100644
 --- a/include/uapi/linux/nl80211.h
 +++ b/include/uapi/linux/nl80211.h
-@@ -4710,6 +4710,8 @@ enum nl80211_bss_status {
-  *	trying multiple times); this is invalid in netlink -- leave out
-  *	the attribute for this on CONNECT commands.
-  */
-+__diag_push()
-+__diag_ignore(CLANG, 10, "-Wduplicate-enum", "Some entries are duplicated")
- enum nl80211_auth_type {
- 	NL80211_AUTHTYPE_OPEN_SYSTEM,
- 	NL80211_AUTHTYPE_SHARED_KEY,
-@@ -4725,6 +4727,7 @@ enum nl80211_auth_type {
+@@ -4723,7 +4723,7 @@ enum nl80211_auth_type {
+ 	/* keep last */
+ 	__NL80211_AUTHTYPE_NUM,
  	NL80211_AUTHTYPE_MAX = __NL80211_AUTHTYPE_NUM - 1,
- 	NL80211_AUTHTYPE_AUTOMATIC
+-	NL80211_AUTHTYPE_AUTOMATIC
++	NL80211_AUTHTYPE_AUTOMATIC = __NL80211_AUTHTYPE_NUM
  };
-+__diag_pop()
  
  /**
-  * enum nl80211_key_type - Key Type
 diff --git a/sound/pci/pcxhr/pcxhr.h b/sound/pci/pcxhr/pcxhr.h
 index 1b85200d00dd..4b90f7e55fec 100644
 --- a/sound/pci/pcxhr/pcxhr.h
