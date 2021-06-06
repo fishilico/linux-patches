@@ -94,7 +94,7 @@ index 95ce274c1be1..3021e69faef9 100644
  
  	if (timeout <= 0)
 diff --git a/drivers/net/mdio/mdio-octeon.c b/drivers/net/mdio/mdio-octeon.c
-index 8ce99c4888e1..a088c26a124f 100644
+index e096e68ac667..88ce1884154d 100644
 --- a/drivers/net/mdio/mdio-octeon.c
 +++ b/drivers/net/mdio/mdio-octeon.c
 @@ -52,7 +52,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
@@ -106,18 +106,18 @@ index 8ce99c4888e1..a088c26a124f 100644
  
  	bus->mii_bus->name = KBUILD_MODNAME;
  	snprintf(bus->mii_bus->id, MII_BUS_ID_SIZE, "%px", bus->register_base);
-@@ -73,7 +73,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
+@@ -72,7 +72,7 @@ static int octeon_mdiobus_probe(struct platform_device *pdev)
+ 	return 0;
  fail_register:
- 	mdiobus_free(bus->mii_bus);
  	smi_en.u64 = 0;
 -	oct_mdio_writeq(smi_en.u64, bus->register_base + SMI_EN);
 +	oct_mdio_writeq(smi_en.u64, (uintptr_t)bus->register_base + SMI_EN);
  	return err;
  }
  
-@@ -87,7 +87,7 @@ static int octeon_mdiobus_remove(struct platform_device *pdev)
+@@ -85,7 +85,7 @@ static int octeon_mdiobus_remove(struct platform_device *pdev)
+ 
  	mdiobus_unregister(bus->mii_bus);
- 	mdiobus_free(bus->mii_bus);
  	smi_en.u64 = 0;
 -	oct_mdio_writeq(smi_en.u64, bus->register_base + SMI_EN);
 +	oct_mdio_writeq(smi_en.u64, (uintptr_t)bus->register_base + SMI_EN);
