@@ -162,6 +162,7 @@ then
     disable_in_kcflags 'c++-compat' # Empty structs exist
     disable_in_kcflags 'class-varargs' # net/9p passes kuid_t/kgid_t in varargs
     disable_in_kcflags 'comma' # There are legimitate uses like "while ((n = read(...)), n > 0)"
+    disable_in_kcflags 'compound-token-split-by-space' # Some macros separate ( and { by a newline
     disable_in_kcflags 'constant-logical-operand' # Allow using CONFIG_... in logical expressions
     disable_in_kcflags 'covered-switch-default' # Covered switch may use "default:BUG();"
     disable_in_kcflags 'disabled-macro-expansion' # "inline" macro is recursive
@@ -192,12 +193,14 @@ then
     disable_in_kcflags 'redundant-parens' # Some macros expand with redundant parentheses
     disable_in_kcflags 'reserved-id-macro' # Linux uses macros beginning with underscore
     disable_in_kcflags 'shift-negative-value' # Shifted negative numbers are like unsigned for Linux
+    disable_in_kcflags 'string-concatenation' # Some drivers concatenate strings to make them pretty
     disable_in_kcflags 'switch-bool' # It happens that bool are used in switch statements
     disable_in_kcflags 'switch-enum' # Show values in switch on enum can be skipped
     disable_in_kcflags 'tautological-compare' # Many unsigned variables are compared with 0
     disable_in_kcflags 'tautological-type-limit-compare' # Make sure the kernel keeps type bounding checks
     disable_in_kcflags 'tautological-unsigned-enum-zero-compare' # Many unsigned enums are compared with 0
     disable_in_kcflags 'tautological-unsigned-zero-compare' # Many unsigned variables are compared with 0
+    disable_in_kcflags 'tautological-value-range-compare' # Some 1-bit unsigned value are compared with -1 in macros
     disable_in_kcflags 'unknown-pragmas' # Ignore GCC-specific #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
     disable_in_kcflags 'unreachable-code' # Code can be unreachable depending on the config
     disable_in_kcflags 'unreachable-code-break'
@@ -294,6 +297,7 @@ then
     disable_in_hostcflags 'c++-compat' # Empty structs are used in ARRAY_SIZE
     disable_in_hostcflags 'cast-qual' # Some pointer casts don't specify const
     disable_in_hostcflags 'comma' # There are legimitate uses like "while ((n = read(...)), n > 0)"
+    disable_in_hostcflags 'compound-token-split-by-space' # Some macros separate ( and { by a newline
     disable_in_hostcflags 'covered-switch-default' # Some switch one enums cover all values
     disable_in_hostcflags 'disabled-macro-expansion' # Linux has recursive macros
     disable_in_hostcflags 'extra-semi-stmt' # # Many ';' with no effect in scripts/kconfig and scripts/dtc
