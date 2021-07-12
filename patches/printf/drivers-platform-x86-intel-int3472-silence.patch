@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 2 Jul 2021 21:15:42 +0200
+Subject: [PATCH] {PRINTF} drivers/platform/x86/intel/int3472: silence
+ -Wformat-security with %s
+
+---
+ .../x86/intel/int3472/intel_skl_int3472_clk_and_regulator.c     | 2 +-
+ drivers/platform/x86/intel/int3472/intel_skl_int3472_discrete.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/platform/x86/intel/int3472/intel_skl_int3472_clk_and_regulator.c b/drivers/platform/x86/intel/int3472/intel_skl_int3472_clk_and_regulator.c
+index 1700e7557a82..95920bdebb00 100644
+--- a/drivers/platform/x86/intel/int3472/intel_skl_int3472_clk_and_regulator.c
++++ b/drivers/platform/x86/intel/int3472/intel_skl_int3472_clk_and_regulator.c
+@@ -113,7 +113,7 @@ int skl_int3472_register_clock(struct int3472_discrete_device *int3472)
+ 	}
+ 
+ 	int3472->clock.cl = clkdev_create(int3472->clock.clk, NULL,
+-					  int3472->sensor_name);
++					  "%s", int3472->sensor_name);
+ 	if (!int3472->clock.cl) {
+ 		ret = -ENOMEM;
+ 		goto err_unregister_clk;
+diff --git a/drivers/platform/x86/intel/int3472/intel_skl_int3472_discrete.c b/drivers/platform/x86/intel/int3472/intel_skl_int3472_discrete.c
+index 9fe0a2527e1c..1314f6ca6745 100644
+--- a/drivers/platform/x86/intel/int3472/intel_skl_int3472_discrete.c
++++ b/drivers/platform/x86/intel/int3472/intel_skl_int3472_discrete.c
+@@ -287,7 +287,7 @@ static int skl_int3472_handle_gpio_resources(struct acpi_resource *ares,
+ 	ACPI_FREE(obj);
+ 
+ 	if (ret < 0)
+-		return dev_err_probe(int3472->dev, ret, err_msg);
++		return dev_err_probe(int3472->dev, ret, "%s", err_msg);
+ 
+ 	return ret;
+ }
+-- 

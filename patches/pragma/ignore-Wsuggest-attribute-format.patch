@@ -4,7 +4,6 @@ Date: Sat, 4 Jul 2015 11:50:02 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
 
 ---
- drivers/hid/intel-ish-hid/ishtp/bus.c                     | 5 +++++
  drivers/infiniband/hw/hfi1/trace_dbg.h                    | 4 ++++
  .../net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h | 8 ++++++++
  .../brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h         | 8 ++++++++
@@ -16,28 +15,8 @@ Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
  kernel/trace/bpf_trace.c                                  | 8 ++++++++
  kernel/trace/trace.c                                      | 7 +++++++
  lib/vsprintf.c                                            | 4 ++++
- 12 files changed, 62 insertions(+), 1 deletion(-)
+ 11 files changed, 57 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/hid/intel-ish-hid/ishtp/bus.c b/drivers/hid/intel-ish-hid/ishtp/bus.c
-index bba29cd36d29..2d8d314906ce 100644
---- a/drivers/hid/intel-ish-hid/ishtp/bus.c
-+++ b/drivers/hid/intel-ish-hid/ishtp/bus.c
-@@ -874,10 +874,15 @@ EXPORT_SYMBOL(ishtp_get_pci_device);
-  *
-  * Return: void *.
-  */
-+/* TODO Return a "void (*__printf(2, 3) hid_print_trace)" directly */
-+__diag_push()
-+__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
-+	      "ishtp_trace_callback returns a printf function")
- void *ishtp_trace_callback(struct ishtp_cl_device *cl_device)
- {
- 	return cl_device->ishtp_dev->print_log;
- }
-+__diag_pop()
- EXPORT_SYMBOL(ishtp_trace_callback);
- 
- /**
 diff --git a/drivers/infiniband/hw/hfi1/trace_dbg.h b/drivers/infiniband/hw/hfi1/trace_dbg.h
 index de7a87392b8d..a7bf18a3fded 100644
 --- a/drivers/infiniband/hw/hfi1/trace_dbg.h
@@ -175,10 +154,10 @@ index d0467da5af03..464d1cdf39e7 100644
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index 5d97ef738a57..c8ef6b2f18a7 100644
+index cb9217fc60af..c748e5c1c6ff 100644
 --- a/include/linux/compiler-gcc.h
 +++ b/include/linux/compiler-gcc.h
-@@ -142,6 +142,8 @@
+@@ -148,6 +148,8 @@
  #define __diag_str(s)		__diag_str1(s)
  #define __diag(s)		_Pragma(__diag_str(GCC diagnostic s))
  
@@ -200,7 +179,7 @@ index 5857cf682ee7..7fdd4197eb58 100644
  
  DEFINE_EVENT(qla_log_event, ql_dbg_log,
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
-index a2f1f15ce432..4b1aefe9dcb4 100644
+index 62cf00383910..ea1341221b4b 100644
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
 @@ -971,7 +971,11 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
@@ -216,10 +195,10 @@ index a2f1f15ce432..4b1aefe9dcb4 100644
  	bpf_bprintf_cleanup();
  
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 332736a72a58..22ce862e717b 100644
+index edad89660a2b..4a5c8ffbb08a 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -586,8 +586,12 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -587,8 +587,12 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  		pr_warn("WARNING: CPU: %d PID: %d at %pS\n",
  			raw_smp_processor_id(), current->pid, caller);
  
@@ -233,7 +212,7 @@ index 332736a72a58..22ce862e717b 100644
  	print_modules();
  
 diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index 7a52bc172841..5447e5a1714a 100644
+index b4916ef388ad..59d4a7e9bb9f 100644
 --- a/kernel/trace/bpf_trace.c
 +++ b/kernel/trace/bpf_trace.c
 @@ -380,7 +380,11 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
@@ -261,10 +240,10 @@ index 7a52bc172841..5447e5a1714a 100644
  	bpf_bprintf_cleanup();
  
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index d23a09d3eb37..cc08dc02f885 100644
+index f8b80b5bab71..d90935554b3c 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -3681,6 +3681,10 @@ static void test_can_verify(void)
+@@ -3749,6 +3749,10 @@ static void test_can_verify(void)
   * warn and print "[UNSAFE MEMORY]" in place of the dereferenced string
   * pointer.
   */
@@ -275,7 +254,7 @@ index d23a09d3eb37..cc08dc02f885 100644
  void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  			 va_list ap)
  {
-@@ -3801,6 +3805,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
+@@ -3869,6 +3873,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  	if (*p)
  		trace_seq_vprintf(&iter->seq, p, ap);
  }
@@ -286,10 +265,10 @@ index d23a09d3eb37..cc08dc02f885 100644
  const char *trace_event_format(struct trace_iterator *iter, const char *fmt)
  {
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 74c7adbb2ae8..2f8cf45aaac8 100644
+index 61f13dc9455f..a959d557980e 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
-@@ -1660,7 +1660,11 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
+@@ -1691,7 +1691,11 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
  		return buf;
  
  	va_copy(va, *va_fmt->va);

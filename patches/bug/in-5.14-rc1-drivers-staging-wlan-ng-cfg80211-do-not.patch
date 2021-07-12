@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 7 Jul 2021 16:00:47 +0200
+Subject: [PATCH] {BUG in 5.14-rc1} drivers/staging/wlan-ng/cfg80211: do not
+ dereference msg2 pointer
+
+This was found using deref checker plugin.
+---
+ drivers/staging/wlan-ng/cfg80211.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/wlan-ng/cfg80211.c b/drivers/staging/wlan-ng/cfg80211.c
+index 7951bd63816f..b71d489bace1 100644
+--- a/drivers/staging/wlan-ng/cfg80211.c
++++ b/drivers/staging/wlan-ng/cfg80211.c
+@@ -349,7 +349,7 @@ static int prism2_scan(struct wiphy *wiphy,
+ 		msg2->msgcode = DIDMSG_DOT11REQ_SCAN_RESULTS;
+ 		msg2->bssindex.data = i;
+ 
+-		result = p80211req_dorequest(wlandev, (u8 *)&msg2);
++		result = p80211req_dorequest(wlandev, (u8 *)/* BUG in 5.14-rc1 */ msg2);
+ 		if ((result != 0) ||
+ 		    (msg2->resultcode.data != P80211ENUM_resultcode_success)) {
+ 			break;
+-- 

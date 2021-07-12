@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 12 Jul 2021 22:10:54 +0200
+Subject: [PATCH] {MAYBE UPS} include/linux/rmap: silence -Wunused-value on
+ systems without MMU
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+On Frama-C:
+
+    mm/vmscan.c: In function ‘shrink_page_list’:
+    mm/vmscan.c:1502:25: error: statement with no effect [-Werror=unused-value]
+     1502 |                         try_to_unmap(page, flags);
+          |                         ^~~~~
+---
+ include/linux/rmap.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+index 83fb86133fe1..0ca829d16f7a 100644
+--- a/include/linux/rmap.h
++++ b/include/linux/rmap.h
+@@ -291,7 +291,9 @@ static inline int page_referenced(struct page *page, int is_locked,
+ 	return 0;
+ }
+ 
+-#define try_to_unmap(page, refs) false
++static inline void try_to_unmap(struct page *, enum ttu_flags)
++{
++}
+ 
+ static inline int page_mkclean(struct page *page)
+ {
+-- 

@@ -9,48 +9,9 @@ Frama-C does not like using void* types:
      kernel/ksysfs.c:194:[kernel] failure: lvalue of type void:
      __start_notes
 ---
- include/linux/crash_core.h | 4 ++--
- kernel/crash_core.c        | 4 ++--
- kernel/ksysfs.c            | 8 ++++----
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ kernel/ksysfs.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/crash_core.h b/include/linux/crash_core.h
-index 206bde8308b2..259bcf9ba746 100644
---- a/include/linux/crash_core.h
-+++ b/include/linux/crash_core.h
-@@ -70,8 +70,8 @@ extern size_t vmcoreinfo_size;
- extern u32 *vmcoreinfo_note;
- 
- /* raw contents of kernel .notes section */
--extern const void __start_notes __weak;
--extern const void __stop_notes __weak;
-+extern const char __start_notes[] __weak;
-+extern const char __stop_notes[] __weak;
- 
- Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int type,
- 			  void *data, size_t data_len);
-diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-index 684a6061a13a..8784ddf80593 100644
---- a/kernel/crash_core.c
-+++ b/kernel/crash_core.c
-@@ -378,7 +378,7 @@ phys_addr_t __weak paddr_vmcoreinfo_note(void)
- }
- EXPORT_SYMBOL(paddr_vmcoreinfo_note);
- 
--#define NOTES_SIZE (&__stop_notes - &__start_notes)
-+#define NOTES_SIZE (__stop_notes - __start_notes)
- #define BUILD_ID_MAX SHA1_DIGEST_SIZE
- #define NT_GNU_BUILD_ID 3
- 
-@@ -398,7 +398,7 @@ static void add_build_id_vmcoreinfo(void)
- 
- 	while (n_remain >= sizeof(struct elf_note)) {
- 		const struct elf_note_section *note_sec =
--			&__start_notes + NOTES_SIZE - n_remain;
-+			(const struct elf_note_section *)(__start_notes + NOTES_SIZE - n_remain);
- 		const u32 n_namesz = note_sec->n_hdr.n_namesz;
- 
- 		if (note_sec->n_hdr.n_type == NT_GNU_BUILD_ID &&
 diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
 index 35859da8bd4f..99672104e989 100644
 --- a/kernel/ksysfs.c

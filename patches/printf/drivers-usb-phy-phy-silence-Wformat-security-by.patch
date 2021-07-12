@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 7 Jul 2021 15:59:09 +0200
+Subject: [PATCH] {PRINTF} drivers/usb/phy/phy: silence -Wformat-security by
+ directly using the functions
+
+---
+ drivers/usb/phy/phy.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/usb/phy/phy.c b/drivers/usb/phy/phy.c
+index 83ed5089475a..2a26463f1385 100644
+--- a/drivers/usb/phy/phy.c
++++ b/drivers/usb/phy/phy.c
+@@ -148,21 +148,13 @@ static void usb_phy_notify_charger_work(struct work_struct *work)
+ static int usb_phy_uevent(struct device *dev, struct kobj_uevent_env *env)
+ {
+ 	struct usb_phy *usb_phy;
+-	char uchger_state[50] = { 0 };
+-	char uchger_type[50] = { 0 };
+ 
+ 	usb_phy = __device_to_usb_phy(dev);
+ 
+-	snprintf(uchger_state, ARRAY_SIZE(uchger_state),
+-		 "USB_CHARGER_STATE=%s", usb_chger_state[usb_phy->chg_state]);
+-
+-	snprintf(uchger_type, ARRAY_SIZE(uchger_type),
+-		 "USB_CHARGER_TYPE=%s", usb_chger_type[usb_phy->chg_type]);
+-
+-	if (add_uevent_var(env, uchger_state))
++	if (add_uevent_var(env, "USB_CHARGER_STATE=%s", usb_chger_state[usb_phy->chg_state]))
+ 		return -ENOMEM;
+ 
+-	if (add_uevent_var(env, uchger_type))
++	if (add_uevent_var(env, "USB_CHARGER_TYPE=%s", usb_chger_type[usb_phy->chg_type]))
+ 		return -ENOMEM;
+ 
+ 	return 0;
+-- 

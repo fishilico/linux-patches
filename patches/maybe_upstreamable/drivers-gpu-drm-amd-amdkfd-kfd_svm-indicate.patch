@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 2 Jul 2021 21:13:07 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/gpu/drm/amd/amdkfd/kfd_svm: indicate
+ void** directly
+
+This pleased the deref checker plugin.
+---
+ drivers/gpu/drm/amd/amdkfd/kfd_svm.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/amdkfd/kfd_svm.c b/drivers/gpu/drm/amd/amdkfd/kfd_svm.c
+index 9a71d8919bd6..a4f1595426b4 100644
+--- a/drivers/gpu/drm/amd/amdkfd/kfd_svm.c
++++ b/drivers/gpu/drm/amd/amdkfd/kfd_svm.c
+@@ -735,7 +735,7 @@ svm_range_is_same_attrs(struct svm_range *old, struct svm_range *new)
+ }
+ 
+ static int
+-svm_range_split_array(void *ppnew, void *ppold, size_t size,
++svm_range_split_array(void **ppnew, void **ppold, size_t size,
+ 		      uint64_t old_start, uint64_t old_n,
+ 		      uint64_t new_start, uint64_t new_n)
+ {
+@@ -744,7 +744,7 @@ svm_range_split_array(void *ppnew, void *ppold, size_t size,
+ 
+ 	if (!ppold)
+ 		return 0;
+-	pold = *(unsigned char **)ppold;
++	pold = *ppold;
+ 	if (!pold)
+ 		return 0;
+ 
+@@ -765,8 +765,8 @@ svm_range_split_array(void *ppnew, void *ppold, size_t size,
+ 	memcpy(old, pold + d, old_n * size);
+ 
+ 	kvfree(pold);
+-	*(void **)ppold = old;
+-	*(void **)ppnew = new;
++	*ppold = old;
++	*ppnew = new;
+ 
+ 	return 0;
+ }
+@@ -779,7 +779,7 @@ svm_range_split_pages(struct svm_range *new, struct svm_range *old,
+ 	int i, r;
+ 
+ 	for (i = 0; i < MAX_GPU_INSTANCE; i++) {
+-		r = svm_range_split_array(&new->dma_addr[i], &old->dma_addr[i],
++		r = svm_range_split_array((void **)&new->dma_addr[i], (void **)&old->dma_addr[i],
+ 					  sizeof(*old->dma_addr[i]), old->start,
+ 					  npages, new->start, new->npages);
+ 		if (r)
+-- 

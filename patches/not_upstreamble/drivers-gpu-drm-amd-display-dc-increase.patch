@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 3 Jul 2021 18:12:25 +0200
+Subject: [PATCH] {NOT UPSTREAMABLE} drivers/gpu/drm/amd/display/dc: increase
+ stack frame limit
+
+clang reports on x86_64:
+
+    drivers/gpu/drm/amd/amdgpu/../display/dc/dml/dcn31/display_mode_vba_31.c:3957:6:
+    error: stack frame size of 2296 bytes in function
+    'dml31_ModeSupportAndSystemConfigurationFull'
+    [-Werror,-Wframe-larger-than=]
+    void dml31_ModeSupportAndSystemConfigurationFull(struct display_mode_lib *mode_lib)
+
+Bump the limit.
+---
+ drivers/gpu/drm/amd/display/dc/dml/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/amd/display/dc/dml/Makefile b/drivers/gpu/drm/amd/display/dc/dml/Makefile
+index 9100f4a7aa44..ce651e668705 100644
+--- a/drivers/gpu/drm/amd/display/dc/dml/Makefile
++++ b/drivers/gpu/drm/amd/display/dc/dml/Makefile
+@@ -51,7 +51,7 @@ endif
+ endif
+ 
+ ifneq ($(CONFIG_FRAME_WARN),0)
+-frame_warn_flag := -Wframe-larger-than=2048
++frame_warn_flag := -Wframe-larger-than=3000
+ endif
+ 
+ CFLAGS_$(AMDDALPATH)/dc/dml/display_mode_lib.o := $(dml_ccflags)
+-- 

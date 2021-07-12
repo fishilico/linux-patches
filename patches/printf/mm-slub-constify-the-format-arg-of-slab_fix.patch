@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 2 Jul 2021 21:06:06 +0200
+Subject: [PATCH] {PRINTF} mm/slub: constify the format arg of slab_fix
+
+---
+ mm/slub.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mm/slub.c b/mm/slub.c
+index 3ab6e0ce0a37..dd1b2e00a89f 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -725,7 +725,7 @@ static void slab_bug(struct kmem_cache *s, char *fmt, ...)
+ }
+ 
+ __printf(2, 3)
+-static void slab_fix(struct kmem_cache *s, char *fmt, ...)
++static void slab_fix(struct kmem_cache *s, const char *fmt, ...)
+ {
+ 	struct va_format vaf;
+ 	va_list args;
+@@ -841,7 +841,7 @@ static void init_object(struct kmem_cache *s, void *object, u8 val)
+ static void restore_bytes(struct kmem_cache *s, char *message, u8 data,
+ 						void *from, void *to)
+ {
+-	slab_fix(s, "Restoring %s 0x%p-0x%p=0x%x", message, from, to - 1, data);
++	slab_fix(s, "Restoring %s 0x %p-0x %p=0x%x", message, from, to - 1, data);
+ 	memset(from, data, to - from);
+ }
+ 
+-- 

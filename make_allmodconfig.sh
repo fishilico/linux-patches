@@ -414,6 +414,7 @@ then
         echo 'CONFIG_ARM_LPAE=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_ARCH_AXXIA=y' >> "$KBUILD_OUTPUT/.config"
         echo '# CONFIG_THUMB2_KERNEL is not set' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_CXL_PMEM=m' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_XEN=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_KVM=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_TRANSPARENT_HUGEPAGE=y' >> "$KBUILD_OUTPUT/.config"
