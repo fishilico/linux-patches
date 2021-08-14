@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 25 Jul 2021 12:48:39 +0200
+Subject: [PATCH] {BUG in 5.14-rc3}
+ drivers/net/ethernet/marvell/octeontx2/af/rvu_switch: remove buggy logic
+
+clang on x86_64 reports:
+
+    drivers/net/ethernet/marvell/octeontx2/af/rvu_switch.c:220:35:
+    error: variable 'hwvf' is uninitialized when used here
+    [-Werror,-Wuninitialized]
+                    for (vf = 0; vf < numvfs; vf++, hwvf++) {
+                                                    ^~~~
+    drivers/net/ethernet/marvell/octeontx2/af/rvu_switch.c:201:26:
+    note: initialize the variable 'hwvf' to silence this warning
+            int pf, vf, numvfs, hwvf;
+                                    ^
+                                     = 0
+    drivers/net/ethernet/marvell/octeontx2/af/rvu_switch.c:220:21:
+    error: variable 'numvfs' is uninitialized when used here
+    [-Werror,-Wuninitialized]
+                    for (vf = 0; vf < numvfs; vf++, hwvf++) {
+                                      ^~~~~~
+    drivers/net/ethernet/marvell/octeontx2/af/rvu_switch.c:201:20:
+    note: initialize the variable 'numvfs' to silence this warning
+            int pf, vf, numvfs, hwvf;
+                              ^
+                               = 0
+---
+ drivers/net/ethernet/marvell/octeontx2/af/rvu_switch.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/marvell/octeontx2/af/rvu_switch.c b/drivers/net/ethernet/marvell/octeontx2/af/rvu_switch.c
+index 2e5379710aa5..45aed925487a 100644
+--- a/drivers/net/ethernet/marvell/octeontx2/af/rvu_switch.c
++++ b/drivers/net/ethernet/marvell/octeontx2/af/rvu_switch.c
+@@ -198,7 +198,7 @@ void rvu_switch_disable(struct rvu *rvu)
+ 	struct npc_mcam_free_entry_req free_req = { 0 };
+ 	struct rvu_switch *rswitch = &rvu->rswitch;
+ 	struct rvu_hwinfo *hw = rvu->hw;
+-	int pf, vf, numvfs, hwvf;
++	int pf /*, vf, numvfs */;
+ 	struct msg_rsp rsp;
+ 	u16 pcifunc;
+ 	int err;
+@@ -216,8 +216,8 @@ void rvu_switch_disable(struct rvu *rvu)
+ 			dev_err(rvu->dev,
+ 				"Reverting RX rule for PF%d failed(%d)\n",
+ 				pf, err);
+-
+-		for (vf = 0; vf < numvfs; vf++, hwvf++) {
++/*
++		for (vf = 0; vf < numvfs; vf++) {
+ 			pcifunc = pf << 10 | ((vf + 1) & 0x3FF);
+ 			err = rvu_switch_install_rx_rule(rvu, pcifunc, 0xFFF);
+ 			if (err)
+@@ -225,6 +225,7 @@ void rvu_switch_disable(struct rvu *rvu)
+ 					"Reverting RX rule for PF%dVF%d failed(%d)\n",
+ 					pf, vf, err);
+ 		}
++*/
+ 	}
+ 
+ 	uninstall_req.start = rswitch->start_entry;
+-- 
