@@ -18,10 +18,10 @@ Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
  11 files changed, 57 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/infiniband/hw/hfi1/trace_dbg.h b/drivers/infiniband/hw/hfi1/trace_dbg.h
-index de7a87392b8d..a7bf18a3fded 100644
+index 707f1053f0b7..f331d42cef50 100644
 --- a/drivers/infiniband/hw/hfi1/trace_dbg.h
 +++ b/drivers/infiniband/hw/hfi1/trace_dbg.h
-@@ -63,6 +63,9 @@
+@@ -22,6 +22,9 @@
  
  #define MAX_MSG_LEN 512
  
@@ -31,7 +31,7 @@ index de7a87392b8d..a7bf18a3fded 100644
  DECLARE_EVENT_CLASS(hfi1_trace_template,
  		    TP_PROTO(const char *function, struct va_format *vaf),
  		    TP_ARGS(function, vaf),
-@@ -80,6 +83,7 @@ DECLARE_EVENT_CLASS(hfi1_trace_template,
+@@ -39,6 +42,7 @@ DECLARE_EVENT_CLASS(hfi1_trace_template,
  			      __get_str(function),
  			      __get_str(msg))
  );
@@ -154,10 +154,10 @@ index d0467da5af03..464d1cdf39e7 100644
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index cb9217fc60af..c748e5c1c6ff 100644
+index 21c36b69eb06..5c9644f9d2b9 100644
 --- a/include/linux/compiler-gcc.h
 +++ b/include/linux/compiler-gcc.h
-@@ -148,6 +148,8 @@
+@@ -145,6 +145,8 @@
  #define __diag_str(s)		__diag_str1(s)
  #define __diag(s)		_Pragma(__diag_str(GCC diagnostic s))
  
@@ -179,10 +179,10 @@ index 5857cf682ee7..7fdd4197eb58 100644
  
  DEFINE_EVENT(qla_log_event, ql_dbg_log,
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
-index 55f83ea09dae..b9a6e704c039 100644
+index 9aabf84afd4b..1928d7788e7c 100644
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
-@@ -981,7 +981,11 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
+@@ -999,7 +999,11 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
  	if (err < 0)
  		return err;
  
@@ -195,10 +195,10 @@ index 55f83ea09dae..b9a6e704c039 100644
  	bpf_bprintf_cleanup();
  
 diff --git a/kernel/panic.c b/kernel/panic.c
-index edad89660a2b..4a5c8ffbb08a 100644
+index cefd7d82366f..7740c6632362 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -587,8 +587,12 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -584,8 +584,12 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  		pr_warn("WARNING: CPU: %d PID: %d at %pS\n",
  			raw_smp_processor_id(), current->pid, caller);
  
@@ -212,7 +212,7 @@ index edad89660a2b..4a5c8ffbb08a 100644
  	print_modules();
  
 diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index fdd14072fc3b..831af442ff03 100644
+index 8e2eb950aa82..98bba34e78e8 100644
 --- a/kernel/trace/bpf_trace.c
 +++ b/kernel/trace/bpf_trace.c
 @@ -380,7 +380,11 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
@@ -240,10 +240,10 @@ index fdd14072fc3b..831af442ff03 100644
  	bpf_bprintf_cleanup();
  
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index a1adb29ef5c1..dec773da7865 100644
+index 7896d30d90f7..536524a74dd1 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -3761,6 +3761,10 @@ static void test_can_verify(void)
+@@ -3771,6 +3771,10 @@ static void test_can_verify(void)
   * warn and print "[UNSAFE MEMORY]" in place of the dereferenced string
   * pointer.
   */
@@ -254,7 +254,7 @@ index a1adb29ef5c1..dec773da7865 100644
  void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  			 va_list ap)
  {
-@@ -3881,6 +3885,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
+@@ -3891,6 +3895,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  	if (*p)
  		trace_seq_vprintf(&iter->seq, p, ap);
  }
@@ -265,7 +265,7 @@ index a1adb29ef5c1..dec773da7865 100644
  const char *trace_event_format(struct trace_iterator *iter, const char *fmt)
  {
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 61f13dc9455f..a959d557980e 100644
+index a135dc32c182..644ed3bdd281 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
 @@ -1691,7 +1691,11 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,

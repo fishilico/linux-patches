@@ -13,7 +13,6 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
 - Use string functions from Frama-C
 ---
  drivers/block/drbd/drbd_int.h   |   2 +-
- drivers/input/joystick/analog.c |   6 +-
  include/asm-generic/page.h      |   8 ++
  include/asm-generic/uaccess.h   |  15 ++++
  include/linux/compiler.h        |  21 +++++
@@ -33,7 +32,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  kernel/signal.c                 |   2 +-
  kernel/time/time.c              |   4 +
  lib/hexdump.c                   |  10 ++-
- 21 files changed, 269 insertions(+), 14 deletions(-)
+ 20 files changed, 264 insertions(+), 13 deletions(-)
  create mode 100644 include/linux/flex_array.h
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
@@ -49,23 +48,6 @@ index 5d9181382ce1..5496081369e5 100644
  # define __protected_by(x)       __attribute__((require_context(x,1,999,"rdwr")))
  # define __protected_read_by(x)  __attribute__((require_context(x,1,999,"read")))
  # define __protected_write_by(x) __attribute__((require_context(x,1,999,"write")))
-diff --git a/drivers/input/joystick/analog.c b/drivers/input/joystick/analog.c
-index f798922a4598..01b58c7a227e 100644
---- a/drivers/input/joystick/analog.c
-+++ b/drivers/input/joystick/analog.c
-@@ -123,7 +123,11 @@ struct analog_port {
-  * Time macros.
-  */
- 
--#ifdef __i386__
-+#ifdef __FRAMAC__
-+#define GET_TIME(x)     do { x = analog_faketime++; } while(0)
-+#define DELTA(x,y)	((y)-(x))
-+#define TIME_NAME	"Unreliable"
-+#elif defined(__i386__)
- 
- #include <linux/i8253.h>
- 
 diff --git a/include/asm-generic/page.h b/include/asm-generic/page.h
 index 6fc47561814c..70ea99f1931b 100644
 --- a/include/asm-generic/page.h
@@ -88,10 +70,10 @@ index 6fc47561814c..70ea99f1931b 100644
  #endif /* __ASSEMBLY__ */
  
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
-index a0b2f270dddc..952f90c18a29 100644
+index 10ffa8b5c117..6ac78d3994d0 100644
 --- a/include/asm-generic/uaccess.h
 +++ b/include/asm-generic/uaccess.h
-@@ -160,6 +160,20 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
+@@ -165,6 +165,20 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
  	__pu_err;						\
  })
  
@@ -112,7 +94,7 @@ index a0b2f270dddc..952f90c18a29 100644
  #define put_user(x, ptr)					\
  ({								\
  	void __user *__p = (ptr);				\
-@@ -168,6 +182,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
+@@ -173,6 +187,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
  		__put_user((x), ((__typeof__(*(ptr)) __user *)__p)) :	\
  		-EFAULT;					\
  })
@@ -153,7 +135,7 @@ index 440504acf134..889d43b542d9 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index c3b23e5399a6..7f64a803c1e5 100644
+index 6b015468e571..790515958fbb 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -4,7 +4,7 @@
@@ -166,7 +148,7 @@ index c3b23e5399a6..7f64a803c1e5 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __user		__attribute__((noderef, address_space(__user)))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index f3689a52bfd0..60091f07299f 100644
+index 5d4d07a9e1ed..dc2d21b9a883 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
 @@ -847,9 +847,14 @@ set_cpu_dying(unsigned int cpu, bool dying)
@@ -433,10 +415,10 @@ index 0f12345c21fb..dd1b7028d0be 100644
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 540b377ca8f6..0d8b79bf0433 100644
+index cd8aa6fce204..d98967b84ec6 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -162,6 +162,8 @@ typedef int __bitwise pci_power_t;
+@@ -168,6 +168,8 @@ typedef int __bitwise pci_power_t;
  #define PCI_UNKNOWN	((pci_power_t __force) 5)
  #define PCI_POWER_ERROR	((pci_power_t __force) -1)
  
@@ -445,7 +427,7 @@ index 540b377ca8f6..0d8b79bf0433 100644
  /* Remember to update this when the list above changes! */
  extern const char *pci_power_names[];
  
-@@ -169,6 +171,7 @@ static inline const char *pci_power_name(pci_power_t state)
+@@ -175,6 +177,7 @@ static inline const char *pci_power_name(pci_power_t state)
  {
  	return pci_power_names[1 + (__force int) state];
  }
@@ -454,7 +436,7 @@ index 540b377ca8f6..0d8b79bf0433 100644
  /**
   * typedef pci_channel_state_t
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 5601fe134d07..ea62e5517a07 100644
+index a66440765a82..44f53ddde2e8 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -234,6 +234,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
@@ -538,10 +520,10 @@ index 0197888ad0e0..ee5b03df8f9b 100644
  
  #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index a3229add4455..de8fb3b4d17b 100644
+index 952741f6d0f9..56528ade569c 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1262,7 +1262,7 @@ static void print_fatal_signal(int signr)
+@@ -1263,7 +1263,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  

@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 15 Sep 2021 17:41:17 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/infiniband/hw/qib/qib_sysfs: support
+ clang
+
+clang on x86-64 reports:
+
+    drivers/infiniband/hw/qib/qib_sysfs.c:425:1: error: static_assert
+    expression is not an integral constant expression
+    QIB_DIAGC_ATTR(rc_crwaits);
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~
+    drivers/infiniband/hw/qib/qib_sysfs.c:406:16: note: expanded from
+    macro 'QIB_DIAGC_ATTR'
+            static_assert(&((struct qib_ibport *)0)->rvp.n_##N != (u64 *)NULL);    \
+            ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    include/linux/build_bug.h:77:50: note: expanded from macro 'static_assert'
+    #define static_assert(expr, ...) __static_assert(expr, ##__VA_ARGS__, #expr)
+                                     ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+    include/linux/build_bug.h:78:56: note: expanded from macro '__static_assert'
+    #define __static_assert(expr, msg, ...) _Static_assert(expr, msg)
+                                                           ^~~~
+    drivers/infiniband/hw/qib/qib_sysfs.c:425:1: note: cannot access
+    field of null pointer
+    drivers/infiniband/hw/qib/qib_sysfs.c:406:43: note: expanded from
+    macro 'QIB_DIAGC_ATTR'
+            static_assert(&((struct qib_ibport *)0)->rvp.n_##N != (u64 *)NULL);    \
+                                                     ^
+---
+ drivers/infiniband/hw/qib/qib_sysfs.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/infiniband/hw/qib/qib_sysfs.c b/drivers/infiniband/hw/qib/qib_sysfs.c
+index 452e2355d24e..e69aabb148e4 100644
+--- a/drivers/infiniband/hw/qib/qib_sysfs.c
++++ b/drivers/infiniband/hw/qib/qib_sysfs.c
+@@ -402,6 +402,15 @@ static ssize_t diagc_attr_store(struct ib_device *ibdev, u32 port_num,
+ 	return count;
+ }
+ 
++#ifdef __clang__
++/* clang reports that "static_assert expression is not an integral constant expression" */
++#define QIB_DIAGC_ATTR(N)                                                      \
++	static struct qib_diagc_attr qib_diagc_attr_##N = {                    \
++		.attr = __ATTR(N, 0664, diagc_attr_show, diagc_attr_store),    \
++		.counter =                                                     \
++			offsetof(struct qib_ibport, rvp.n_##N) / sizeof(u64)   \
++	}
++#else
+ #define QIB_DIAGC_ATTR(N)                                                      \
+ 	static_assert(&((struct qib_ibport *)0)->rvp.n_##N != (u64 *)NULL);    \
+ 	static struct qib_diagc_attr qib_diagc_attr_##N = {                    \
+@@ -409,6 +418,7 @@ static ssize_t diagc_attr_store(struct ib_device *ibdev, u32 port_num,
+ 		.counter =                                                     \
+ 			offsetof(struct qib_ibport, rvp.n_##N) / sizeof(u64)   \
+ 	}
++#endif
+ 
+ QIB_DIAGC_ATTR(rc_resends);
+ QIB_DIAGC_ATTR(seq_naks);
+-- 

@@ -81,7 +81,7 @@ index 346b0f269161..39eb3db29bdd 100644
  # define DEFINE_KTHREAD_WORKER_ONSTACK(worker) DEFINE_KTHREAD_WORKER(worker)
  #endif
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 6598ae35e1b5..58ac214d7cdd 100644
+index 93dab0e9580f..87e3c15264dc 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
 @@ -73,8 +73,16 @@ extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *n
@@ -134,10 +134,10 @@ index 7983f393aae6..ace1fc55e3a7 100644
  	kthread_queue_work(worker, &fwork.work);
  	wait_for_completion(&fwork.done);
 diff --git a/kernel/smp.c b/kernel/smp.c
-index 52bf159ec400..f3b4812e9c0f 100644
+index f43ede0ab183..bcc6fb804ce3 100644
 --- a/kernel/smp.c
 +++ b/kernel/smp.c
-@@ -1211,12 +1211,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
+@@ -1219,12 +1219,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
  
  int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par, bool phys)
  {
@@ -154,10 +154,10 @@ index 52bf159ec400..f3b4812e9c0f 100644
  	INIT_WORK_ONSTACK(&sscs.work, smp_call_on_cpu_callback);
  
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index f148eacda55a..45d5d52ffad0 100644
+index 33a6b4a2443d..3ffb4381e53d 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -2774,11 +2774,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
+@@ -2804,11 +2804,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
   */
  void flush_workqueue(struct workqueue_struct *wq)
  {

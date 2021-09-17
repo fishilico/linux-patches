@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 16 Sep 2021 08:18:40 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/cpufreq/vexpress-spc-cpufreq: remove
+ unused variable
+
+ARM gcc reports:
+
+    drivers/cpufreq/vexpress-spc-cpufreq.c: In function 've_spc_cpufreq_exit':
+    drivers/cpufreq/vexpress-spc-cpufreq.c:454:13: error: unused
+    variable 'cur_cluster' [-Werror=unused-variable]
+      454 |         int cur_cluster = cpu_to_cluster(policy->cpu);
+          |             ^~~~~~~~~~~
+---
+ drivers/cpufreq/vexpress-spc-cpufreq.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
+index 284b6bd040b1..d295f405c4bb 100644
+--- a/drivers/cpufreq/vexpress-spc-cpufreq.c
++++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
+@@ -451,7 +451,6 @@ static int ve_spc_cpufreq_init(struct cpufreq_policy *policy)
+ static int ve_spc_cpufreq_exit(struct cpufreq_policy *policy)
+ {
+ 	struct device *cpu_dev;
+-	int cur_cluster = cpu_to_cluster(policy->cpu);
+ 
+ 	cpu_dev = get_cpu_device(policy->cpu);
+ 	if (!cpu_dev) {
+-- 

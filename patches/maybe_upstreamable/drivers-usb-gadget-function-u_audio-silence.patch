@@ -1,0 +1,71 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 5 Sep 2021 16:20:20 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/usb/gadget/function/u_audio: silence
+ clang -gnu-designator
+
+clang on x86-64 reports:
+
+    drivers/usb/gadget/function/u_audio.c:914:20: error: use of GNU
+    'missing =' extension in designator [-Werror,-Wgnu-designator]
+      [UAC_FBACK_CTRL] {
+                       ^
+                       =
+    drivers/usb/gadget/function/u_audio.c:921:19: error: use of GNU
+    'missing =' extension in designator [-Werror,-Wgnu-designator]
+      [UAC_MUTE_CTRL] {
+                      ^
+                      =
+    drivers/usb/gadget/function/u_audio.c:928:20: error: use of GNU
+    'missing =' extension in designator [-Werror,-Wgnu-designator]
+            [UAC_VOLUME_CTRL] {
+                              ^
+                              =
+---
+ drivers/usb/gadget/function/u_audio.c      | 6 +++---
+ scripts/gcc-plugins/deref_checker_plugin.c | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/usb/gadget/function/u_audio.c b/drivers/usb/gadget/function/u_audio.c
+index 32ef22857083..a295c6fd1891 100644
+--- a/drivers/usb/gadget/function/u_audio.c
++++ b/drivers/usb/gadget/function/u_audio.c
+@@ -911,21 +911,21 @@ static int u_audio_volume_put(struct snd_kcontrol *kcontrol,
+ 
+ 
+ static struct snd_kcontrol_new u_audio_controls[]  = {
+-  [UAC_FBACK_CTRL] {
++  [UAC_FBACK_CTRL] = {
+     .iface =        SNDRV_CTL_ELEM_IFACE_PCM,
+     .name =         "Capture Pitch 1000000",
+     .info =         u_audio_pitch_info,
+     .get =          u_audio_pitch_get,
+     .put =          u_audio_pitch_put,
+   },
+-  [UAC_MUTE_CTRL] {
++  [UAC_MUTE_CTRL] = {
+ 		.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
+ 		.name =		"", /* will be filled later */
+ 		.info =		u_audio_mute_info,
+ 		.get =		u_audio_mute_get,
+ 		.put =		u_audio_mute_put,
+ 	},
+-	[UAC_VOLUME_CTRL] {
++	[UAC_VOLUME_CTRL] = {
+ 		.iface =	SNDRV_CTL_ELEM_IFACE_MIXER,
+ 		.name =		"", /* will be filled later */
+ 		.info =		u_audio_volume_info,
+diff --git a/scripts/gcc-plugins/deref_checker_plugin.c b/scripts/gcc-plugins/deref_checker_plugin.c
+index a7260aad5cc2..c88b13619b59 100644
+--- a/scripts/gcc-plugins/deref_checker_plugin.c
++++ b/scripts/gcc-plugins/deref_checker_plugin.c
+@@ -71,7 +71,7 @@ static unsigned int get_pointer_depth(const_tree tree)
+ 			return 1;
+ 		/* for __va_list on i686 */
+ 		if (TREE_CODE(TREE_TYPE(tree)) == POINTER_TYPE && identifier_is(TYPE_IDENTIFIER(TREE_TYPE(tree)), "__builtin_va_list"))
+-			return 1;
++			return 2;
+ 		break;
+ 	default:
+ 		break;
+-- 

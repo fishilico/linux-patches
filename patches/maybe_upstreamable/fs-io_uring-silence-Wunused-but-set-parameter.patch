@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 5 Sep 2021 13:37:29 +0200
+Subject: [PATCH] {MAYBE UPS} fs/io_uring: silence -Wunused-but-set-parameter
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc on x86-64 reports:
+
+    error: parameter ‘locked’ set but not used [-Werror=unused-but-set-parameter]
+
+Use the parameter to silence the warning.
+---
+ fs/io_uring.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fs/io_uring.c b/fs/io_uring.c
+index 16fb7436043c..88c0f9ba6d81 100644
+--- a/fs/io_uring.c
++++ b/fs/io_uring.c
+@@ -1451,6 +1451,7 @@ static void io_queue_async_work(struct io_kiocb *req, bool *locked)
+ 
+ 	/* must not take the lock, NULL it as a precaution */
+ 	locked = NULL;
++	(void)&locked; /* The variable is not used */
+ 
+ 	BUG_ON(!tctx);
+ 	BUG_ON(!tctx->io_wq);
+-- 

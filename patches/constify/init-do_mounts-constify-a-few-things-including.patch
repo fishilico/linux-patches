@@ -12,10 +12,10 @@ Subject: [PATCH] {CONSTIFY} init/do_mounts: constify a few things including
  4 files changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 97adcb5ab5d5..fe12460b7eac 100644
+index 659a8f39c61a..96596e8ee28d 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1765,7 +1765,7 @@ int path_umount(struct path *path, int flags)
+@@ -1758,7 +1758,7 @@ int path_umount(struct path *path, int flags)
  	return ret;
  }
  
@@ -24,7 +24,7 @@ index 97adcb5ab5d5..fe12460b7eac 100644
  {
  	int lookup_flags = LOOKUP_MOUNTPOINT;
  	struct path path;
-@@ -1783,7 +1783,7 @@ static int ksys_umount(char __user *name, int flags)
+@@ -1776,7 +1776,7 @@ static int ksys_umount(char __user *name, int flags)
  	return path_umount(&path, flags);
  }
  
@@ -33,7 +33,7 @@ index 97adcb5ab5d5..fe12460b7eac 100644
  {
  	return ksys_umount(name, flags);
  }
-@@ -1793,7 +1793,7 @@ SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
+@@ -1786,7 +1786,7 @@ SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
  /*
   *	The 2.0 compatible umount. No flags.
   */
@@ -42,7 +42,7 @@ index 97adcb5ab5d5..fe12460b7eac 100644
  {
  	return ksys_umount(name, 0);
  }
-@@ -3448,8 +3448,8 @@ struct dentry *mount_subtree(struct vfsmount *m, const char *name)
+@@ -3513,8 +3513,8 @@ struct dentry *mount_subtree(struct vfsmount *m, const char *name)
  }
  EXPORT_SYMBOL(mount_subtree);
  
@@ -54,7 +54,7 @@ index 97adcb5ab5d5..fe12460b7eac 100644
  	int ret;
  	char *kernel_type;
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 69c9a7010081..5601fe134d07 100644
+index 252243c7783d..a66440765a82 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -434,10 +434,10 @@ asmlinkage long sys_renameat(int olddfd, const char __user * oldname,
@@ -72,20 +72,20 @@ index 69c9a7010081..5601fe134d07 100644
  asmlinkage long sys_pivot_root(const char __user *new_root,
  				const char __user *put_old);
  
-@@ -1159,7 +1159,7 @@ asmlinkage long sys_vfork(void);
+@@ -1159,7 +1159,7 @@ asmlinkage long sys_ustat(unsigned dev, struct ustat __user *ubuf);
+ asmlinkage long sys_vfork(void);
  asmlinkage long sys_recv(int, void __user *, size_t, unsigned);
  asmlinkage long sys_send(int, void __user *, size_t, unsigned);
- asmlinkage long sys_bdflush(int func, long data);
 -asmlinkage long sys_oldumount(char __user *name);
 +asmlinkage long sys_oldumount(const char __user *name);
  asmlinkage long sys_uselib(const char __user *library);
  asmlinkage long sys_sysfs(int option,
  				unsigned long arg1, unsigned long arg2);
 diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 2b021fdfa927..c910f7ed5f23 100644
+index 19dbdc6e850b..2bc715070447 100644
 --- a/init/do_mounts.c
 +++ b/init/do_mounts.c
-@@ -402,7 +402,7 @@ static int __init do_mount_root(const char *name, const char *fs,
+@@ -393,7 +393,7 @@ static int __init do_mount_root(const char *name, const char *fs,
  	return ret;
  }
  

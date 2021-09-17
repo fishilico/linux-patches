@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 5 Sep 2021 13:34:40 +0200
+Subject: [PATCH] {PRINTF} drivers/md: silence -Wformat-security with "%s"
+
+---
+ drivers/md/dm-raid.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/md/dm-raid.c b/drivers/md/dm-raid.c
+index 07e8a43dbd1a..f0516cb6f0bc 100644
+--- a/drivers/md/dm-raid.c
++++ b/drivers/md/dm-raid.c
+@@ -3689,7 +3689,7 @@ static void raid_status(struct dm_target *ti, status_type_t type,
+ 
+ 		for (i = 0; i < rs->raid_disks; i++) {
+ 			DMEMIT(",raid_device_%d_status=", i);
+-			DMEMIT(__raid_dev_status(rs, &rs->dev[i].rdev));
++			DMEMIT("%s", __raid_dev_status(rs, &rs->dev[i].rdev));
+ 		}
+ 
+ 		if (rt_is_raid456(rt)) {
+-- 

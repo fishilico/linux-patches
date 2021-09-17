@@ -8,7 +8,6 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  drivers/acpi/acpica/nsrepair2.c    |  2 +-
  drivers/clk/clkdev.c               |  7 ++++---
  drivers/isdn/capi/capiutil.c       |  4 ++--
- drivers/scsi/BusLogic.c            |  2 +-
  drivers/scsi/esas2r/esas2r_log.c   |  8 ++++----
  drivers/staging/fbtft/fbtft.h      |  2 +-
  drivers/xen/xenbus/xenbus_client.c | 10 ++++++----
@@ -21,7 +20,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  scripts/unifdef.c                  |  2 +-
  security/tomoyo/common.c           |  3 ++-
  security/tomoyo/common.h           |  4 ++--
- 17 files changed, 38 insertions(+), 32 deletions(-)
+ 16 files changed, 37 insertions(+), 31 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index a3725ad46c5a..04616745d029 100644
@@ -83,11 +82,11 @@ index 67f601a41023..18b5cf37da91 100644
  						const char *dev_id, ...)
  {
 diff --git a/drivers/isdn/capi/capiutil.c b/drivers/isdn/capi/capiutil.c
-index f26bf3c66d7e..94d7ce148a81 100644
+index d7ae42edc4a8..fe4129807516 100644
 --- a/drivers/isdn/capi/capiutil.c
 +++ b/drivers/isdn/capi/capiutil.c
 @@ -382,7 +382,7 @@ static char *pnames[] =
- #include <stdarg.h>
+ #include <linux/stdarg.h>
  
  /*-------------------------------------------------------*/
 -static _cdebbuf *bufprint(_cdebbuf *cdb, char *fmt, ...)
@@ -104,19 +103,6 @@ index f26bf3c66d7e..94d7ce148a81 100644
  			cmsg->l += 4;
  			break;
  		case _CSTRUCT:
-diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
-index adddcd589941..bd615db5c58c 100644
---- a/drivers/scsi/BusLogic.c
-+++ b/drivers/scsi/BusLogic.c
-@@ -1711,7 +1711,7 @@ static bool __init blogic_reportconfig(struct blogic_adapter *adapter)
- 	if (adapter->adapter_bus_type != BLOGIC_PCI_BUS) {
- 		blogic_info("  DMA Channel: None, ", adapter);
- 		if (adapter->bios_addr > 0)
--			blogic_info("BIOS Address: 0x%lX, ", adapter,
-+			blogic_info("BIOS Address: 0x%X, ", adapter,
- 					adapter->bios_addr);
- 		else
- 			blogic_info("BIOS Address: None, ", adapter);
 diff --git a/drivers/scsi/esas2r/esas2r_log.c b/drivers/scsi/esas2r/esas2r_log.c
 index d6c87a0bae09..1672c52f855d 100644
 --- a/drivers/scsi/esas2r/esas2r_log.c
@@ -150,7 +136,7 @@ index 76f8c090a837..ba4fd1a98325 100644
  					struct device *dev,
  					struct fbtft_platform_data *pdata);
 diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
-index 0cd728961fce..f77d1a22c61f 100644
+index e8bed1cb76ba..6d4619468bb6 100644
 --- a/drivers/xen/xenbus/xenbus_client.c
 +++ b/drivers/xen/xenbus/xenbus_client.c
 @@ -278,8 +278,9 @@ int xenbus_frontend_closed(struct xenbus_device *dev)
@@ -191,7 +177,7 @@ index 690c369b717a..2937a801eacf 100644
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index ad413b382a3c..cc3c9fa2e554 100644
+index 3e475eeb5a99..a65c712c2bc3 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
 @@ -232,7 +232,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
@@ -220,10 +206,10 @@ index 121d37e700a6..a910baf1813b 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 4a0e693000c6..c825c811b3c8 100644
+index b7c0f8e160fb..c5aeb208864e 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -754,11 +754,11 @@ static inline void __init disable_tracing_selftest(const char *reason)
+@@ -759,11 +759,11 @@ static inline void __init disable_tracing_selftest(const char *reason)
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -239,7 +225,7 @@ index 4a0e693000c6..c825c811b3c8 100644
  		    unsigned long ip, const char *fmt, va_list args);
  int trace_array_printk_buf(struct trace_buffer *buffer,
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index a0bf446bb034..47c65fa92d43 100644
+index c2ca40e8595b..a212935371bc 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
 @@ -322,8 +322,8 @@ void trace_event_printf(struct trace_iterator *iter, const char *fmt, ...)
@@ -263,10 +249,10 @@ index a0bf446bb034..47c65fa92d43 100644
  	va_list ap;
  	int ret;
 diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
-index c1a895c0d682..b689a88e550c 100644
+index 0c47ff95c0e2..fb43bae38940 100644
 --- a/scripts/mod/modpost.h
 +++ b/scripts/mod/modpost.h
-@@ -205,7 +205,7 @@ enum loglevel {
+@@ -196,7 +196,7 @@ enum loglevel {
  	LOG_FATAL
  };
  
