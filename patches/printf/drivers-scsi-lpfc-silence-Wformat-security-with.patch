@@ -9,16 +9,16 @@ Subject: [PATCH] {PRINTF} drivers/scsi/lpfc: silence -Wformat-security with
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
-index ffd8a140638c..b1b1117b6e41 100644
+index 78ce38d7251c..3f977d090729 100644
 --- a/drivers/scsi/lpfc/lpfc_sli.c
 +++ b/drivers/scsi/lpfc/lpfc_sli.c
-@@ -22113,7 +22113,7 @@ lpfc_read_object(struct lpfc_hba *phba, char *rdobject, uint32_t *datap,
+@@ -22114,7 +22114,7 @@ lpfc_read_object(struct lpfc_hba *phba, char *rdobject, uint32_t *datap,
  
  	memset((void *)read_object->u.request.rd_object_name, 0,
  	       LPFC_OBJ_NAME_SZ);
--	sprintf((uint8_t *)read_object->u.request.rd_object_name, rdobject);
-+	sprintf((uint8_t *)read_object->u.request.rd_object_name, "%s", rdobject);
+-	scnprintf((char *)rd_object_name, sizeof(rd_object_name), rdobject);
++	scnprintf((char *)rd_object_name, sizeof(rd_object_name), "%s", rdobject);
  	for (j = 0; j < strlen(rdobject); j++)
  		read_object->u.request.rd_object_name[j] =
- 			cpu_to_le32(read_object->u.request.rd_object_name[j]);
+ 			cpu_to_le32(rd_object_name[j]);
 -- 
