@@ -31,7 +31,7 @@ clang on x86-64 reports:
  1 file changed, 10 insertions(+)
 
 diff --git a/drivers/infiniband/hw/qib/qib_sysfs.c b/drivers/infiniband/hw/qib/qib_sysfs.c
-index 452e2355d24e..e69aabb148e4 100644
+index 0a3b28142c05..d1df19cce662 100644
 --- a/drivers/infiniband/hw/qib/qib_sysfs.c
 +++ b/drivers/infiniband/hw/qib/qib_sysfs.c
 @@ -402,6 +402,15 @@ static ssize_t diagc_attr_store(struct ib_device *ibdev, u32 port_num,
@@ -48,7 +48,7 @@ index 452e2355d24e..e69aabb148e4 100644
 +	}
 +#else
  #define QIB_DIAGC_ATTR(N)                                                      \
- 	static_assert(&((struct qib_ibport *)0)->rvp.n_##N != (u64 *)NULL);    \
+ 	static_assert(__same_type(((struct qib_ibport *)0)->rvp.n_##N, u64));  \
  	static struct qib_diagc_attr qib_diagc_attr_##N = {                    \
 @@ -409,6 +418,7 @@ static ssize_t diagc_attr_store(struct ib_device *ibdev, u32 port_num,
  		.counter =                                                     \
