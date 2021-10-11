@@ -73,7 +73,6 @@ It has also detected some bugs reported and fixed by other people:
  drivers/usb/dwc2/hcd.c                        |  22 +-
  drivers/usb/host/xhci-debugfs.c               |   4 +-
  drivers/vhost/scsi.c                          |   6 +-
- drivers/xen/privcmd.c                         |  16 +-
  drivers/xen/xenbus/xenbus_xs.c                |   4 +-
  fs/afs/dir.c                                  |   3 +-
  fs/cifs/cifsacl.c                             |  12 +-
@@ -107,7 +106,7 @@ It has also detected some bugs reported and fixed by other people:
  scripts/gcc-plugins/deref_checker_plugin.c    | 485 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 78 files changed, 943 insertions(+), 153 deletions(-)
+ 77 files changed, 933 insertions(+), 147 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
@@ -435,10 +434,10 @@ index 8679a9d6c47f..3dc28d0abe05 100644
  			goto do_another_FPU_instruction;
  	}
 diff --git a/arch/x86/xen/enlighten_pv.c b/arch/x86/xen/enlighten_pv.c
-index 6e0d0754f94f..ed04a5288251 100644
+index a7b7d674f500..9f3ab2bbb78b 100644
 --- a/arch/x86/xen/enlighten_pv.c
 +++ b/arch/x86/xen/enlighten_pv.c
-@@ -708,8 +708,12 @@ static int cvt_gate_to_trap(int vector, const gate_desc *val,
+@@ -680,8 +680,12 @@ static int cvt_gate_to_trap(int vector, const gate_desc *val,
  	info->vector = vector;
  
  	addr = gate_offset(val);
@@ -1039,33 +1038,6 @@ index 532e204f2b1b..cc9a41d992b4 100644
  			vhost_vq_init_access(vq);
  			mutex_unlock(&vq->mutex);
  		}
-diff --git a/drivers/xen/privcmd.c b/drivers/xen/privcmd.c
-index 720a7b7abd46..0db25a257031 100644
---- a/drivers/xen/privcmd.c
-+++ b/drivers/xen/privcmd.c
-@@ -805,12 +805,16 @@ static long privcmd_ioctl_mmap_resource(struct file *file,
- 			DOMID_SELF : kdata.dom;
- 		int num;
- 
--		num = xen_remap_domain_mfn_array(vma,
--						 kdata.addr & PAGE_MASK,
--						 pfns, kdata.num, (int *)pfns,
--						 vma->vm_page_prot,
--						 domid,
--						 vma->vm_private_data);
-+		{
-+			/* Play nice with the pointer deref checker */
-+			struct page **pages = vma->vm_private_data;
-+			num = xen_remap_domain_mfn_array(vma,
-+							 kdata.addr & PAGE_MASK,
-+							 pfns, kdata.num, (int *)pfns,
-+							 vma->vm_page_prot,
-+							 domid,
-+							 pages);
-+		}
- 		if (num < 0)
- 			rc = num;
- 		else if (num != kdata.num) {
 diff --git a/drivers/xen/xenbus/xenbus_xs.c b/drivers/xen/xenbus/xenbus_xs.c
 index 12e02eb01f59..c0c6301d5132 100644
 --- a/drivers/xen/xenbus/xenbus_xs.c

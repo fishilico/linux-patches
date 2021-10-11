@@ -1814,10 +1814,10 @@ index f9cf9fb31547..cd349de20119 100644
  	trace_mlx5_fw(dev->tracer, trace_timestamp, str_frmt->lost,
  		      str_frmt->event_id, tmp);
 diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c b/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c
-index e4f5b6395148..edac4236d4d1 100644
+index e1dd17019030..27fc40789b49 100644
 --- a/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c
 +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c
-@@ -1369,12 +1369,15 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(per_port_buff_congest)
+@@ -1370,12 +1370,15 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(per_port_buff_congest)
  		return idx;
  
  	for (prio = 0; prio < NUM_PPORT_PRIO; prio++) {
@@ -1833,7 +1833,7 @@ index e4f5b6395148..edac4236d4d1 100644
  	}
  
  	return idx;
-@@ -1492,9 +1495,13 @@ static int mlx5e_grp_per_prio_traffic_fill_strings(struct mlx5e_priv *priv,
+@@ -1493,9 +1496,13 @@ static int mlx5e_grp_per_prio_traffic_fill_strings(struct mlx5e_priv *priv,
  	int i, prio;
  
  	for (prio = 0; prio < NUM_PPORT_PRIO; prio++) {
@@ -1848,7 +1848,7 @@ index e4f5b6395148..edac4236d4d1 100644
  	}
  
  	return idx;
-@@ -1586,15 +1593,21 @@ static int mlx5e_grp_per_prio_pfc_fill_strings(struct mlx5e_priv *priv,
+@@ -1587,15 +1594,21 @@ static int mlx5e_grp_per_prio_pfc_fill_strings(struct mlx5e_priv *priv,
  			char pfc_string[ETH_GSTRING_LEN];
  
  			snprintf(pfc_string, sizeof(pfc_string), "prio%d", prio);
@@ -1870,7 +1870,7 @@ index e4f5b6395148..edac4236d4d1 100644
  		}
  	}
  
-@@ -2006,10 +2019,15 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(qos)
+@@ -2007,10 +2020,15 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(qos)
  	u16 max_qos_sqs = smp_load_acquire(&priv->htb.max_qos_sqs);
  	int i, qid;
  
@@ -1888,7 +1888,7 @@ index e4f5b6395148..edac4236d4d1 100644
  
  	return idx;
  }
-@@ -2058,9 +2076,11 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(ptp)
+@@ -2059,9 +2077,11 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(ptp)
  	if (!priv->tx_ptp_opened && !priv->rx_ptp_opened)
  		return idx;
  
@@ -1901,15 +1901,15 @@ index e4f5b6395148..edac4236d4d1 100644
  
  	if (priv->tx_ptp_opened) {
  		for (tc = 0; tc < priv->max_opened_tc; tc++)
-@@ -2078,6 +2098,7 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(ptp)
+@@ -2079,6 +2099,7 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(ptp)
  			sprintf(data + (idx++) * ETH_GSTRING_LEN,
- 				ptp_rq_stats_desc[i].format);
+ 				ptp_rq_stats_desc[i].format, MLX5E_PTP_CHANNEL_IX);
  	}
 +__diag_pop()
  	return idx;
  }
  
-@@ -2137,11 +2158,17 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(channels)
+@@ -2138,11 +2159,17 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(channels)
  	int i, j, tc;
  
  	for (i = 0; i < max_nch; i++)
@@ -1928,7 +1928,7 @@ index e4f5b6395148..edac4236d4d1 100644
  		for (j = 0; j < NUM_RQ_STATS; j++)
  			sprintf(data + (idx++) * ETH_GSTRING_LEN,
  				rq_stats_desc[j].format, i);
-@@ -2151,22 +2178,35 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(channels)
+@@ -2152,22 +2179,35 @@ static MLX5E_DECLARE_STATS_GRP_OP_FILL_STRS(channels)
  		for (j = 0; j < NUM_RQ_XDPSQ_STATS; j++)
  			sprintf(data + (idx++) * ETH_GSTRING_LEN,
  				rq_xdpsq_stats_desc[j].format, i);
@@ -4113,10 +4113,10 @@ index 9d43277b8b4f..a13ca2e70c7a 100644
  			result = PTR_ERR(task);
  			goto out;
 diff --git a/net/netfilter/nf_tables_api.c b/net/netfilter/nf_tables_api.c
-index b9546defdc28..6ee95c0e5ca5 100644
+index c0851fec11d4..fbfec14df382 100644
 --- a/net/netfilter/nf_tables_api.c
 +++ b/net/netfilter/nf_tables_api.c
-@@ -3778,7 +3778,11 @@ static int nf_tables_set_alloc_name(struct nft_ctx *ctx, struct nft_set *set,
+@@ -3802,7 +3802,11 @@ static int nf_tables_set_alloc_name(struct nft_ctx *ctx, struct nft_set *set,
  		free_page((unsigned long)inuse);
  	}
  
