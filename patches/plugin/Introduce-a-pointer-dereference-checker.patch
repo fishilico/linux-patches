@@ -110,15 +110,18 @@ It has also detected some bugs reported and fixed by other people:
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
-index aa075d8372ea..845eea0891d2 100644
+index 74255e819831..caf6316098a1 100644
 --- a/arch/arm/boot/compressed/decompress.c
 +++ b/arch/arm/boot/compressed/decompress.c
-@@ -47,8 +47,10 @@ extern char * strchrnul(const char *, int);
+@@ -47,11 +47,13 @@ extern char * strchrnul(const char *, int);
  #endif
  
  #ifdef CONFIG_KERNEL_XZ
 +#ifndef CONFIG_GCC_PLUGIN_DEREF_CHECKER
+ /* Prevent KASAN override of string helpers in decompressor */
+ #undef memmove
  #define memmove memmove
+ #undef memcpy
  #define memcpy memcpy
 +#endif
  #include "../../../../lib/decompress_unxz.c"
@@ -1619,7 +1622,7 @@ index 2054c9213c43..d57d59c22278 100644
  }
  
 diff --git a/mm/slub.c b/mm/slub.c
-index 78c639210bad..35e47ed1f21d 100644
+index c169533265be..2665329e4fb3 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
 @@ -360,14 +360,16 @@ static void prefetch_freepointer(const struct kmem_cache *s, void *object)
