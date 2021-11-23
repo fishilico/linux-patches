@@ -4,45 +4,45 @@ Date: Tue, 27 Dec 2016 19:09:50 +0100
 Subject: [PATCH] {FRAMA-C} Add arch/framac
 
 ---
- arch/framac/Kconfig                    |  59 ++++++++++++
+ arch/framac/Kconfig                    |  59 +++++++++++
  arch/framac/Kconfig.debug              |   1 +
  arch/framac/Makefile                   |  29 ++++++
  arch/framac/extra/Makefile             |  13 +++
- arch/framac/extra/gen_lds_vars.sh      |  27 ++++++
- arch/framac/extra/lds_vars.c           | 128 +++++++++++++++++++++++++
- arch/framac/include/abstract_structs.h |  73 ++++++++++++++
- arch/framac/include/asm/Kbuild         |  86 +++++++++++++++++
+ arch/framac/extra/gen_lds_vars.sh      |  27 +++++
+ arch/framac/extra/lds_vars.c           | 138 +++++++++++++++++++++++++
+ arch/framac/include/abstract_structs.h |  73 +++++++++++++
+ arch/framac/include/asm/Kbuild         |  86 +++++++++++++++
  arch/framac/include/asm/byteorder.h    |   6 ++
- arch/framac/include/asm/elf.h          |  33 +++++++
+ arch/framac/include/asm/elf.h          |  33 ++++++
  arch/framac/include/asm/irqflags.h     |  15 +++
- arch/framac/include/asm/mmu_context.h  |  16 ++++
- arch/framac/include/asm/pgtable.h      |  74 ++++++++++++++
- arch/framac/include/asm/processor.h    |  40 ++++++++
- arch/framac/include/asm/ptrace.h       |  32 +++++++
+ arch/framac/include/asm/mmu_context.h  |  16 +++
+ arch/framac/include/asm/pgtable.h      |  74 +++++++++++++
+ arch/framac/include/asm/processor.h    |  40 +++++++
+ arch/framac/include/asm/ptrace.h       |  32 ++++++
  arch/framac/include/asm/sigcontext.h   |  10 ++
- arch/framac/include/asm/syscall.h      |  66 +++++++++++++
+ arch/framac/include/asm/syscall.h      |  66 ++++++++++++
  arch/framac/include/asm/thread_info.h  |  69 +++++++++++++
  arch/framac/include/asm/tlb.h          |   6 ++
- arch/framac/include/asm/uaccess.h      |  22 +++++
+ arch/framac/include/asm/uaccess.h      |  22 ++++
  arch/framac/include/asm/vmalloc.h      |   6 ++
  arch/framac/include/uapi/asm/Kbuild    |   0
- arch/framac/kernel/Makefile            |  11 +++
+ arch/framac/kernel/Makefile            |  11 ++
  arch/framac/kernel/asm-offsets.c       |  13 +++
  arch/framac/kernel/head.c              |   6 ++
  arch/framac/kernel/irq.c               |   5 +
  arch/framac/kernel/panic.c             |  14 +++
- arch/framac/kernel/process.c           |  40 ++++++++
- arch/framac/kernel/ptrace.c            |  11 +++
- arch/framac/kernel/reboot.c            |  22 +++++
- arch/framac/kernel/setup.c             |  16 ++++
+ arch/framac/kernel/process.c           |  40 +++++++
+ arch/framac/kernel/ptrace.c            |  11 ++
+ arch/framac/kernel/reboot.c            |  22 ++++
+ arch/framac/kernel/setup.c             |  16 +++
  arch/framac/kernel/time.c              |   5 +
  arch/framac/kernel/traps.c             |  10 ++
- arch/framac/kernel/vmlinux.lds.S       |  56 +++++++++++
+ arch/framac/kernel/vmlinux.lds.S       |  56 ++++++++++
  arch/framac/lib/Makefile               |   1 +
- arch/framac/lib/delay.c                |  27 ++++++
+ arch/framac/lib/delay.c                |  27 +++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 +++
- 38 files changed, 1063 insertions(+)
+ 38 files changed, 1073 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Kconfig.debug
  create mode 100644 arch/framac/Makefile
@@ -243,10 +243,10 @@ index 000000000000..6259dfb9a576
 +done
 diff --git a/arch/framac/extra/lds_vars.c b/arch/framac/extra/lds_vars.c
 new file mode 100644
-index 000000000000..c4afe78b9e98
+index 000000000000..97e9e8bdb309
 --- /dev/null
 +++ b/arch/framac/extra/lds_vars.c
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,138 @@
 +/**
 + * Define references to unsized arrays used in the code which come from the
 + * linker script.
@@ -257,12 +257,20 @@ index 000000000000..c4afe78b9e98
 +#include <linux/firmware.h>
 +#include <linux/init.h>
 +#include <linux/jump_label.h>
++#include <linux/kconfig.h>
 +#include <linux/moduleparam.h>
 +#include <linux/pci.h>
 +#include <linux/serial_core.h>
 +#include <linux/tracepoint.h>
 +#include <linux/uaccess.h>
 +#include <linux/dynamic_debug.h>
++
++/* Copy drivers/base/firmware_loader/builtin/main.c */
++struct builtin_fw {
++	char *name;
++	void *data;
++	unsigned long size;
++};
 +
 +char __init_begin[1];
 +char _sinittext[1];
@@ -328,8 +336,10 @@ index 000000000000..c4afe78b9e98
 +struct pci_fixup __end_pci_fixups_suspend[1];
 +struct pci_fixup __start_pci_fixups_suspend_late[1];
 +struct pci_fixup __end_pci_fixups_suspend_late[1];
++#if IS_BUILTIN(CONFIG_FW_LOADER)
 +struct builtin_fw __start_builtin_fw[1];
 +struct builtin_fw __end_builtin_fw[1];
++#endif
 +#ifdef CONFIG_MODULES
 +const struct kernel_symbol __start___ksymtab[1];
 +const struct kernel_symbol __stop___ksymtab[1];
@@ -722,7 +732,7 @@ index 000000000000..8dec05ef14f0
 +#endif /* _ASM_FRAMA_C_PGTABLE_H */
 diff --git a/arch/framac/include/asm/processor.h b/arch/framac/include/asm/processor.h
 new file mode 100644
-index 000000000000..b341573b9581
+index 000000000000..4db70f07b0f2
 --- /dev/null
 +++ b/arch/framac/include/asm/processor.h
 @@ -0,0 +1,40 @@
@@ -761,7 +771,7 @@ index 000000000000..b341573b9581
 +#define KSTK_EIP(tsk)	task_pt_regs(tsk)->pc
 +#define KSTK_ESP(tsk)	task_pt_regs(tsk)->usp
 +
-+unsigned long get_wchan(struct task_struct *p);
++unsigned long __get_wchan(struct task_struct *p);
 +
 +#endif /* __ASSEMBLY__ */
 +
@@ -1103,7 +1113,7 @@ index 000000000000..a280c0b95bae
 +#endif
 diff --git a/arch/framac/kernel/process.c b/arch/framac/kernel/process.c
 new file mode 100644
-index 000000000000..664bfe044660
+index 000000000000..9c608e114945
 --- /dev/null
 +++ b/arch/framac/kernel/process.c
 @@ -0,0 +1,40 @@
@@ -1143,7 +1153,7 @@ index 000000000000..664bfe044660
 +	return prev;
 +}
 +
-+unsigned long get_wchan(struct task_struct *p)
++unsigned long __get_wchan(struct task_struct *p)
 +{
 +	return 0;
 +}

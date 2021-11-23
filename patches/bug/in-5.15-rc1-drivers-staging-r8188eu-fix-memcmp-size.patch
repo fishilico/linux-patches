@@ -5,16 +5,16 @@ Subject: [PATCH] {BUG in 5.15-rc1} drivers/staging/r8188eu: fix memcmp size
 
 Found with memcmp checker plugin
 ---
- drivers/staging/r8188eu/os_dep/ioctl_linux.c | 54 ++++++++++----------
- 1 file changed, 27 insertions(+), 27 deletions(-)
+ drivers/staging/r8188eu/os_dep/ioctl_linux.c | 40 ++++++++++----------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/staging/r8188eu/os_dep/ioctl_linux.c b/drivers/staging/r8188eu/os_dep/ioctl_linux.c
-index 1fd375076001..25bb1093aea2 100644
+index 52d42e576443..8aefb21f0c42 100644
 --- a/drivers/staging/r8188eu/os_dep/ioctl_linux.c
 +++ b/drivers/staging/r8188eu/os_dep/ioctl_linux.c
-@@ -3674,48 +3674,48 @@ static int rtw_p2p_set(struct net_device *dev,
+@@ -3408,48 +3408,48 @@ static int rtw_p2p_set(struct net_device *dev,
+ 	int ret = 0;
  
- #ifdef CONFIG_88EU_P2P
  	DBG_88E("[%s] extra = %s\n", __func__, extra);
 -	if (!memcmp(extra, "enable =", 7)) {
 +	if (!memcmp(extra, "enable ", 7)) {
@@ -73,7 +73,7 @@ index 1fd375076001..25bb1093aea2 100644
  		wrqu->data.length -= 11;
  		rtw_p2p_set_persistent(dev, info, wrqu, &extra[11]);
  	}
-@@ -3748,7 +3748,7 @@ static int rtw_p2p_get(struct net_device *dev,
+@@ -3480,7 +3480,7 @@ static int rtw_p2p_get(struct net_device *dev,
  		rtw_p2p_get_peer_devaddr(dev, info, wrqu, extra);
  	} else if (!memcmp(wrqu->data.pointer, "group_id", 8)) {
  		rtw_p2p_get_groupid(dev, info, wrqu, extra);
@@ -82,9 +82,9 @@ index 1fd375076001..25bb1093aea2 100644
  		/*	Get the P2P device address when receiving the P2P Invitation request frame. */
  		rtw_p2p_get_peer_devaddr_by_invitation(dev, info, wrqu, extra);
  	} else if (!memcmp(wrqu->data.pointer, "op_ch", 5)) {
-@@ -3766,19 +3766,19 @@ static int rtw_p2p_get2(struct net_device *dev,
+@@ -3496,19 +3496,19 @@ static int rtw_p2p_get2(struct net_device *dev,
+ 	int ret = 0;
  
- #ifdef CONFIG_88EU_P2P
  	DBG_88E("[%s] extra = %s\n", __func__, (char *)wrqu->data.pointer);
 -	if (!memcmp(extra, "wpsCM =", 6)) {
 +	if (!memcmp(extra, "wpsCM ", 6)) {
@@ -107,7 +107,7 @@ index 1fd375076001..25bb1093aea2 100644
  		wrqu->data.length -= 8;
  		rtw_p2p_get_invitation_procedure(dev, info, wrqu, &extra[8]);
  	}
-@@ -4526,10 +4526,10 @@ static int rtw_pm_set(struct net_device *dev,
+@@ -4211,10 +4211,10 @@ static int rtw_pm_set(struct net_device *dev,
  
  	DBG_88E("[%s] extra = %s\n", __func__, extra);
  
@@ -120,32 +120,4 @@ index 1fd375076001..25bb1093aea2 100644
  		sscanf(extra + 4, "%u", &mode);
  		ret = rtw_pm_set_ips(padapter, mode);
  	} else {
-@@ -5764,12 +5764,12 @@ static int rtw_mp_ctx(struct net_device *dev,
- 
- 	DBG_88E("%s: in =%s\n", __func__, extra);
- 
--	countPkTx = strncmp(extra, "count =", 5); /*  strncmp true is 0 */
--	cotuTx = strncmp(extra, "background", 20);
--	CarrSprTx = strncmp(extra, "background, cs", 20);
--	scTx = strncmp(extra, "background, sc", 20);
--	sgleTx = strncmp(extra, "background, stone", 20);
--	pkTx = strncmp(extra, "background, pkt", 20);
-+	countPkTx = strncmp(extra, "count", 5); /*  strncmp true is 0 */
-+	cotuTx = strncmp(extra, "background", 11);
-+	CarrSprTx = strncmp(extra, "background, cs", 15);
-+	scTx = strncmp(extra, "background, sc", 15);
-+	sgleTx = strncmp(extra, "background, stone", 18);
-+	pkTx = strncmp(extra, "background, pkt", 16);
- 	stop = strncmp(extra, "stop", 4);
- 	sscanf(extra, "count =%d, pkt", &count);
- 
-@@ -6161,7 +6161,7 @@ static int rtw_mp_SetRFPath(struct net_device *dev,
- 	DBG_88E("%s:iwpriv in =%s\n", __func__, input);
- 
- 	bMain = strncmp(input, "1", 2); /*  strncmp true is 0 */
--	bTurnoff = strncmp(input, "0", 3); /*  strncmp true is 0 */
-+	bTurnoff = strncmp(input, "0", 2); /*  strncmp true is 0 */
- 
- 	if (bMain == 0) {
- 		MP_PHY_SetRFPathSwitch(padapter, true);
 -- 

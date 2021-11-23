@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 21 Nov 2021 12:15:58 +0100
+Subject: [PATCH] {BUG in 5.16-rc1} fs/overlayfs: do not format struct path
+ with %pd2
+
+---
+ fs/overlayfs/copy_up.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/overlayfs/copy_up.c b/fs/overlayfs/copy_up.c
+index b193d08a3dc3..7617ea6c844d 100644
+--- a/fs/overlayfs/copy_up.c
++++ b/fs/overlayfs/copy_up.c
+@@ -144,7 +144,7 @@ static int ovl_copy_fileattr(struct inode *inode, struct path *old,
+ 		/* Ntfs-3g returns -EINVAL for "no fileattr support" */
+ 		if (err == -ENOTTY || err == -EINVAL)
+ 			return 0;
+-		pr_warn("failed to retrieve lower fileattr (%pd2, err=%i)\n",
++		pr_warn("failed to retrieve lower fileattr (%px, err=%i)\n", /* BUG? %pd2 is used with struct path instead of a struct dentry. TODO does it work? */
+ 			old, err);
+ 		return err;
+ 	}
+@@ -167,7 +167,7 @@ static int ovl_copy_fileattr(struct inode *inode, struct path *old,
+ 
+ 	err = ovl_real_fileattr_get(new, &newfa);
+ 	if (err) {
+-		pr_warn("failed to retrieve upper fileattr (%pd2, err=%i)\n",
++		pr_warn("failed to retrieve upper fileattr (%px, err=%i)\n", /* BUG? %pd2 is used with struct path instead of a struct dentry. TODO does it work? */
+ 			new, err);
+ 		return err;
+ 	}
+-- 

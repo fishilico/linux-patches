@@ -25,15 +25,15 @@ This silents a -Wformat-security warning found by clang:
             kthread_create_on_node(threadfn, data, NUMA_NO_NODE, namefmt, ##arg)
                                                                  ^
 ---
- .../interface/vchiq_arm/vchiq_arm.c           |  2 +-
- .../interface/vchiq_arm/vchiq_core.c          | 19 +++++++++----------
- 2 files changed, 10 insertions(+), 11 deletions(-)
+ .../interface/vchiq_arm/vchiq_arm.c              |  2 +-
+ .../interface/vchiq_arm/vchiq_core.c             | 16 ++++++----------
+ 2 files changed, 7 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
-index 967f10b9582a..91b8e4dda0f6 100644
+index c650a32bcedf..1accc54e8c7f 100644
 --- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
 +++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_arm.c
-@@ -1733,7 +1733,7 @@ void vchiq_platform_conn_state_changed(struct vchiq_state *state,
+@@ -1719,7 +1719,7 @@ void vchiq_platform_conn_state_changed(struct vchiq_state *state,
  		 state->id);
  	arm_state->ka_thread = kthread_create(&vchiq_keepalive_thread_func,
  					      (void *)state,
@@ -43,10 +43,10 @@ index 967f10b9582a..91b8e4dda0f6 100644
  		vchiq_log_error(vchiq_susp_log_level,
  				"vchiq: FATAL: couldn't create thread %s",
 diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
-index 9429b8a642fb..58f59e1bee2e 100644
+index 7fe20d4b7ba2..fc0f8ad3d7c8 100644
 --- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
 +++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_core.c
-@@ -2268,7 +2268,6 @@ vchiq_init_state(struct vchiq_state *state, struct vchiq_slot_zero *slot_zero)
+@@ -2159,7 +2159,6 @@ vchiq_init_state(struct vchiq_state *state, struct vchiq_slot_zero *slot_zero)
  {
  	struct vchiq_shared_state *local;
  	struct vchiq_shared_state *remote;
@@ -54,16 +54,13 @@ index 9429b8a642fb..58f59e1bee2e 100644
  	int i, ret;
  
  	if (vchiq_states[0]) {
-@@ -2358,39 +2357,39 @@ vchiq_init_state(struct vchiq_state *state, struct vchiq_slot_zero *slot_zero)
+@@ -2249,33 +2248,30 @@ vchiq_init_state(struct vchiq_state *state, struct vchiq_slot_zero *slot_zero)
  	/*
  	 * bring up slot handler thread
  	 */
 -	snprintf(threadname, sizeof(threadname), "vchiq-slot/%d", state->id);
- 	state->slot_handler_thread = kthread_create(&slot_handler_func,
- 		(void *)state,
--		threadname);
-+		"vchiq-slot/%d",
-+		state->id);
+-	state->slot_handler_thread = kthread_create(&slot_handler_func, (void *)state, threadname);
++	state->slot_handler_thread = kthread_create(&slot_handler_func, (void *)state, "vchiq-slot/%d", state->id);
  
  	if (IS_ERR(state->slot_handler_thread)) {
  		vchiq_loud_error_header();
@@ -75,11 +72,8 @@ index 9429b8a642fb..58f59e1bee2e 100644
  	set_user_nice(state->slot_handler_thread, -19);
  
 -	snprintf(threadname, sizeof(threadname), "vchiq-recy/%d", state->id);
- 	state->recycle_thread = kthread_create(&recycle_func,
- 		(void *)state,
--		threadname);
-+		"vchiq-recy/%d",
-+		state->id);
+-	state->recycle_thread = kthread_create(&recycle_func, (void *)state, threadname);
++	state->recycle_thread = kthread_create(&recycle_func, (void *)state, "vchiq-recy/%d", state->id);
  	if (IS_ERR(state->recycle_thread)) {
  		vchiq_loud_error_header();
 -		vchiq_loud_error("couldn't create thread %s", threadname);
@@ -91,11 +85,8 @@ index 9429b8a642fb..58f59e1bee2e 100644
  	set_user_nice(state->recycle_thread, -19);
  
 -	snprintf(threadname, sizeof(threadname), "vchiq-sync/%d", state->id);
- 	state->sync_thread = kthread_create(&sync_func,
- 		(void *)state,
--		threadname);
-+		"vchiq-sync/%d",
-+		state->id);
+-	state->sync_thread = kthread_create(&sync_func, (void *)state, threadname);
++	state->sync_thread = kthread_create(&sync_func, (void *)state, "vchiq-sync/%d", state->id);
  	if (IS_ERR(state->sync_thread)) {
  		vchiq_loud_error_header();
 -		vchiq_loud_error("couldn't create thread %s", threadname);

@@ -462,6 +462,8 @@ then
         echo 'CONFIG_CGROUP_HUGETLB=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_APPLE_DART=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_DMA_RESTRICTED_POOL=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_STACKPROTECTOR_PER_TASK=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_XEN_PCIDEV_STUB=m' >> "$KBUILD_OUTPUT/.config"
     fi
 
     # Merge options

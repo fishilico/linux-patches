@@ -38,6 +38,7 @@ This fixes errors like:
  drivers/net/hamradio/baycom_epp.c            |   5 +-
  drivers/net/hamradio/mkiss.c                 |   9 +-
  drivers/net/wan/z85230.c                     |   4 +-
+ drivers/net/wireless/realtek/rtw89/debug.c   |  11 +-
  drivers/remoteproc/keystone_remoteproc.c     |   5 +-
  drivers/scsi/esas2r/esas2r_log.c             |   6 +-
  drivers/scsi/fnic/fnic_trace.c               |   5 +-
@@ -52,7 +53,7 @@ This fixes errors like:
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
  sound/usb/mixer_scarlett_gen2.c              |  12 +-
- 26 files changed, 172 insertions(+), 262 deletions(-)
+ 27 files changed, 175 insertions(+), 270 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 5e86145db0e2..4b9d13d8bafc 100644
@@ -170,10 +171,10 @@ index a0c4c42e56b9..8b651f5f9cac 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 84a2c8c4af73..e65d34ee3ae4 100644
+index 4bfed53e210e..e25986d07497 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
-@@ -328,14 +328,6 @@ static void dump_pagetable(unsigned long address)
+@@ -329,14 +329,6 @@ static void dump_pagetable(unsigned long address)
  
  #else /* CONFIG_X86_64: */
  
@@ -188,7 +189,7 @@ index 84a2c8c4af73..e65d34ee3ae4 100644
  
  static int bad_address(void *p)
  {
-@@ -432,7 +424,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+@@ -433,7 +425,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  	address |= 0xffffffffUL << 32;
  	if ((address >= (u64)_stext && address <= (u64)_etext) ||
  	    (address >= MODULES_VADDR && address <= MODULES_END)) {
@@ -270,10 +271,10 @@ index a99afb5d9011..60dab42e6538 100644
  		p += bytes;						\
  		len -= bytes;						\
 diff --git a/drivers/misc/habanalabs/gaudi/gaudi.c b/drivers/misc/habanalabs/gaudi/gaudi.c
-index 14da87b38e83..6ab65483e8d8 100644
+index 825737dfe381..4e9eed594c44 100644
 --- a/drivers/misc/habanalabs/gaudi/gaudi.c
 +++ b/drivers/misc/habanalabs/gaudi/gaudi.c
-@@ -8317,9 +8317,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8323,9 +8323,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  					u8 mask_len, struct seq_file *s)
  {
  	struct gaudi_device *gaudi = hdev->asic_specific;
@@ -283,7 +284,7 @@ index 14da87b38e83..6ab65483e8d8 100644
  	unsigned long *mask = (unsigned long *)mask_arr;
  	u32 qm_glbl_sts0, qm_cgm_sts, dma_core_sts0, tpc_cfg_sts, mme_arch_sts;
  	bool is_idle = true, is_eng_idle, is_slave;
-@@ -8349,7 +8346,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8355,7 +8352,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  		if (mask && !is_eng_idle)
  			set_bit(GAUDI_ENGINE_ID_DMA_0 + dma_id, mask);
  		if (s)
@@ -292,7 +293,7 @@ index 14da87b38e83..6ab65483e8d8 100644
  				is_eng_idle ? "Y" : "N", qm_glbl_sts0,
  				qm_cgm_sts, dma_core_sts0);
  	}
-@@ -8371,7 +8368,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8377,7 +8374,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  		if (mask && !is_eng_idle)
  			set_bit(GAUDI_ENGINE_ID_TPC_0 + i, mask);
  		if (s)
@@ -301,7 +302,7 @@ index 14da87b38e83..6ab65483e8d8 100644
  				is_eng_idle ? "Y" : "N",
  				qm_glbl_sts0, qm_cgm_sts, tpc_cfg_sts);
  	}
-@@ -8400,11 +8397,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8406,11 +8403,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  			set_bit(GAUDI_ENGINE_ID_MME_0 + i, mask);
  		if (s) {
  			if (!is_slave)
@@ -315,7 +316,7 @@ index 14da87b38e83..6ab65483e8d8 100644
  					is_eng_idle ? "Y" : "N", "-",
  					"-", mme_arch_sts);
  		}
-@@ -8426,7 +8423,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8432,7 +8429,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  			if (mask && !is_eng_idle)
  				set_bit(GAUDI_ENGINE_ID_NIC_0 + port, mask);
  			if (s)
@@ -324,7 +325,7 @@ index 14da87b38e83..6ab65483e8d8 100644
  						is_eng_idle ? "Y" : "N",
  						qm_glbl_sts0, qm_cgm_sts);
  		}
-@@ -8441,7 +8438,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8447,7 +8444,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  			if (mask && !is_eng_idle)
  				set_bit(GAUDI_ENGINE_ID_NIC_0 + port, mask);
  			if (s)
@@ -356,10 +357,10 @@ index 5566daefbff4..69c8d9e0b05f 100644
  	/* Initialize the device structure. */
  	dev->netdev_ops = &ipddp_netdev_ops;
 diff --git a/drivers/net/hamradio/6pack.c b/drivers/net/hamradio/6pack.c
-index 6192244b304a..d83fd7c04fbc 100644
+index bfdf89e54752..661bc8f7c7fa 100644
 --- a/drivers/net/hamradio/6pack.c
 +++ b/drivers/net/hamradio/6pack.c
-@@ -753,21 +753,16 @@ static struct tty_ldisc_ops sp_ldisc = {
+@@ -755,21 +755,16 @@ static struct tty_ldisc_ops sp_ldisc = {
  
  /* Initialize 6pack control device -- register 6pack line discipline */
  
@@ -384,7 +385,7 @@ index 6192244b304a..d83fd7c04fbc 100644
  	return status;
  }
 diff --git a/drivers/net/hamradio/baycom_epp.c b/drivers/net/hamradio/baycom_epp.c
-index be7b88e433d6..be5fa4108e53 100644
+index eb15f561b2c1..b5b03f4d1a1f 100644
 --- a/drivers/net/hamradio/baycom_epp.c
 +++ b/drivers/net/hamradio/baycom_epp.c
 @@ -49,9 +49,6 @@
@@ -407,10 +408,10 @@ index be7b88e433d6..be5fa4108e53 100644
  	}
  	parport_unregister_driver(&baycom_epp_par_driver);
 diff --git a/drivers/net/hamradio/mkiss.c b/drivers/net/hamradio/mkiss.c
-index 8666110bec55..b5cc71cc7d02 100644
+index e2b332b54f06..cf20f5f7ab16 100644
 --- a/drivers/net/hamradio/mkiss.c
 +++ b/drivers/net/hamradio/mkiss.c
-@@ -943,20 +943,15 @@ static struct tty_ldisc_ops ax_ldisc = {
+@@ -944,20 +944,15 @@ static struct tty_ldisc_ops ax_ldisc = {
  	.write_wakeup	= mkiss_write_wakeup
  };
  
@@ -451,6 +452,35 @@ index 982a03488a00..236f5fcec01e 100644
  	return 0;
  }
  module_init(z85230_init_driver);
+diff --git a/drivers/net/wireless/realtek/rtw89/debug.c b/drivers/net/wireless/realtek/rtw89/debug.c
+index 29eb188c888c..73f6d30ec100 100644
+--- a/drivers/net/wireless/realtek/rtw89/debug.c
++++ b/drivers/net/wireless/realtek/rtw89/debug.c
+@@ -464,21 +464,16 @@ static const struct txpwr_map __txpwr_map_lmt_ru = {
+ static u8 __print_txpwr_ent(struct seq_file *m, const struct txpwr_ent *ent,
+ 			    const u8 *buf, const u8 cur)
+ {
+-	char *fmt;
+-
+ 	switch (ent->len) {
+ 	case 2:
+-		fmt = "%s\t| %3d, %3d,\tdBm\n";
+-		seq_printf(m, fmt, ent->txt, buf[cur], buf[cur + 1]);
++		seq_printf(m, "%s\t| %3d, %3d,\tdBm\n", ent->txt, buf[cur], buf[cur + 1]);
+ 		return 2;
+ 	case 4:
+-		fmt = "%s\t| %3d, %3d, %3d, %3d,\tdBm\n";
+-		seq_printf(m, fmt, ent->txt, buf[cur], buf[cur + 1],
++		seq_printf(m, "%s\t| %3d, %3d, %3d, %3d,\tdBm\n", ent->txt, buf[cur], buf[cur + 1],
+ 			   buf[cur + 2], buf[cur + 3]);
+ 		return 4;
+ 	case 8:
+-		fmt = "%s\t| %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d,\tdBm\n";
+-		seq_printf(m, fmt, ent->txt, buf[cur], buf[cur + 1],
++		seq_printf(m, "%s\t| %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d,\tdBm\n", ent->txt, buf[cur], buf[cur + 1],
+ 			   buf[cur + 2], buf[cur + 3], buf[cur + 4],
+ 			   buf[cur + 5], buf[cur + 6], buf[cur + 7]);
+ 		return 8;
 diff --git a/drivers/remoteproc/keystone_remoteproc.c b/drivers/remoteproc/keystone_remoteproc.c
 index 54781f553f4e..357ad56af490 100644
 --- a/drivers/remoteproc/keystone_remoteproc.c
@@ -545,10 +575,10 @@ index 87e480cc8206..f0c16ff7805b 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 88d5d274a868..96490dd1c14a 100644
+index 4e33b5eca694..4f121b55649d 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1817,9 +1817,6 @@ static ext4_fsblk_t get_sb_block(void **data)
+@@ -1824,9 +1824,6 @@ static ext4_fsblk_t get_sb_block(void **data)
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
  #define DEFAULT_MB_OPTIMIZE_SCAN	(-1)
  
@@ -558,7 +588,7 @@ index 88d5d274a868..96490dd1c14a 100644
  
  #ifdef CONFIG_QUOTA
  static int set_qf_name(struct super_block *sb, int qtype, substring_t *args)
-@@ -2116,7 +2113,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
+@@ -2123,7 +2120,10 @@ static int handle_mount_opt(struct super_block *sb, char *opt, int token,
  	switch (token) {
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -571,7 +601,7 @@ index 88d5d274a868..96490dd1c14a 100644
  	case Opt_sb:
  		return 1;	/* handled by get_sb_block() */
 diff --git a/fs/nilfs2/sysfs.c b/fs/nilfs2/sysfs.c
-index 62f8a7ac19c8..b59f88274f53 100644
+index 81f35c5b5a40..3841c4bb0dab 100644
 --- a/fs/nilfs2/sysfs.c
 +++ b/fs/nilfs2/sysfs.c
 @@ -107,16 +107,14 @@ nilfs_snapshot_blocks_count_show(struct nilfs_snapshot_attr *attr,
@@ -587,8 +617,8 @@ index 62f8a7ac19c8..b59f88274f53 100644
  nilfs_snapshot_README_show(struct nilfs_snapshot_attr *attr,
  			    struct nilfs_root *root, char *buf)
  {
--	return snprintf(buf, PAGE_SIZE, snapshot_readme_str);
-+	return snprintf(buf, PAGE_SIZE,
+-	return sysfs_emit(buf, snapshot_readme_str);
++	return sysfs_emit(buf,
 +		"The group contains details about mounted snapshot.\n\n"
 +		"(1) inodes_count\n\tshow number of inodes for snapshot.\n\n"
 +		"(2) blocks_count\n\tshow number of blocks for snapshot.\n\n");
@@ -607,15 +637,15 @@ index 62f8a7ac19c8..b59f88274f53 100644
  nilfs_mounted_snapshots_README_show(struct nilfs_mounted_snapshots_attr *attr,
  				    struct the_nilfs *nilfs, char *buf)
  {
--	return snprintf(buf, PAGE_SIZE, mounted_snapshots_readme_str);
-+	return snprintf(buf, PAGE_SIZE,
+-	return sysfs_emit(buf, mounted_snapshots_readme_str);
++	return sysfs_emit(buf,
 +		"The mounted_snapshots group contains group for\n"
 +		"every mounted snapshot.\n");
  }
  
  NILFS_MOUNTED_SNAPSHOTS_RO_ATTR(README);
 @@ -309,20 +305,18 @@ nilfs_checkpoints_next_checkpoint_show(struct nilfs_checkpoints_attr *attr,
- 	return snprintf(buf, PAGE_SIZE, "%llu\n", cno);
+ 	return sysfs_emit(buf, "%llu\n", cno);
  }
  
 -static const char checkpoints_readme_str[] =
@@ -631,8 +661,8 @@ index 62f8a7ac19c8..b59f88274f53 100644
  nilfs_checkpoints_README_show(struct nilfs_checkpoints_attr *attr,
  				struct the_nilfs *nilfs, char *buf)
  {
--	return snprintf(buf, PAGE_SIZE, checkpoints_readme_str);
-+	return snprintf(buf, PAGE_SIZE,
+-	return sysfs_emit(buf, checkpoints_readme_str);
++	return sysfs_emit(buf,
 +		"The checkpoints group contains attributes that describe\n"
 +		"details about volume's checkpoints.\n\n"
 +		"(1) checkpoints_number\n\tshow number of checkpoints on volume.\n\n"
@@ -644,7 +674,7 @@ index 62f8a7ac19c8..b59f88274f53 100644
  
  NILFS_CHECKPOINTS_RO_ATTR(checkpoints_number);
 @@ -398,20 +392,18 @@ nilfs_segments_dirty_segments_show(struct nilfs_segments_attr *attr,
- 	return snprintf(buf, PAGE_SIZE, "%llu\n", sustat.ss_ndirtysegs);
+ 	return sysfs_emit(buf, "%llu\n", sustat.ss_ndirtysegs);
  }
  
 -static const char segments_readme_str[] =
@@ -660,8 +690,8 @@ index 62f8a7ac19c8..b59f88274f53 100644
  			    struct the_nilfs *nilfs,
  			    char *buf)
  {
--	return snprintf(buf, PAGE_SIZE, segments_readme_str);
-+	return snprintf(buf, PAGE_SIZE,
+-	return sysfs_emit(buf, segments_readme_str);
++	return sysfs_emit(buf,
 +		"The segments group contains attributes that describe\n"
 +		"details about volume's segments.\n\n"
 +		"(1) segments_number\n\tshow number of segments on volume.\n\n"
@@ -672,7 +702,7 @@ index 62f8a7ac19c8..b59f88274f53 100644
  
  NILFS_SEGMENTS_RO_ATTR(segments_number);
 @@ -620,41 +612,39 @@ nilfs_segctor_dirty_data_blocks_count_show(struct nilfs_segctor_attr *attr,
- 	return snprintf(buf, PAGE_SIZE, "%u\n", ndirtyblks);
+ 	return sysfs_emit(buf, "%u\n", ndirtyblks);
  }
  
 -static const char segctor_readme_str[] =
@@ -709,8 +739,8 @@ index 62f8a7ac19c8..b59f88274f53 100644
  nilfs_segctor_README_show(struct nilfs_segctor_attr *attr,
  			  struct the_nilfs *nilfs, char *buf)
  {
--	return snprintf(buf, PAGE_SIZE, segctor_readme_str);
-+	return snprintf(buf, PAGE_SIZE,
+-	return sysfs_emit(buf, segctor_readme_str);
++	return sysfs_emit(buf,
 +		"The segctor group contains attributes that describe\n"
 +		"segctor thread activity details.\n\n"
 +		"(1) last_pseg_block\n"
@@ -763,8 +793,8 @@ index 62f8a7ac19c8..b59f88274f53 100644
  nilfs_superblock_README_show(struct nilfs_superblock_attr *attr,
  				struct the_nilfs *nilfs, char *buf)
  {
--	return snprintf(buf, PAGE_SIZE, sb_readme_str);
-+	return snprintf(buf, PAGE_SIZE,
+-	return sysfs_emit(buf, sb_readme_str);
++	return sysfs_emit(buf,
 +		"The superblock group contains attributes that describe\n"
 +		"superblock's details.\n\n"
 +		"(1) sb_write_time\n\tshow previous write time of super block "
@@ -797,8 +827,8 @@ index 62f8a7ac19c8..b59f88274f53 100644
  				     struct the_nilfs *nilfs,
  				     char *buf)
  {
--	return snprintf(buf, PAGE_SIZE, dev_readme_str);
-+	return snprintf(buf, PAGE_SIZE,
+-	return sysfs_emit(buf, dev_readme_str);
++	return sysfs_emit(buf,
 +		"The <device> group contains attributes that describe file system\n"
 +		"partition's details.\n\n"
 +		"(1) revision\n\tshow NILFS file system revision.\n\n"
@@ -823,8 +853,8 @@ index 62f8a7ac19c8..b59f88274f53 100644
  					 struct attribute *attr,
  					 char *buf)
  {
--	return snprintf(buf, PAGE_SIZE, features_readme_str);
-+	return snprintf(buf, PAGE_SIZE,
+-	return sysfs_emit(buf, features_readme_str);
++	return sysfs_emit(buf,
 +		"The features group contains attributes that describe NILFS file\n"
 +		"system driver features.\n\n"
 +		"(1) revision\n\tshow current revision of NILFS file system driver.\n");
@@ -832,7 +862,7 @@ index 62f8a7ac19c8..b59f88274f53 100644
  
  NILFS_FEATURE_RO_ATTR(revision);
 diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
-index 0d7e948cb29c..a486521a3483 100644
+index 5ae8de09b271..706e6b45c439 100644
 --- a/fs/ntfs/super.c
 +++ b/fs/ntfs/super.c
 @@ -662,7 +662,6 @@ static bool is_boot_sector_ntfs(const struct super_block *sb,
@@ -981,7 +1011,7 @@ index b146e0d84fc1..98b845558d9a 100644
  	}
  
 diff --git a/net/802/psnap.c b/net/802/psnap.c
-index 4492e8d7ad20..820f90e6b283 100644
+index 1406bfdbda13..ddd5a00bd483 100644
 --- a/net/802/psnap.c
 +++ b/net/802/psnap.c
 @@ -92,14 +92,11 @@ static int snap_request(struct datalink_proto *dl,
@@ -1001,7 +1031,7 @@ index 4492e8d7ad20..820f90e6b283 100644
  	}
  
 diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index b2e49eb7001d..611b576efe51 100644
+index 9c01c642cf9e..98c93bc68e88 100644
 --- a/net/core/net-sysfs.c
 +++ b/net/core/net-sysfs.c
 @@ -27,11 +27,6 @@
@@ -1052,7 +1082,7 @@ index b2e49eb7001d..611b576efe51 100644
  }
  
  static ssize_t name_assign_type_show(struct device *dev,
-@@ -184,7 +179,7 @@ static ssize_t carrier_show(struct device *dev,
+@@ -192,7 +187,7 @@ static ssize_t carrier_show(struct device *dev,
  	struct net_device *netdev = to_net_dev(dev);
  
  	if (netif_running(netdev))
@@ -1061,7 +1091,7 @@ index b2e49eb7001d..611b576efe51 100644
  
  	return -EINVAL;
  }
-@@ -203,7 +198,7 @@ static ssize_t speed_show(struct device *dev,
+@@ -217,7 +212,7 @@ static ssize_t speed_show(struct device *dev,
  		struct ethtool_link_ksettings cmd;
  
  		if (!__ethtool_get_link_ksettings(netdev, &cmd))
@@ -1070,7 +1100,7 @@ index b2e49eb7001d..611b576efe51 100644
  	}
  	rtnl_unlock();
  	return ret;
-@@ -250,7 +245,7 @@ static ssize_t testing_show(struct device *dev,
+@@ -270,7 +265,7 @@ static ssize_t testing_show(struct device *dev,
  	struct net_device *netdev = to_net_dev(dev);
  
  	if (netif_running(netdev))
@@ -1079,7 +1109,7 @@ index b2e49eb7001d..611b576efe51 100644
  
  	return -EINVAL;
  }
-@@ -262,7 +257,7 @@ static ssize_t dormant_show(struct device *dev,
+@@ -282,7 +277,7 @@ static ssize_t dormant_show(struct device *dev,
  	struct net_device *netdev = to_net_dev(dev);
  
  	if (netif_running(netdev))
@@ -1088,7 +1118,7 @@ index b2e49eb7001d..611b576efe51 100644
  
  	return -EINVAL;
  }
-@@ -303,7 +298,7 @@ static ssize_t carrier_changes_show(struct device *dev,
+@@ -323,7 +318,7 @@ static ssize_t carrier_changes_show(struct device *dev,
  {
  	struct net_device *netdev = to_net_dev(dev);
  
@@ -1097,7 +1127,7 @@ index b2e49eb7001d..611b576efe51 100644
  		       atomic_read(&netdev->carrier_up_count) +
  		       atomic_read(&netdev->carrier_down_count));
  }
-@@ -315,7 +310,7 @@ static ssize_t carrier_up_count_show(struct device *dev,
+@@ -335,7 +330,7 @@ static ssize_t carrier_up_count_show(struct device *dev,
  {
  	struct net_device *netdev = to_net_dev(dev);
  
@@ -1106,7 +1136,7 @@ index b2e49eb7001d..611b576efe51 100644
  }
  static DEVICE_ATTR_RO(carrier_up_count);
  
-@@ -325,7 +320,7 @@ static ssize_t carrier_down_count_show(struct device *dev,
+@@ -345,7 +340,7 @@ static ssize_t carrier_down_count_show(struct device *dev,
  {
  	struct net_device *netdev = to_net_dev(dev);
  
@@ -1115,7 +1145,7 @@ index b2e49eb7001d..611b576efe51 100644
  }
  static DEVICE_ATTR_RO(carrier_down_count);
  
-@@ -341,7 +336,7 @@ static ssize_t mtu_store(struct device *dev, struct device_attribute *attr,
+@@ -361,7 +356,7 @@ static ssize_t mtu_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_mtu);
  }
@@ -1124,7 +1154,7 @@ index b2e49eb7001d..611b576efe51 100644
  
  static int change_flags(struct net_device *dev, unsigned long new_flags)
  {
-@@ -353,7 +348,7 @@ static ssize_t flags_store(struct device *dev, struct device_attribute *attr,
+@@ -373,7 +368,7 @@ static ssize_t flags_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_flags);
  }
@@ -1133,7 +1163,7 @@ index b2e49eb7001d..611b576efe51 100644
  
  static ssize_t tx_queue_len_store(struct device *dev,
  				  struct device_attribute *attr,
-@@ -364,7 +359,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
+@@ -384,7 +379,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, dev_change_tx_queue_len);
  }
@@ -1142,7 +1172,7 @@ index b2e49eb7001d..611b576efe51 100644
  
  static int change_gro_flush_timeout(struct net_device *dev, unsigned long val)
  {
-@@ -381,7 +376,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
+@@ -401,7 +396,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, change_gro_flush_timeout);
  }
@@ -1151,7 +1181,7 @@ index b2e49eb7001d..611b576efe51 100644
  
  static int change_napi_defer_hard_irqs(struct net_device *dev, unsigned long val)
  {
-@@ -398,7 +393,7 @@ static ssize_t napi_defer_hard_irqs_store(struct device *dev,
+@@ -418,7 +413,7 @@ static ssize_t napi_defer_hard_irqs_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, change_napi_defer_hard_irqs);
  }
@@ -1160,7 +1190,7 @@ index b2e49eb7001d..611b576efe51 100644
  
  static ssize_t ifalias_store(struct device *dev, struct device_attribute *attr,
  			     const char *buf, size_t len)
-@@ -456,7 +451,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
+@@ -476,7 +471,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_group);
  }
@@ -1169,8 +1199,8 @@ index b2e49eb7001d..611b576efe51 100644
  static DEVICE_ATTR(netdev_group, 0644, group_show, group_store);
  
  static int change_proto_down(struct net_device *dev, unsigned long proto_down)
-@@ -470,7 +465,7 @@ static ssize_t proto_down_store(struct device *dev,
- {
+@@ -498,7 +493,7 @@ static ssize_t proto_down_store(struct device *dev,
+ 
  	return netdev_store(dev, attr, buf, len, change_proto_down);
  }
 -NETDEVICE_SHOW_RW(proto_down, fmt_dec);
@@ -1178,7 +1208,7 @@ index b2e49eb7001d..611b576efe51 100644
  
  static ssize_t phys_port_id_show(struct device *dev,
  				 struct device_attribute *attr, char *buf)
-@@ -548,7 +543,7 @@ static ssize_t threaded_show(struct device *dev,
+@@ -597,7 +592,7 @@ static ssize_t threaded_show(struct device *dev,
  		return restart_syscall();
  
  	if (dev_isalive(netdev))
@@ -1187,7 +1217,7 @@ index b2e49eb7001d..611b576efe51 100644
  
  	rtnl_unlock();
  	return ret;
-@@ -630,7 +625,7 @@ static ssize_t netstat_show(const struct device *d,
+@@ -679,7 +674,7 @@ static ssize_t netstat_show(const struct device *d,
  		struct rtnl_link_stats64 temp;
  		const struct rtnl_link_stats64 *stats = dev_get_stats(dev, &temp);
  
@@ -1196,7 +1226,7 @@ index b2e49eb7001d..611b576efe51 100644
  	}
  	read_unlock(&dev_base_lock);
  	return ret;
-@@ -1158,7 +1153,7 @@ static ssize_t tx_timeout_show(struct netdev_queue *queue, char *buf)
+@@ -1207,7 +1202,7 @@ static ssize_t tx_timeout_show(struct netdev_queue *queue, char *buf)
  	trans_timeout = queue->trans_timeout;
  	spin_unlock_irq(&queue->_xmit_lock);
  

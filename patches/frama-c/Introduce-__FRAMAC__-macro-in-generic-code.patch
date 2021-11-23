@@ -34,7 +34,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  19 files changed, 237 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 5d9181382ce1..5496081369e5 100644
+index f27d5b0f9a0b..c26c4fe1c58f 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -39,7 +39,7 @@
@@ -133,7 +133,7 @@ index a177e32b2191..09d18ffae7d0 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 6b015468e571..790515958fbb 100644
+index 527f7f6526dc..e86b9dd76c41 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -4,7 +4,7 @@
@@ -183,7 +183,7 @@ index a9773e6ac7ed..983ba993a57a 100644
  
  struct crypto_comp {
 diff --git a/include/linux/delay.h b/include/linux/delay.h
-index 1d0e2ce6b6d9..5aa8890cd260 100644
+index 8eacf67eb212..91f289c3e6cc 100644
 --- a/include/linux/delay.h
 +++ b/include/linux/delay.h
 @@ -40,9 +40,18 @@ extern unsigned long loops_per_jiffy;
@@ -386,7 +386,7 @@ index 4669632bd72b..5177dded6604 100644
  /** check_shl_overflow() - Calculate a left-shifted value and check overflow
   *
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index cd8aa6fce204..d98967b84ec6 100644
+index 18a75c8e615c..877d4d672ee3 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -168,6 +168,8 @@ typedef int __bitwise pci_power_t;
@@ -407,10 +407,10 @@ index cd8aa6fce204..d98967b84ec6 100644
  /**
   * typedef pci_channel_state_t
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index a66440765a82..44f53ddde2e8 100644
+index 029467e92a8f..f20d4cb143d8 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -234,6 +234,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -235,6 +235,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
   * done within __do_sys_*().
   */
  #ifndef __SYSCALL_DEFINEx
@@ -423,7 +423,7 @@ index a66440765a82..44f53ddde2e8 100644
  #define __SYSCALL_DEFINEx(x, name, ...)					\
  	__diag_push();							\
  	__diag_ignore(GCC, 8, "-Wattribute-alias",			\
-@@ -252,6 +258,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -253,6 +259,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  	}								\
  	__diag_pop();							\
  	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
@@ -491,7 +491,7 @@ index 0197888ad0e0..ee5b03df8f9b 100644
  
  #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 487bf4f5dadf..3f52d64af5f2 100644
+index 7c4b7ae714d4..f77e5f0ef018 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1250,7 +1250,7 @@ static void print_fatal_signal(int signr)

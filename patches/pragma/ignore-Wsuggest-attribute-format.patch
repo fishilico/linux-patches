@@ -4,18 +4,18 @@ Date: Sat, 4 Jul 2015 11:50:02 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
 
 ---
- drivers/infiniband/hw/hfi1/trace_dbg.h                    | 4 ++++
- .../net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h | 8 ++++++++
- .../brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h         | 8 ++++++++
- drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h     | 8 ++++++++
- include/linux/compiler-gcc.h                              | 2 ++
- include/trace/events/qla.h                                | 1 -
- kernel/bpf/helpers.c                                      | 4 ++++
- kernel/panic.c                                            | 4 ++++
- kernel/trace/bpf_trace.c                                  | 8 ++++++++
- kernel/trace/trace.c                                      | 7 +++++++
- lib/vsprintf.c                                            | 4 ++++
- 11 files changed, 57 insertions(+), 1 deletion(-)
+ drivers/infiniband/hw/hfi1/trace_dbg.h               |  4 ++++
+ .../broadcom/brcm80211/brcmfmac/tracepoint.h         |  8 ++++++++
+ .../brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h    |  8 ++++++++
+ .../net/wireless/intel/iwlwifi/iwl-devtrace-msg.h    |  8 ++++++++
+ include/linux/compiler-gcc.h                         |  2 ++
+ include/trace/events/qla.h                           |  1 -
+ kernel/bpf/helpers.c                                 |  4 ++++
+ kernel/panic.c                                       |  4 ++++
+ kernel/trace/bpf_trace.c                             | 12 ++++++++++++
+ kernel/trace/trace.c                                 |  7 +++++++
+ lib/vsprintf.c                                       |  4 ++++
+ 11 files changed, 61 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/infiniband/hw/hfi1/trace_dbg.h b/drivers/infiniband/hw/hfi1/trace_dbg.h
 index 707f1053f0b7..f331d42cef50 100644
@@ -114,10 +114,10 @@ index 0e8a69ab909f..98e360e7a2cc 100644
  
  #ifdef CONFIG_BRCM_TRACING
 diff --git a/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h b/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
-index d0467da5af03..464d1cdf39e7 100644
+index 7dd70011fd1e..87ae7767896b 100644
 --- a/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
 +++ b/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
-@@ -19,6 +19,9 @@
+@@ -14,6 +14,9 @@
  
  #define MAX_MSG_LEN	110
  
@@ -127,7 +127,7 @@ index d0467da5af03..464d1cdf39e7 100644
  DECLARE_EVENT_CLASS(iwlwifi_msg_event,
  	TP_PROTO(struct va_format *vaf),
  	TP_ARGS(vaf),
-@@ -32,6 +35,7 @@ DECLARE_EVENT_CLASS(iwlwifi_msg_event,
+@@ -27,6 +30,7 @@ DECLARE_EVENT_CLASS(iwlwifi_msg_event,
  	),
  	TP_printk("%s", __get_str(msg))
  );
@@ -135,7 +135,7 @@ index d0467da5af03..464d1cdf39e7 100644
  
  DEFINE_EVENT(iwlwifi_msg_event, iwlwifi_err,
  	TP_PROTO(struct va_format *vaf),
-@@ -53,6 +57,9 @@ DEFINE_EVENT(iwlwifi_msg_event, iwlwifi_crit,
+@@ -48,6 +52,9 @@ DEFINE_EVENT(iwlwifi_msg_event, iwlwifi_crit,
  	TP_ARGS(vaf)
  );
  
@@ -145,7 +145,7 @@ index d0467da5af03..464d1cdf39e7 100644
  TRACE_EVENT(iwlwifi_dbg,
  	TP_PROTO(u32 level, const char *function,
  		 struct va_format *vaf),
-@@ -71,6 +78,7 @@ TRACE_EVENT(iwlwifi_dbg,
+@@ -66,6 +73,7 @@ TRACE_EVENT(iwlwifi_dbg,
  	),
  	TP_printk("%s", __get_str(msg))
  );
@@ -154,10 +154,10 @@ index d0467da5af03..464d1cdf39e7 100644
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index bd2b881c6b63..e4dd8e38ba57 100644
+index ccbbd31b3aae..b60fc83f9ea7 100644
 --- a/include/linux/compiler-gcc.h
 +++ b/include/linux/compiler-gcc.h
-@@ -139,6 +139,8 @@
+@@ -145,6 +145,8 @@
  #define __diag_str(s)		__diag_str1(s)
  #define __diag(s)		_Pragma(__diag_str(GCC diagnostic s))
  
@@ -179,10 +179,10 @@ index 5857cf682ee7..7fdd4197eb58 100644
  
  DEFINE_EVENT(qla_log_event, ql_dbg_log,
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
-index 9aabf84afd4b..1928d7788e7c 100644
+index 1ffd469c217f..1851c57b2e56 100644
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
-@@ -999,7 +999,11 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
+@@ -997,7 +997,11 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
  	if (err < 0)
  		return err;
  
@@ -212,7 +212,7 @@ index cefd7d82366f..7740c6632362 100644
  	print_modules();
  
 diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index 8e2eb950aa82..98bba34e78e8 100644
+index 7396488793ff..1bc873ed7f2a 100644
 --- a/kernel/trace/bpf_trace.c
 +++ b/kernel/trace/bpf_trace.c
 @@ -380,7 +380,11 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
@@ -227,7 +227,25 @@ index 8e2eb950aa82..98bba34e78e8 100644
  
  	trace_bpf_trace_printk(buf);
  	raw_spin_unlock_irqrestore(&trace_printk_lock, flags);
-@@ -431,7 +435,11 @@ BPF_CALL_5(bpf_seq_printf, struct seq_file *, m, char *, fmt, u32, fmt_size,
+@@ -418,6 +422,9 @@ const struct bpf_func_proto *bpf_get_trace_printk_proto(void)
+ 	return &bpf_trace_printk_proto;
+ }
+ 
++__diag_push()
++__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
++	"It is not possible to add __printf attribute to this function")
+ BPF_CALL_4(bpf_trace_vprintk, char *, fmt, u32, fmt_size, const void *, data,
+ 	   u32, data_len)
+ {
+@@ -445,6 +452,7 @@ BPF_CALL_4(bpf_trace_vprintk, char *, fmt, u32, fmt_size, const void *, data,
+ 
+ 	return ret;
+ }
++__diag_pop()
+ 
+ static const struct bpf_func_proto bpf_trace_vprintk_proto = {
+ 	.func		= bpf_trace_vprintk,
+@@ -477,7 +485,11 @@ BPF_CALL_5(bpf_seq_printf, struct seq_file *, m, char *, fmt, u32, fmt_size,
  	if (err < 0)
  		return err;
  
@@ -240,10 +258,10 @@ index 8e2eb950aa82..98bba34e78e8 100644
  	bpf_bprintf_cleanup();
  
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index bc677cd64224..31f6dc65f841 100644
+index f9139dc1262c..3bac41b88887 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -3770,6 +3770,10 @@ static void test_can_verify(void)
+@@ -3747,6 +3747,10 @@ static void test_can_verify(void)
   * warn and print "[UNSAFE MEMORY]" in place of the dereferenced string
   * pointer.
   */
@@ -254,7 +272,7 @@ index bc677cd64224..31f6dc65f841 100644
  void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  			 va_list ap)
  {
-@@ -3890,6 +3894,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
+@@ -3867,6 +3871,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  	if (*p)
  		trace_seq_vprintf(&iter->seq, p, ap);
  }
@@ -265,7 +283,7 @@ index bc677cd64224..31f6dc65f841 100644
  const char *trace_event_format(struct trace_iterator *iter, const char *fmt)
  {
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index a135dc32c182..644ed3bdd281 100644
+index f2d5c6fe38a8..85d392d44241 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
 @@ -1691,7 +1691,11 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,

@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 11 Nov 2021 23:49:53 +0100
+Subject: [PATCH] {PRINTF} drivers/iio/adc/aspeed_adc: silence
+ -Wformat-security with "%s"
+
+---
+ drivers/iio/adc/aspeed_adc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+index e939b84cbb56..1ca78fd850c3 100644
+--- a/drivers/iio/adc/aspeed_adc.c
++++ b/drivers/iio/adc/aspeed_adc.c
+@@ -515,7 +515,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 				       data->fixed_div_clk);
+ 	if (ret)
+ 		return ret;
+-	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), clk_name);
++	snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), "%s", clk_name);
+ 
+ 	if (data->model_data->need_prescaler) {
+ 		snprintf(clk_name, ARRAY_SIZE(clk_name), "%s-prescaler",
+@@ -527,7 +527,7 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 		if (IS_ERR(data->clk_prescaler))
+ 			return PTR_ERR(data->clk_prescaler);
+ 		snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name),
+-			 clk_name);
++			 "%s", clk_name);
+ 		scaler_flags = CLK_SET_RATE_PARENT;
+ 	}
+ 	/*
+-- 

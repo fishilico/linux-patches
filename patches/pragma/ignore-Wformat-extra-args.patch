@@ -4,24 +4,14 @@ Date: Mon, 6 Jul 2015 13:44:37 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wformat-extra-args
 
 ---
- drivers/of/platform.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/of/platform.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-index 74afbb7a4f5e..549ecd9f69d7 100644
+index b3faf89744aa..f8466da44269 100644
 --- a/drivers/of/platform.c
 +++ b/drivers/of/platform.c
-@@ -85,14 +85,22 @@ static void of_device_make_bus_id(struct device *dev)
- 		 */
- 		reg = of_get_property(node, "reg", NULL);
- 		if (reg && (addr = of_translate_address(node, reg)) != OF_BAD_ADDR) {
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wformat-extra-args"
-+#pragma GCC diagnostic ignored "-Wformat-security"
- 			dev_set_name(dev, dev_name(dev) ? "%llx.%pOFn:%s" : "%llx.%pOFn",
- 				     addr, node, dev_name(dev));
-+#pragma GCC diagnostic pop
- 			return;
+@@ -97,8 +97,12 @@ static void of_device_make_bus_id(struct device *dev)
  		}
  
  		/* format arguments only used if dev_name() resolves to NULL */
