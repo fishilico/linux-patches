@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 20 Dec 2021 16:36:30 +0100
+Subject: [PATCH] {MAYBE UPS} arch/x86/kernel: mark rdmsr variable as unused
+
+clang 13 reports unused-but-set variables when only the first result of
+rdmsr is used.
+---
+ arch/x86/events/intel/p4.c         | 1 +
+ arch/x86/kernel/cpu/intel.c        | 1 +
+ arch/x86/kernel/cpu/mtrr/generic.c | 1 +
+ arch/x86/kernel/cpu/mtrr/mtrr.c    | 4 +++-
+ arch/x86/kernel/cpu/resctrl/core.c | 1 +
+ arch/x86/kernel/process.c          | 1 +
+ 6 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/events/intel/p4.c b/arch/x86/events/intel/p4.c
+index 7951a5dc73b6..dce09dd2ed79 100644
+--- a/arch/x86/events/intel/p4.c
++++ b/arch/x86/events/intel/p4.c
+@@ -1356,6 +1356,7 @@ __init int p4_pmu_init(void)
+ 	BUILD_BUG_ON(ARCH_P4_MAX_CCCR > INTEL_PMC_MAX_GENERIC);
+ 
+ 	rdmsr(MSR_IA32_MISC_ENABLE, low, high);
++	(void) high; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
+ 	if (!(low & (1 << 7))) {
+ 		pr_cont("unsupported Netburst CPU model %d ",
+ 			boot_cpu_data.x86_model);
+diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+index 8321c43554a1..a436f0ebf5f8 100644
+--- a/arch/x86/kernel/cpu/intel.c
++++ b/arch/x86/kernel/cpu/intel.c
+@@ -651,6 +651,7 @@ static void init_intel(struct cpuinfo_x86 *c)
+ 			set_cpu_cap(c, X86_FEATURE_BTS);
+ 		if (!(l1 & (1<<12)))
+ 			set_cpu_cap(c, X86_FEATURE_PEBS);
++		(void)l2; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
+ 	}
+ 
+ 	if (c->x86 == 6 && boot_cpu_has(X86_FEATURE_CLFLUSH) &&
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index 558108296f3c..9ad8708f761f 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -476,6 +476,7 @@ bool __init get_mtrr_state(void)
+ 		get_fixed_ranges(mtrr_state.fixed_ranges);
+ 
+ 	rdmsr(MSR_MTRRdefType, lo, dummy);
++	(void)dummy; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
+ 	mtrr_state.def_type = (lo & 0xff);
+ 	mtrr_state.enabled = (lo & 0xc00) >> 10;
+ 
+diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.c b/arch/x86/kernel/cpu/mtrr/mtrr.c
+index 2746cac9d8a9..fef865958893 100644
+--- a/arch/x86/kernel/cpu/mtrr/mtrr.c
++++ b/arch/x86/kernel/cpu/mtrr/mtrr.c
+@@ -123,8 +123,10 @@ static void __init set_num_var_ranges(void)
+ {
+ 	unsigned long config = 0, dummy;
+ 
+-	if (use_intel())
++	if (use_intel()) {
+ 		rdmsr(MSR_MTRRcap, config, dummy);
++		(void)dummy; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
++	}
+ 	else if (is_cpu(AMD) || is_cpu(HYGON))
+ 		config = 2;
+ 	else if (is_cpu(CYRIX) || is_cpu(CENTAUR))
+diff --git a/arch/x86/kernel/cpu/resctrl/core.c b/arch/x86/kernel/cpu/resctrl/core.c
+index bb1c3f5f60c8..c54fbf686402 100644
+--- a/arch/x86/kernel/cpu/resctrl/core.c
++++ b/arch/x86/kernel/cpu/resctrl/core.c
+@@ -136,6 +136,7 @@ static inline void cache_alloc_hsw_probe(void)
+ 		return;
+ 
+ 	rdmsr(MSR_IA32_L3_CBM_BASE, l, h);
++	(void)h; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
+ 
+ 	/* If all the bits were set in MSR, return success */
+ 	if (l != max_cbm)
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 04143a653a8a..efda080e0f1f 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -899,6 +899,7 @@ void __init arch_post_acpi_subsys_init(void)
+ 	rdmsr(MSR_K8_INT_PENDING_MSG, lo, hi);
+ 	if (!(lo & K8_INTP_C1E_ACTIVE_MASK))
+ 		return;
++	(void)hi; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
+ 
+ 	boot_cpu_set_bug(X86_BUG_AMD_APIC_C1E);
+ 
+-- 

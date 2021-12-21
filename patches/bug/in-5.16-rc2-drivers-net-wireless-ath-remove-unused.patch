@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 20 Dec 2021 18:47:58 +0100
+Subject: [PATCH] {BUG in 5.16-rc2} drivers/net/wireless/ath: remove unused
+ parameter assignment
+
+---
+ drivers/net/wireless/ath/ath10k/mac.c         | 2 +-
+ drivers/net/wireless/ath/ath11k/mac.c         | 2 +-
+ drivers/net/wireless/ath/ath5k/mac80211-ops.c | 2 +-
+ drivers/net/wireless/ath/ath9k/htc_drv_main.c | 2 +-
+ drivers/net/wireless/ath/ath9k/main.c         | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/wireless/ath/ath10k/mac.c b/drivers/net/wireless/ath/ath10k/mac.c
+index 1f73fbfee0c0..4c882b308e34 100644
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -5971,7 +5971,7 @@ static void ath10k_configure_filter(struct ieee80211_hw *hw,
+ 
+ 	mutex_lock(&ar->conf_mutex);
+ 
+-	changed_flags &= SUPPORTED_FILTERS;
++	/*changed_flags &= SUPPORTED_FILTERS;*/
+ 	*total_flags &= SUPPORTED_FILTERS;
+ 	ar->filter_flags = *total_flags;
+ 
+diff --git a/drivers/net/wireless/ath/ath11k/mac.c b/drivers/net/wireless/ath/ath11k/mac.c
+index 1cc55602787b..73b11b5bba53 100644
+--- a/drivers/net/wireless/ath/ath11k/mac.c
++++ b/drivers/net/wireless/ath/ath11k/mac.c
+@@ -5831,7 +5831,7 @@ static void ath11k_mac_op_configure_filter(struct ieee80211_hw *hw,
+ 
+ 	mutex_lock(&ar->conf_mutex);
+ 
+-	changed_flags &= SUPPORTED_FILTERS;
++	/*changed_flags &= SUPPORTED_FILTERS;*/
+ 	*total_flags &= SUPPORTED_FILTERS;
+ 	ar->filter_flags = *total_flags;
+ 
+diff --git a/drivers/net/wireless/ath/ath5k/mac80211-ops.c b/drivers/net/wireless/ath/ath5k/mac80211-ops.c
+index 532eeac9e83e..e8ddc825f818 100644
+--- a/drivers/net/wireless/ath/ath5k/mac80211-ops.c
++++ b/drivers/net/wireless/ath/ath5k/mac80211-ops.c
+@@ -382,7 +382,7 @@ ath5k_configure_filter(struct ieee80211_hw *hw, unsigned int changed_flags,
+ 	mfilt[1] = multicast >> 32;
+ 
+ 	/* Only deal with supported flags */
+-	changed_flags &= SUPPORTED_FIF_FLAGS;
++	/*changed_flags &= SUPPORTED_FIF_FLAGS;*/
+ 	*new_flags &= SUPPORTED_FIF_FLAGS;
+ 
+ 	/* If HW detects any phy or radar errors, leave those filters on.
+diff --git a/drivers/net/wireless/ath/ath9k/htc_drv_main.c b/drivers/net/wireless/ath/ath9k/htc_drv_main.c
+index 72ef319feeda..48c6c04a64bd 100644
+--- a/drivers/net/wireless/ath/ath9k/htc_drv_main.c
++++ b/drivers/net/wireless/ath/ath9k/htc_drv_main.c
+@@ -1264,7 +1264,7 @@ static void ath9k_htc_configure_filter(struct ieee80211_hw *hw,
+ 	u32 rfilt;
+ 
+ 	mutex_lock(&priv->mutex);
+-	changed_flags &= SUPPORTED_FILTERS;
++	/*changed_flags &= SUPPORTED_FILTERS;*/
+ 	*total_flags &= SUPPORTED_FILTERS;
+ 
+ 	if (test_bit(ATH_OP_INVALID, &common->op_flags)) {
+diff --git a/drivers/net/wireless/ath/ath9k/main.c b/drivers/net/wireless/ath/ath9k/main.c
+index 98090e40e1cf..30b524d610f1 100644
+--- a/drivers/net/wireless/ath/ath9k/main.c
++++ b/drivers/net/wireless/ath/ath9k/main.c
+@@ -1570,7 +1570,7 @@ static void ath9k_configure_filter(struct ieee80211_hw *hw,
+ 	struct ath_chanctx *ctx;
+ 	u32 rfilt;
+ 
+-	changed_flags &= SUPPORTED_FILTERS;
++	/*changed_flags &= SUPPORTED_FILTERS;*/
+ 	*total_flags &= SUPPORTED_FILTERS;
+ 
+ 	spin_lock_bh(&sc->chan_lock);
+-- 

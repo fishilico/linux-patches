@@ -1,0 +1,176 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 20 Dec 2021 17:27:04 +0100
+Subject: [PATCH] {MAYBE UPS} drivers/usb/cdns3/cdnsp-debug: remove ret
+ variable
+
+---
+ drivers/usb/cdns3/cdnsp-debug.h | 37 ++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/usb/cdns3/cdnsp-debug.h b/drivers/usb/cdns3/cdnsp-debug.h
+index a8776df2d4e0..b0e3b59ef9a9 100644
+--- a/drivers/usb/cdns3/cdnsp-debug.h
++++ b/drivers/usb/cdns3/cdnsp-debug.h
+@@ -182,14 +182,13 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 	int ep_id = TRB_TO_EP_INDEX(field3) - 1;
+ 	int type = TRB_FIELD_TO_TYPE(field3);
+ 	unsigned int ep_num;
+-	int ret = 0;
+ 	u32 temp;
+ 
+ 	ep_num = DIV_ROUND_UP(ep_id, 2);
+ 
+ 	switch (type) {
+ 	case TRB_LINK:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"LINK %08x%08x intr %ld type '%s' flags %c:%c:%c:%c",
+ 				field1, field0, GET_INTR_TARGET(field2),
+ 				cdnsp_trb_type_string(type),
+@@ -202,7 +201,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 	case TRB_COMPLETION:
+ 	case TRB_PORT_STATUS:
+ 	case TRB_HC_EVENT:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"ep%d%s(%d) type '%s' TRB %08x%08x status '%s'"
+ 				" len %ld slot %ld flags %c:%c",
+ 				ep_num, ep_id % 2 ? "out" : "in",
+@@ -214,12 +213,12 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_MFINDEX_WRAP:
+-		ret += snprintf(str, size, "%s: flags %c",
++		snprintf(str, size, "%s: flags %c",
+ 				cdnsp_trb_type_string(type),
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_SETUP:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"type '%s' bRequestType %02x bRequest %02x "
+ 				"wValue %02x%02x wIndex %02x%02x wLength %d "
+ 				"length %ld TD size %ld intr %ld Setup ID %ld "
+@@ -241,7 +240,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_DATA:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"type '%s' Buffer %08x%08x length %ld TD size %ld "
+ 				"intr %ld flags %c:%c:%c:%c:%c:%c:%c",
+ 				cdnsp_trb_type_string(type),
+@@ -257,7 +256,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_STATUS:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"Buffer %08x%08x length %ld TD size %ld intr"
+ 				"%ld type '%s' flags %c:%c:%c:%c",
+ 				field1, field0, TRB_LEN(field2),
+@@ -273,7 +272,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 	case TRB_ISOC:
+ 	case TRB_EVENT_DATA:
+ 	case TRB_TR_NOOP:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"type '%s' Buffer %08x%08x length %ld "
+ 				"TD size %ld intr %ld "
+ 				"flags %c:%c:%c:%c:%c:%c:%c:%c:%c",
+@@ -293,18 +292,18 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 		break;
+ 	case TRB_CMD_NOOP:
+ 	case TRB_ENABLE_SLOT:
+-		ret += snprintf(str, size, "%s: flags %c",
++		snprintf(str, size, "%s: flags %c",
+ 				cdnsp_trb_type_string(type),
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_DISABLE_SLOT:
+-		ret += snprintf(str, size, "%s: slot %ld flags %c",
++		snprintf(str, size, "%s: slot %ld flags %c",
+ 				cdnsp_trb_type_string(type),
+ 				TRB_TO_SLOT_ID(field3),
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_ADDR_DEV:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"%s: ctx %08x%08x slot %ld flags %c:%c",
+ 				cdnsp_trb_type_string(type), field1, field0,
+ 				TRB_TO_SLOT_ID(field3),
+@@ -312,7 +311,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_CONFIG_EP:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"%s: ctx %08x%08x slot %ld flags %c:%c",
+ 				cdnsp_trb_type_string(type), field1, field0,
+ 				TRB_TO_SLOT_ID(field3),
+@@ -320,7 +319,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_EVAL_CONTEXT:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"%s: ctx %08x%08x slot %ld flags %c",
+ 				cdnsp_trb_type_string(type), field1, field0,
+ 				TRB_TO_SLOT_ID(field3),
+@@ -329,7 +328,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 	case TRB_RESET_EP:
+ 	case TRB_HALT_ENDPOINT:
+ 	case TRB_FLUSH_ENDPOINT:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"%s: ep%d%s(%d) ctx %08x%08x slot %ld flags %c",
+ 				cdnsp_trb_type_string(type),
+ 				ep_num, ep_id % 2 ? "out" : "in",
+@@ -338,7 +337,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_STOP_RING:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"%s: ep%d%s(%d) slot %ld sp %d flags %c",
+ 				cdnsp_trb_type_string(type),
+ 				ep_num, ep_id % 2 ? "out" : "in",
+@@ -348,7 +347,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_SET_DEQ:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"%s: ep%d%s(%d) deq %08x%08x stream %ld slot %ld  flags %c",
+ 				cdnsp_trb_type_string(type),
+ 				ep_num, ep_id % 2 ? "out" : "in",
+@@ -358,7 +357,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	case TRB_RESET_DEV:
+-		ret += snprintf(str, size, "%s: slot %ld flags %c",
++		snprintf(str, size, "%s: slot %ld flags %c",
+ 				cdnsp_trb_type_string(type),
+ 				TRB_TO_SLOT_ID(field3),
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+@@ -366,7 +365,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 	case TRB_ENDPOINT_NRDY:
+ 		temp  = TRB_TO_HOST_STREAM(field2);
+ 
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"%s: ep%d%s(%d) H_SID %x%s%s D_SID %lx flags %c:%c",
+ 				cdnsp_trb_type_string(type),
+ 				ep_num, ep_id % 2 ? "out" : "in",
+@@ -378,7 +377,7 @@ static inline const char *cdnsp_decode_trb(char *str, size_t size, u32 field0,
+ 				field3 & TRB_CYCLE ? 'C' : 'c');
+ 		break;
+ 	default:
+-		ret += snprintf(str, size,
++		snprintf(str, size,
+ 				"type '%s' -> raw %08x %08x %08x %08x",
+ 				cdnsp_trb_type_string(type),
+ 				field0, field1, field2, field3);
+-- 

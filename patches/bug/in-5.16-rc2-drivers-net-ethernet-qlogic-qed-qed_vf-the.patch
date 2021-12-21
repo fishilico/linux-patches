@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 20 Dec 2021 17:31:57 +0100
+Subject: [PATCH] {BUG in 5.16-rc2} drivers/net/ethernet/qlogic/qed/qed_vf: the
+ logic is unsound
+
+clang 13 reports:
+
+    drivers/net/ethernet/qlogic/qed/qed_vf.c:63:67: error: parameter
+    'resp_size' set but not used [-Werror,-Wunused-but-set-parameter]
+    static int qed_send_msg2pf(struct qed_hwfn *p_hwfn, u8 *done, u32 resp_size)
+                                                                      ^
+
+... but resp_size is not used anywhere, even though it seems to be used.
+---
+ drivers/net/ethernet/qlogic/qed/qed_vf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/qlogic/qed/qed_vf.c b/drivers/net/ethernet/qlogic/qed/qed_vf.c
+index 597cd9cd57b5..1ba4be5b1a63 100644
+--- a/drivers/net/ethernet/qlogic/qed/qed_vf.c
++++ b/drivers/net/ethernet/qlogic/qed/qed_vf.c
+@@ -73,7 +73,7 @@ static int qed_send_msg2pf(struct qed_hwfn *p_hwfn, u8 *done, u32 resp_size)
+ 	qed_dp_tlv_list(p_hwfn, p_req);
+ 
+ 	/* need to add the END TLV to the message size */
+-	resp_size += sizeof(struct channel_list_end_tlv);
++	/* resp_size += sizeof(struct channel_list_end_tlv); BUG! This value is never used */
+ 
+ 	/* Send TLVs over HW channel */
+ 	memset(&trigger, 0, sizeof(struct ustorm_trigger_vf_zone));
+-- 

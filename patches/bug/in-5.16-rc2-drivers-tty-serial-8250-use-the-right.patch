@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 20 Dec 2021 16:50:36 +0100
+Subject: [PATCH] {BUG in 5.16-rc2} drivers/tty/serial/8250: use the right
+ variable
+
+clang 13 reported on x86-64:
+
+    drivers/tty/serial/8250/8250_omap.c:820:8: error: variable 'reg' set
+    but not used [-Werror,-Wunused-but-set-variable]
+            u32                     reg;
+                                    ^
+    drivers/tty/serial/8250/8250_omap.c:930:9: error: variable 'reg' set
+    but not used [-Werror,-Wunused-but-set-variable]
+            u32                             reg;
+                                            ^
+
+But the code is strange, so this could be an actual error!
+---
+ drivers/tty/serial/8250/8250_omap.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
+index 73e5f1dbd075..a22314516de5 100644
+--- a/drivers/tty/serial/8250/8250_omap.c
++++ b/drivers/tty/serial/8250/8250_omap.c
+@@ -829,7 +829,7 @@ static void __dma_rx_do_complete(struct uart_8250_port *p)
+ 	if (priv->habit & UART_HAS_RHR_IT_DIS) {
+ 		reg = serial_in(p, UART_OMAP_IER2);
+ 		reg &= ~UART_OMAP_IER2_RHR_IT_DIS;
+-		serial_out(p, UART_OMAP_IER2, UART_OMAP_IER2_RHR_IT_DIS);
++		serial_out(p, UART_OMAP_IER2, reg);
+ 	}
+ 
+ 	dmaengine_tx_status(rxchan, cookie, &state);
+@@ -971,7 +971,7 @@ static int omap_8250_rx_dma(struct uart_8250_port *p)
+ 	if (priv->habit & UART_HAS_RHR_IT_DIS) {
+ 		reg = serial_in(p, UART_OMAP_IER2);
+ 		reg |= UART_OMAP_IER2_RHR_IT_DIS;
+-		serial_out(p, UART_OMAP_IER2, UART_OMAP_IER2_RHR_IT_DIS);
++		serial_out(p, UART_OMAP_IER2, reg);
+ 	}
+ 
+ 	dma_async_issue_pending(dma->rxchan);
+-- 

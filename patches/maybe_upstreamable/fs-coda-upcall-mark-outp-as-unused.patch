@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 20 Dec 2021 16:46:43 +0100
+Subject: [PATCH] {MAYBE UPS} fs/coda/upcall: mark outp as unused
+
+clang on x86-64 reports many warnings such as:
+
+    fs/coda/upcall.c:115:27: error: variable 'outp' set but not used
+    [-Werror,-Wunused-but-set-variable]
+            union outputArgs *outp;
+                              ^
+---
+ fs/coda/upcall.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fs/coda/upcall.c b/fs/coda/upcall.c
+index 59f6cfd06f96..5e520b3d862e 100644
+--- a/fs/coda/upcall.c
++++ b/fs/coda/upcall.c
+@@ -63,6 +63,7 @@ do {\
+ 	inp = (union inputArgs *)alloc_upcall(op, insize); \
+         if (IS_ERR(inp)) { return PTR_ERR(inp); }\
+         outp = (union outputArgs *)(inp); \
++        (void)outp; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */ \
+         outsize = insize; \
+ } while (0)
+ 
+-- 

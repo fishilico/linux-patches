@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 20 Dec 2021 16:32:52 +0100
+Subject: [PATCH] {BUG in 5.16-rc2} drivers/phy/cadence: use the modified value
+ in cdns_salvo_write
+
+clang on x86-64 reports:
+
+    drivers/phy/cadence/phy-cadence-salvo.c:213:6: error: variable
+    'value' set but not used [-Werror,-Wunused-but-set-variable]
+            u16 value;
+                ^
+
+Found since 5.16-rc2 thanks to clang 13
+---
+ drivers/phy/cadence/phy-cadence-salvo.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/phy/cadence/phy-cadence-salvo.c b/drivers/phy/cadence/phy-cadence-salvo.c
+index 51c0b98f5fd7..90581465d0c5 100644
+--- a/drivers/phy/cadence/phy-cadence-salvo.c
++++ b/drivers/phy/cadence/phy-cadence-salvo.c
+@@ -226,7 +226,7 @@ static int cdns_salvo_phy_init(struct phy *phy)
+ 	value = cdns_salvo_read(salvo_phy, TB_ADDR_TX_RCVDETSC_CTRL);
+ 	value |= RXDET_IN_P3_32KHZ;
+ 	cdns_salvo_write(salvo_phy, TB_ADDR_TX_RCVDETSC_CTRL,
+-			 RXDET_IN_P3_32KHZ);
++			 value);
+ 
+ 	udelay(10);
+ 
+-- 

@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 20 Dec 2021 17:29:02 +0100
+Subject: [PATCH] {MAYBE UPS} drivers/usb/cdns3/cdnsp-gadget: mark
+ false-positive -Wunused-but-set-variable
+
+---
+ drivers/usb/cdns3/cdnsp-gadget.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/usb/cdns3/cdnsp-gadget.c b/drivers/usb/cdns3/cdnsp-gadget.c
+index 27df0c697897..71f4c9de2347 100644
+--- a/drivers/usb/cdns3/cdnsp-gadget.c
++++ b/drivers/usb/cdns3/cdnsp-gadget.c
+@@ -1249,6 +1249,7 @@ static int cdnsp_run(struct cdnsp_device *pdev,
+ 
+ 	temp_64 = cdnsp_read_64(&pdev->ir_set->erst_dequeue);
+ 	temp_64 &= ~ERST_PTR_MASK;
++	(void)temp_64; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
+ 	temp = readl(&pdev->ir_set->irq_control);
+ 	temp &= ~IMOD_INTERVAL_MASK;
+ 	temp |= ((IMOD_DEFAULT_INTERVAL / 250) & IMOD_INTERVAL_MASK);
+-- 

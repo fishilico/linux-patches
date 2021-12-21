@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 20 Dec 2021 17:15:50 +0100
+Subject: [PATCH] {BUG in 5.16-rc2} drivers/input/keyboard/bcm-keypad: mark bug
+ with unused variable
+
+---
+ drivers/input/keyboard/bcm-keypad.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/input/keyboard/bcm-keypad.c b/drivers/input/keyboard/bcm-keypad.c
+index 2b771c3a5578..d7206339fe87 100644
+--- a/drivers/input/keyboard/bcm-keypad.c
++++ b/drivers/input/keyboard/bcm-keypad.c
+@@ -173,11 +173,13 @@ static int bcm_kp_start(struct bcm_kp *kp)
+ 
+ static void bcm_kp_stop(const struct bcm_kp *kp)
+ {
++    /*
+ 	u32 val;
+ 
+ 	val = readl(kp->base + KPCR_OFFSET);
+ 	val &= ~KPCR_ENABLE;
+-	writel(0, kp->base + KPCR_OFFSET);
++	*/
++	writel(0, kp->base + KPCR_OFFSET); /* TODO: maybe val? */
+ 	writel(0, kp->base + KPIMR0_OFFSET);
+ 	writel(0, kp->base + KPIMR1_OFFSET);
+ 	writel(0xFFFFFFFF, kp->base + KPICR0_OFFSET);
+-- 

@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 20 Dec 2021 17:13:43 +0100
+Subject: [PATCH] {MAYBE UPS} drivers/gpu/drm/amd/display/dmub: mark
+ false-positive -Wunused-but-set-variable
+
+---
+ drivers/gpu/drm/amd/display/dmub/inc/dmub_cmd.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/gpu/drm/amd/display/dmub/inc/dmub_cmd.h b/drivers/gpu/drm/amd/display/dmub/inc/dmub_cmd.h
+index c29a67ccef17..a232fba151f6 100644
+--- a/drivers/gpu/drm/amd/display/dmub/inc/dmub_cmd.h
++++ b/drivers/gpu/drm/amd/display/dmub/inc/dmub_cmd.h
+@@ -2895,6 +2895,7 @@ static inline void dmub_rb_flush_pending(const struct dmub_rb *rb)
+ 
+ 		for (i = 0; i < DMUB_RB_CMD_SIZE / sizeof(uint64_t); i++)
+ 			temp = *data++;
++		(void)temp; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
+ 
+ 		rptr += DMUB_RB_CMD_SIZE;
+ 		if (rptr >= rb->capacity)
+-- 
