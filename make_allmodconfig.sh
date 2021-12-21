@@ -430,6 +430,7 @@ then
         echo 'CONFIG_XEN_BLKDEV_BACKEND=m' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_XEN_SCSI_FRONTEND=m' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_XEN_SCSI_BACKEND=m' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_XEN_PRIVCMD=m' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_XEN_NETDEV_FRONTEND=m' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_XEN_NETDEV_BACKEND=m' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_INPUT_XEN_KBDDEV_FRONTEND=m' >> "$KBUILD_OUTPUT/.config"
