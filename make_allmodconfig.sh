@@ -146,6 +146,7 @@ disable_in_kcflags 'shadow' # The kernel redefines built-in functions like ffs
 disable_in_kcflags 'sign-compare' # There are many comparaisons between signed and unsigned integers
 disable_in_kcflags 'trigraphs' # Ignore trigraphs like "??)"
 disable_in_kcflags 'type-limits' # Unsigned integers >= 0
+disable_in_kcflags 'unused-but-set-variable' # Many variables are never used
 disable_in_kcflags 'unused-const-variable'
 disable_in_kcflags 'unused-function' # Make the build succeed when some static functions are not used
 disable_in_kcflags 'unused-parameter' # There is no __unused macro, and __maybe_unused is not the common headers
@@ -185,6 +186,7 @@ then
     disable_in_kcflags 'missing-noreturn' # It does not make sense to have boot functions (rest_init, cpu_idle_loop...) marked __noreturn
     disable_in_kcflags 'missing-variable-declarations' # Global variables can miss a declaration
     disable_in_kcflags 'null-pointer-arithmetic' # The kernel uses horrible syntax such as "return NULL + !*ppos;"
+    disable_in_kcflags 'null-pointer-subtraction' # The kernel uses subtraction with NULL in ACPI_OFFSET and other places
     disable_in_kcflags 'overlength-strings' # Support loooooong strings
     disable_in_kcflags 'packed' # Packing is much too implicit to be reported
     disable_in_kcflags 'padded' # Some structures get padded
@@ -192,6 +194,7 @@ then
     disable_in_kcflags 'pointer-bool-conversion' # Some vectors are tested as null pointers
     disable_in_kcflags 'redundant-parens' # Some macros expand with redundant parentheses
     disable_in_kcflags 'reserved-id-macro' # Linux uses macros beginning with underscore
+    disable_in_kcflags 'reserved-identifier'
     disable_in_kcflags 'shift-negative-value' # Shifted negative numbers are like unsigned for Linux
     disable_in_kcflags 'string-concatenation' # Some drivers concatenate strings to make them pretty
     disable_in_kcflags 'switch-bool' # It happens that bool are used in switch statements
@@ -248,7 +251,6 @@ then
     disable_in_kcflags 'sizeof-pointer-memaccess' # gcc 8 warns about using the size of the source buffer
     disable_in_kcflags 'stringop-truncation' # gcc 8 warns about using strncpy with a dest buffer having the specified size
     disable_in_kcflags 'stringop-overflow' # gcc 8 warns about using strncpy when "specified bound depends on the length of the source argument"
-    disable_in_kcflags 'unused-but-set-variable' # Many variables are never used
     disable_in_kcflags 'zero-length-bound' # bound-checking zero-length arrays does not work
 
     disable_in_kcflags 'error=jump-misses-init' # The compiler is not smart enough in many cases
@@ -315,6 +317,7 @@ then
     disable_in_hostcflags 'padded'
     disable_in_hostcflags 'pedantic'
     disable_in_hostcflags 'reserved-id-macro' # Some macros begins with underscore
+    disable_in_hostcflags 'reserved-identifier'
     disable_in_hostcflags 'switch-enum' # Show values in switch on enum can be skipped
     disable_in_hostcflags 'unreachable-code-break'
     disable_in_hostcflags 'unused-macros'
