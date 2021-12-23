@@ -57,7 +57,6 @@ It has also detected some bugs reported and fixed by other people:
  kernel/trace/trace_output.c                   |   3 +
  lib/bitmap.c                                  |   7 +-
  mm/damon/dbgfs.c                              |   6 +-
- net/core/skbuff.c                             |   2 +-
  net/ipv4/sysctl_net_ipv4.c                    |   2 +-
  net/tipc/crypto.c                             |   3 +
  scripts/Makefile.gcc-plugins                  |   5 +
@@ -66,7 +65,7 @@ It has also detected some bugs reported and fixed by other people:
  security/apparmor/mount.c                     |  10 +-
  sound/soc/stm/stm32_sai_sub.c                 |   2 +-
  sound/soc/ti/omap-mcbsp-st.c                  |   3 +
- 53 files changed, 1068 insertions(+), 60 deletions(-)
+ 52 files changed, 1067 insertions(+), 59 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
@@ -902,19 +901,6 @@ index 1efac0022e9a..02b1c8cce7de 100644
  
  	return simple_read_from_buffer(buf, count, ppos, monitor_on_buf, len);
  }
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 76205a54c466..961b38118f79 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -832,7 +832,7 @@ void skb_dump(const char *level, const struct sk_buff *skb, bool full_pkt)
- 	       ntohs(skb->protocol), skb->pkt_type, skb->skb_iif);
- 
- 	if (dev)
--		printk("%sdev name=%s feat=0x%pNF\n",
-+		printk("%sdev name=%s feat=0x %pNF\n", /* TODO: is 0x okay? */
- 		       level, dev->name, &dev->features);
- 	if (sk)
- 		printk("%ssk family=%hu type=%u proto=%u\n",
 diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
 index 97eb54774924..03d02123d2d6 100644
 --- a/net/ipv4/sysctl_net_ipv4.c
