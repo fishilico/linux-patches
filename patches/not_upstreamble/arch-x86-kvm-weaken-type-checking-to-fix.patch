@@ -18,7 +18,7 @@ clang complained:
  3 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 2164b9f4c7b0..889c919a2f03 100644
+index 555f4de47ef2..bab38537b508 100644
 --- a/arch/x86/include/asm/kvm_host.h
 +++ b/arch/x86/include/asm/kvm_host.h
 @@ -1346,7 +1346,7 @@ struct kvm_x86_ops {
@@ -29,13 +29,13 @@ index 2164b9f4c7b0..889c919a2f03 100644
 +	void (*cache_reg)(struct kvm_vcpu *vcpu, int reg);
  	unsigned long (*get_rflags)(struct kvm_vcpu *vcpu);
  	void (*set_rflags)(struct kvm_vcpu *vcpu, unsigned long rflags);
- 
+ 	bool (*get_if_flag)(struct kvm_vcpu *vcpu);
 diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index d0f68d11ec70..8f07fb17f282 100644
+index 5151efa424ac..7e27acc3141e 100644
 --- a/arch/x86/kvm/svm/svm.c
 +++ b/arch/x86/kvm/svm/svm.c
-@@ -1585,7 +1585,7 @@ static void svm_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
- 	to_svm(vcpu)->vmcb->save.rflags = rflags;
+@@ -1594,7 +1594,7 @@ static bool svm_get_if_flag(struct kvm_vcpu *vcpu)
+ 		: kvm_get_rflags(vcpu) & X86_EFLAGS_IF;
  }
  
 -static void svm_cache_reg(struct kvm_vcpu *vcpu, enum kvm_reg reg)
@@ -44,10 +44,10 @@ index d0f68d11ec70..8f07fb17f282 100644
  	switch (reg) {
  	case VCPU_EXREG_PDPTR:
 diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 5aadad3e7367..162b04271e92 100644
+index 0dbf94eb954f..4e7b3cf7171d 100644
 --- a/arch/x86/kvm/vmx/vmx.c
 +++ b/arch/x86/kvm/vmx/vmx.c
-@@ -2228,7 +2228,7 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+@@ -2233,7 +2233,7 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
  	return ret;
  }
  
