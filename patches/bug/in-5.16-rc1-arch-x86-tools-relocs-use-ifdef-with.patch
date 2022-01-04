@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 3 Jan 2022 22:07:36 +0100
+Subject: [PATCH] {BUG in 5.16-rc1} arch/x86/tools/relocs: use #ifdef with
+ CONFIG_
+
+clang on x86_64 reports that CONFIG_FW_LOADER does not exist:
+
+    arch/x86/tools/relocs.c:71:5: error: 'CONFIG_FW_LOADER' is not
+    defined, evaluates to 0 [-Werror,-Wundef]
+    #if CONFIG_FW_LOADER_BUILTIN
+        ^
+---
+ arch/x86/tools/relocs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/x86/tools/relocs.c b/arch/x86/tools/relocs.c
+index e2c5b296120d..5898ac00fdf1 100644
+--- a/arch/x86/tools/relocs.c
++++ b/arch/x86/tools/relocs.c
+@@ -68,7 +68,7 @@ static const char * const sym_regex_kernel[S_NSYMTYPES] = {
+ 	"(__parainstructions|__alt_instructions)(_end)?|"
+ 	"(__iommu_table|__apicdrivers|__smp_locks)(_end)?|"
+ 	"__(start|end)_pci_.*|"
+-#if CONFIG_FW_LOADER
++#ifdef CONFIG_FW_LOADER
+ 	"__(start|end)_builtin_fw|"
+ #endif
+ 	"__(start|stop)___ksymtab(_gpl)?|"
+-- 
