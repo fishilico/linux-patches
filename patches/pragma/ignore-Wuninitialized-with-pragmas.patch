@@ -14,7 +14,7 @@ Subject: [PATCH] {PRAGMA} ignore -Wuninitialized with pragmas
  7 files changed, 44 insertions(+)
 
 diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index 1f740e42e457..2812e961f9b6 100644
+index 6df2539e215b..a8db37ff2e41 100644
 --- a/drivers/block/drbd/drbd_receiver.c
 +++ b/drivers/block/drbd/drbd_receiver.c
 @@ -929,10 +929,13 @@ static int conn_connect(struct drbd_connection *connection)
@@ -60,10 +60,10 @@ index 51d9ab079629..17a32f3f69d6 100644
  # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
  # define DECLARE_COMPLETION_ONSTACK_MAP(work, map) DECLARE_COMPLETION(work)
 diff --git a/include/linux/kthread.h b/include/linux/kthread.h
-index 346b0f269161..39eb3db29bdd 100644
+index 3df4ea04716f..12bcba1ab7a5 100644
 --- a/include/linux/kthread.h
 +++ b/include/linux/kthread.h
-@@ -147,8 +147,16 @@ struct kthread_delayed_work {
+@@ -175,8 +175,16 @@ struct kthread_delayed_work {
  #ifdef CONFIG_LOCKDEP
  # define KTHREAD_WORKER_INIT_ONSTACK(worker)				\
  	({ kthread_init_worker(&worker); worker; })
@@ -102,10 +102,10 @@ index 851e07da2583..a3a94be95cf7 100644
  # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
  #endif
 diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 3a67b6353a49..789418576800 100644
+index dd75ef51c5a2..7dc5be7ffced 100644
 --- a/kernel/kthread.c
 +++ b/kernel/kthread.c
-@@ -1072,10 +1072,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
+@@ -1133,10 +1133,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
   */
  void kthread_flush_work(struct kthread_work *work)
  {
@@ -119,7 +119,7 @@ index 3a67b6353a49..789418576800 100644
  	struct kthread_worker *worker;
  	bool noop = false;
  
-@@ -1309,10 +1312,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
+@@ -1370,10 +1373,13 @@ EXPORT_SYMBOL_GPL(kthread_cancel_delayed_work_sync);
   */
  void kthread_flush_worker(struct kthread_worker *worker)
  {
@@ -154,10 +154,10 @@ index 01a7c1706a58..26f85ac77c08 100644
  	INIT_WORK_ONSTACK(&sscs.work, smp_call_on_cpu_callback);
  
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 613917bbc4e7..8d16023dc325 100644
+index 33f1106b4f99..ff9820343a25 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -2805,11 +2805,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
+@@ -2814,11 +2814,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
   */
  void flush_workqueue(struct workqueue_struct *wq)
  {

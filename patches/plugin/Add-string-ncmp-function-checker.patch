@@ -14,9 +14,9 @@ It has also detected some bugs reported and fixed by other people:
 ---
  scripts/Makefile.gcc-plugins                  |   2 +
  scripts/gcc-plugins/Kconfig                   |   6 +
- scripts/gcc-plugins/string_ncmp_size_plugin.c | 239 ++++++++++++++++++
+ scripts/gcc-plugins/string_ncmp_size_plugin.c | 240 ++++++++++++++++++
  sound/soc/intel/boards/bxt_rt298.c            |   9 +-
- 4 files changed, 250 insertions(+), 6 deletions(-)
+ 4 files changed, 251 insertions(+), 6 deletions(-)
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
@@ -49,10 +49,10 @@ index 75fd83019bee..12b191085497 100644
  endif
 diff --git a/scripts/gcc-plugins/string_ncmp_size_plugin.c b/scripts/gcc-plugins/string_ncmp_size_plugin.c
 new file mode 100644
-index 000000000000..6d66ef2cd2cf
+index 000000000000..7547e3930449
 --- /dev/null
 +++ b/scripts/gcc-plugins/string_ncmp_size_plugin.c
-@@ -0,0 +1,239 @@
+@@ -0,0 +1,240 @@
 +/*
 + * Copyright 2016-2018 by Nicolas Iooss
 + * Licensed under the GPL v2, or (at your option) v3
@@ -66,7 +66,7 @@ index 000000000000..6d66ef2cd2cf
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info string_ncmp_size_plugin_info = {
-+	.version	= "20190517",
++	.version	= "20220115",
 +	.help		= "String n-copy functions size checker\n",
 +};
 +
@@ -157,7 +157,8 @@ index 000000000000..6d66ef2cd2cf
 +		/* Check that it is not a function which would be interesting
 +		 * Here is the list of known functions which are not.
 +		 */
-+		if (!identifier_is(fnident, "kasan_memcmp") &&
++		if (!identifier_is(fnident, "____bpf_strncmp") &&
++		    !identifier_is(fnident, "kasan_memcmp") &&
 +		    !identifier_is(fnident, "memcmp_extent_buffer") &&
 +		    !identifier_is(fnident, "memcmp_node_keys") &&
 +		    !identifier_is(fnident, "memcmp_pages") &&

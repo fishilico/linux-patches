@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 15 Jan 2022 23:17:00 +0100
+Subject: [PATCH] {NOT UPSTREAMABLE} drivers/mtd/nand: silence
+ -Wformat-security with a dirty hack
+
+---
+ drivers/mtd/nand/core.c          | 2 +-
+ drivers/mtd/nand/raw/nand_base.c | 2 +-
+ drivers/mtd/nand/raw/nand_bbt.c  | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/mtd/nand/core.c b/drivers/mtd/nand/core.c
+index 416947f28b67..4cc9f8bc10d6 100644
+--- a/drivers/mtd/nand/core.c
++++ b/drivers/mtd/nand/core.c
+@@ -21,7 +21,7 @@
+  */
+ bool nanddev_isbad(struct nand_device *nand, const struct nand_pos *pos)
+ {
+-	if (WARN_ONCE(mtd_expert_analysis_mode, mtd_expert_analysis_warning))
++	if (WARN_ONCE(mtd_expert_analysis_mode, "mtd_expert_analysis_warning"))
+ 		return false;
+ 
+ 	if (nanddev_bbt_is_initialized(nand)) {
+diff --git a/drivers/mtd/nand/raw/nand_base.c b/drivers/mtd/nand/raw/nand_base.c
+index e7b2ba016d8c..435b29fe7bc3 100644
+--- a/drivers/mtd/nand/raw/nand_base.c
++++ b/drivers/mtd/nand/raw/nand_base.c
+@@ -321,7 +321,7 @@ static int nand_isbad_bbm(struct nand_chip *chip, loff_t ofs)
+ 	if (nand_region_is_secured(chip, ofs, mtd->erasesize))
+ 		return -EIO;
+ 
+-	if (WARN_ONCE(mtd_expert_analysis_mode, mtd_expert_analysis_warning))
++	if (WARN_ONCE(mtd_expert_analysis_mode, "mtd_expert_analysis_warning"))
+ 		return 0;
+ 
+ 	if (chip->legacy.block_bad)
+diff --git a/drivers/mtd/nand/raw/nand_bbt.c b/drivers/mtd/nand/raw/nand_bbt.c
+index ab630af3a309..295cf914f4eb 100644
+--- a/drivers/mtd/nand/raw/nand_bbt.c
++++ b/drivers/mtd/nand/raw/nand_bbt.c
+@@ -1455,7 +1455,7 @@ int nand_isbad_bbt(struct nand_chip *this, loff_t offs, int allowbbt)
+ 	pr_debug("nand_isbad_bbt(): bbt info for offs 0x%08x: (block %d) 0x%02x\n",
+ 		 (unsigned int)offs, block, res);
+ 
+-	if (WARN_ONCE(mtd_expert_analysis_mode, mtd_expert_analysis_warning))
++	if (WARN_ONCE(mtd_expert_analysis_mode, "mtd_expert_analysis_warning"))
+ 		return 0;
+ 
+ 	switch (res) {
+-- 

@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 15 Jan 2022 23:24:48 +0100
+Subject: [PATCH] {PRINTF} drivers/net/ethernet/qlogic/qed: constify the format
+ arg of mfw_report
+
+---
+ drivers/net/ethernet/qlogic/qed/qed_main.c | 2 +-
+ include/linux/qed/qed_if.h                 | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/qlogic/qed/qed_main.c b/drivers/net/ethernet/qlogic/qed/qed_main.c
+index 80645677fa25..ba620bc86022 100644
+--- a/drivers/net/ethernet/qlogic/qed/qed_main.c
++++ b/drivers/net/ethernet/qlogic/qed/qed_main.c
+@@ -2984,7 +2984,7 @@ static int qed_set_grc_config(struct qed_dev *cdev, u32 cfg_id, u32 val)
+ 	return rc;
+ }
+ 
+-static __printf(2, 3) void qed_mfw_report(struct qed_dev *cdev, char *fmt, ...)
++static __printf(2, 3) void qed_mfw_report(struct qed_dev *cdev, const char *fmt, ...)
+ {
+ 	char buf[QED_MFW_REPORT_STR_SIZE];
+ 	struct qed_hwfn *p_hwfn;
+diff --git a/include/linux/qed/qed_if.h b/include/linux/qed/qed_if.h
+index 6dc4943d8aec..45ead9b6fe97 100644
+--- a/include/linux/qed/qed_if.h
++++ b/include/linux/qed/qed_if.h
+@@ -1202,7 +1202,7 @@ struct qed_common_ops {
+ 
+ 	void (*devlink_unregister)(struct devlink *devlink);
+ 
+-	__printf(2, 3) void (*mfw_report)(struct qed_dev *cdev, char *fmt, ...);
++	__printf(2, 3) void (*mfw_report)(struct qed_dev *cdev, const char *fmt, ...);
+ 
+ 	int (*get_sb_info)(struct qed_dev *cdev, struct qed_sb_info *sb,
+ 			   u16 qid, struct qed_sb_info_dbg *sb_dbg);
+-- 

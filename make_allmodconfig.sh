@@ -128,6 +128,7 @@ KCFLAGS="$KCFLAGS -Wstrict-prototypes"
 KCFLAGS="$KCFLAGS -Wunknown-pragmas"
 disable_in_kcflags 'address-of-packed-member' # Linux takes references to unaligned members of packed structs
 disable_in_kcflags 'aggregate-return' # Linux ktime_get returns a structure
+disable_in_kcflags 'array-bounds' # gcc 10 and clang 13 warn about array subscripts with negative value, which is used
 disable_in_kcflags 'cast-align' # Many struct casts change the alignment
 disable_in_kcflags 'deprecated-declarations'
 disable_in_kcflags 'empty-body' # if (conf) print_debug(...); with empty print_debug
@@ -236,7 +237,6 @@ then
     KCFLAGS="$KCFLAGS -Wjump-misses-init"
     KCFLAGS="$KCFLAGS -Wlogical-op"
     disable_in_kcflags 'aggressive-loop-optimizations' # gcc 9 warns about some loops in echoaudio_dsp, which looks fine
-    disable_in_kcflags 'array-bounds' # gcc 10 warns about array subscripts with negative value, which is used
     disable_in_kcflags 'attribute-alias' # gcc 8 warns about x86-32 syscall handler using incompatible types
     disable_in_kcflags 'builtin-declaration-mismatch' # gcc 9 warns about using specific pointer types instead of void*
     disable_in_kcflags 'cast-function-type' # gcc 8 warns about many incompatible function casts used by Linux
@@ -468,6 +468,7 @@ then
         echo 'CONFIG_DMA_RESTRICTED_POOL=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_STACKPROTECTOR_PER_TASK=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_XEN_PCIDEV_STUB=m' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_USB_XEN_HCD=m' >> "$KBUILD_OUTPUT/.config"
     fi
 
     # Merge options

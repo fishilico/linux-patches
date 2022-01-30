@@ -16,8 +16,6 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correctly to fix clang warnings
  drivers/media/dvb-frontends/dib0090.c         |  2 +-
  drivers/media/dvb-frontends/dib7000m.c        |  2 +-
  drivers/media/dvb-frontends/dib7000p.c        |  2 +-
- drivers/media/radio/si470x/radio-si470x-i2c.c |  4 ++--
- drivers/media/radio/si470x/radio-si470x-usb.c |  8 ++++----
  drivers/misc/eeprom/idt_89hpesx.c             |  6 +++---
  drivers/misc/mei/hw-me.c                      |  2 +-
  drivers/net/ethernet/amd/xgbe/xgbe-dcb.c      |  2 +-
@@ -34,7 +32,6 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correctly to fix clang warnings
  .../net/wireless/mediatek/mt7601u/eeprom.c    |  2 +-
  drivers/ntb/hw/idt/ntb_hw_idt.c               |  6 +++---
  drivers/platform/x86/thinkpad_acpi.c          |  2 +-
- drivers/scsi/qedi/qedi_main.c                 |  4 ++--
  drivers/scsi/scsi_sysfs.c                     |  2 +-
  drivers/soc/qcom/smem.c                       |  4 ++--
  drivers/target/iscsi/iscsi_target.c           |  2 +-
@@ -46,7 +43,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correctly to fix clang warnings
  fs/ntfs/attrib.c                              |  2 +-
  fs/reiserfs/journal.c                         |  2 +-
  lib/test_printf.c                             |  6 +++---
- net/8021q/vlanproc.c                          |  4 ++--
+ net/8021q/vlanproc.c                          |  2 +-
  net/ipv4/ah4.c                                |  2 +-
  net/ipv4/esp4.c                               |  2 +-
  net/ipv6/ah6.c                                |  2 +-
@@ -58,7 +55,7 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correctly to fix clang warnings
  net/netfilter/xt_TPROXY.c                     |  4 ++--
  net/rxrpc/rxkad.c                             |  2 +-
  security/tomoyo/common.c                      |  2 +-
- 54 files changed, 92 insertions(+), 92 deletions(-)
+ 51 files changed, 83 insertions(+), 83 deletions(-)
 
 diff --git a/drivers/acpi/acpica/nsdump.c b/drivers/acpi/acpica/nsdump.c
 index 2f66f3ed1810..7efe407bc1cd 100644
@@ -243,10 +240,10 @@ index d0e67ec46216..6fb2c1972f3e 100644
    
    return;
 diff --git a/drivers/gpio/gpiolib-acpi.c b/drivers/gpio/gpiolib-acpi.c
-index 985e8589c58b..835da67df07c 100644
+index c0f6a25c3279..7481ada3091f 100644
 --- a/drivers/gpio/gpiolib-acpi.c
 +++ b/drivers/gpio/gpiolib-acpi.c
-@@ -391,7 +391,7 @@ static acpi_status acpi_gpiochip_alloc_event(struct acpi_resource *ares,
+@@ -389,7 +389,7 @@ static acpi_status acpi_gpiochip_alloc_event(struct acpi_resource *ares,
  		char ev_name[5];
  		sprintf(ev_name, "_%c%02hhX",
  			agpio->triggering == ACPI_EDGE_SENSITIVE ? 'E' : 'L',
@@ -343,53 +340,6 @@ index 55bee50aa871..ab2ae0693ac5 100644
  
  		(*agc_state)++;
  		ret = 5;
-diff --git a/drivers/media/radio/si470x/radio-si470x-i2c.c b/drivers/media/radio/si470x/radio-si470x-i2c.c
-index a972c0705ac7..5d86592de444 100644
---- a/drivers/media/radio/si470x/radio-si470x-i2c.c
-+++ b/drivers/media/radio/si470x/radio-si470x-i2c.c
-@@ -410,10 +410,10 @@ static int si470x_i2c_probe(struct i2c_client *client)
- 			radio->registers[DEVICEID], radio->registers[SI_CHIPID]);
- 	if ((radio->registers[SI_CHIPID] & SI_CHIPID_FIRMWARE) < RADIO_FW_VERSION) {
- 		dev_warn(&client->dev,
--			"This driver is known to work with firmware version %hu,\n",
-+			"This driver is known to work with firmware version %d,\n",
- 			RADIO_FW_VERSION);
- 		dev_warn(&client->dev,
--			"but the device has firmware version %hu.\n",
-+			"but the device has firmware version %d.\n",
- 			radio->registers[SI_CHIPID] & SI_CHIPID_FIRMWARE);
- 		version_warning = 1;
- 	}
-diff --git a/drivers/media/radio/si470x/radio-si470x-usb.c b/drivers/media/radio/si470x/radio-si470x-usb.c
-index 3f8634a46573..f7a4e2587b11 100644
---- a/drivers/media/radio/si470x/radio-si470x-usb.c
-+++ b/drivers/media/radio/si470x/radio-si470x-usb.c
-@@ -681,10 +681,10 @@ static int si470x_usb_driver_probe(struct usb_interface *intf,
- 			radio->registers[DEVICEID], radio->registers[SI_CHIPID]);
- 	if ((radio->registers[SI_CHIPID] & SI_CHIPID_FIRMWARE) < RADIO_FW_VERSION) {
- 		dev_warn(&intf->dev,
--			"This driver is known to work with firmware version %hu,\n",
-+			"This driver is known to work with firmware version %d,\n",
- 			RADIO_FW_VERSION);
- 		dev_warn(&intf->dev,
--			"but the device has firmware version %hu.\n",
-+			"but the device has firmware version %d.\n",
- 			radio->registers[SI_CHIPID] & SI_CHIPID_FIRMWARE);
- 		version_warning = 1;
- 	}
-@@ -698,10 +698,10 @@ static int si470x_usb_driver_probe(struct usb_interface *intf,
- 			radio->software_version, radio->hardware_version);
- 	if (radio->hardware_version < RADIO_HW_VERSION) {
- 		dev_warn(&intf->dev,
--			"This driver is known to work with hardware version %hu,\n",
-+			"This driver is known to work with hardware version %d,\n",
- 			RADIO_HW_VERSION);
- 		dev_warn(&intf->dev,
--			"but the device has hardware version %hu.\n",
-+			"but the device has hardware version %d.\n",
- 			radio->hardware_version);
- 		version_warning = 1;
- 	}
 diff --git a/drivers/misc/eeprom/idt_89hpesx.c b/drivers/misc/eeprom/idt_89hpesx.c
 index b0cff4b152da..1b287ec79997 100644
 --- a/drivers/misc/eeprom/idt_89hpesx.c
@@ -483,18 +433,18 @@ index 70e6d97b380f..fd4e69e5f0f8 100644
  		return 0xffff;
  	}
 diff --git a/drivers/net/ethernet/freescale/xgmac_mdio.c b/drivers/net/ethernet/freescale/xgmac_mdio.c
-index 5b8b9bcf41a2..538fbd5e73b7 100644
+index 266e562bd67a..1d5d09d2eb41 100644
 --- a/drivers/net/ethernet/freescale/xgmac_mdio.c
 +++ b/drivers/net/ethernet/freescale/xgmac_mdio.c
-@@ -232,7 +232,7 @@ static int xgmac_mdio_read(struct mii_bus *bus, int phy_id, int regnum)
+@@ -239,7 +239,7 @@ static int xgmac_mdio_read(struct mii_bus *bus, int phy_id, int regnum)
  	if ((xgmac_read32(&regs->mdio_stat, endian) & MDIO_STAT_RD_ER) &&
  	    !priv->has_a011043) {
  		dev_dbg(&bus->dev,
 -			"Error while reading PHY%d reg at %d.%hhu\n",
 +			"Error while reading PHY%d reg at %d.%d\n",
  			phy_id, dev_addr, regnum);
- 		return 0xffff;
- 	}
+ 		ret = 0xffff;
+ 	} else {
 diff --git a/drivers/net/ethernet/mellanox/mlx5/core/wq.c b/drivers/net/ethernet/mellanox/mlx5/core/wq.c
 index 3091dd014650..26682040a0c5 100644
 --- a/drivers/net/ethernet/mellanox/mlx5/core/wq.c
@@ -559,10 +509,10 @@ index cc4ec2bb36db..25cd0a38eaff 100644
  		*p_abs_ppfid = 0;
  		return -EINVAL;
 diff --git a/drivers/net/ethernet/qlogic/qed/qed_main.c b/drivers/net/ethernet/qlogic/qed/qed_main.c
-index 7673b3e07736..183812cca4bc 100644
+index c5003fa1a25e..80645677fa25 100644
 --- a/drivers/net/ethernet/qlogic/qed/qed_main.c
 +++ b/drivers/net/ethernet/qlogic/qed/qed_main.c
-@@ -967,7 +967,7 @@ static int qed_slowpath_setup_int(struct qed_dev *cdev,
+@@ -949,7 +949,7 @@ static int qed_slowpath_setup_int(struct qed_dev *cdev,
  
  	if (is_kdump_kernel()) {
  		DP_INFO(cdev,
@@ -572,7 +522,7 @@ index 7673b3e07736..183812cca4bc 100644
  		cdev->int_params.in.num_vectors =
  			cdev->int_params.in.min_msix_cnt;
 diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/ftm-initiator.c b/drivers/net/wireless/intel/iwlwifi/mvm/ftm-initiator.c
-index 949fb790f8fb..4da707eda024 100644
+index 628aee634b2a..3a2404e003ef 100644
 --- a/drivers/net/wireless/intel/iwlwifi/mvm/ftm-initiator.c
 +++ b/drivers/net/wireless/intel/iwlwifi/mvm/ftm-initiator.c
 @@ -1106,10 +1106,10 @@ static void iwl_mvm_debug_range_resp(struct iwl_mvm *mvm, u8 index,
@@ -646,10 +596,10 @@ index 733557231ed0..d6865e27b012 100644
  	off += scnprintf(strbuf + off, size - off, "\n");
  
 diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index bb1abb947e1e..fd93f9656f61 100644
+index 098180fb1cfc..2931e33373cc 100644
 --- a/drivers/platform/x86/thinkpad_acpi.c
 +++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -7433,7 +7433,7 @@ static void volume_exit_software_mute(void)
+@@ -7348,7 +7348,7 @@ static void volume_exit_software_mute(void)
  static int volume_alsa_set_volume(const u8 vol)
  {
  	dbg_printk(TPACPI_DBG_MIXER,
@@ -658,30 +608,8 @@ index bb1abb947e1e..fd93f9656f61 100644
  	return __volume_set_volume_ec(vol);
  }
  
-diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index 1dec814d8788..1635610a9449 100644
---- a/drivers/scsi/qedi/qedi_main.c
-+++ b/drivers/scsi/qedi/qedi_main.c
-@@ -2089,7 +2089,7 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
- 		rc = snprintf(buf, ip_len, fmt, gw);
- 		break;
- 	case ISCSI_BOOT_ETH_FLAGS:
--		rc = snprintf(buf, 3, "%hhd\n",
-+		rc = snprintf(buf, 3, "%d\n",
- 			      SYSFS_FLAG_FW_SEL_BOOT);
- 		break;
- 	case ISCSI_BOOT_ETH_INDEX:
-@@ -2257,7 +2257,7 @@ qedi_show_boot_tgt_info(struct qedi_ctx *qedi, int type,
- 			     mchap_secret);
- 		break;
- 	case ISCSI_BOOT_TGT_FLAGS:
--		rc = snprintf(buf, 3, "%hhd\n", SYSFS_FLAG_FW_SEL_BOOT);
-+		rc = snprintf(buf, 3, "%d\n", SYSFS_FLAG_FW_SEL_BOOT);
- 		break;
- 	case ISCSI_BOOT_TGT_NIC_ASSOC:
- 		rc = snprintf(buf, 3, "0\n");
 diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index d4edce930a4a..797791b17559 100644
+index f1e0c131b77c..c12fa7d6efa8 100644
 --- a/drivers/scsi/scsi_sysfs.c
 +++ b/drivers/scsi/scsi_sysfs.c
 @@ -375,7 +375,7 @@ shost_rd_attr(can_queue, "%d\n");
@@ -694,7 +622,7 @@ index d4edce930a4a..797791b17559 100644
  
  static ssize_t
 diff --git a/drivers/soc/qcom/smem.c b/drivers/soc/qcom/smem.c
-index c7e519bfdc8a..f08cf42df859 100644
+index e2057d8f1eff..a98b5f395d15 100644
 --- a/drivers/soc/qcom/smem.c
 +++ b/drivers/soc/qcom/smem.c
 @@ -844,12 +844,12 @@ qcom_smem_enumerate_partitions(struct qcom_smem *smem, u16 local_host)
@@ -761,7 +689,7 @@ index 6bc3aaf655fc..eb94f1dc3a9b 100644
  	pr_debug("SessionType: %s\n", (sess_ops->SessionType) ?
  			"Discovery" : "Normal");
 diff --git a/drivers/w1/slaves/w1_therm.c b/drivers/w1/slaves/w1_therm.c
-index ca70c5f03206..cdfcfeb638b0 100644
+index 565578002d79..6a1c512673c6 100644
 --- a/drivers/w1/slaves/w1_therm.c
 +++ b/drivers/w1/slaves/w1_therm.c
 @@ -1774,7 +1774,7 @@ static ssize_t alarms_show(struct device *device,
@@ -800,7 +728,7 @@ index 2e2f1d5e9f62..841a9af91326 100644
  	da->tightly_coupled = false;
  
 diff --git a/fs/ntfs/attrib.c b/fs/ntfs/attrib.c
-index d563abc3e136..31113ce69fec 100644
+index 2911c04a33e0..85254019eb7d 100644
 --- a/fs/ntfs/attrib.c
 +++ b/fs/ntfs/attrib.c
 @@ -2485,7 +2485,7 @@ int ntfs_attr_set(ntfs_inode *ni, const s64 ofs, const s64 cnt, const u8 val)
@@ -813,10 +741,10 @@ index d563abc3e136..31113ce69fec 100644
  	BUG_ON(ofs < 0);
  	BUG_ON(cnt < 0);
 diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-index 0834b101c316..447795123707 100644
+index a3e21160b634..696915d83e3e 100644
 --- a/fs/reiserfs/journal.c
 +++ b/fs/reiserfs/journal.c
-@@ -2542,7 +2542,7 @@ static int journal_read(struct super_block *sb)
+@@ -2545,7 +2545,7 @@ static int journal_read(struct super_block *sb)
  	journal->j_first_unflushed_offset = journal->j_start;
  	if (replay_count > 0) {
  		reiserfs_info(sb,
@@ -843,18 +771,9 @@ index 07309c45f327..fd412306e2de 100644
  	 * POSIX/C99: »The result of converting zero with an explicit
  	 * precision of zero shall be no characters.« Hence the output
 diff --git a/net/8021q/vlanproc.c b/net/8021q/vlanproc.c
-index ec87dea23719..8d6d7a3baa28 100644
+index 08bf6c839e25..91abd10ae8d9 100644
 --- a/net/8021q/vlanproc.c
 +++ b/net/8021q/vlanproc.c
-@@ -252,7 +252,7 @@ static int vlandev_seq_show(struct seq_file *seq, void *offset)
- 
- 	stats = dev_get_stats(vlandev, &temp);
- 	seq_printf(seq,
--		   "%s  VID: %d	 REORDER_HDR: %i  dev->priv_flags: %hx\n",
-+		   "%s  VID: %d	 REORDER_HDR: %i  dev->priv_flags: %x\n",
- 		   vlandev->name, vlan->vlan_id,
- 		   (int)(vlan->flags & 1), vlandev->priv_flags);
- 
 @@ -281,7 +281,7 @@ static int vlandev_seq_show(struct seq_file *seq, void *offset)
  			= vlan->egress_priority_map[i];
  		while (mp) {
@@ -891,10 +810,10 @@ index 851f542928a3..80f29b94eb5a 100644
  		}
  
 diff --git a/net/ipv6/ah6.c b/net/ipv6/ah6.c
-index 828e62514260..ee9e45e20ad7 100644
+index b5995c1f4d7a..a06701414bac 100644
 --- a/net/ipv6/ah6.c
 +++ b/net/ipv6/ah6.c
-@@ -707,7 +707,7 @@ static int ah6_init_state(struct xfrm_state *x)
+@@ -704,7 +704,7 @@ static int ah6_init_state(struct xfrm_state *x)
  	    crypto_ahash_digestsize(ahash)) {
  		pr_info("AH: %s digestsize %u != %u\n",
  			x->aalg->alg_name, crypto_ahash_digestsize(ahash),
@@ -904,10 +823,10 @@ index 828e62514260..ee9e45e20ad7 100644
  	}
  
 diff --git a/net/ipv6/esp6.c b/net/ipv6/esp6.c
-index f0bac6f7ab6b..d71d5063e87d 100644
+index 8bb2c407b46b..086d1b40e9b0 100644
 --- a/net/ipv6/esp6.c
 +++ b/net/ipv6/esp6.c
-@@ -1156,7 +1156,7 @@ static int esp_init_authenc(struct xfrm_state *x)
+@@ -1155,7 +1155,7 @@ static int esp_init_authenc(struct xfrm_state *x)
  			pr_info("ESP: %s digestsize %u != %u\n",
  				x->aalg->alg_name,
  				crypto_aead_authsize(aead),
@@ -917,10 +836,10 @@ index f0bac6f7ab6b..d71d5063e87d 100644
  		}
  
 diff --git a/net/l2tp/l2tp_debugfs.c b/net/l2tp/l2tp_debugfs.c
-index bca75bef8282..4e6091c65e5f 100644
+index 9d1aafe75f92..1cbbfb984d38 100644
 --- a/net/l2tp/l2tp_debugfs.c
 +++ b/net/l2tp/l2tp_debugfs.c
-@@ -186,7 +186,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
+@@ -184,7 +184,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
  		   session->pwtype == L2TP_PWTYPE_PPP ? "PPP" :
  		   "");
  	if (session->send_seq || session->recv_seq)
@@ -929,7 +848,7 @@ index bca75bef8282..4e6091c65e5f 100644
  	seq_printf(m, "   refcnt %d\n", refcount_read(&session->ref_count));
  	seq_printf(m, "   config 0/0/%c/%c/-/%s %08x %u\n",
  		   session->recv_seq ? 'R' : '-',
-@@ -194,7 +194,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
+@@ -192,7 +192,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
  		   session->lns_mode ? "LNS" : "LAC",
  		   0,
  		   jiffies_to_msecs(session->reorder_timeout));
@@ -938,7 +857,7 @@ index bca75bef8282..4e6091c65e5f 100644
  		   session->l2specific_type, l2tp_get_l2specific_len(session));
  	if (session->cookie_len) {
  		seq_printf(m, "   cookie %02x%02x%02x%02x",
-@@ -217,7 +217,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
+@@ -215,7 +215,7 @@ static void l2tp_dfs_seq_session_show(struct seq_file *m, void *v)
  		seq_puts(m, "\n");
  	}
  

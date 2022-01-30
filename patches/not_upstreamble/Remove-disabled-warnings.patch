@@ -17,7 +17,7 @@ list of disabled warnings.
  8 files changed, 47 insertions(+), 41 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 08510230b42f..106398d67928 100644
+index 0fb4f94a6885..a83c9a34da84 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -483,7 +483,7 @@ ZSTD		= zstd
@@ -42,7 +42,7 @@ index 08510230b42f..106398d67928 100644
  		   -std=gnu89
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
-@@ -749,10 +749,10 @@ endif # may-sync-config
+@@ -738,10 +738,10 @@ endif # may-sync-config
  endif # need-config
  
  KBUILD_CFLAGS	+= -fno-delete-null-pointer-checks
@@ -57,7 +57,7 @@ index 08510230b42f..106398d67928 100644
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
  KBUILD_CFLAGS += -O2
-@@ -794,7 +794,7 @@ KBUILD_CFLAGS += $(KBUILD_CFLAGS-y) $(CONFIG_CC_IMPLICIT_FALLTHROUGH:"%"=%)
+@@ -783,7 +783,7 @@ KBUILD_CFLAGS += $(KBUILD_CFLAGS-y) $(CONFIG_CC_IMPLICIT_FALLTHROUGH)
  ifdef CONFIG_CC_IS_CLANG
  KBUILD_CPPFLAGS += -Qunused-arguments
  # The kernel builds with '-std=gnu89' so use of GNU extensions is acceptable.
@@ -66,7 +66,7 @@ index 08510230b42f..106398d67928 100644
  # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
  # source of a reference will be _MergedGlobals and not on of the whitelisted names.
  # See modpost pattern 2
-@@ -807,8 +807,8 @@ endif
+@@ -796,8 +796,8 @@ endif
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
@@ -77,12 +77,17 @@ index 08510230b42f..106398d67928 100644
  
  ifdef CONFIG_FRAME_POINTER
  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
-@@ -951,22 +951,22 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
+@@ -940,7 +940,7 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
  KBUILD_CFLAGS += -Wvla
  
  # disable pointer signed / unsigned warnings in gcc 4.0
 -KBUILD_CFLAGS += -Wno-pointer-sign
 +#KBUILD_CFLAGS += -Wno-pointer-sign
+ 
+ # In order to make sure new function cast mismatches are not introduced
+ # in the kernel (to avoid tripping CFI checking), the kernel should be
+@@ -948,19 +948,19 @@ KBUILD_CFLAGS += -Wno-pointer-sign
+ KBUILD_CFLAGS += $(call cc-option, -Wcast-function-type)
  
  # disable stringop warnings in gcc 8+
 -KBUILD_CFLAGS += $(call cc-disable-warning, stringop-truncation)
@@ -108,10 +113,10 @@ index 08510230b42f..106398d67928 100644
  
  ifdef CONFIG_CC_IS_GCC
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 42243869216d..bffca208e1ba 100644
+index e84cdd409b64..cc367a7ad3a8 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
-@@ -161,7 +161,7 @@ ifeq ($(ACCUMULATE_OUTGOING_ARGS), 1)
+@@ -173,7 +173,7 @@ ifeq ($(ACCUMULATE_OUTGOING_ARGS), 1)
  endif
  
  # Workaround for a gcc prelease that unfortunately was shipped in a suse release
@@ -121,10 +126,10 @@ index 42243869216d..bffca208e1ba 100644
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  
 diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
-index 431bf7f846c3..65435ba8d6f4 100644
+index 6115274fe10f..5458149739d9 100644
 --- a/arch/x86/boot/compressed/Makefile
 +++ b/arch/x86/boot/compressed/Makefile
-@@ -38,9 +38,9 @@ KBUILD_CFLAGS += $(cflags-y)
+@@ -42,9 +42,9 @@ KBUILD_CFLAGS += $(cflags-y)
  KBUILD_CFLAGS += -mno-mmx -mno-sse
  KBUILD_CFLAGS += -ffreestanding -fshort-wchar
  KBUILD_CFLAGS += -fno-stack-protector
@@ -138,7 +143,7 @@ index 431bf7f846c3..65435ba8d6f4 100644
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  KBUILD_CFLAGS += -D__DISABLE_EXPORTS
 diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
-index 660bb03de6fc..74cbb7fefe70 100644
+index 1b62b9f65196..724ef75833ea 100644
 --- a/drivers/gpu/drm/i915/Makefile
 +++ b/drivers/gpu/drm/i915/Makefile
 @@ -12,18 +12,18 @@
@@ -207,10 +212,10 @@ index ad0ae8053b79..8da8cbb7c72a 100644
  CC	:= $(CROSS_COMPILE)gcc
  
 diff --git a/mm/Makefile b/mm/Makefile
-index d6c0042e3aa0..126e09f99885 100644
+index 70d4309c9ce3..494657edb631 100644
 --- a/mm/Makefile
 +++ b/mm/Makefile
-@@ -31,8 +31,8 @@ KCOV_INSTRUMENT_mmzone.o := n
+@@ -33,8 +33,8 @@ KCOV_INSTRUMENT_mmzone.o := n
  KCOV_INSTRUMENT_vmstat.o := n
  KCOV_INSTRUMENT_failslab.o := n
  

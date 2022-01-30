@@ -4,25 +4,25 @@ Date: Wed, 17 Jun 2015 15:40:10 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wduplicate-enum by design
 
 ---
- arch/x86/include/asm/fixmap.h                               | 3 +++
- drivers/comedi/comedi.h                                     | 3 +++
- drivers/gpu/drm/amd/display/dc/dc_hw_types.h                | 3 +++
- drivers/gpu/drm/amd/display/dc/dc_types.h                   | 3 +++
- drivers/gpu/drm/amd/display/dc/dce/dce_i2c_hw.h             | 3 +++
- drivers/gpu/drm/amd/display/dc/dm_services_types.h          | 3 +++
- drivers/media/dvb-frontends/helene.c                        | 3 +++
- drivers/media/dvb-frontends/mxl5xx_defs.h                   | 6 ++++++
- drivers/media/dvb-frontends/tda1002x.h                      | 3 +++
- drivers/media/usb/cx231xx/cx231xx.h                         | 3 +++
- drivers/net/wireless/ath/ath10k/htt.h                       | 3 +++
- drivers/net/wireless/ath/carl9170/hw.h                      | 3 +++
- drivers/net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h | 5 +++++
- drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h         | 3 +++
- include/linux/mfd/max77686-private.h                        | 3 +++
- include/uapi/linux/netfilter/nf_conntrack_common.h          | 2 +-
- include/uapi/linux/nl80211.h                                | 2 +-
- sound/pci/pcxhr/pcxhr.h                                     | 4 ++++
- 18 files changed, 56 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/fixmap.h                             | 3 +++
+ drivers/gpu/drm/amd/display/dc/dc_hw_types.h              | 3 +++
+ drivers/gpu/drm/amd/display/dc/dc_types.h                 | 3 +++
+ drivers/gpu/drm/amd/display/dc/dce/dce_i2c_hw.h           | 3 +++
+ drivers/gpu/drm/amd/display/dc/dm_services_types.h        | 3 +++
+ drivers/media/dvb-frontends/helene.c                      | 3 +++
+ drivers/media/dvb-frontends/mxl5xx_defs.h                 | 6 ++++++
+ drivers/media/dvb-frontends/tda1002x.h                    | 3 +++
+ drivers/media/usb/cx231xx/cx231xx.h                       | 3 +++
+ drivers/net/wireless/ath/ath10k/htt.h                     | 3 +++
+ drivers/net/wireless/ath/carl9170/hw.h                    | 3 +++
+ .../net/wireless/realtek/rtlwifi/rtl8723com/fw_common.h   | 5 +++++
+ drivers/net/wireless/realtek/rtlwifi/rtl8821ae/fw.h       | 3 +++
+ include/linux/mfd/max77686-private.h                      | 3 +++
+ include/uapi/linux/comedi.h                               | 8 ++++++++
+ include/uapi/linux/netfilter/nf_conntrack_common.h        | 2 +-
+ include/uapi/linux/nl80211.h                              | 2 +-
+ sound/pci/pcxhr/pcxhr.h                                   | 4 ++++
+ 18 files changed, 61 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
 index d0dcefb5cc59..01711567394b 100644
@@ -45,29 +45,8 @@ index d0dcefb5cc59..01711567394b 100644
  
  
  extern void reserve_top_address(unsigned long reserve);
-diff --git a/drivers/comedi/comedi.h b/drivers/comedi/comedi.h
-index b5d00a006dbb..4815c239f26e 100644
---- a/drivers/comedi/comedi.h
-+++ b/drivers/comedi/comedi.h
-@@ -1487,6 +1487,8 @@ enum amplc_dio_ts_clock_src {
-  * Values for setting a gate source with INSN_CONFIG_SET_GATE_SRC for
-  * 8254 counter subdevices on Amplicon DIO boards (amplc_dio200 driver).
-  */
-+__diag_push()
-+__diag_ignore(CLANG, 10, "-Wduplicate-enum", "Some entries are duplicated")
- enum amplc_dio_gate_source {
- 	AMPLC_DIO_GAT_VCC,	/* internal high logic level */
- 	AMPLC_DIO_GAT_GND,	/* internal low logic level */
-@@ -1513,6 +1515,7 @@ enum amplc_dio_gate_source {
- 	AMPLC_DIO_GAT_NPAT_OCCURRED, /* negated "pattern occurred" */
- 	AMPLC_DIO_GAT_NPAT_GONE	/* negated "pattern gone away" */
- };
-+__diag_pop()
- 
- /*
-  * Values for setting a clock source with INSN_CONFIG_SET_CLOCK_SRC for
 diff --git a/drivers/gpu/drm/amd/display/dc/dc_hw_types.h b/drivers/gpu/drm/amd/display/dc/dc_hw_types.h
-index 52355fe6994c..4522549619a1 100644
+index eac34f591a3f..bb3fbca4381c 100644
 --- a/drivers/gpu/drm/amd/display/dc/dc_hw_types.h
 +++ b/drivers/gpu/drm/amd/display/dc/dc_hw_types.h
 @@ -213,6 +213,8 @@ enum surface_pixel_format {
@@ -88,10 +67,10 @@ index 52355fe6994c..4522549619a1 100644
  enum tile_split_values {
  	DC_DISPLAY_MICRO_TILING = 0x0,
 diff --git a/drivers/gpu/drm/amd/display/dc/dc_types.h b/drivers/gpu/drm/amd/display/dc/dc_types.h
-index 388457ffc0a8..e1ff355a5c66 100644
+index 0285a4b38d05..900953a82b53 100644
 --- a/drivers/gpu/drm/amd/display/dc/dc_types.h
 +++ b/drivers/gpu/drm/amd/display/dc/dc_types.h
-@@ -552,6 +552,8 @@ struct audio_info_flags {
+@@ -553,6 +553,8 @@ struct audio_info_flags {
  	};
  };
  
@@ -100,7 +79,7 @@ index 388457ffc0a8..e1ff355a5c66 100644
  enum audio_format_code {
  	AUDIO_FORMAT_CODE_FIRST = 1,
  	AUDIO_FORMAT_CODE_LINEARPCM = AUDIO_FORMAT_CODE_FIRST,
-@@ -576,6 +578,7 @@ enum audio_format_code {
+@@ -577,6 +579,7 @@ enum audio_format_code {
  	AUDIO_FORMAT_CODE_COUNT =
  		AUDIO_FORMAT_CODE_LAST - AUDIO_FORMAT_CODE_FIRST
  };
@@ -250,7 +229,7 @@ index 6929e4d97067..c86af0b54480 100644
  /* cx231xx has two audio inputs: tuner and line in */
  enum cx231xx_amux {
 diff --git a/drivers/net/wireless/ath/ath10k/htt.h b/drivers/net/wireless/ath/ath10k/htt.h
-index a6de08d3bf4a..6d722adcc3da 100644
+index 9a3a8907389b..2cdf5394db75 100644
 --- a/drivers/net/wireless/ath/ath10k/htt.h
 +++ b/drivers/net/wireless/ath/ath10k/htt.h
 @@ -616,6 +616,8 @@ struct htt_rx_indication_hdr {
@@ -356,6 +335,32 @@ index b1482b3cf353..381fc2325b9c 100644
  
  #define MAX77686_INT1_PWRONF_MSK	BIT(0)
  #define MAX77686_INT1_PWRONR_MSK	BIT(1)
+diff --git a/include/uapi/linux/comedi.h b/include/uapi/linux/comedi.h
+index 7314e5ee0a1e..88eb77f601c4 100644
+--- a/include/uapi/linux/comedi.h
++++ b/include/uapi/linux/comedi.h
+@@ -1487,6 +1487,11 @@ enum amplc_dio_ts_clock_src {
+  * Values for setting a gate source with INSN_CONFIG_SET_GATE_SRC for
+  * 8254 counter subdevices on Amplicon DIO boards (amplc_dio200 driver).
+  */
++/* Some entries are duplicated */
++#ifdef __clang__
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wduplicate-enum"
++#endif
+ enum amplc_dio_gate_source {
+ 	AMPLC_DIO_GAT_VCC,	/* internal high logic level */
+ 	AMPLC_DIO_GAT_GND,	/* internal low logic level */
+@@ -1513,6 +1518,9 @@ enum amplc_dio_gate_source {
+ 	AMPLC_DIO_GAT_NPAT_OCCURRED, /* negated "pattern occurred" */
+ 	AMPLC_DIO_GAT_NPAT_GONE	/* negated "pattern gone away" */
+ };
++#ifdef __clang__
++#pragma GCC diagnostic pop
++#endif
+ 
+ /*
+  * Values for setting a clock source with INSN_CONFIG_SET_CLOCK_SRC for
 diff --git a/include/uapi/linux/netfilter/nf_conntrack_common.h b/include/uapi/linux/netfilter/nf_conntrack_common.h
 index 4b3395082d15..8ff99955fb1c 100644
 --- a/include/uapi/linux/netfilter/nf_conntrack_common.h
@@ -370,10 +375,10 @@ index 4b3395082d15..8ff99955fb1c 100644
  	IP_CT_ESTABLISHED_REPLY = IP_CT_ESTABLISHED + IP_CT_IS_REPLY,
  	IP_CT_RELATED_REPLY = IP_CT_RELATED + IP_CT_IS_REPLY,
 diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
-index 61cab81e920d..a2990f6e3f86 100644
+index 195a238a322e..0bffc96682e7 100644
 --- a/include/uapi/linux/nl80211.h
 +++ b/include/uapi/linux/nl80211.h
-@@ -4814,7 +4814,7 @@ enum nl80211_auth_type {
+@@ -4837,7 +4837,7 @@ enum nl80211_auth_type {
  	/* keep last */
  	__NL80211_AUTHTYPE_NUM,
  	NL80211_AUTHTYPE_MAX = __NL80211_AUTHTYPE_NUM - 1,
