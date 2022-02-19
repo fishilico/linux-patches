@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2014-2018 Nicolas Iooss
+# Copyright (c) 2014-2022 Nicolas Iooss
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -162,6 +162,7 @@ then
     disable_in_kcflags 'c11-extensions' # Use C11 features
     disable_in_kcflags 'c99-extensions' # Use C99 features
     disable_in_kcflags 'c++-compat' # Empty structs exist
+    disable_in_kcflags 'c++98-compat' # Linux uses __auto_type in WARN macro
     disable_in_kcflags 'class-varargs' # net/9p passes kuid_t/kgid_t in varargs
     disable_in_kcflags 'comma' # There are legimitate uses like "while ((n = read(...)), n > 0)"
     disable_in_kcflags 'compound-token-split-by-space' # Some macros separate ( and { by a newline
