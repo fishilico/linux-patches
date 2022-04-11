@@ -10,13 +10,13 @@ ignore it.
 While at it, add the infrastructure to ignore warnings when building
 with clang.
 ---
- include/linux/compiler-clang.h   | 22 ++++++++++++++++++++++
+ include/linux/compiler-clang.h   | 10 ++++++++++
  include/linux/compiler_types.h   |  4 ++++
  include/linux/randomize_kstack.h |  4 ++++
- 3 files changed, 30 insertions(+)
+ 3 files changed, 18 insertions(+)
 
 diff --git a/include/linux/compiler-clang.h b/include/linux/compiler-clang.h
-index 3c4de9b6c6e3..d3c23d87141f 100644
+index babb1347148c..052b69e7d194 100644
 --- a/include/linux/compiler-clang.h
 +++ b/include/linux/compiler-clang.h
 @@ -5,6 +5,10 @@
@@ -30,55 +30,46 @@ index 3c4de9b6c6e3..d3c23d87141f 100644
  /* same as gcc, this was present in clang-2.6 so we can assume it works
   * with any version that can compile the kernel
   */
-@@ -68,3 +72,21 @@
+@@ -85,6 +89,12 @@
+ #define __diag_str(s)		__diag_str1(s)
+ #define __diag(s)		_Pragma(__diag_str(clang diagnostic s))
  
- #define __nocfi		__attribute__((__no_sanitize__("cfi")))
- #define __cficanonical	__attribute__((__cfi_canonical_jump_table__))
-+
-+/* Copy from compiler-gcc.h */
-+#define __diag_CLANG(version, severity, s) \
-+	__diag_CLANG_ ## version(__diag_CLANG_ ## severity s)
-+
-+#define __diag_CLANG_ignore	ignored
-+#define __diag_CLANG_warn	warning
-+#define __diag_CLANG_error	error
-+
-+#define __diag_str1(s)		#s
-+#define __diag_str(s)		__diag_str1(s)
-+#define __diag(s)		_Pragma(__diag_str(GCC diagnostic s))
-+
-+#if CLANG_VERSION >= 100000
-+#define __diag_CLANG_10(s)	__diag(s)
++#if CONFIG_CLANG_VERSION >= 100000
++#define __diag_clang_10(s)	__diag(s)
 +#else
-+#define __diag_CLANG_10(s)
++#define __diag_clang_10(s)
 +#endif
++
+ #if CONFIG_CLANG_VERSION >= 110000
+ #define __diag_clang_11(s)	__diag(s)
+ #else
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 3c1795fdb568..2439207f44dd 100644
+index 1c2c33ae1b37..88f589997c47 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
-@@ -358,6 +358,10 @@ struct ftrace_likely_data {
+@@ -364,6 +364,10 @@ struct ftrace_likely_data {
  #define __diag_GCC(version, severity, string)
  #endif
  
-+#ifndef __diag_CLANG
-+#define __diag_CLANG(version, severity, string)
++#ifndef __diag_clang
++#define __diag_clang(version, severity, string)
 +#endif
 +
  #define __diag_push()	__diag(push)
  #define __diag_pop()	__diag(pop)
  
 diff --git a/include/linux/randomize_kstack.h b/include/linux/randomize_kstack.h
-index bebc911161b6..8caf980d9044 100644
+index 1468caf001c0..3022077c3101 100644
 --- a/include/linux/randomize_kstack.h
 +++ b/include/linux/randomize_kstack.h
-@@ -36,7 +36,11 @@ void *__builtin_alloca(size_t size);
+@@ -49,7 +49,11 @@ DECLARE_PER_CPU(u32, kstack_offset);
  	if (static_branch_maybe(CONFIG_RANDOMIZE_KSTACK_OFFSET_DEFAULT,	\
  				&randomize_kstack_offset)) {		\
  		u32 offset = raw_cpu_read(kstack_offset);		\
 +		__diag_push() \
-+		__diag_ignore(CLANG, 10, "-Walloca", \
++		__diag_ignore(clang, 10, "-Walloca", \
 +			      "Using alloc is fine here") \
- 		u8 *ptr = __builtin_alloca(KSTACK_OFFSET_MAX(offset));	\
+ 		u8 *ptr = __kstack_alloca(KSTACK_OFFSET_MAX(offset));	\
 +		__diag_pop() \
  		/* Keep allocation even after "ptr" loses scope. */	\
  		asm volatile("" :: "r"(ptr) : "memory");		\

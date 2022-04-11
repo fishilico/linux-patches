@@ -33,6 +33,7 @@ This fixes errors like:
  drivers/clk/ti/adpll.c                       |   3 +-
  drivers/iommu/omap-iommu-debug.c             |   3 +-
  drivers/misc/habanalabs/gaudi/gaudi.c        |  15 +-
+ drivers/mtd/mtdcore.c                        |   6 +-
  drivers/net/appletalk/ipddp.c                |   4 +-
  drivers/net/hamradio/6pack.c                 |   9 +-
  drivers/net/hamradio/baycom_epp.c            |   5 +-
@@ -53,7 +54,7 @@ This fixes errors like:
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
  sound/usb/mixer_scarlett_gen2.c              |  12 +-
- 27 files changed, 179 insertions(+), 271 deletions(-)
+ 28 files changed, 181 insertions(+), 275 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 5e86145db0e2..4b9d13d8bafc 100644
@@ -271,10 +272,10 @@ index a99afb5d9011..60dab42e6538 100644
  		p += bytes;						\
  		len -= bytes;						\
 diff --git a/drivers/misc/habanalabs/gaudi/gaudi.c b/drivers/misc/habanalabs/gaudi/gaudi.c
-index 013c6da2e3ca..b1a0334831ff 100644
+index 21c2b678ff72..32fa1ce9fb6f 100644
 --- a/drivers/misc/habanalabs/gaudi/gaudi.c
 +++ b/drivers/misc/habanalabs/gaudi/gaudi.c
-@@ -8452,9 +8452,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8337,9 +8337,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  					u8 mask_len, struct seq_file *s)
  {
  	struct gaudi_device *gaudi = hdev->asic_specific;
@@ -284,7 +285,7 @@ index 013c6da2e3ca..b1a0334831ff 100644
  	unsigned long *mask = (unsigned long *)mask_arr;
  	u32 qm_glbl_sts0, qm_cgm_sts, dma_core_sts0, tpc_cfg_sts, mme_arch_sts;
  	bool is_idle = true, is_eng_idle, is_slave;
-@@ -8484,7 +8481,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8365,7 +8362,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  		if (mask && !is_eng_idle)
  			set_bit(GAUDI_ENGINE_ID_DMA_0 + dma_id, mask);
  		if (s)
@@ -293,7 +294,7 @@ index 013c6da2e3ca..b1a0334831ff 100644
  				is_eng_idle ? "Y" : "N", qm_glbl_sts0,
  				qm_cgm_sts, dma_core_sts0);
  	}
-@@ -8506,7 +8503,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8387,7 +8384,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  		if (mask && !is_eng_idle)
  			set_bit(GAUDI_ENGINE_ID_TPC_0 + i, mask);
  		if (s)
@@ -302,7 +303,7 @@ index 013c6da2e3ca..b1a0334831ff 100644
  				is_eng_idle ? "Y" : "N",
  				qm_glbl_sts0, qm_cgm_sts, tpc_cfg_sts);
  	}
-@@ -8535,11 +8532,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8416,11 +8413,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  			set_bit(GAUDI_ENGINE_ID_MME_0 + i, mask);
  		if (s) {
  			if (!is_slave)
@@ -316,7 +317,7 @@ index 013c6da2e3ca..b1a0334831ff 100644
  					is_eng_idle ? "Y" : "N", "-",
  					"-", mme_arch_sts);
  		}
-@@ -8561,7 +8558,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8442,7 +8439,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  			if (mask && !is_eng_idle)
  				set_bit(GAUDI_ENGINE_ID_NIC_0 + port, mask);
  			if (s)
@@ -325,7 +326,7 @@ index 013c6da2e3ca..b1a0334831ff 100644
  						is_eng_idle ? "Y" : "N",
  						qm_glbl_sts0, qm_cgm_sts);
  		}
-@@ -8576,7 +8573,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8457,7 +8454,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
  			if (mask && !is_eng_idle)
  				set_bit(GAUDI_ENGINE_ID_NIC_0 + port, mask);
  			if (s)
@@ -334,6 +335,25 @@ index 013c6da2e3ca..b1a0334831ff 100644
  						is_eng_idle ? "Y" : "N",
  						qm_glbl_sts0, qm_cgm_sts);
  		}
+diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+index 7731796024e0..be402d78103d 100644
+--- a/drivers/mtd/mtdcore.c
++++ b/drivers/mtd/mtdcore.c
+@@ -341,12 +341,10 @@ static bool mtd_expert_analysis_mode;
+ #ifdef CONFIG_DEBUG_FS
+ bool mtd_check_expert_analysis_mode(void)
+ {
+-	const char *mtd_expert_analysis_warning =
++	return WARN_ONCE(mtd_expert_analysis_mode,
+ 		"Bad block checks have been entirely disabled.\n"
+ 		"This is only reserved for post-mortem forensics and debug purposes.\n"
+-		"Never enable this mode if you do not know what you are doing!\n";
+-
+-	return WARN_ONCE(mtd_expert_analysis_mode, mtd_expert_analysis_warning);
++		"Never enable this mode if you do not know what you are doing!\n");
+ }
+ EXPORT_SYMBOL_GPL(mtd_check_expert_analysis_mode);
+ #endif
 diff --git a/drivers/net/appletalk/ipddp.c b/drivers/net/appletalk/ipddp.c
 index d558535390f9..7800db94db70 100644
 --- a/drivers/net/appletalk/ipddp.c
@@ -385,7 +405,7 @@ index 45c3c4a1101b..e9296522ae1e 100644
  	return status;
  }
 diff --git a/drivers/net/hamradio/baycom_epp.c b/drivers/net/hamradio/baycom_epp.c
-index eb15f561b2c1..b5b03f4d1a1f 100644
+index 183110f2c265..00af5edd197c 100644
 --- a/drivers/net/hamradio/baycom_epp.c
 +++ b/drivers/net/hamradio/baycom_epp.c
 @@ -49,9 +49,6 @@
@@ -453,7 +473,7 @@ index 982a03488a00..236f5fcec01e 100644
  }
  module_init(z85230_init_driver);
 diff --git a/drivers/net/wireless/realtek/rtw89/debug.c b/drivers/net/wireless/realtek/rtw89/debug.c
-index 22bd1d03e722..35cf763cf5f1 100644
+index b73cc03cecfd..15ac54242561 100644
 --- a/drivers/net/wireless/realtek/rtw89/debug.c
 +++ b/drivers/net/wireless/realtek/rtw89/debug.c
 @@ -466,21 +466,16 @@ static const struct txpwr_map __txpwr_map_lmt_ru = {
@@ -559,7 +579,7 @@ index 4a7536bb0ab3..ee6c84a19367 100644
  		tm.tm_hour, tm.tm_min, tm.tm_sec,
  		tdata->time_stamp.tv_nsec, tdata->host_no,
 diff --git a/drivers/tty/serial/st-asc.c b/drivers/tty/serial/st-asc.c
-index 87e480cc8206..f0c16ff7805b 100644
+index d7fd692286cf..79f923981991 100644
 --- a/drivers/tty/serial/st-asc.c
 +++ b/drivers/tty/serial/st-asc.c
 @@ -975,10 +975,8 @@ static struct platform_driver asc_serial_driver = {
@@ -575,7 +595,7 @@ index 87e480cc8206..f0c16ff7805b 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index c5021ca0a28a..ee013489d771 100644
+index 81749eaddf4c..f70b7fd06b97 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
 @@ -1864,9 +1864,6 @@ static const struct fs_parameter_spec ext4_param_specs[] = {
@@ -588,7 +608,7 @@ index c5021ca0a28a..ee013489d771 100644
  
  #define MOPT_SET	0x0001
  #define MOPT_CLEAR	0x0002
-@@ -2219,7 +2216,10 @@ static int ext4_parse_param(struct fs_context *fc, struct fs_parameter *param)
+@@ -2232,7 +2229,10 @@ static int ext4_parse_param(struct fs_context *fc, struct fs_parameter *param)
  #endif
  	case Opt_noacl:
  	case Opt_nouser_xattr:
@@ -600,8 +620,8 @@ index c5021ca0a28a..ee013489d771 100644
  		break;
  	case Opt_sb:
  		if (fc->purpose == FS_CONTEXT_FOR_RECONFIGURE) {
-@@ -2238,7 +2238,10 @@ static int ext4_parse_param(struct fs_context *fc, struct fs_parameter *param)
- 		ctx_set_mount_flags(ctx, EXT4_MF_FS_ABORTED);
+@@ -2251,7 +2251,10 @@ static int ext4_parse_param(struct fs_context *fc, struct fs_parameter *param)
+ 		ctx_set_mount_flag(ctx, EXT4_MF_FS_ABORTED);
  		return 0;
  	case Opt_i_version:
 -		ext4_msg(NULL, KERN_WARNING, deprecated_msg, param->key, "5.20");
@@ -913,7 +933,7 @@ index 5ae8de09b271..706e6b45c439 100644
  	if (bh_primary)
  		brelse(bh_primary);
 diff --git a/kernel/power/suspend_test.c b/kernel/power/suspend_test.c
-index b146e0d84fc1..98b845558d9a 100644
+index 1b4a66c3c888..93ad22326d9a 100644
 --- a/kernel/power/suspend_test.c
 +++ b/kernel/power/suspend_test.c
 @@ -61,15 +61,6 @@ void suspend_test_finish(const char *label)
@@ -987,12 +1007,12 @@ index b146e0d84fc1..98b845558d9a 100644
  {
  	int i;
 @@ -171,16 +159,13 @@ static int __init setup_test_suspend(char *value)
- 			return 0;
+ 			return 1;
  		}
  
 -	printk(warn_bad_state, suspend_type);
 +	printk(KERN_WARNING "PM: can't test '%s' suspend state\n", suspend_type);
- 	return 0;
+ 	return 1;
  }
  __setup("test_suspend", setup_test_suspend);
  
@@ -1043,7 +1063,7 @@ index 1406bfdbda13..ddd5a00bd483 100644
  	}
  
 diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index fbddf966206b..f7507ebe80b2 100644
+index 9cbc1c8289bc..fc12c34edb46 100644
 --- a/net/core/net-sysfs.c
 +++ b/net/core/net-sysfs.c
 @@ -27,11 +27,6 @@
@@ -1268,10 +1288,10 @@ index dc92a67baea3..e3e2b88cb3a8 100644
  	rc = proto_register(&dn_proto, 1);
  	if (rc != 0)
 diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
-index 26c00ebf4fba..dc335b5494b3 100644
+index 7f555d2e5357..73bc780dc50b 100644
 --- a/net/llc/af_llc.c
 +++ b/net/llc/af_llc.c
-@@ -1216,13 +1216,6 @@ static const struct proto_ops llc_ui_ops = {
+@@ -1233,13 +1233,6 @@ static const struct proto_ops llc_ui_ops = {
  	.sendpage    = sock_no_sendpage,
  };
  
@@ -1285,7 +1305,7 @@ index 26c00ebf4fba..dc335b5494b3 100644
  static int __init llc2_init(void)
  {
  	int rc = proto_register(&llc_proto, 0);
-@@ -1235,17 +1228,17 @@ static int __init llc2_init(void)
+@@ -1252,17 +1245,17 @@ static int __init llc2_init(void)
  	llc_ui_sap_last_autoport = LLC_SAP_DYN_START;
  	rc = llc_proc_init();
  	if (rc != 0) {
@@ -1331,10 +1351,10 @@ index fa49b81eb54c..71a905c061cd 100644
  		}
  	}
 diff --git a/sound/usb/mixer_scarlett_gen2.c b/sound/usb/mixer_scarlett_gen2.c
-index dc803ff3969c..015ce39cdfaa 100644
+index 0550f4e3386c..77fe3bdaa0ed 100644
 --- a/sound/usb/mixer_scarlett_gen2.c
 +++ b/sound/usb/mixer_scarlett_gen2.c
-@@ -3047,12 +3047,10 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
+@@ -3084,12 +3084,10 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
  	const struct scarlett2_device_info *info = private->info;
  	int err, i;
  	char s[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
@@ -1348,7 +1368,7 @@ index dc803ff3969c..015ce39cdfaa 100644
  			 "Level", "Enum");
  		err = scarlett2_add_new_ctl(mixer, &scarlett2_level_enum_ctl,
  					    i, 1, s, &private->level_ctls[i]);
-@@ -3062,7 +3060,7 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
+@@ -3099,7 +3097,7 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
  
  	/* Add input pad controls */
  	for (i = 0; i < info->pad_input_count; i++) {
@@ -1357,7 +1377,7 @@ index dc803ff3969c..015ce39cdfaa 100644
  		err = scarlett2_add_new_ctl(mixer, &scarlett2_pad_ctl,
  					    i, 1, s, &private->pad_ctls[i]);
  		if (err < 0)
-@@ -3071,7 +3069,7 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
+@@ -3108,7 +3106,7 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
  
  	/* Add input air controls */
  	for (i = 0; i < info->air_input_count; i++) {
@@ -1366,7 +1386,7 @@ index dc803ff3969c..015ce39cdfaa 100644
  		err = scarlett2_add_new_ctl(mixer, &scarlett2_air_ctl,
  					    i, 1, s, &private->air_ctls[i]);
  		if (err < 0)
-@@ -3081,7 +3079,7 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
+@@ -3118,7 +3116,7 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
  	/* Add input phantom controls */
  	if (info->inputs_per_phantom == 1) {
  		for (i = 0; i < info->phantom_count; i++) {
@@ -1375,7 +1395,7 @@ index dc803ff3969c..015ce39cdfaa 100644
  				 "Phantom Power", "Switch");
  			err = scarlett2_add_new_ctl(
  				mixer, &scarlett2_phantom_ctl,
-@@ -3094,7 +3092,7 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
+@@ -3131,7 +3129,7 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
  			int from = i * info->inputs_per_phantom + 1;
  			int to = (i + 1) * info->inputs_per_phantom;
  

@@ -6,21 +6,21 @@ Subject: [PATCH] {NOT UPSTREAMABLE} Remove disabled warnings
 Remove disabled warnings in Makefile so we have full control of the
 list of disabled warnings.
 ---
- Makefile                               | 34 +++++++++++++-------------
+ Makefile                               | 30 +++++++++++++-------------
  arch/x86/Makefile                      |  2 +-
- arch/x86/boot/compressed/Makefile      |  6 ++---
- drivers/gpu/drm/i915/Makefile          | 18 +++++++-------
+ arch/x86/boot/compressed/Makefile      |  6 +++---
+ drivers/gpu/drm/i915/Makefile          | 22 +++++++++----------
  drivers/misc/cxl/Makefile              |  2 +-
- drivers/staging/greybus/tools/Makefile |  8 +++++-
- mm/Makefile                            |  4 +--
- scripts/Makefile.extrawarn             | 16 ++++++------
+ drivers/staging/greybus/tools/Makefile |  8 ++++++-
+ mm/Makefile                            |  4 ++--
+ scripts/Makefile.extrawarn             | 16 +++++++-------
  8 files changed, 48 insertions(+), 42 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 7214f075e1f0..6a69c5b1f174 100644
+index 8c7de9a72ea2..c5f89c8b6c15 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -483,7 +483,7 @@ ZSTD		= zstd
+@@ -491,7 +491,7 @@ ZSTD		= zstd
  PAHOLE_FLAGS	= $(shell PAHOLE=$(PAHOLE) $(srctree)/scripts/pahole-flags.sh)
  
  CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
@@ -29,7 +29,7 @@ index 7214f075e1f0..6a69c5b1f174 100644
  NOSTDINC_FLAGS :=
  CFLAGS_MODULE   =
  AFLAGS_MODULE   =
-@@ -511,10 +511,10 @@ LINUXINCLUDE    := \
+@@ -519,10 +519,10 @@ LINUXINCLUDE    := \
  		$(USERINCLUDE)
  
  KBUILD_AFLAGS   := -D__ASSEMBLY__ -fno-PIE
@@ -39,10 +39,10 @@ index 7214f075e1f0..6a69c5b1f174 100644
  		   -Werror=implicit-function-declaration -Werror=implicit-int \
 -		   -Werror=return-type -Wno-format-security \
 +		   -Werror=return-type \
- 		   -std=gnu89
+ 		   -std=gnu11
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
-@@ -738,10 +738,10 @@ endif # may-sync-config
+@@ -747,10 +747,10 @@ endif # may-sync-config
  endif # need-config
  
  KBUILD_CFLAGS	+= -fno-delete-null-pointer-checks
@@ -57,16 +57,16 @@ index 7214f075e1f0..6a69c5b1f174 100644
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
  KBUILD_CFLAGS += -O2
-@@ -783,7 +783,7 @@ KBUILD_CFLAGS += $(KBUILD_CFLAGS-y) $(CONFIG_CC_IMPLICIT_FALLTHROUGH)
+@@ -792,7 +792,7 @@ KBUILD_CFLAGS += $(KBUILD_CFLAGS-y) $(CONFIG_CC_IMPLICIT_FALLTHROUGH)
  ifdef CONFIG_CC_IS_CLANG
  KBUILD_CPPFLAGS += -Qunused-arguments
- # The kernel builds with '-std=gnu89' so use of GNU extensions is acceptable.
+ # The kernel builds with '-std=gnu11' so use of GNU extensions is acceptable.
 -KBUILD_CFLAGS += -Wno-gnu
 +#KBUILD_CFLAGS += -Wno-gnu
- # CLANG uses a _MergedGlobals as optimization, but this breaks modpost, as the
- # source of a reference will be _MergedGlobals and not on of the whitelisted names.
- # See modpost pattern 2
-@@ -796,8 +796,8 @@ endif
+ else
+ 
+ # gcc inanely warns about local variables called 'main'
+@@ -801,8 +801,8 @@ endif
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
@@ -77,7 +77,7 @@ index 7214f075e1f0..6a69c5b1f174 100644
  
  ifdef CONFIG_FRAME_POINTER
  KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
-@@ -940,7 +940,7 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
+@@ -945,7 +945,7 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
  KBUILD_CFLAGS += -Wvla
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -86,7 +86,7 @@ index 7214f075e1f0..6a69c5b1f174 100644
  
  # In order to make sure new function cast mismatches are not introduced
  # in the kernel (to avoid tripping CFI checking), the kernel should be
-@@ -948,19 +948,19 @@ KBUILD_CFLAGS += -Wno-pointer-sign
+@@ -953,17 +953,17 @@ KBUILD_CFLAGS += -Wno-pointer-sign
  KBUILD_CFLAGS += $(call cc-option, -Wcast-function-type)
  
  # disable stringop warnings in gcc 8+
@@ -94,11 +94,7 @@ index 7214f075e1f0..6a69c5b1f174 100644
 +#KBUILD_CFLAGS += $(call cc-disable-warning, stringop-truncation)
  
  # We'll want to enable this eventually, but it's not going away for 5.7 at least
--KBUILD_CFLAGS += $(call cc-disable-warning, zero-length-bounds)
--KBUILD_CFLAGS += -Wno-array-bounds
 -KBUILD_CFLAGS += $(call cc-disable-warning, stringop-overflow)
-+#KBUILD_CFLAGS += $(call cc-disable-warning, zero-length-bounds)
-+#KBUILD_CFLAGS += -Wno-array-bounds
 +#KBUILD_CFLAGS += $(call cc-disable-warning, stringop-overflow)
  
  # Another good warning that we'll want to enable eventually
@@ -113,10 +109,10 @@ index 7214f075e1f0..6a69c5b1f174 100644
  
  ifdef CONFIG_CC_IS_GCC
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index e84cdd409b64..cc367a7ad3a8 100644
+index 63d50f65b828..2fec362fa65a 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
-@@ -173,7 +173,7 @@ ifeq ($(ACCUMULATE_OUTGOING_ARGS), 1)
+@@ -169,7 +169,7 @@ ifeq ($(ACCUMULATE_OUTGOING_ARGS), 1)
  endif
  
  # Workaround for a gcc prelease that unfortunately was shipped in a suse release
@@ -143,25 +139,29 @@ index 6115274fe10f..5458149739d9 100644
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  KBUILD_CFLAGS += -D__DISABLE_EXPORTS
 diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
-index 1b62b9f65196..724ef75833ea 100644
+index 7df74a71d454..81bd7ca25882 100644
 --- a/drivers/gpu/drm/i915/Makefile
 +++ b/drivers/gpu/drm/i915/Makefile
-@@ -12,18 +12,18 @@
+@@ -12,20 +12,20 @@
  # Note the danger in using -Wall -Wextra is that when CI updates gcc we
  # will most likely get a sudden build breakage... Hopefully we will fix
  # new warnings before CI updates!
 -subdir-ccflags-y := -Wall -Wextra
+-subdir-ccflags-y += -Wno-format-security
 -subdir-ccflags-y += -Wno-unused-parameter
 -subdir-ccflags-y += -Wno-type-limits
 -subdir-ccflags-y += -Wno-missing-field-initializers
 -subdir-ccflags-y += -Wno-sign-compare
+-subdir-ccflags-y += -Wno-shift-negative-value
 -subdir-ccflags-y += $(call cc-disable-warning, unused-but-set-variable)
 -subdir-ccflags-y += $(call cc-disable-warning, frame-address)
 +#subdir-ccflags-y := -Wall -Wextra
++#subdir-ccflags-y += -Wno-format-security
 +#subdir-ccflags-y += -Wno-unused-parameter
 +#subdir-ccflags-y += -Wno-type-limits
 +#subdir-ccflags-y += -Wno-missing-field-initializers
 +#subdir-ccflags-y += -Wno-sign-compare
++#subdir-ccflags-y += -Wno-shift-negative-value
 +#subdir-ccflags-y += $(call cc-disable-warning, unused-but-set-variable)
 +#subdir-ccflags-y += $(call cc-disable-warning, frame-address)
  subdir-ccflags-$(CONFIG_DRM_I915_WERROR) += -Werror
@@ -186,7 +186,7 @@ index 5eea61b9584f..70b26dc7d8c3 100644
  
  cxl-y				+= main.o file.o irq.o fault.o native.o
 diff --git a/drivers/staging/greybus/tools/Makefile b/drivers/staging/greybus/tools/Makefile
-index ad0ae8053b79..8da8cbb7c72a 100644
+index a3bbd73171f2..931109e05021 100644
 --- a/drivers/staging/greybus/tools/Makefile
 +++ b/drivers/staging/greybus/tools/Makefile
 @@ -5,7 +5,7 @@ else
@@ -198,10 +198,10 @@ index ad0ae8053b79..8da8cbb7c72a 100644
  	    -D_GNU_SOURCE \
  	    -Wno-unused-parameter \
  	    -Wmaybe-uninitialized \
-@@ -13,6 +13,12 @@ CFLAGS	+= -std=gnu99 -Wall -Wextra -g \
- 	    -Wcast-align \
+@@ -14,6 +14,12 @@ CFLAGS	+= -std=gnu99 -Wall -Wextra -g \
  	    -Wsign-compare \
- 	    -Wno-missing-field-initializers
+ 	    -Wno-missing-field-initializers \
+ 	    -Wno-shift-negative-value
 +CFLAGS	+= -std=gnu99 -Wall -Wextra -g \
 +	    -D_GNU_SOURCE \
 +	    -Wmaybe-uninitialized \
@@ -212,7 +212,7 @@ index ad0ae8053b79..8da8cbb7c72a 100644
  CC	:= $(CROSS_COMPILE)gcc
  
 diff --git a/mm/Makefile b/mm/Makefile
-index 70d4309c9ce3..494657edb631 100644
+index 4cc13f3179a5..3e62959c2162 100644
 --- a/mm/Makefile
 +++ b/mm/Makefile
 @@ -33,8 +33,8 @@ KCOV_INSTRUMENT_mmzone.o := n
@@ -227,7 +227,7 @@ index 70d4309c9ce3..494657edb631 100644
  mmu-y			:= nommu.o
  mmu-$(CONFIG_MMU)	:= highmem.o memory.o mincore.o \
 diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
-index 8be892887d71..ed5921e8cd56 100644
+index 650d0b8ceec3..b1042f125153 100644
 --- a/scripts/Makefile.extrawarn
 +++ b/scripts/Makefile.extrawarn
 @@ -6,7 +6,7 @@
@@ -239,7 +239,7 @@ index 8be892887d71..ed5921e8cd56 100644
  
  # backward compatibility
  KBUILD_EXTRA_WARN ?= $(KBUILD_ENABLE_EXTRA_GCC_CHECKS)
-@@ -45,13 +45,13 @@ else
+@@ -46,13 +46,13 @@ else
  # Suppress them by using -Wno... except for W=1.
  
  ifdef CONFIG_CC_IS_CLANG

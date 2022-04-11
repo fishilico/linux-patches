@@ -9,7 +9,6 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  drivers/clk/clkdev.c               |  7 ++++---
  drivers/isdn/capi/capiutil.c       |  4 ++--
  drivers/scsi/esas2r/esas2r_log.c   |  8 ++++----
- drivers/staging/fbtft/fbtft.h      |  2 +-
  drivers/xen/xenbus/xenbus_client.c | 10 ++++++----
  include/acpi/acpiosxf.h            |  2 +-
  include/linux/trace_events.h       |  3 ++-
@@ -20,7 +19,7 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  scripts/unifdef.c                  |  2 +-
  security/tomoyo/common.c           |  3 ++-
  security/tomoyo/common.h           |  4 ++--
- 16 files changed, 37 insertions(+), 31 deletions(-)
+ 15 files changed, 36 insertions(+), 30 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
 index a3725ad46c5a..04616745d029 100644
@@ -122,19 +121,6 @@ index d6c87a0bae09..1672c52f855d 100644
  {
  	if (level <= event_log_level) {
  		unsigned long flags = 0;
-diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index 55677efc0138..91cd0a3ffdcd 100644
---- a/drivers/staging/fbtft/fbtft.h
-+++ b/drivers/staging/fbtft/fbtft.h
-@@ -240,7 +240,7 @@ struct fbtft_par {
- int fbtft_write_buf_dc(struct fbtft_par *par, void *buf, size_t len, int dc);
- __printf(5, 6)
- void fbtft_dbg_hex(const struct device *dev, int groupsize,
--		   void *buf, size_t len, const char *fmt, ...);
-+		   void *buf, size_t len, const char *fmt, ...) __printf(5, 6);
- struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 					struct device *dev,
- 					struct fbtft_platform_data *pdata);
 diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
 index df6890681231..0ae073974af1 100644
 --- a/drivers/xen/xenbus/xenbus_client.c
@@ -177,10 +163,10 @@ index 690c369b717a..2937a801eacf 100644
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index dcea51fb60e2..c097c98dc529 100644
+index e6e95a9f07a5..ef587a24e9c3 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
-@@ -233,7 +233,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
+@@ -234,7 +234,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
  void tracing_record_cmdline(struct task_struct *task);
  void tracing_record_tgid(struct task_struct *task);
  
@@ -206,7 +192,7 @@ index 7690c29d4ee4..b814faef2edf 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index c5b09c31e077..afbc4134ad95 100644
+index 07d990270e2a..c7b946a9fe46 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
 @@ -770,11 +770,11 @@ static inline void __init disable_tracing_selftest(const char *reason)
@@ -275,10 +261,10 @@ index db00e3e30a59..67d4e1b13f3d 100644
  {
  	va_list ap;
 diff --git a/security/tomoyo/common.c b/security/tomoyo/common.c
-index 5c64927bf2b3..f13541979038 100644
+index ff17abc96e5c..d7dc753900ab 100644
 --- a/security/tomoyo/common.c
 +++ b/security/tomoyo/common.c
-@@ -193,7 +193,8 @@ const char *tomoyo_yesno(const unsigned int value)
+@@ -184,7 +184,8 @@ static bool tomoyo_manage_by_non_root;
   *
   * Returns nothing.
   */
@@ -289,7 +275,7 @@ index 5c64927bf2b3..f13541979038 100644
  	va_list args;
  	const int pos = strlen(buffer);
 diff --git a/security/tomoyo/common.h b/security/tomoyo/common.h
-index 85246b9df7ca..c77bc210e57b 100644
+index ca285f362705..cafcd6096268 100644
 --- a/security/tomoyo/common.h
 +++ b/security/tomoyo/common.h
 @@ -954,7 +954,7 @@ bool tomoyo_str_starts(char **src, const char *find);
@@ -301,7 +287,7 @@ index 85246b9df7ca..c77bc210e57b 100644
  char *tomoyo_read_token(struct tomoyo_acl_param *param);
  char *tomoyo_realpath_from_path(const struct path *path);
  char *tomoyo_realpath_nofollow(const char *pathname);
-@@ -1068,7 +1068,7 @@ void tomoyo_warn_oom(const char *function);
+@@ -1067,7 +1067,7 @@ void tomoyo_warn_oom(const char *function);
  void tomoyo_write_log(struct tomoyo_request_info *r, const char *fmt, ...)
  	__printf(2, 3);
  void tomoyo_write_log2(struct tomoyo_request_info *r, int len, const char *fmt,

@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 26 Mar 2022 18:51:27 +0100
+Subject: [PATCH] {BUG in 5.18-rc1} drivers/md/dm-clone-target: use %pg to
+ format block_device
+
+%pd is used for a dentry name, not a block_device name!
+
+Found with printk format checker.
+---
+ drivers/md/dm-clone-target.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/md/dm-clone-target.c b/drivers/md/dm-clone-target.c
+index 128316a73d01..460eda45b1c9 100644
+--- a/drivers/md/dm-clone-target.c
++++ b/drivers/md/dm-clone-target.c
+@@ -2042,7 +2042,7 @@ static void disable_passdown_if_not_supported(struct clone *clone)
+ 		reason = "max discard sectors smaller than a region";
+ 
+ 	if (reason) {
+-		DMWARN("Destination device (%pd) %s: Disabling discard passdown.",
++		DMWARN("Destination device (%pg) %s: Disabling discard passdown.",
+ 		       dest_dev, reason);
+ 		clear_bit(DM_CLONE_DISCARD_PASSDOWN, &clone->flags);
+ 	}
+-- 

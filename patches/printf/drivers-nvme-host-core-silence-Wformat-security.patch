@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 26 Mar 2022 18:47:35 +0100
+Subject: [PATCH] {PRINTF} drivers/nvme/host/core: silence -Wformat-security
+ with "%s"
+
+---
+ drivers/nvme/host/core.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
+index efb85c6d8e2d..929bd8d85126 100644
+--- a/drivers/nvme/host/core.c
++++ b/drivers/nvme/host/core.c
+@@ -3510,7 +3510,7 @@ static ssize_t cntrltype_show(struct device *dev,
+ 	if (ctrl->cntrltype > NVME_CTRL_ADMIN || !type[ctrl->cntrltype])
+ 		return sysfs_emit(buf, "reserved\n");
+ 
+-	return sysfs_emit(buf, type[ctrl->cntrltype]);
++	return sysfs_emit(buf, "%s", type[ctrl->cntrltype]);
+ }
+ static DEVICE_ATTR_RO(cntrltype);
+ 
+@@ -3527,7 +3527,7 @@ static ssize_t dctype_show(struct device *dev,
+ 	if (ctrl->dctype > NVME_DCTYPE_CDC || !type[ctrl->dctype])
+ 		return sysfs_emit(buf, "reserved\n");
+ 
+-	return sysfs_emit(buf, type[ctrl->dctype]);
++	return sysfs_emit(buf, "%s", type[ctrl->dctype]);
+ }
+ static DEVICE_ATTR_RO(dctype);
+ 
+-- 

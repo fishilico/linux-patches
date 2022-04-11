@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 28 Mar 2022 21:49:23 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/usb/core/usb-acpi: fix pointer depth
+
+Deref checker plugin warns about a parent_handle being void**
+---
+ drivers/usb/core/usb-acpi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/core/usb-acpi.c b/drivers/usb/core/usb-acpi.c
+index bb1da35eb891..065d4a5b9a5b 100644
+--- a/drivers/usb/core/usb-acpi.c
++++ b/drivers/usb/core/usb-acpi.c
+@@ -145,7 +145,7 @@ usb_acpi_get_companion_for_port(struct usb_port *port_dev)
+ {
+ 	struct usb_device *udev;
+ 	struct acpi_device *adev;
+-	acpi_handle *parent_handle;
++	acpi_handle parent_handle;
+ 	int port1;
+ 
+ 	/* Get the struct usb_device point of port's hub */
+-- 

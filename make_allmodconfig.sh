@@ -144,6 +144,7 @@ disable_in_kcflags 'pointer-arith' # Linux does arithmetic on void pointers
 disable_in_kcflags 'pointer-sign' # Many functions implicitly cast pointers of different signedness
 disable_in_kcflags 'redundant-decls' # Some headers redefine things
 disable_in_kcflags 'shadow' # The kernel redefines built-in functions like ffs
+disable_in_kcflags 'shift-negative-value' # Shifted negative numbers are like unsigned for Linux
 disable_in_kcflags 'sign-compare' # There are many comparaisons between signed and unsigned integers
 disable_in_kcflags 'trigraphs' # Ignore trigraphs like "??)"
 disable_in_kcflags 'type-limits' # Unsigned integers >= 0
@@ -197,7 +198,6 @@ then
     disable_in_kcflags 'redundant-parens' # Some macros expand with redundant parentheses
     disable_in_kcflags 'reserved-id-macro' # Linux uses macros beginning with underscore
     disable_in_kcflags 'reserved-identifier'
-    disable_in_kcflags 'shift-negative-value' # Shifted negative numbers are like unsigned for Linux
     disable_in_kcflags 'string-concatenation' # Some drivers concatenate strings to make them pretty
     disable_in_kcflags 'switch-bool' # It happens that bool are used in switch statements
     disable_in_kcflags 'switch-enum' # Show values in switch on enum can be skipped
@@ -470,6 +470,7 @@ then
         echo 'CONFIG_STACKPROTECTOR_PER_TASK=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_XEN_PCIDEV_STUB=m' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_USB_XEN_HCD=m' >> "$KBUILD_OUTPUT/.config"
+        echo '# CONFIG_PROVE_NVDIMM_LOCKING is not set' >> "$KBUILD_OUTPUT/.config"
     fi
 
     # Merge options

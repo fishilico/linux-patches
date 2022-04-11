@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 26 Mar 2022 18:19:40 +0100
+Subject: [PATCH] {PRINTF} drivers/net/ethernet/fungible/funeth: silence
+ -Wformat-security with "%s"
+
+---
+ drivers/net/ethernet/fungible/funeth/funeth_ethtool.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c b/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
+index d081168c95fa..7119299914fc 100644
+--- a/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
++++ b/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
+@@ -654,7 +654,7 @@ static void fun_get_strings(struct net_device *netdev, u32 sset, u8 *data)
+ 						i);
+ 		}
+ 		for (j = 0; j < ARRAY_SIZE(txq_stat_names); j++)
+-			ethtool_sprintf(&p, txq_stat_names[j]);
++			ethtool_sprintf(&p, "%s", txq_stat_names[j]);
+ 
+ 		for (i = 0; i < fp->num_xdpqs; i++) {
+ 			for (j = 0; j < ARRAY_SIZE(xdpq_stat_names); j++)
+@@ -662,7 +662,7 @@ static void fun_get_strings(struct net_device *netdev, u32 sset, u8 *data)
+ 						xdpq_stat_names[j], i);
+ 		}
+ 		for (j = 0; j < ARRAY_SIZE(xdpq_stat_names); j++)
+-			ethtool_sprintf(&p, xdpq_stat_names[j]);
++			ethtool_sprintf(&p, "%s", xdpq_stat_names[j]);
+ 
+ 		for (i = 0; i < netdev->real_num_rx_queues; i++) {
+ 			for (j = 0; j < ARRAY_SIZE(rxq_stat_names); j++)
+@@ -670,10 +670,10 @@ static void fun_get_strings(struct net_device *netdev, u32 sset, u8 *data)
+ 						i);
+ 		}
+ 		for (j = 0; j < ARRAY_SIZE(rxq_stat_names); j++)
+-			ethtool_sprintf(&p, rxq_stat_names[j]);
++			ethtool_sprintf(&p, "%s", rxq_stat_names[j]);
+ 
+ 		for (j = 0; j < ARRAY_SIZE(tls_stat_names); j++)
+-			ethtool_sprintf(&p, tls_stat_names[j]);
++			ethtool_sprintf(&p, "%s", tls_stat_names[j]);
+ 		break;
+ 	default:
+ 		break;
+-- 

@@ -14,13 +14,13 @@ It has also detected some bugs reported and fixed by other people:
 ---
  scripts/Makefile.gcc-plugins                  |   2 +
  scripts/gcc-plugins/Kconfig                   |   6 +
- scripts/gcc-plugins/string_ncmp_size_plugin.c | 240 ++++++++++++++++++
+ scripts/gcc-plugins/string_ncmp_size_plugin.c | 241 ++++++++++++++++++
  sound/soc/intel/boards/bxt_rt298.c            |   9 +-
- 4 files changed, 251 insertions(+), 6 deletions(-)
+ 4 files changed, 252 insertions(+), 6 deletions(-)
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index aa80c5f4c02b..5f84f62eb7d1 100644
+index 46f3a2080f64..60256a73a627 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
 @@ -15,6 +15,8 @@ endif
@@ -49,12 +49,12 @@ index 75fd83019bee..12b191085497 100644
  endif
 diff --git a/scripts/gcc-plugins/string_ncmp_size_plugin.c b/scripts/gcc-plugins/string_ncmp_size_plugin.c
 new file mode 100644
-index 000000000000..7547e3930449
+index 000000000000..7fac3e1508f8
 --- /dev/null
 +++ b/scripts/gcc-plugins/string_ncmp_size_plugin.c
-@@ -0,0 +1,240 @@
+@@ -0,0 +1,241 @@
 +/*
-+ * Copyright 2016-2018 by Nicolas Iooss
++ * Copyright 2016-2022 by Nicolas Iooss
 + * Licensed under the GPL v2, or (at your option) v3
 + *
 + * Check that calls like strncmp(x, "test", 4) are consistent in that the size
@@ -66,8 +66,8 @@ index 000000000000..7547e3930449
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info string_ncmp_size_plugin_info = {
-+	.version	= "20220115",
-+	.help		= "String n-copy functions size checker\n",
++	.version	= "20220410",
++	.help		= "String n-copy/compare functions size checker\n",
 +};
 +
 +/**
@@ -153,6 +153,7 @@ index 000000000000..7547e3930449
 +		     identifier_is(fnident, "stackdepot_memcmp"));
 +	is_strncmp = (identifier_is(fnident, "strncmp") ||
 +		      identifier_is(fnident, "ucs2_strncmp"));
++	/* TODO: properly check strncpy and strscpy */
 +	if (!is_memcmp && !is_strncmp) {
 +		/* Check that it is not a function which would be interesting
 +		 * Here is the list of known functions which are not.
@@ -294,7 +295,7 @@ index 000000000000..7547e3930449
 +	return 0;
 +}
 diff --git a/sound/soc/intel/boards/bxt_rt298.c b/sound/soc/intel/boards/bxt_rt298.c
-index 920e575b4314..92acf83f28d8 100644
+index 05e833076499..e841940b4c8f 100644
 --- a/sound/soc/intel/boards/bxt_rt298.c
 +++ b/sound/soc/intel/boards/bxt_rt298.c
 @@ -605,14 +605,11 @@ static int broxton_audio_probe(struct platform_device *pdev)

@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 27 Mar 2022 21:38:53 +0200
+Subject: [PATCH] {MAYBE UPS} include/linux/fortify-string: do not report
+ errors with flexible arrays in struct
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+    static inline void *akcipher_tfm_ctx(struct crypto_akcipher *tfm)
+    {
+            return tfm->base.__crt_ctx;
+    }
+
+    struct crypto_tfm {
+
+            u32 crt_flags;
+
+            int node;
+
+            void (*exit)(struct crypto_tfm *tfm);
+
+            struct crypto_alg *__crt_alg;
+
+            void *__crt_ctx[] CRYPTO_MINALIGN_ATTR;
+    };
+
+This pattern makes gcc (on x86-64) warns on allmodconfig+warnings:
+
+    In function ‘fortify_memcpy_chk’,
+        inlined from ‘curve25519_set_secret’ at arch/x86/crypto/curve25519-x86_64.c:1624:3:
+    include/linux/fortify-string.h:328:25: error: call to
+    ‘__write_overflow_field’ declared with attribute warning: detected
+    write beyond size of field (1st parameter); maybe use struct_group()?
+    [-Werror=attribute-warning]
+      328 |                         __write_overflow_field(p_size_field, size);
+          |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Silence this by detecting when p_size_field is zero.
+---
+ include/linux/fortify-string.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/fortify-string.h b/include/linux/fortify-string.h
+index c658a4b2e00f..46c14a813d8a 100644
+--- a/include/linux/fortify-string.h
++++ b/include/linux/fortify-string.h
+@@ -238,7 +238,7 @@ __FORTIFY_INLINE void fortify_memset_chk(__kernel_size_t size,
+ 			__write_overflow();
+ 
+ 		/* Warn when write size is larger than dest field. */
+-		if (p_size_field < size)
++		if (p_size_field != 0 && p_size_field < size)
+ 			__write_overflow_field(p_size_field, size);
+ 	}
+ 	/*
+@@ -324,7 +324,7 @@ __FORTIFY_INLINE void fortify_memcpy_chk(__kernel_size_t size,
+ 			__read_overflow2();
+ 
+ 		/* Warn when write size argument larger than dest field. */
+-		if (p_size_field < size)
++		if (p_size_field != 0 && p_size_field < size)
+ 			__write_overflow_field(p_size_field, size);
+ 		/*
+ 		 * Warn for source field over-read when building with W=1
+-- 

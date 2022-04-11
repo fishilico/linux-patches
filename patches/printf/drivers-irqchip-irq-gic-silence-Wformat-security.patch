@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 27 Mar 2022 11:39:19 +0200
+Subject: [PATCH] {PRINTF} drivers/irqchip/irq-gic: silence -Wformat-security
+ with "%s"
+
+---
+ drivers/irqchip/irq-gic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/irqchip/irq-gic.c b/drivers/irqchip/irq-gic.c
+index 58ba835bee1f..0e261a1ca899 100644
+--- a/drivers/irqchip/irq-gic.c
++++ b/drivers/irqchip/irq-gic.c
+@@ -402,7 +402,7 @@ static void gic_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 	struct gic_chip_data *gic = irq_data_get_irq_chip_data(d);
+ 
+ 	if (gic->domain->dev)
+-		seq_printf(p, gic->domain->dev->of_node->name);
++		seq_printf(p, "%s", gic->domain->dev->of_node->name);
+ 	else
+ 		seq_printf(p, "GIC-%d", (int)(gic - &gic_data[0]));
+ }
+-- 

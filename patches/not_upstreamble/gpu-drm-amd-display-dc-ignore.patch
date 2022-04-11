@@ -7,16 +7,14 @@ Subject: [PATCH] {NOT UPSTREAMABLE} gpu/drm/amd/display/dc: ignore
 There are float equalities in these files.
 And clang reports issues about double promotions.
 ---
- drivers/gpu/drm/amd/amdgpu/Makefile           |  2 ++
- drivers/gpu/drm/amd/display/dc/calcs/Makefile |  6 +++---
- drivers/gpu/drm/amd/display/dc/dcn20/Makefile |  4 ++--
- drivers/gpu/drm/amd/display/dc/dml/Makefile   | 16 ++++++++--------
- drivers/gpu/drm/msm/Makefile                  |  2 ++
- drivers/media/pci/cx88/cx88-dsp.c             |  8 ++++++++
- 6 files changed, 25 insertions(+), 13 deletions(-)
+ drivers/gpu/drm/amd/amdgpu/Makefile         |  2 ++
+ drivers/gpu/drm/amd/display/dc/dml/Makefile | 16 ++++++++--------
+ drivers/gpu/drm/msm/Makefile                |  2 ++
+ drivers/media/pci/cx88/cx88-dsp.c           |  8 ++++++++
+ 4 files changed, 20 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/amdgpu/Makefile b/drivers/gpu/drm/amd/amdgpu/Makefile
-index 7fedbb725e17..d48eef033ea6 100644
+index 40e2c6e2df79..2eb69170c341 100644
 --- a/drivers/gpu/drm/amd/amdgpu/Makefile
 +++ b/drivers/gpu/drm/amd/amdgpu/Makefile
 @@ -38,6 +38,8 @@ ccflags-y := -I$(FULL_AMD_PATH)/include/asic_reg \
@@ -28,49 +26,17 @@ index 7fedbb725e17..d48eef033ea6 100644
  amdgpu-y := amdgpu_drv.o
  
  # add KMS driver
-diff --git a/drivers/gpu/drm/amd/display/dc/calcs/Makefile b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-index f3c00f479e1c..58b7243f206f 100644
---- a/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-+++ b/drivers/gpu/drm/amd/display/dc/calcs/Makefile
-@@ -50,9 +50,9 @@ calcs_ccflags += -msse2
- endif
- endif
- 
--CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calcs.o := $(calcs_ccflags)
--CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_auto.o := $(calcs_ccflags)
--CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_math.o := $(calcs_ccflags) -Wno-tautological-compare
-+CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calcs.o := $(calcs_ccflags) -Wno-float-equal
-+CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_auto.o := $(calcs_ccflags) -Wno-float-equal
-+CFLAGS_$(AMDDALPATH)/dc/calcs/dcn_calc_math.o := $(calcs_ccflags) -Wno-tautological-compare -Wno-float-equal
- CFLAGS_REMOVE_$(AMDDALPATH)/dc/calcs/dcn_calcs.o := $(calcs_rcflags)
- CFLAGS_REMOVE_$(AMDDALPATH)/dc/calcs/dcn_calc_auto.o := $(calcs_rcflags)
- CFLAGS_REMOVE_$(AMDDALPATH)/dc/calcs/dcn_calc_math.o := $(calcs_rcflags)
-diff --git a/drivers/gpu/drm/amd/display/dc/dcn20/Makefile b/drivers/gpu/drm/amd/display/dc/dcn20/Makefile
-index 5fcaf78334ff..24ecb4e804e5 100644
---- a/drivers/gpu/drm/amd/display/dc/dcn20/Makefile
-+++ b/drivers/gpu/drm/amd/display/dc/dcn20/Makefile
-@@ -28,9 +28,9 @@ ifdef IS_OLD_GCC
- # Stack alignment mismatch, proceed with caution.
- # GCC < 7.1 cannot compile code using `double` and -mpreferred-stack-boundary=3
- # (8B stack alignment).
--CFLAGS_$(AMDDALPATH)/dc/dcn20/dcn20_resource.o += -mpreferred-stack-boundary=4
-+CFLAGS_$(AMDDALPATH)/dc/dcn20/dcn20_resource.o += -mpreferred-stack-boundary=4 -Wno-float-equal
- else
--CFLAGS_$(AMDDALPATH)/dc/dcn20/dcn20_resource.o += -msse2
-+CFLAGS_$(AMDDALPATH)/dc/dcn20/dcn20_resource.o += -msse2 -Wno-float-equal
- endif
- endif
- 
 diff --git a/drivers/gpu/drm/amd/display/dc/dml/Makefile b/drivers/gpu/drm/amd/display/dc/dml/Makefile
-index eee6672bd32d..032e2ad46699 100644
+index 28978ce62f87..4b8d2c25f87d 100644
 --- a/drivers/gpu/drm/amd/display/dc/dml/Makefile
 +++ b/drivers/gpu/drm/amd/display/dc/dml/Makefile
-@@ -57,19 +57,19 @@ endif
+@@ -57,20 +57,20 @@ endif
  CFLAGS_$(AMDDALPATH)/dc/dml/display_mode_lib.o := $(dml_ccflags)
  
  ifdef CONFIG_DRM_AMD_DC_DCN
 -CFLAGS_$(AMDDALPATH)/dc/dml/display_mode_vba.o := $(dml_ccflags)
 +CFLAGS_$(AMDDALPATH)/dc/dml/display_mode_vba.o := $(dml_ccflags) -Wno-float-equal
+ CFLAGS_$(AMDDALPATH)/dc/dml/dcn10/dcn10_fpu.o := $(dml_ccflags)
  CFLAGS_$(AMDDALPATH)/dc/dml/dcn20/dcn20_fpu.o := $(dml_ccflags)
 -CFLAGS_$(AMDDALPATH)/dc/dml/dcn20/display_mode_vba_20.o := $(dml_ccflags)
 +CFLAGS_$(AMDDALPATH)/dc/dml/dcn20/display_mode_vba_20.o := $(dml_ccflags) -Wno-float-equal
@@ -90,9 +56,9 @@ index eee6672bd32d..032e2ad46699 100644
 +CFLAGS_$(AMDDALPATH)/dc/dml/dcn31/display_mode_vba_31.o := $(dml_ccflags) $(frame_warn_flag) -Wno-float-equal
 +CFLAGS_$(AMDDALPATH)/dc/dml/dcn31/display_rq_dlg_calc_31.o := $(dml_ccflags) -Wno-double-promotion
  CFLAGS_$(AMDDALPATH)/dc/dml/dcn301/dcn301_fpu.o := $(dml_ccflags)
- CFLAGS_$(AMDDALPATH)/dc/dml/dsc/rc_calc_fpu.o := $(dml_ccflags)
- CFLAGS_$(AMDDALPATH)/dc/dml/display_mode_lib.o := $(dml_ccflags)
-@@ -89,7 +89,7 @@ CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/dcn301/dcn301_fpu.o := $(dml_rcflags)
+ CFLAGS_$(AMDDALPATH)/dc/dml/dcn302/dcn302_fpu.o := $(dml_ccflags)
+ CFLAGS_$(AMDDALPATH)/dc/dml/dcn303/dcn303_fpu.o := $(dml_ccflags)
+@@ -95,7 +95,7 @@ CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/dcn301/dcn301_fpu.o := $(dml_rcflags)
  CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/display_mode_lib.o := $(dml_rcflags)
  CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/dsc/rc_calc_fpu.o  := $(dml_rcflags)
  endif
@@ -102,7 +68,7 @@ index eee6672bd32d..032e2ad46699 100644
  CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/dml1_display_rq_dlg_calc.o := $(dml_rcflags)
  CFLAGS_REMOVE_$(AMDDALPATH)/dc/dml/display_rq_dlg_helpers.o := $(dml_rcflags)
 diff --git a/drivers/gpu/drm/msm/Makefile b/drivers/gpu/drm/msm/Makefile
-index 03ab55c37beb..4a30c6b1689e 100644
+index e9cc7d8ac301..0d77e3588583 100644
 --- a/drivers/gpu/drm/msm/Makefile
 +++ b/drivers/gpu/drm/msm/Makefile
 @@ -4,6 +4,8 @@ ccflags-y += -I $(srctree)/$(src)/disp/dpu1

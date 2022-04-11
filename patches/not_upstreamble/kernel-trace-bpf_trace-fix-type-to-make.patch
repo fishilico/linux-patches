@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 10 Apr 2022 16:21:06 +0200
+Subject: [PATCH] {NOT UPSTREAMABLE} kernel/trace/bpf_trace: fix type, to make
+ pointer deref checker happy
+
+---
+ kernel/trace/bpf_trace.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
+index 22af0cfea404..d34e5138d040 100644
+--- a/kernel/trace/bpf_trace.c
++++ b/kernel/trace/bpf_trace.c
+@@ -2361,7 +2361,7 @@ kprobe_multi_link_handler(struct fprobe *fp, unsigned long entry_ip,
+ }
+ 
+ static int
+-kprobe_multi_resolve_syms(const void *usyms, u32 cnt,
++kprobe_multi_resolve_syms(const char *__user const *usyms, u32 cnt,
+ 			  unsigned long *addrs)
+ {
+ 	unsigned long addr, size;
+@@ -2418,7 +2418,7 @@ int bpf_kprobe_multi_link_attach(const union bpf_attr *attr, struct bpf_prog *pr
+ 	u32 flags, cnt, size;
+ 	void __user *uaddrs;
+ 	u64 *cookies = NULL;
+-	void __user *usyms;
++	const char *__user const *usyms;
+ 	int err;
+ 
+ 	/* no support for 32bit archs yet */
+-- 

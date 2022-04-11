@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 26 Mar 2022 18:44:18 +0100
+Subject: [PATCH] {BUG in 5.18-rc1} kernel/trace/trace_events_user: prevent
+ printf format injection with "%s"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This issue could be exploitable? gcc on x86-64 reports:
+
+    kernel/trace/trace_events_user.c: In function ‘user_field_match’:
+    kernel/trace/trace_events_user.c:1010:17: error: format not a string
+    literal and no format arguments [-Werror=format-security]
+     1010 |                 pos += snprintf(arg_name + pos, len - pos, argv[i]);
+          |                 ^~~
+    kernel/trace/trace_events_user.c:1021:9: error: format not a string
+    literal and no format arguments [-Werror=format-security]
+     1021 |         pos += snprintf(field_name + pos, len - pos, field->type);
+          |         ^~~
+    kernel/trace/trace_events_user.c:1023:9: error: format not a string
+    literal and no format arguments [-Werror=format-security]
+     1023 |         pos += snprintf(field_name + pos, len - pos, field->name);
+          |         ^~~
+---
+ kernel/trace/trace_events_user.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/trace/trace_events_user.c b/kernel/trace/trace_events_user.c
+index 706e1686b5eb..5274d3efca54 100644
+--- a/kernel/trace/trace_events_user.c
++++ b/kernel/trace/trace_events_user.c
+@@ -946,7 +946,7 @@ static bool user_field_match(struct ftrace_event_field *field, int argc,
+ 		if (i != *iout)
+ 			pos += snprintf(arg_name + pos, len - pos, " ");
+ 
+-		pos += snprintf(arg_name + pos, len - pos, argv[i]);
++		pos += snprintf(arg_name + pos, len - pos, "%s", argv[i]);
+ 
+ 		if (strchr(argv[i], ';')) {
+ 			++i;
+@@ -957,9 +957,9 @@ static bool user_field_match(struct ftrace_event_field *field, int argc,
+ 
+ 	pos = 0;
+ 
+-	pos += snprintf(field_name + pos, len - pos, field->type);
++	pos += snprintf(field_name + pos, len - pos, "%s", field->type);
+ 	pos += snprintf(field_name + pos, len - pos, " ");
+-	pos += snprintf(field_name + pos, len - pos, field->name);
++	pos += snprintf(field_name + pos, len - pos, "%s", field->name);
+ 
+ 	if (colon)
+ 		pos += snprintf(field_name + pos, len - pos, ";");
+-- 

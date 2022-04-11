@@ -9,7 +9,7 @@ Subject: [PATCH] {PRAGMA} net/wireless/mwl8k: ignore intentional array bounds
  1 file changed, 4 insertions(+)
 
 diff --git a/drivers/net/wireless/marvell/mwl8k.c b/drivers/net/wireless/marvell/mwl8k.c
-index 864a2ba9efee..55cbe28d720e 100644
+index 864a2ba9efee..dd6f19bcfc4b 100644
 --- a/drivers/net/wireless/marvell/mwl8k.c
 +++ b/drivers/net/wireless/marvell/mwl8k.c
 @@ -822,7 +822,11 @@ static inline void mwl8k_remove_dma_header(struct sk_buff *skb, __le16 qos)
@@ -17,7 +17,7 @@ index 864a2ba9efee..55cbe28d720e 100644
  		if (ieee80211_is_data_qos(tr->wh.frame_control)) {
  			memmove(tr->data - hdrlen, &tr->wh, hdrlen - 2);
 +			__diag_push()
-+			__diag_ignore(CLANG, 10, "-Warray-bounds-pointer-arithmetic",
++			__diag_ignore(clang, 10, "-Warray-bounds-pointer-arithmetic",
 +				      "It is normal to reference 2 bytes before the beginning of the array")
  			*((__le16 *)(tr->data - 2)) = qos;
 +			__diag_pop()

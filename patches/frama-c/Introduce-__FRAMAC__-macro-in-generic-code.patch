@@ -34,10 +34,10 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  19 files changed, 237 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index f27d5b0f9a0b..c26c4fe1c58f 100644
+index 4b55e864a0a3..f79c23ddee45 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
-@@ -39,7 +39,7 @@
+@@ -38,7 +38,7 @@
  #include "drbd_state.h"
  #include "drbd_protocol.h"
  
@@ -68,10 +68,10 @@ index 6fc47561814c..70ea99f1931b 100644
  #endif /* __ASSEMBLY__ */
  
 diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
-index 10ffa8b5c117..6ac78d3994d0 100644
+index a5be9e61a2a2..8c48c1296687 100644
 --- a/include/asm-generic/uaccess.h
 +++ b/include/asm-generic/uaccess.h
-@@ -165,6 +165,20 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
+@@ -121,6 +121,20 @@ raw_copy_to_user(void __user *to, const void *from, unsigned long n)
  	__pu_err;						\
  })
  
@@ -92,7 +92,7 @@ index 10ffa8b5c117..6ac78d3994d0 100644
  #define put_user(x, ptr)					\
  ({								\
  	void __user *__p = (ptr);				\
-@@ -173,6 +187,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size)
+@@ -129,6 +143,7 @@ raw_copy_to_user(void __user *to, const void *from, unsigned long n)
  		__put_user((x), ((__typeof__(*(ptr)) __user *)__p)) :	\
  		-EFAULT;					\
  })
@@ -101,7 +101,7 @@ index 10ffa8b5c117..6ac78d3994d0 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 02abf5e3b6d5..0ee4d93a22d0 100644
+index 33189c83fdb4..d6973f007c12 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline notrace __used void __same_pointer_depths_with_volatile2_chk(con
@@ -133,20 +133,20 @@ index 02abf5e3b6d5..0ee4d93a22d0 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 2439207f44dd..41d56b0fa5f4 100644
+index 88f589997c47..17c1a3886256 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
-@@ -4,7 +4,7 @@
+@@ -12,7 +12,7 @@
+ #endif
  
- #ifndef __ASSEMBLY__
- 
+ /* sparse defines __CHECKER__; see Documentation/dev-tools/sparse.rst */
 -#ifdef __CHECKER__
 +#if defined(__CHECKER__) && !defined(__FRAMAC__)
  /* address spaces */
  # define __kernel	__attribute__((address_space(0)))
  # define __user		__attribute__((noderef, address_space(__user)))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 64dae70d31f5..704307c806e8 100644
+index fe29ac7cc469..b59399b85fdd 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
 @@ -873,9 +873,14 @@ set_cpu_dying(unsigned int cpu, bool dying)
@@ -165,10 +165,10 @@ index 64dae70d31f5..704307c806e8 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index a9773e6ac7ed..983ba993a57a 100644
+index bb107d46e8bf..bf9376b780b1 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -636,7 +636,12 @@ struct crypto_tfm {
+@@ -645,7 +645,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -242,10 +242,10 @@ index c28cf76d5c31..ac5f907262a2 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/overflow.h b/include/linux/overflow.h
-index 4669632bd72b..5177dded6604 100644
+index f1221d11f8e5..8fa3726689ca 100644
 --- a/include/linux/overflow.h
 +++ b/include/linux/overflow.h
-@@ -51,6 +51,131 @@ static inline bool __must_check __must_check_overflow(bool overflow)
+@@ -52,6 +52,131 @@ static inline bool __must_check __must_check_overflow(bool overflow)
  	return unlikely(overflow);
  }
  
@@ -377,7 +377,7 @@ index 4669632bd72b..5177dded6604 100644
  /*
   * For simplicity and code hygiene, the fallback code below insists on
   * a, b and *d having the same type (similar to the min() and max()
-@@ -85,6 +210,7 @@ static inline bool __must_check __must_check_overflow(bool overflow)
+@@ -86,6 +211,7 @@ static inline bool __must_check __must_check_overflow(bool overflow)
  	(void) (&__a == __d);			\
  	__builtin_mul_overflow(__a, __b, __d);	\
  }))
@@ -386,7 +386,7 @@ index 4669632bd72b..5177dded6604 100644
  /** check_shl_overflow() - Calculate a left-shifted value and check overflow
   *
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 8253a5413d7c..e5e6328ba43a 100644
+index 60adf42460ab..722c6ef4f0c5 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -177,6 +177,8 @@ typedef int __bitwise pci_power_t;
@@ -407,7 +407,7 @@ index 8253a5413d7c..e5e6328ba43a 100644
  /**
   * typedef pci_channel_state_t
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index b2aaf70cda52..fa53fff865e5 100644
+index 93c8a2d56f58..1c4d80c6be64 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -235,6 +235,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
@@ -456,18 +456,18 @@ index 6bcbe3068761..5bfdfa419121 100644
  #define XATTR_NAME_MAX   255	/* # chars in an extended attribute name */
  #define XATTR_SIZE_MAX 65536	/* size of an extended attribute value (64k) */
 diff --git a/include/uapi/linux/types.h b/include/uapi/linux/types.h
-index f6d2f83cbe29..ae19149149d6 100644
+index c4dc597f3dcf..287d851c43e9 100644
 --- a/include/uapi/linux/types.h
 +++ b/include/uapi/linux/types.h
-@@ -19,7 +19,7 @@
-  * any application/library that wants linux/types.h.
+@@ -20,7 +20,7 @@
   */
  
+ /* sparse defines __CHECKER__; see Documentation/dev-tools/sparse.rst */
 -#ifdef __CHECKER__
 +#if defined(__CHECKER__) && !defined(__FRAMAC__)
- #define __bitwise__ __attribute__((bitwise))
+ #define __bitwise	__attribute__((bitwise))
  #else
- #define __bitwise__
+ #define __bitwise
 diff --git a/include/vdso/limits.h b/include/vdso/limits.h
 index 0197888ad0e0..ee5b03df8f9b 100644
 --- a/include/vdso/limits.h
@@ -491,7 +491,7 @@ index 0197888ad0e0..ee5b03df8f9b 100644
  
  #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 9b04631acde8..2bc272d83d05 100644
+index 30cd1ca43bcd..8eaf628a9ee6 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1253,7 +1253,7 @@ static void print_fatal_signal(int signr)
