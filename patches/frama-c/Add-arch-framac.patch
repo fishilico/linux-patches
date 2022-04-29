@@ -16,7 +16,7 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/include/asm/elf.h          |  33 ++++++
  arch/framac/include/asm/irqflags.h     |  15 +++
  arch/framac/include/asm/mmu_context.h  |  16 +++
- arch/framac/include/asm/pgtable.h      |  74 +++++++++++++
+ arch/framac/include/asm/pgtable.h      |  77 ++++++++++++++
  arch/framac/include/asm/processor.h    |  40 +++++++
  arch/framac/include/asm/ptrace.h       |  32 ++++++
  arch/framac/include/asm/sigcontext.h   |  10 ++
@@ -38,11 +38,11 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/kernel/time.c              |   5 +
  arch/framac/kernel/traps.c             |  10 ++
  arch/framac/kernel/vmlinux.lds.S       |  56 ++++++++++
- arch/framac/lib/Makefile               |   1 +
+ arch/framac/lib/Makefile               |   2 +
  arch/framac/lib/delay.c                |  27 +++++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 +++
- 38 files changed, 1070 insertions(+)
+ 38 files changed, 1074 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Kconfig.debug
  create mode 100644 arch/framac/Makefile
@@ -650,10 +650,10 @@ index 000000000000..e0e9063faea0
 +#endif /* _ASM_FRAMA_C_MMU_CONTEXT_H */
 diff --git a/arch/framac/include/asm/pgtable.h b/arch/framac/include/asm/pgtable.h
 new file mode 100644
-index 000000000000..8dec05ef14f0
+index 000000000000..31946e695fda
 --- /dev/null
 +++ b/arch/framac/include/asm/pgtable.h
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,77 @@
 +#ifndef _ASM_FRAMA_C_PGTABLE_H
 +#define _ASM_FRAMA_C_PGTABLE_H
 +
@@ -682,6 +682,9 @@ index 000000000000..8dec05ef14f0
 +{
 +	return pte_val(pte) & _PAGE_FILE;
 +}
++
++#define VMALLOC_START 0xd0000000
++#define VMALLOC_END 0xd0000000
 +
 +#define swapper_pg_dir	((pgd_t *) NULL)
 +
@@ -1312,11 +1315,12 @@ index 000000000000..b449862d596d
 +}
 diff --git a/arch/framac/lib/Makefile b/arch/framac/lib/Makefile
 new file mode 100644
-index 000000000000..588f2891f5ee
+index 000000000000..d494524fe3e0
 --- /dev/null
 +++ b/arch/framac/lib/Makefile
-@@ -0,0 +1 @@
+@@ -0,0 +1,2 @@
 +lib-y += delay.o
++lib-y += vmalloc_huge.o
 diff --git a/arch/framac/lib/delay.c b/arch/framac/lib/delay.c
 new file mode 100644
 index 000000000000..3c5bb9161b84
