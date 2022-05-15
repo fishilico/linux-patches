@@ -237,10 +237,13 @@ then
     KCFLAGS="$KCFLAGS -Wtrampolines"
     KCFLAGS="$KCFLAGS -Wjump-misses-init"
     KCFLAGS="$KCFLAGS -Wlogical-op"
+    disable_in_kcflags 'address' # gcc 12 warns about comparing arrays with NULL
     disable_in_kcflags 'aggressive-loop-optimizations' # gcc 9 warns about some loops in echoaudio_dsp, which looks fine
+    disable_in_kcflags 'array-compare' # gcc 12 warns about comparing two arrays... could be actual bugs!
     disable_in_kcflags 'attribute-alias' # gcc 8 warns about x86-32 syscall handler using incompatible types
     disable_in_kcflags 'builtin-declaration-mismatch' # gcc 9 warns about using specific pointer types instead of void*
     disable_in_kcflags 'cast-function-type' # gcc 8 warns about many incompatible function casts used by Linux
+    disable_in_kcflags 'dangling-pointer' # gcc 12 warns about many use of local variables in global pointers
     disable_in_kcflags 'format-overflow' # Many calls to snprintf may overflow
     disable_in_kcflags 'format-truncation' # Many calls to snprintf may be truncated
     disable_in_kcflags 'frame-address' # __builtin_return_address is called with a nonzero argument
