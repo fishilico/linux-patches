@@ -20,7 +20,7 @@ It has also detected some bugs reported and fixed by other people:
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
-index 46f3a2080f64..60256a73a627 100644
+index 8226e6ca6117..d81b93cb5100 100644
 --- a/scripts/Makefile.gcc-plugins
 +++ b/scripts/Makefile.gcc-plugins
 @@ -15,6 +15,8 @@ endif
@@ -29,14 +29,14 @@ index 46f3a2080f64..60256a73a627 100644
  
 +gcc-plugin-$(CONFIG_GCC_PLUGIN_STRING_NCMP_SIZE) += string_ncmp_size_plugin.so
 +
- gcc-plugin-$(CONFIG_GCC_PLUGIN_SANCOV)		+= sancov_plugin.so
- 
  gcc-plugin-$(CONFIG_GCC_PLUGIN_STRUCTLEAK)	+= structleak_plugin.so
+ gcc-plugin-cflags-$(CONFIG_GCC_PLUGIN_STRUCTLEAK_VERBOSE)	\
+ 		+= -fplugin-arg-structleak_plugin-verbose
 diff --git a/scripts/gcc-plugins/Kconfig b/scripts/gcc-plugins/Kconfig
-index 75fd83019bee..12b191085497 100644
+index 26a29088e274..2b7cc63fe5bb 100644
 --- a/scripts/gcc-plugins/Kconfig
 +++ b/scripts/gcc-plugins/Kconfig
-@@ -101,4 +101,10 @@ config GCC_PLUGIN_DEREF_CHECKER
+@@ -63,4 +63,10 @@ config GCC_PLUGIN_DEREF_CHECKER
  	help
  	  Check function calls involving pointers about some consistencies.
  
@@ -295,10 +295,10 @@ index 000000000000..7fac3e1508f8
 +	return 0;
 +}
 diff --git a/sound/soc/intel/boards/bxt_rt298.c b/sound/soc/intel/boards/bxt_rt298.c
-index 05e833076499..e841940b4c8f 100644
+index 75995d17597d..d25ca91718ff 100644
 --- a/sound/soc/intel/boards/bxt_rt298.c
 +++ b/sound/soc/intel/boards/bxt_rt298.c
-@@ -605,14 +605,11 @@ static int broxton_audio_probe(struct platform_device *pdev)
+@@ -604,14 +604,11 @@ static int broxton_audio_probe(struct platform_device *pdev)
  	int i;
  
  	for (i = 0; i < ARRAY_SIZE(broxton_rt298_dais); i++) {

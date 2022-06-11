@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 9 Jun 2022 21:01:15 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/misc/cardreader/rts5261: fix
+ -Wsometimes-uninitialized
+
+clang reports on x86-64:
+
+    drivers/misc/cardreader/rts5261.c:406:13: error: variable
+    'setting_reg2' is used uninitialized whenever 'if' condition is
+    false [-Werror,-Wsometimes-uninitialized]
+            } else if (efuse_valid == 0) {
+                       ^~~~~~~~~~~~~~~~
+    drivers/misc/cardreader/rts5261.c:412:30: note: uninitialized use
+    occurs here
+            pci_read_config_dword(pdev, setting_reg2, &lval2);
+                                        ^~~~~~~~~~~~
+    drivers/misc/cardreader/rts5261.c:406:9: note: remove the 'if' if
+    its condition is always true
+            } else if (efuse_valid == 0) {
+                   ^~~~~~~~~~~~~~~~~~~~~~
+    drivers/misc/cardreader/rts5261.c:364:32: note: initialize the
+    variable 'setting_reg2' to silence this warning
+            u16 setting_reg1, setting_reg2;
+                                          ^
+                                           = 0
+---
+ drivers/misc/cardreader/rts5261.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/misc/cardreader/rts5261.c b/drivers/misc/cardreader/rts5261.c
+index 749cc5a46d13..306cca69a688 100644
+--- a/drivers/misc/cardreader/rts5261.c
++++ b/drivers/misc/cardreader/rts5261.c
+@@ -403,7 +403,7 @@ static void rts5261_init_from_hw(struct rtsx_pcr *pcr)
+ 			setting_reg1 = PCR_SETTING_REG4;
+ 			setting_reg2 = PCR_SETTING_REG5;
+ 		}
+-	} else if (efuse_valid == 0) {
++	} else /*if (efuse_valid == 0)*/ {
+ 		// default
+ 		setting_reg1 = PCR_SETTING_REG1;
+ 		setting_reg2 = PCR_SETTING_REG2;
+-- 

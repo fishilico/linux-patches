@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 26 May 2022 20:06:37 +0200
+Subject: [PATCH] {PRINTF} kernel/rcu/tree.c: silence -Wformat-security with %s
+
+---
+ kernel/rcu/tree.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
+index c25ba442044a..c50a1c6fcb8d 100644
+--- a/kernel/rcu/tree.c
++++ b/kernel/rcu/tree.c
+@@ -4536,13 +4536,13 @@ static void __init rcu_start_exp_gp_kworkers(void)
+ 	const char *gp_kworker_name = "rcu_exp_gp_kthread_worker";
+ 	struct sched_param param = { .sched_priority = kthread_prio };
+ 
+-	rcu_exp_gp_kworker = kthread_create_worker(0, gp_kworker_name);
++	rcu_exp_gp_kworker = kthread_create_worker(0, "%s", gp_kworker_name);
+ 	if (IS_ERR_OR_NULL(rcu_exp_gp_kworker)) {
+ 		pr_err("Failed to create %s!\n", gp_kworker_name);
+ 		return;
+ 	}
+ 
+-	rcu_exp_par_gp_kworker = kthread_create_worker(0, par_gp_kworker_name);
++	rcu_exp_par_gp_kworker = kthread_create_worker(0, "%s", par_gp_kworker_name);
+ 	if (IS_ERR_OR_NULL(rcu_exp_par_gp_kworker)) {
+ 		pr_err("Failed to create %s!\n", par_gp_kworker_name);
+ 		kthread_destroy_worker(rcu_exp_gp_kworker);
+-- 

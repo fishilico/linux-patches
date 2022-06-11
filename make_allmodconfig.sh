@@ -389,6 +389,7 @@ then
     echo 'CONFIG_DEBUG_PREEMPT=y' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_PREEMPT_TRACER=y' >> "$KBUILD_OUTPUT/.config"
     echo 'CONFIG_RCU_CPU_STALL_TIMEOUT=21' >> "$KBUILD_OUTPUT/.config"
+    echo 'CONFIG_RCU_EXP_CPU_STALL_TIMEOUT=0' >> "$KBUILD_OUTPUT/.config"
 
     # CEC_GPIO depends on PREEMPT, and selects CEC_PING, which enables CEC_PIN_ERROR_INJ
     echo 'CONFIG_CEC_GPIO=m' >> "$KBUILD_OUTPUT/.config"
@@ -474,6 +475,8 @@ then
         echo 'CONFIG_XEN_PCIDEV_STUB=m' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_USB_XEN_HCD=m' >> "$KBUILD_OUTPUT/.config"
         echo '# CONFIG_PROVE_NVDIMM_LOCKING is not set' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_RCU_EXP_KTHREAD=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_TEGRA186_GPC_DMA=m' >> "$KBUILD_OUTPUT/.config"
     fi
 
     # Merge options

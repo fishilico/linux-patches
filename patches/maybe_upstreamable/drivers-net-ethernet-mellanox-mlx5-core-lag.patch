@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Thu, 26 May 2022 20:28:19 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/net/ethernet/mellanox/mlx5/core/lag:
+ initialize local structure
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+gcc on x86-64 warns:
+
+    drivers/net/ethernet/mellanox/mlx5/core/lag/lag.c: In function ‘mlx5_do_bond’:
+    drivers/net/ethernet/mellanox/mlx5/core/lag/lag.c:786:28: error:
+    ‘tracker’ is used uninitialized [-Werror=uninitialized]
+      786 |         struct lag_tracker tracker;
+          |                            ^~~~~~~
+    drivers/net/ethernet/mellanox/mlx5/core/lag/lag.c:786:28: note:
+    ‘tracker’ declared here
+      786 |         struct lag_tracker tracker;
+          |                            ^~~~~~~
+---
+ drivers/net/ethernet/mellanox/mlx5/core/lag/lag.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/lag/lag.c b/drivers/net/ethernet/mellanox/mlx5/core/lag/lag.c
+index 552b6e26e701..477be0a175fd 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/lag/lag.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/lag/lag.c
+@@ -783,7 +783,7 @@ static void mlx5_do_bond(struct mlx5_lag *ldev)
+ {
+ 	struct mlx5_core_dev *dev0 = ldev->pf[MLX5_LAG_P1].dev;
+ 	struct mlx5_core_dev *dev1 = ldev->pf[MLX5_LAG_P2].dev;
+-	struct lag_tracker tracker;
++	struct lag_tracker tracker = {};
+ 	bool do_bond, roce_lag;
+ 	int err;
+ 	int i;
+-- 

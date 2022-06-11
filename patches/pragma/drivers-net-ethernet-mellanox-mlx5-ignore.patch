@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 27 May 2022 08:46:20 +0200
+Subject: [PATCH] {PRAGMA} drivers/net/ethernet/mellanox/mlx5: ignore
+ -Warray-bounds-pointer-arithmetic
+
+---
+ drivers/net/ethernet/mellanox/mlx5/core/en_tx.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_tx.c b/drivers/net/ethernet/mellanox/mlx5/core/en_tx.c
+index 50d14cec4894..3061feb28d80 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en_tx.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en_tx.c
+@@ -976,7 +976,11 @@ void mlx5i_sq_xmit(struct mlx5e_txqsq *sq, struct sk_buff *skb,
+ 			unsafe_memcpy(eseg->inline_hdr.start, skb->data,
+ 				      ETH_HLEN + sizeof(*h6),
+ 				      MLX5_UNSAFE_MEMCPY_DISCLAIMER);
++			__diag_push()
++			__diag_ignore(clang, 10, "-Warray-bounds-pointer-arithmetic",
++				      "inline_hdr.start is only 2-byte long")
+ 			h6 = (struct ipv6hdr *)((char *)eseg->inline_hdr.start + ETH_HLEN);
++			__diag_pop()
+ 			h6->nexthdr = IPPROTO_TCP;
+ 			/* Copy the TCP header after the IPv6 one */
+ 			unsafe_memcpy(h6 + 1,
+-- 

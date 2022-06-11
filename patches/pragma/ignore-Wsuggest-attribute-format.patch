@@ -154,10 +154,10 @@ index 7dd70011fd1e..87ae7767896b 100644
  
  #undef TRACE_INCLUDE_PATH
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index 52299c957c98..66f98df192b4 100644
+index a0c55eeaeaf1..117c4734b1c1 100644
 --- a/include/linux/compiler-gcc.h
 +++ b/include/linux/compiler-gcc.h
-@@ -149,6 +149,8 @@
+@@ -141,6 +141,8 @@
  #define __diag_str(s)		__diag_str1(s)
  #define __diag(s)		_Pragma(__diag_str(GCC diagnostic s))
  
@@ -179,10 +179,10 @@ index 5857cf682ee7..7fdd4197eb58 100644
  
  DEFINE_EVENT(qla_log_event, ql_dbg_log,
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
-index 315053ef6a75..86324bc9cfba 100644
+index 225806a02efb..50e1cad5fcab 100644
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
-@@ -1042,7 +1042,11 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
+@@ -1058,7 +1058,11 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
  	if (err < 0)
  		return err;
  
@@ -195,10 +195,10 @@ index 315053ef6a75..86324bc9cfba 100644
  	bpf_bprintf_cleanup();
  
 diff --git a/kernel/panic.c b/kernel/panic.c
-index eb4dfb932c85..51b96d23bff9 100644
+index a3c758dba15a..03b034596180 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -587,8 +587,12 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -613,8 +613,12 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  		pr_warn("WARNING: CPU: %d PID: %d at %pS\n",
  			raw_smp_processor_id(), current->pid, caller);
  
@@ -212,10 +212,10 @@ index eb4dfb932c85..51b96d23bff9 100644
  	print_modules();
  
 diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index 00b574a22da6..b1a277284171 100644
+index 10b157a6d73e..256c84419b3f 100644
 --- a/kernel/trace/bpf_trace.c
 +++ b/kernel/trace/bpf_trace.c
-@@ -383,7 +383,11 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
+@@ -386,7 +386,11 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
  		return ret;
  
  	raw_spin_lock_irqsave(&trace_printk_lock, flags);
@@ -227,7 +227,7 @@ index 00b574a22da6..b1a277284171 100644
  
  	trace_bpf_trace_printk(buf);
  	raw_spin_unlock_irqrestore(&trace_printk_lock, flags);
-@@ -421,6 +425,9 @@ const struct bpf_func_proto *bpf_get_trace_printk_proto(void)
+@@ -424,6 +428,9 @@ const struct bpf_func_proto *bpf_get_trace_printk_proto(void)
  	return &bpf_trace_printk_proto;
  }
  
@@ -237,7 +237,7 @@ index 00b574a22da6..b1a277284171 100644
  BPF_CALL_4(bpf_trace_vprintk, char *, fmt, u32, fmt_size, const void *, data,
  	   u32, data_len)
  {
-@@ -448,6 +455,7 @@ BPF_CALL_4(bpf_trace_vprintk, char *, fmt, u32, fmt_size, const void *, data,
+@@ -451,6 +458,7 @@ BPF_CALL_4(bpf_trace_vprintk, char *, fmt, u32, fmt_size, const void *, data,
  
  	return ret;
  }
@@ -245,7 +245,7 @@ index 00b574a22da6..b1a277284171 100644
  
  static const struct bpf_func_proto bpf_trace_vprintk_proto = {
  	.func		= bpf_trace_vprintk,
-@@ -480,7 +488,11 @@ BPF_CALL_5(bpf_seq_printf, struct seq_file *, m, char *, fmt, u32, fmt_size,
+@@ -483,7 +491,11 @@ BPF_CALL_5(bpf_seq_printf, struct seq_file *, m, char *, fmt, u32, fmt_size,
  	if (err < 0)
  		return err;
  
@@ -258,10 +258,10 @@ index 00b574a22da6..b1a277284171 100644
  	bpf_bprintf_cleanup();
  
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index f4de111fa18f..116f33ee43ab 100644
+index 2c95992e2c71..7811e02e4c67 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -3777,6 +3777,10 @@ static void test_can_verify(void)
+@@ -3780,6 +3780,10 @@ static void test_can_verify(void)
   * warn and print "[UNSAFE MEMORY]" in place of the dereferenced string
   * pointer.
   */
@@ -272,7 +272,7 @@ index f4de111fa18f..116f33ee43ab 100644
  void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  			 va_list ap)
  {
-@@ -3909,6 +3913,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
+@@ -3912,6 +3916,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  	if (*p)
  		trace_seq_vprintf(&iter->seq, p, ap);
  }
@@ -283,10 +283,10 @@ index f4de111fa18f..116f33ee43ab 100644
  const char *trace_event_format(struct trace_iterator *iter, const char *fmt)
  {
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index b31c6867d0f2..9b2923eeaa95 100644
+index 519b4db4e931..ce7bff123ac3 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
-@@ -1701,7 +1701,11 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
+@@ -1678,7 +1678,11 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
  		return buf;
  
  	va_copy(va, *va_fmt->va);

@@ -1,18 +1,18 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
-Date: Sun, 5 Sep 2021 13:19:29 +0200
-Subject: [PATCH] {BUG in 5.15-rc1} drivers/staging/r8188eu: fix memcmp size
+Date: Wed, 8 Jun 2022 21:02:04 +0200
+Subject: [PATCH] {MAYBE UPS} drivers/staging/r8188eu/os_dep: fix memcmp
+ argument
 
-Found with memcmp checker plugin
 ---
- drivers/staging/r8188eu/os_dep/ioctl_linux.c | 40 ++++++++++----------
- 1 file changed, 20 insertions(+), 20 deletions(-)
+ drivers/staging/r8188eu/os_dep/ioctl_linux.c | 38 ++++++++++----------
+ 1 file changed, 19 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/staging/r8188eu/os_dep/ioctl_linux.c b/drivers/staging/r8188eu/os_dep/ioctl_linux.c
-index eb9375b0c660..53fe59a4f3bb 100644
+index 1b09462ca908..3ea183bb9cd2 100644
 --- a/drivers/staging/r8188eu/os_dep/ioctl_linux.c
 +++ b/drivers/staging/r8188eu/os_dep/ioctl_linux.c
-@@ -3180,48 +3180,48 @@ static int rtw_p2p_set(struct net_device *dev,
+@@ -2991,48 +2991,48 @@ static int rtw_p2p_set(struct net_device *dev,
  {
  	int ret = 0;
  
@@ -73,16 +73,7 @@ index eb9375b0c660..53fe59a4f3bb 100644
  		wrqu->data.length -= 11;
  		rtw_p2p_set_persistent(dev, info, wrqu, &extra[11]);
  	}
-@@ -3246,7 +3246,7 @@ static int rtw_p2p_get(struct net_device *dev,
- 		rtw_p2p_get_peer_devaddr(dev, info, wrqu, extra);
- 	} else if (!memcmp(wrqu->data.pointer, "group_id", 8)) {
- 		rtw_p2p_get_groupid(dev, info, wrqu, extra);
--	} else if (!memcmp(wrqu->data.pointer, "peer_deva_inv", 9)) {
-+	} else if (!memcmp(wrqu->data.pointer, "peer_deva_inv", 13)) {
- 		/*	Get the P2P device address when receiving the P2P Invitation request frame. */
- 		rtw_p2p_get_peer_devaddr_by_invitation(dev, info, wrqu, extra);
- 	} else if (!memcmp(wrqu->data.pointer, "op_ch", 5)) {
-@@ -3261,19 +3261,19 @@ static int rtw_p2p_get2(struct net_device *dev,
+@@ -3046,19 +3046,19 @@ static int rtw_p2p_get2(struct net_device *dev,
  {
  	int ret = 0;
  
@@ -107,7 +98,7 @@ index eb9375b0c660..53fe59a4f3bb 100644
  		wrqu->data.length -= 8;
  		ret = rtw_p2p_get_invitation_procedure(dev, info, wrqu, &extra[8]);
  	}
-@@ -3787,10 +3787,10 @@ static int rtw_pm_set(struct net_device *dev,
+@@ -3582,10 +3582,10 @@ static int rtw_pm_set(struct net_device *dev,
  	unsigned	mode = 0;
  	struct adapter *padapter = (struct adapter *)rtw_netdev_priv(dev);
  
