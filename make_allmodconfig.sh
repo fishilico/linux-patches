@@ -477,6 +477,7 @@ then
         echo '# CONFIG_PROVE_NVDIMM_LOCKING is not set' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_RCU_EXP_KTHREAD=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_TEGRA186_GPC_DMA=m' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_XEN_VIRTIO=y' >> "$KBUILD_OUTPUT/.config"
     fi
 
     # Merge options
