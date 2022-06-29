@@ -48,12 +48,12 @@ This fixes errors like:
  fs/ntfs/super.c                              |   7 +-
  kernel/power/suspend_test.c                  |  33 +---
  net/802/psnap.c                              |   5 +-
- net/core/net-sysfs.c                         |  57 +++----
+ net/core/net-sysfs.c                         |  56 +++----
  net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
  sound/usb/mixer_scarlett_gen2.c              |  12 +-
- 27 files changed, 180 insertions(+), 272 deletions(-)
+ 27 files changed, 180 insertions(+), 271 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 5e86145db0e2..4b9d13d8bafc 100644
@@ -376,10 +376,10 @@ index d558535390f9..7800db94db70 100644
  	/* Initialize the device structure. */
  	dev->netdev_ops = &ipddp_netdev_ops;
 diff --git a/drivers/net/hamradio/6pack.c b/drivers/net/hamradio/6pack.c
-index 45c3c4a1101b..e9296522ae1e 100644
+index 9fb567524220..b7c79d2c7871 100644
 --- a/drivers/net/hamradio/6pack.c
 +++ b/drivers/net/hamradio/6pack.c
-@@ -754,21 +754,16 @@ static struct tty_ldisc_ops sp_ldisc = {
+@@ -756,21 +756,16 @@ static struct tty_ldisc_ops sp_ldisc = {
  
  /* Initialize 6pack control device -- register 6pack line discipline */
  
@@ -1044,10 +1044,10 @@ index 1406bfdbda13..ddd5a00bd483 100644
  	}
  
 diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index e319e242dddf..f7c70143f4fb 100644
+index a3642569fe53..ae122c56d633 100644
 --- a/net/core/net-sysfs.c
 +++ b/net/core/net-sysfs.c
-@@ -28,11 +28,6 @@
+@@ -28,10 +28,6 @@
  #include "net-sysfs.h"
  
  #ifdef CONFIG_SYSFS
@@ -1055,11 +1055,10 @@ index e319e242dddf..f7c70143f4fb 100644
 -static const char fmt_dec[] = "%d\n";
 -static const char fmt_ulong[] = "%lu\n";
 -static const char fmt_u64[] = "%llu\n";
--
+ 
+ /* Caller holds RTNL or dev_base_lock */
  static inline int dev_isalive(const struct net_device *dev)
- {
- 	return dev->reg_state <= NETREG_REGISTERED;
-@@ -104,26 +99,26 @@ static ssize_t netdev_store(struct device *dev, struct device_attribute *attr,
+@@ -105,26 +101,26 @@ static ssize_t netdev_store(struct device *dev, struct device_attribute *attr,
  	return ret;
  }
  
@@ -1095,7 +1094,7 @@ index e319e242dddf..f7c70143f4fb 100644
  }
  
  static ssize_t name_assign_type_show(struct device *dev,
-@@ -193,7 +188,7 @@ static ssize_t carrier_show(struct device *dev,
+@@ -194,7 +190,7 @@ static ssize_t carrier_show(struct device *dev,
  	struct net_device *netdev = to_net_dev(dev);
  
  	if (netif_running(netdev))
@@ -1104,7 +1103,7 @@ index e319e242dddf..f7c70143f4fb 100644
  
  	return -EINVAL;
  }
-@@ -218,7 +213,7 @@ static ssize_t speed_show(struct device *dev,
+@@ -219,7 +215,7 @@ static ssize_t speed_show(struct device *dev,
  		struct ethtool_link_ksettings cmd;
  
  		if (!__ethtool_get_link_ksettings(netdev, &cmd))
@@ -1113,7 +1112,7 @@ index e319e242dddf..f7c70143f4fb 100644
  	}
  	rtnl_unlock();
  	return ret;
-@@ -271,7 +266,7 @@ static ssize_t testing_show(struct device *dev,
+@@ -272,7 +268,7 @@ static ssize_t testing_show(struct device *dev,
  	struct net_device *netdev = to_net_dev(dev);
  
  	if (netif_running(netdev))
@@ -1122,7 +1121,7 @@ index e319e242dddf..f7c70143f4fb 100644
  
  	return -EINVAL;
  }
-@@ -283,7 +278,7 @@ static ssize_t dormant_show(struct device *dev,
+@@ -284,7 +280,7 @@ static ssize_t dormant_show(struct device *dev,
  	struct net_device *netdev = to_net_dev(dev);
  
  	if (netif_running(netdev))
@@ -1131,7 +1130,7 @@ index e319e242dddf..f7c70143f4fb 100644
  
  	return -EINVAL;
  }
-@@ -324,7 +319,7 @@ static ssize_t carrier_changes_show(struct device *dev,
+@@ -325,7 +321,7 @@ static ssize_t carrier_changes_show(struct device *dev,
  {
  	struct net_device *netdev = to_net_dev(dev);
  
@@ -1140,7 +1139,7 @@ index e319e242dddf..f7c70143f4fb 100644
  		       atomic_read(&netdev->carrier_up_count) +
  		       atomic_read(&netdev->carrier_down_count));
  }
-@@ -336,7 +331,7 @@ static ssize_t carrier_up_count_show(struct device *dev,
+@@ -337,7 +333,7 @@ static ssize_t carrier_up_count_show(struct device *dev,
  {
  	struct net_device *netdev = to_net_dev(dev);
  
@@ -1149,7 +1148,7 @@ index e319e242dddf..f7c70143f4fb 100644
  }
  static DEVICE_ATTR_RO(carrier_up_count);
  
-@@ -346,7 +341,7 @@ static ssize_t carrier_down_count_show(struct device *dev,
+@@ -347,7 +343,7 @@ static ssize_t carrier_down_count_show(struct device *dev,
  {
  	struct net_device *netdev = to_net_dev(dev);
  
@@ -1158,7 +1157,7 @@ index e319e242dddf..f7c70143f4fb 100644
  }
  static DEVICE_ATTR_RO(carrier_down_count);
  
-@@ -362,7 +357,7 @@ static ssize_t mtu_store(struct device *dev, struct device_attribute *attr,
+@@ -363,7 +359,7 @@ static ssize_t mtu_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_mtu);
  }
@@ -1167,7 +1166,7 @@ index e319e242dddf..f7c70143f4fb 100644
  
  static int change_flags(struct net_device *dev, unsigned long new_flags)
  {
-@@ -374,7 +369,7 @@ static ssize_t flags_store(struct device *dev, struct device_attribute *attr,
+@@ -375,7 +371,7 @@ static ssize_t flags_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_flags);
  }
@@ -1176,7 +1175,7 @@ index e319e242dddf..f7c70143f4fb 100644
  
  static ssize_t tx_queue_len_store(struct device *dev,
  				  struct device_attribute *attr,
-@@ -385,7 +380,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
+@@ -386,7 +382,7 @@ static ssize_t tx_queue_len_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, dev_change_tx_queue_len);
  }
@@ -1185,7 +1184,7 @@ index e319e242dddf..f7c70143f4fb 100644
  
  static int change_gro_flush_timeout(struct net_device *dev, unsigned long val)
  {
-@@ -402,7 +397,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
+@@ -403,7 +399,7 @@ static ssize_t gro_flush_timeout_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, change_gro_flush_timeout);
  }
@@ -1194,7 +1193,7 @@ index e319e242dddf..f7c70143f4fb 100644
  
  static int change_napi_defer_hard_irqs(struct net_device *dev, unsigned long val)
  {
-@@ -419,7 +414,7 @@ static ssize_t napi_defer_hard_irqs_store(struct device *dev,
+@@ -420,7 +416,7 @@ static ssize_t napi_defer_hard_irqs_store(struct device *dev,
  
  	return netdev_store(dev, attr, buf, len, change_napi_defer_hard_irqs);
  }
@@ -1203,7 +1202,7 @@ index e319e242dddf..f7c70143f4fb 100644
  
  static ssize_t ifalias_store(struct device *dev, struct device_attribute *attr,
  			     const char *buf, size_t len)
-@@ -477,7 +472,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
+@@ -478,7 +474,7 @@ static ssize_t group_store(struct device *dev, struct device_attribute *attr,
  {
  	return netdev_store(dev, attr, buf, len, change_group);
  }
@@ -1212,7 +1211,7 @@ index e319e242dddf..f7c70143f4fb 100644
  static DEVICE_ATTR(netdev_group, 0644, group_show, group_store);
  
  static int change_proto_down(struct net_device *dev, unsigned long proto_down)
-@@ -491,7 +486,7 @@ static ssize_t proto_down_store(struct device *dev,
+@@ -492,7 +488,7 @@ static ssize_t proto_down_store(struct device *dev,
  {
  	return netdev_store(dev, attr, buf, len, change_proto_down);
  }
@@ -1221,7 +1220,7 @@ index e319e242dddf..f7c70143f4fb 100644
  
  static ssize_t phys_port_id_show(struct device *dev,
  				 struct device_attribute *attr, char *buf)
-@@ -590,7 +585,7 @@ static ssize_t threaded_show(struct device *dev,
+@@ -591,7 +587,7 @@ static ssize_t threaded_show(struct device *dev,
  		return restart_syscall();
  
  	if (dev_isalive(netdev))
@@ -1230,7 +1229,7 @@ index e319e242dddf..f7c70143f4fb 100644
  
  	rtnl_unlock();
  	return ret;
-@@ -672,7 +667,7 @@ static ssize_t netstat_show(const struct device *d,
+@@ -673,7 +669,7 @@ static ssize_t netstat_show(const struct device *d,
  		struct rtnl_link_stats64 temp;
  		const struct rtnl_link_stats64 *stats = dev_get_stats(dev, &temp);
  
@@ -1239,7 +1238,7 @@ index e319e242dddf..f7c70143f4fb 100644
  	}
  	read_unlock(&dev_base_lock);
  	return ret;
-@@ -1207,7 +1202,7 @@ static ssize_t tx_timeout_show(struct netdev_queue *queue, char *buf)
+@@ -1208,7 +1204,7 @@ static ssize_t tx_timeout_show(struct netdev_queue *queue, char *buf)
  {
  	unsigned long trans_timeout = atomic_long_read(&queue->trans_timeout);
  

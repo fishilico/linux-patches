@@ -102,10 +102,10 @@ It has also detected some bugs reported and fixed by other people:
  net/rxrpc/rxkad.c                             |  16 +-
  scripts/Makefile.gcc-plugins                  |   4 +-
  scripts/gcc-plugins/Kconfig                   |   6 +
- scripts/gcc-plugins/deref_checker_plugin.c    | 495 ++++++++++++++++++
+ scripts/gcc-plugins/deref_checker_plugin.c    | 496 ++++++++++++++++++
  security/apparmor/apparmorfs.c                |  11 +-
  sound/core/pcm_native.c                       |   2 +-
- 76 files changed, 952 insertions(+), 147 deletions(-)
+ 76 files changed, 953 insertions(+), 147 deletions(-)
  create mode 100644 scripts/gcc-plugins/deref_checker_plugin.c
 
 diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
@@ -627,7 +627,7 @@ index d2eab5cd1e0c..0d149be7c66f 100644
  	u32			sw_len;
  };
 diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index db05b5e930be..799a1f41bb46 100644
+index 969a67970e71..e6b967971ace 100644
 --- a/drivers/net/virtio_net.c
 +++ b/drivers/net/virtio_net.c
 @@ -1198,7 +1198,7 @@ static void virtio_skb_set_hash(const struct virtio_net_hdr_v1_hash *hdr_hash,
@@ -1413,10 +1413,10 @@ index 95106d02b32d..ba38492ca38a 100644
  	return bit >= sizeof(chunk->data) * 8;
  }
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index b5f127f2ca2b..252fdeec5ac9 100644
+index 099b1e83a926..26f6b22a6ee9 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -8568,7 +8568,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
+@@ -8566,7 +8566,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
  	 * We use the callback data field (which is a pointer)
  	 * as our counter.
  	 */
@@ -1459,7 +1459,7 @@ index 9f1bfbe105e8..f070e1e668c2 100644
  	return ret < 0 ? ret : 0;
  }
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 93507330462c..6873321a67d6 100644
+index a245ea673715..fd4960926bdb 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
 @@ -790,44 +790,50 @@ static int __trace_kprobe_create(int argc, const char *argv[])
@@ -1582,7 +1582,7 @@ index a57e1be41401..d8a0d5c02146 100644
  
  static void update_and_free_pages_bulk(struct hstate *h, struct list_head *list)
 diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index abec50f31fe6..f9642f38f61c 100644
+index 618c366a2f07..0d24a17b27c1 100644
 --- a/mm/memcontrol.c
 +++ b/mm/memcontrol.c
 @@ -2812,7 +2812,7 @@ int memcg_alloc_slab_cgroups(struct slab *slab, struct kmem_cache *s,
@@ -1613,7 +1613,7 @@ index 2054c9213c43..d57d59c22278 100644
  }
  
 diff --git a/mm/slub.c b/mm/slub.c
-index 9c35f0cb5ab6..60d0ba8d3dd0 100644
+index a1f871a020e4..934d2db65f37 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
 @@ -362,14 +362,16 @@ static void prefetch_freepointer(const struct kmem_cache *s, void *object)
@@ -1767,10 +1767,10 @@ index 5c95a0914d1c..26a29088e274 100644
  endif
 diff --git a/scripts/gcc-plugins/deref_checker_plugin.c b/scripts/gcc-plugins/deref_checker_plugin.c
 new file mode 100644
-index 000000000000..550970c045a6
+index 000000000000..137d5b1f0541
 --- /dev/null
 +++ b/scripts/gcc-plugins/deref_checker_plugin.c
-@@ -0,0 +1,495 @@
+@@ -0,0 +1,496 @@
 +/*
 + * Copyright 2016-2021 by Nicolas Iooss
 + * Licensed under the GPL v2, or (at your option) v3
@@ -1783,7 +1783,7 @@ index 000000000000..550970c045a6
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info deref_checker_plugin_info = {
-+	.version	= "20220526",
++	.version	= "20220628",
 +	.help		= "Pointer dereferencing checker\n",
 +};
 +
@@ -1925,6 +1925,7 @@ index 000000000000..550970c045a6
 +	    identifier_is(fnident, "sh_css_free") ||
 +	    identifier_is(fnident, "skb_free_frag") ||
 +	    identifier_is(fnident, "sort") ||
++	    identifier_is(fnident, "sort_r") ||
 +	    identifier_is(fnident, "t4_free_mem") ||
 +	    identifier_is(fnident, "vfree") ||
 +	    identifier_is(fnident, "wake_up_bit") ||
