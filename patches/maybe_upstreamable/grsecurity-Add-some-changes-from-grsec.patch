@@ -8,7 +8,7 @@ Subject: [PATCH] {MAYBE UPS} (grsecurity) Add some changes from grsec
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/net/socket.c b/net/socket.c
-index 2bc8773d9dc5..641705b251ee 100644
+index 96300cdc0625..9d20330b75d9 100644
 --- a/net/socket.c
 +++ b/net/socket.c
 @@ -1455,6 +1455,8 @@ int __sock_create(struct net *net, int family, int type, int protocol,
@@ -20,13 +20,13 @@ index 2bc8773d9dc5..641705b251ee 100644
  
  	/* Compatibility.
  
-@@ -2152,7 +2154,7 @@ int __sys_recvfrom(int fd, void __user *ubuf, size_t size, unsigned int flags,
- 	struct socket *sock;
- 	struct iovec iov;
- 	struct msghdr msg;
+@@ -2149,7 +2151,7 @@ SYSCALL_DEFINE4(send, int, fd, void __user *, buff, size_t, len,
+ int __sys_recvfrom(int fd, void __user *ubuf, size_t size, unsigned int flags,
+ 		   struct sockaddr __user *addr, int __user *addr_len)
+ {
 -	struct sockaddr_storage address;
-+	struct sockaddr_storage address = { };  /* Found in grsecurity patch 2015-02-27 */
- 	int err, err2;
- 	int fput_needed;
- 
++	struct sockaddr_storage address = {};
+ 	struct msghdr msg = {
+ 		/* Save some cycles and don't copy the address if not needed */
+ 		.msg_name = addr ? (struct sockaddr *)&address : NULL,
 -- 
