@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sat, 30 Jul 2022 12:48:22 +0200
+Subject: [PATCH] {MAYBE UPS} tools/objtool/check: silence clang's
+ -Wunreachable-code-return
+
+clang 14 on x86-64 reports:
+
+    check.c:3682:9: error: 'return' will never be executed
+    [-Werror,-Wunreachable-code-return]
+            return warnings;
+                   ^~~~~~~~
+
+Silence this warning.
+---
+ tools/objtool/check.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/objtool/check.c b/tools/objtool/check.c
+index 55c6fb3528d0..e441bf9443a4 100644
+--- a/tools/objtool/check.c
++++ b/tools/objtool/check.c
+@@ -3576,7 +3576,7 @@ static int validate_unwind_hints(struct objtool_file *file, struct section *sec)
+ static int validate_entry(struct objtool_file *file, struct instruction *insn)
+ {
+ 	struct instruction *next, *dest;
+-	int ret, warnings = 0;
++	int ret; /* , warnings = 0; */
+ 
+ 	for (;;) {
+ 		next = next_insn_to_validate(file, insn);
+@@ -3679,7 +3679,7 @@ static int validate_entry(struct objtool_file *file, struct instruction *insn)
+ 		insn = next;
+ 	}
+ 
+-	return warnings;
++	/* return warnings; */ /* silence -Wunreachable-code-return */
+ }
+ 
+ /*
+-- 
