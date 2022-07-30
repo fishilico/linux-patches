@@ -206,6 +206,7 @@ then
     disable_in_kcflags 'tautological-unsigned-enum-zero-compare' # Many unsigned enums are compared with 0
     disable_in_kcflags 'tautological-unsigned-zero-compare' # Many unsigned variables are compared with 0
     disable_in_kcflags 'tautological-value-range-compare' # Some 1-bit unsigned value are compared with -1 in macros
+    disable_in_kcflags 'unaligned-access'  # Some structures have alignement issues
     disable_in_kcflags 'unknown-pragmas' # Ignore GCC-specific #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
     disable_in_kcflags 'unreachable-code' # Code can be unreachable depending on the config
     disable_in_kcflags 'unreachable-code-break'
