@@ -364,10 +364,10 @@ index 8d902847f82e..60be0f4b93dd 100644
  		/* S_new is released in unfix_nodes */
  	}
 diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
-index 03b95ac9f894..8f06305d5612 100644
+index 288d27266674..53a0d026b5ed 100644
 --- a/fs/reiserfs/inode.c
 +++ b/fs/reiserfs/inode.c
-@@ -1128,8 +1128,12 @@ int reiserfs_get_block(struct inode *inode, sector_t block,
+@@ -1120,8 +1120,12 @@ int reiserfs_get_block(struct inode *inode, sector_t block,
  			goto failure;
  		}
  		if (retval == POSITION_FOUND) {
@@ -380,7 +380,7 @@ index 03b95ac9f894..8f06305d5612 100644
  			retval = -EEXIST;
  			if (allocated_block_nr)
  				reiserfs_free_block(th, inode,
-@@ -1429,8 +1433,12 @@ static void update_stat_data(struct treepath *path, struct inode *inode,
+@@ -1421,8 +1425,12 @@ static void update_stat_data(struct treepath *path, struct inode *inode,
  	ih = tp_item_head(path);
  
  	if (!is_statdata_le_ih(ih))
@@ -393,7 +393,7 @@ index 03b95ac9f894..8f06305d5612 100644
  
  	/* path points to old stat data */
  	if (stat_data_v1(ih)) {
-@@ -1462,9 +1470,13 @@ void reiserfs_update_sd_size(struct reiserfs_transaction_handle *th,
+@@ -1454,9 +1462,13 @@ void reiserfs_update_sd_size(struct reiserfs_transaction_handle *th,
  		/* look for the object's stat data */
  		retval = search_item(inode->i_sb, &key, &path);
  		if (retval == IO_ERROR) {
@@ -407,7 +407,7 @@ index 03b95ac9f894..8f06305d5612 100644
  			return;
  		}
  		if (retval == ITEM_NOT_FOUND) {
-@@ -1474,11 +1486,15 @@ void reiserfs_update_sd_size(struct reiserfs_transaction_handle *th,
+@@ -1466,11 +1478,15 @@ void reiserfs_update_sd_size(struct reiserfs_transaction_handle *th,
  				/*reiserfs_warning (inode->i_sb, "vs-13050: reiserfs_update_sd: i_nlink == 0, stat data not found"); */
  				return;
  			}
@@ -423,7 +423,7 @@ index 03b95ac9f894..8f06305d5612 100644
  			reiserfs_check_path(&path);
  			return;
  		}
-@@ -1556,9 +1572,13 @@ void reiserfs_read_locked_inode(struct inode *inode,
+@@ -1548,9 +1564,13 @@ void reiserfs_read_locked_inode(struct inode *inode,
  	/* look for the object's stat data */
  	retval = search_item(inode->i_sb, &key, &path_to_sd);
  	if (retval == IO_ERROR) {
@@ -437,7 +437,7 @@ index 03b95ac9f894..8f06305d5612 100644
  		reiserfs_make_bad_inode(inode);
  		return;
  	}
-@@ -1594,10 +1614,14 @@ void reiserfs_read_locked_inode(struct inode *inode,
+@@ -1586,10 +1606,14 @@ void reiserfs_read_locked_inode(struct inode *inode,
  	 */
  	if ((inode->i_nlink == 0) &&
  	    !REISERFS_SB(inode->i_sb)->s_is_unlinked_ok) {
@@ -452,7 +452,7 @@ index 03b95ac9f894..8f06305d5612 100644
  		reiserfs_make_bad_inode(inode);
  	}
  
-@@ -1844,9 +1868,13 @@ static int reiserfs_new_directory(struct reiserfs_transaction_handle *th,
+@@ -1836,9 +1860,13 @@ static int reiserfs_new_directory(struct reiserfs_transaction_handle *th,
  	}
  	if (retval == ITEM_FOUND) {
  		pathrelse(path);
@@ -466,7 +466,7 @@ index 03b95ac9f894..8f06305d5612 100644
  		return -EEXIST;
  	}
  
-@@ -1887,9 +1915,13 @@ static int reiserfs_new_symlink(struct reiserfs_transaction_handle *th,
+@@ -1879,9 +1907,13 @@ static int reiserfs_new_symlink(struct reiserfs_transaction_handle *th,
  	}
  	if (retval == ITEM_FOUND) {
  		pathrelse(path);
@@ -904,7 +904,7 @@ index 3aa928ec527a..fafa4345441e 100644
  void store_print_tb(struct tree_balance *tb);
  void print_cur_tb(char *mes);
 diff --git a/fs/reiserfs/stree.c b/fs/reiserfs/stree.c
-index 3f49562b92ba..d3842ca74e38 100644
+index 1907cddbed89..5d1a29313722 100644
 --- a/fs/reiserfs/stree.c
 +++ b/fs/reiserfs/stree.c
 @@ -20,8 +20,12 @@
@@ -1285,7 +1285,7 @@ index 3f49562b92ba..d3842ca74e38 100644
  			goto error_out;
  		}
 diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index cfb7c44c7366..2fa8595cb6d8 100644
+index c88cd2ce0665..dc208756f393 100644
 --- a/fs/reiserfs/super.c
 +++ b/fs/reiserfs/super.c
 @@ -326,17 +326,25 @@ static int finish_unfinished(struct super_block *s)
@@ -1437,10 +1437,10 @@ index b0ae088dffc7..291177b3c231 100644
  #ifdef CONFIG_REISERFS_CHECK
  		pos = le_ih_k_offset(&s_ih) - 1 +
 diff --git a/fs/reiserfs/xattr.c b/fs/reiserfs/xattr.c
-index bd073836e141..839911c12a8c 100644
+index 436641369283..38869943c561 100644
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
-@@ -729,10 +729,14 @@ reiserfs_xattr_get(struct inode *inode, const char *name, void *buffer,
+@@ -722,10 +722,14 @@ reiserfs_xattr_get(struct inode *inode, const char *name, void *buffer,
  			if (rxh->h_magic != cpu_to_le32(REISERFS_XATTR_MAGIC)) {
  				unlock_page(page);
  				reiserfs_put_page(page);
@@ -1455,7 +1455,7 @@ index bd073836e141..839911c12a8c 100644
  				err = -EIO;
  				goto out_unlock;
  			}
-@@ -749,9 +753,13 @@ reiserfs_xattr_get(struct inode *inode, const char *name, void *buffer,
+@@ -742,9 +746,13 @@ reiserfs_xattr_get(struct inode *inode, const char *name, void *buffer,
  
  	if (xattr_hash(buffer, isize - sizeof(struct reiserfs_xattr_header)) !=
  	    hash) {

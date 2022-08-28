@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 24 Aug 2022 08:07:06 +0200
+Subject: [PATCH] {BUG in 6.0-rc1} sound/soc/sof/mediatek/mt8195: print the
+ right variable
+
+---
+ sound/soc/sof/mediatek/mt8195/mt8195.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/soc/sof/mediatek/mt8195/mt8195.c b/sound/soc/sof/mediatek/mt8195/mt8195.c
+index 9c146015cd1b..c55e0e94196e 100644
+--- a/sound/soc/sof/mediatek/mt8195/mt8195.c
++++ b/sound/soc/sof/mediatek/mt8195/mt8195.c
+@@ -287,7 +287,7 @@ static int adsp_shared_base_ioremap(struct platform_device *pdev, void *data)
+ 					 adsp->shared_size);
+ 	if (!adsp->shared_dram) {
+ 		dev_err(dev, "failed to ioremap base %pa size %#x\n",
+-			adsp->shared_dram, adsp->shared_size);
++			&adsp->pa_shared_dram /* BUG */, adsp->shared_size);
+ 		return -ENOMEM;
+ 	}
+ 
+-- 

@@ -23,8 +23,7 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  fs/xfs/xfs_log_recover.c                                 | 2 +-
  include/linux/sunrpc/cache.h                             | 2 +-
  net/mac80211/mlme.c                                      | 2 +-
- net/mac80211/tx.c                                        | 2 +-
- 19 files changed, 29 insertions(+), 12 deletions(-)
+ 18 files changed, 28 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c
 index 182118e3fd5f..e6ec76cd1c01 100644
@@ -42,10 +41,10 @@ index 182118e3fd5f..e6ec76cd1c01 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i915_request.c
-index 73d5195146b0..239ea740b0b4 100644
+index 62fad16a55e8..63b6bf9f1bb4 100644
 --- a/drivers/gpu/drm/i915/i915_request.c
 +++ b/drivers/gpu/drm/i915/i915_request.c
-@@ -1846,7 +1846,7 @@ static unsigned long local_clock_ns(unsigned int *cpu)
+@@ -1859,7 +1859,7 @@ static unsigned long local_clock_ns(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
@@ -55,10 +54,10 @@ index 73d5195146b0..239ea740b0b4 100644
  	if (time_after(local_clock_ns(&this_cpu), timeout))
  		return true;
 diff --git a/drivers/gpu/drm/qxl/qxl_draw.c b/drivers/gpu/drm/qxl/qxl_draw.c
-index a93de9e1977a..b36200593c20 100644
+index 3a3e127ce297..8e06c821e18b 100644
 --- a/drivers/gpu/drm/qxl/qxl_draw.c
 +++ b/drivers/gpu/drm/qxl/qxl_draw.c
-@@ -140,7 +140,7 @@ void qxl_draw_dirty_fb(struct qxl_device *qdev,
+@@ -141,7 +141,7 @@ void qxl_draw_dirty_fb(struct qxl_device *qdev,
  	int i;
  	int left, right, top, bottom;
  	int width, height;
@@ -212,7 +211,7 @@ index 7a03aeb9f4c9..dc108ad9b133 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index bf2f4bc89193..bcaed7e698cc 100644
+index 6cdfd64bc56b..6204d97feaa4 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
 @@ -2027,7 +2027,7 @@ xfs_difree_finobt(
@@ -225,7 +224,7 @@ index bf2f4bc89193..bcaed7e698cc 100644
  	int				error;
  	int				i;
 diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 5f7e4e6e33ce..f3a64a6cb15d 100644
+index 17e923b9c5fa..1fdf8eee8ca3 100644
 --- a/fs/xfs/xfs_log_recover.c
 +++ b/fs/xfs/xfs_log_recover.c
 @@ -943,7 +943,7 @@ xlog_verify_tail(
@@ -251,11 +250,11 @@ index ec5a555df96f..5df74974badb 100644
  
  	if (get_time(bpp, &rv))
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 58d48dcae030..6a4f1da544c2 100644
+index 3d4ab711f0d1..08a28bb8f85e 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1646,7 +1646,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
- {
+@@ -2034,7 +2034,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_link_data *link,
+ 	struct ieee80211_sub_if_data *sdata = link->sdata;
  	bool has_80211h_pwr = false, has_cisco_pwr = false;
  	int chan_pwr = 0, pwr_reduction_80211h = 0;
 -	int pwr_level_cisco, pwr_level_80211h;
@@ -263,17 +262,4 @@ index 58d48dcae030..6a4f1da544c2 100644
  	int new_ap_level;
  	__le16 capab = mgmt->u.probe_resp.capab_info;
  
-diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index c425f4fb7c2e..7466700dfefc 100644
---- a/net/mac80211/tx.c
-+++ b/net/mac80211/tx.c
-@@ -2568,7 +2568,7 @@ static struct sk_buff *ieee80211_build_hdr(struct ieee80211_sub_if_data *sdata,
- 	bool tdls_peer;
- 	bool multicast;
- 	u16 info_id = 0;
--	struct ieee80211_chanctx_conf *chanctx_conf;
-+	struct ieee80211_chanctx_conf *chanctx_conf = NULL; /* gcc -Wmaybe-uninitialized false positive */
- 	struct ieee80211_sub_if_data *ap_sdata;
- 	enum nl80211_band band;
- 	int ret;
 -- 

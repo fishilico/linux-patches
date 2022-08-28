@@ -1,0 +1,82 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Tue, 23 Aug 2022 20:40:24 +0200
+Subject: [PATCH] {PRINTF} kernel/trace/rv/reactor_printk: improve
+ rv_printk_reaction
+
+Use a format string and constify the argument
+---
+ include/linux/rv.h               | 4 ++--
+ kernel/trace/rv/reactor_panic.c  | 4 ++--
+ kernel/trace/rv/reactor_printk.c | 4 ++--
+ kernel/trace/rv/rv_reactors.c    | 2 +-
+ 4 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/rv.h b/include/linux/rv.h
+index 8883b41d88ec..8c17909896cb 100644
+--- a/include/linux/rv.h
++++ b/include/linux/rv.h
+@@ -38,7 +38,7 @@ union rv_task_monitor {
+ struct rv_reactor {
+ 	const char		*name;
+ 	const char		*description;
+-	void			(*react)(char *msg);
++	void			(*react)(const char *msg);
+ };
+ #endif
+ 
+@@ -50,7 +50,7 @@ struct rv_monitor {
+ 	void			(*disable)(void);
+ 	void			(*reset)(void);
+ #ifdef CONFIG_RV_REACTORS
+-	void			(*react)(char *msg);
++	void			(*react)(const char *msg);
+ #endif
+ };
+ 
+diff --git a/kernel/trace/rv/reactor_panic.c b/kernel/trace/rv/reactor_panic.c
+index b698d05dd069..4c94bd0c7de4 100644
+--- a/kernel/trace/rv/reactor_panic.c
++++ b/kernel/trace/rv/reactor_panic.c
+@@ -13,9 +13,9 @@
+ #include <linux/init.h>
+ #include <linux/rv.h>
+ 
+-static void rv_panic_reaction(char *msg)
++static void rv_panic_reaction(const char *msg)
+ {
+-	panic(msg);
++	panic("%s", msg);
+ }
+ 
+ static struct rv_reactor rv_panic = {
+diff --git a/kernel/trace/rv/reactor_printk.c b/kernel/trace/rv/reactor_printk.c
+index 31899f953af4..d1221d11da00 100644
+--- a/kernel/trace/rv/reactor_printk.c
++++ b/kernel/trace/rv/reactor_printk.c
+@@ -12,9 +12,9 @@
+ #include <linux/init.h>
+ #include <linux/rv.h>
+ 
+-static void rv_printk_reaction(char *msg)
++static void rv_printk_reaction(const char *msg)
+ {
+-	printk_deferred(msg);
++	printk_deferred("%s", msg);
+ }
+ 
+ static struct rv_reactor rv_printk = {
+diff --git a/kernel/trace/rv/rv_reactors.c b/kernel/trace/rv/rv_reactors.c
+index 6aae106695b6..bf04c016572c 100644
+--- a/kernel/trace/rv/rv_reactors.c
++++ b/kernel/trace/rv/rv_reactors.c
+@@ -469,7 +469,7 @@ void reactor_cleanup_monitor(struct rv_monitor_def *mdef)
+ /*
+  * Nop reactor register
+  */
+-static void rv_nop_reaction(char *msg)
++static void rv_nop_reaction(const char *msg)
+ {
+ }
+ 
+-- 

@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 24 Aug 2022 08:15:09 +0200
+Subject: [PATCH] {BUG in 6.0-rc1} drivers/net/usb/ax88179_178a: do not deref
+ tmp
+
+Found with deref checker plugin
+---
+ drivers/net/usb/ax88179_178a.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/usb/ax88179_178a.c b/drivers/net/usb/ax88179_178a.c
+index aff39bf3161d..71d45852f5bf 100644
+--- a/drivers/net/usb/ax88179_178a.c
++++ b/drivers/net/usb/ax88179_178a.c
+@@ -1637,7 +1637,7 @@ static int ax88179_reset(struct usbnet *dev)
+ 	/* Check if WoL is supported */
+ 	ax179_data->wol_supported = 0;
+ 	if (ax88179_read_cmd(dev, AX_ACCESS_MAC, AX_MONITOR_MOD,
+-			     1, 1, &tmp) > 0)
++			     1, 1, tmp /* BUG */) > 0)
+ 		ax179_data->wol_supported = WAKE_MAGIC | WAKE_PHY;
+ 
+ 	ax88179_led_setting(dev);
+-- 

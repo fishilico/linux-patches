@@ -5,9 +5,10 @@ Subject: [PATCH] {PRINTF} drivers/net/ethernet/netronome/nfp: silence
  -Wformat-security
 
 ---
- drivers/net/ethernet/netronome/nfp/devlink_param.c | 2 +-
- drivers/net/ethernet/netronome/nfp/nfp_main.c      | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/netronome/nfp/devlink_param.c   | 2 +-
+ drivers/net/ethernet/netronome/nfp/nfp_main.c        | 2 +-
+ drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/netronome/nfp/devlink_param.c b/drivers/net/ethernet/netronome/nfp/devlink_param.c
 index db297ee4d7ad..1428982e7e1b 100644
@@ -23,10 +24,10 @@ index db297ee4d7ad..1428982e7e1b 100644
  					     arg->default_hi_val);
  	if (err) {
 diff --git a/drivers/net/ethernet/netronome/nfp/nfp_main.c b/drivers/net/ethernet/netronome/nfp/nfp_main.c
-index 613340a9a67a..d09d6c821463 100644
+index 5d15aa19d1ea..6c21a15653a4 100644
 --- a/drivers/net/ethernet/netronome/nfp/nfp_main.c
 +++ b/drivers/net/ethernet/netronome/nfp/nfp_main.c
-@@ -455,7 +455,7 @@ nfp_get_fw_policy_value(struct pci_dev *pdev, struct nfp_nsp *nsp,
+@@ -457,7 +457,7 @@ nfp_get_fw_policy_value(struct pci_dev *pdev, struct nfp_nsp *nsp,
  	long hi_val;
  	int err;
  
@@ -35,4 +36,17 @@ index 613340a9a67a..d09d6c821463 100644
  	err = nfp_nsp_hwinfo_lookup_optional(nsp, hwinfo, sizeof(hwinfo),
  					     default_val);
  	if (err)
+diff --git a/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c b/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
+index 388df8de80e1..def37a4131b2 100644
+--- a/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
++++ b/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
+@@ -564,7 +564,7 @@ static void nfp_get_self_test_strings(struct net_device *netdev, u8 *data)
+ 
+ 	for (i = 0; i < NFP_TEST_TOTAL_NUM; i++)
+ 		if (nfp_self_test[i].is_supported(netdev))
+-			ethtool_sprintf(&data, nfp_self_test[i].name);
++			ethtool_sprintf(&data, "%s", nfp_self_test[i].name);
+ }
+ 
+ static int nfp_get_self_test_count(struct net_device *netdev)
 -- 

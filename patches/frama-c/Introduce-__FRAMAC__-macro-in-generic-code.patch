@@ -34,7 +34,7 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  19 files changed, 237 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 4d3efaa20b7b..09c4ce24b89c 100644
+index f15f2f041596..b9667744bb11 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -38,7 +38,7 @@
@@ -146,10 +146,10 @@ index 397d6e8f57c3..3831a4fd77af 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __user		__attribute__((noderef, address_space(__user)))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index fe29ac7cc469..b59399b85fdd 100644
+index 0d435d0edbcb..cb8f6178393a 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -873,9 +873,14 @@ set_cpu_dying(unsigned int cpu, bool dying)
+@@ -897,9 +897,14 @@ set_cpu_dying(unsigned int cpu, bool dying)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -209,7 +209,7 @@ index 039e7e0c7378..a256a7ca47cf 100644
  
  #ifndef ndelay
 diff --git a/include/linux/limits.h b/include/linux/limits.h
-index b568b9c30bbf..6fc31ffb1344 100644
+index f6bcc9369010..e310c69d8607 100644
 --- a/include/linux/limits.h
 +++ b/include/linux/limits.h
 @@ -4,8 +4,12 @@
@@ -224,8 +224,8 @@ index b568b9c30bbf..6fc31ffb1344 100644
 +#include <vdso/limits.h>
 +#endif /* __FRAMAC__ */
  #define SIZE_MAX	(~(size_t)0)
+ #define SSIZE_MAX	((ssize_t)(SIZE_MAX >> 1))
  #define PHYS_ADDR_MAX	(~(phys_addr_t)0)
- 
 diff --git a/include/linux/mfd/wl1273-core.h b/include/linux/mfd/wl1273-core.h
 index c28cf76d5c31..ac5f907262a2 100644
 --- a/include/linux/mfd/wl1273-core.h
@@ -386,7 +386,7 @@ index f1221d11f8e5..8fa3726689ca 100644
  /** check_shl_overflow() - Calculate a left-shifted value and check overflow
   *
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 81a57b498f22..4796a1787bdb 100644
+index 060af91bafcd..333ffbcbc95b 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -177,6 +177,8 @@ typedef int __bitwise pci_power_t;
@@ -504,7 +504,7 @@ index 6f86fda5e432..7545ba5cf686 100644
  	{
  		int i;
 diff --git a/kernel/time/time.c b/kernel/time/time.c
-index 29923b20e0e4..5f0f0bf76e91 100644
+index 526257b3727c..8252c616d169 100644
 --- a/kernel/time/time.c
 +++ b/kernel/time/time.c
 @@ -478,17 +478,21 @@ EXPORT_SYMBOL(ns_to_kernel_old_timeval);

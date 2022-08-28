@@ -479,6 +479,9 @@ then
         echo 'CONFIG_RCU_EXP_KTHREAD=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_TEGRA186_GPC_DMA=m' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_XEN_VIRTIO=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_RCU_NOCB_CPU_CB_BOOST=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_XEN_VIRTIO_FORCE_GRANT=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_RV_MON_WIP=y' >> "$KBUILD_OUTPUT/.config"
     fi
 
     # Merge options

@@ -27,12 +27,12 @@ index 7951a5dc73b6..dce09dd2ed79 100644
  		pr_cont("unsupported Netburst CPU model %d ",
  			boot_cpu_data.x86_model);
 diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index fd5dead8371c..178d21325b45 100644
+index 2d7ea5480ec3..5887833a5eba 100644
 --- a/arch/x86/kernel/cpu/intel.c
 +++ b/arch/x86/kernel/cpu/intel.c
 @@ -686,6 +686,7 @@ static void init_intel(struct cpuinfo_x86 *c)
  			set_cpu_cap(c, X86_FEATURE_BTS);
- 		if (!(l1 & (1<<12)))
+ 		if (!(l1 & MSR_IA32_MISC_ENABLE_PEBS_UNAVAIL))
  			set_cpu_cap(c, X86_FEATURE_PEBS);
 +		(void)l2; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
  	}
@@ -79,10 +79,10 @@ index bb1c3f5f60c8..c54fbf686402 100644
  	/* If all the bits were set in MSR, return success */
  	if (l != max_cbm)
 diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index d456ce21c255..626d51c49121 100644
+index 58a6ea472db9..8566ef31d3f5 100644
 --- a/arch/x86/kernel/process.c
 +++ b/arch/x86/kernel/process.c
-@@ -902,6 +902,7 @@ void __init arch_post_acpi_subsys_init(void)
+@@ -921,6 +921,7 @@ void __init arch_post_acpi_subsys_init(void)
  	rdmsr(MSR_K8_INT_PENDING_MSG, lo, hi);
  	if (!(lo & K8_INTP_C1E_ACTIVE_MASK))
  		return;
