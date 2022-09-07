@@ -13,11 +13,11 @@ list of disabled warnings.
  drivers/misc/cxl/Makefile              |  2 +-
  drivers/staging/greybus/tools/Makefile |  8 ++++++-
  mm/Makefile                            |  4 ++--
- scripts/Makefile.extrawarn             | 14 ++++++------
- 8 files changed, 47 insertions(+), 41 deletions(-)
+ scripts/Makefile.extrawarn             | 28 ++++++++++++------------
+ 8 files changed, 54 insertions(+), 48 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 952d354069a4..dd36bc9bd255 100644
+index a4f71076cacb..b1052abd81b9 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -495,7 +495,7 @@ ZSTD		= zstd
@@ -227,7 +227,7 @@ index 9a564f836403..676760122e92 100644
  mmu-y			:= nommu.o
  mmu-$(CONFIG_MMU)	:= highmem.o memory.o mincore.o \
 diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
-index 0621c39a3955..2990f27baf7a 100644
+index 6ae482158bc4..188840dbb05c 100644
 --- a/scripts/Makefile.extrawarn
 +++ b/scripts/Makefile.extrawarn
 @@ -6,7 +6,7 @@
@@ -239,18 +239,37 @@ index 0621c39a3955..2990f27baf7a 100644
  
  # backward compatibility
  KBUILD_EXTRA_WARN ?= $(KBUILD_ENABLE_EXTRA_GCC_CHECKS)
-@@ -46,12 +46,12 @@ else
+@@ -46,24 +46,24 @@ else
  # Suppress them by using -Wno... except for W=1.
  
  ifdef CONFIG_CC_IS_CLANG
 -KBUILD_CFLAGS += -Wno-initializer-overrides
++#KBUILD_CFLAGS += -Wno-initializer-overrides
+ # Clang before clang-16 would warn on default argument promotions.
+-ifeq ($(shell [ $(CONFIG_CLANG_VERSION) -lt 160000 ] && echo y),y)
++#ifeq ($(shell [ $(CONFIG_CLANG_VERSION) -lt 160000 ] && echo y),y)
+ # Disable -Wformat
 -KBUILD_CFLAGS += -Wno-format
++#KBUILD_CFLAGS += -Wno-format
+ # Then re-enable flags that were part of the -Wformat group that aren't
+ # problematic.
+-KBUILD_CFLAGS += -Wformat-extra-args -Wformat-invalid-specifier
+-KBUILD_CFLAGS += -Wformat-zero-length -Wnonnull
++#KBUILD_CFLAGS += -Wformat-extra-args -Wformat-invalid-specifier
++#KBUILD_CFLAGS += -Wformat-zero-length -Wnonnull
+ # Requires clang-12+.
+-ifeq ($(shell [ $(CONFIG_CLANG_VERSION) -ge 120000 ] && echo y),y)
+-KBUILD_CFLAGS += -Wformat-insufficient-args
+-endif
+-endif
 -KBUILD_CFLAGS += -Wno-sign-compare
 -KBUILD_CFLAGS += $(call cc-disable-warning, pointer-to-enum-cast)
 -KBUILD_CFLAGS += -Wno-tautological-constant-out-of-range-compare
 -KBUILD_CFLAGS += $(call cc-disable-warning, unaligned-access)
-+#KBUILD_CFLAGS += -Wno-initializer-overrides
-+#KBUILD_CFLAGS += -Wno-format
++#ifeq ($(shell [ $(CONFIG_CLANG_VERSION) -ge 120000 ] && echo y),y)
++#KBUILD_CFLAGS += -Wformat-insufficient-args
++#endif
++#endif
 +#KBUILD_CFLAGS += -Wno-sign-compare
 +#KBUILD_CFLAGS += $(call cc-disable-warning, pointer-to-enum-cast)
 +#KBUILD_CFLAGS += -Wno-tautological-constant-out-of-range-compare
