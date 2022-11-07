@@ -728,7 +728,7 @@ index 3d7a35d6a18b..b291e8b5a7e3 100644
  			if (buffer != small_buf)
  				kfree(buffer);
 diff --git a/fs/reiserfs/prints.c b/fs/reiserfs/prints.c
-index 30319dc33c18..1c03a919e752 100644
+index 84a194b77f19..21878bb119c5 100644
 --- a/fs/reiserfs/prints.c
 +++ b/fs/reiserfs/prints.c
 @@ -200,7 +200,7 @@ static char *is_there_reiserfs_struct(char *fmt, int *what)
@@ -750,7 +750,7 @@ index 30319dc33c18..1c03a919e752 100644
  	do_reiserfs_warning(fmt);
  	printk(error_buf);
 @@ -459,14 +459,26 @@ static int print_internal(struct buffer_head *bh, int first, int last)
- 		to = last < B_NR_ITEMS(bh) ? last : B_NR_ITEMS(bh);
+ 		to = min_t(int, last, B_NR_ITEMS(bh));
  	}
  
 +#pragma GCC diagnostic push
@@ -904,7 +904,7 @@ index 3aa928ec527a..fafa4345441e 100644
  void store_print_tb(struct tree_balance *tb);
  void print_cur_tb(char *mes);
 diff --git a/fs/reiserfs/stree.c b/fs/reiserfs/stree.c
-index 1907cddbed89..5d1a29313722 100644
+index 2928552c8e38..9da600ed4be8 100644
 --- a/fs/reiserfs/stree.c
 +++ b/fs/reiserfs/stree.c
 @@ -20,8 +20,12 @@
@@ -1285,7 +1285,7 @@ index 1907cddbed89..5d1a29313722 100644
  			goto error_out;
  		}
 diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index c88cd2ce0665..dc208756f393 100644
+index 929acce6e731..cfd6bccd4d5c 100644
 --- a/fs/reiserfs/super.c
 +++ b/fs/reiserfs/super.c
 @@ -326,17 +326,25 @@ static int finish_unfinished(struct super_block *s)
@@ -1437,7 +1437,7 @@ index b0ae088dffc7..291177b3c231 100644
  #ifdef CONFIG_REISERFS_CHECK
  		pos = le_ih_k_offset(&s_ih) - 1 +
 diff --git a/fs/reiserfs/xattr.c b/fs/reiserfs/xattr.c
-index 436641369283..38869943c561 100644
+index 8b2d52443f41..57f7ba9f04d4 100644
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
 @@ -722,10 +722,14 @@ reiserfs_xattr_get(struct inode *inode, const char *name, void *buffer,

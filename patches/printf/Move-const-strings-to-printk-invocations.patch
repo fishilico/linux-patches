@@ -43,17 +43,16 @@ This fixes errors like:
  drivers/scsi/esas2r/esas2r_log.c             |   6 +-
  drivers/scsi/fnic/fnic_trace.c               |   5 +-
  drivers/tty/serial/st-asc.c                  |   4 +-
- fs/ext4/super.c                              |  13 +-
+ fs/ext4/super.c                              |   3 -
  fs/nilfs2/sysfs.c                            | 168 +++++++++----------
  fs/ntfs/super.c                              |   7 +-
  kernel/power/suspend_test.c                  |  33 +---
  net/802/psnap.c                              |   5 +-
  net/core/net-sysfs.c                         |  56 +++----
- net/decnet/af_decnet.c                       |   5 +-
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
  sound/usb/mixer_scarlett_gen2.c              |  12 +-
- 27 files changed, 180 insertions(+), 271 deletions(-)
+ 26 files changed, 171 insertions(+), 265 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 5e86145db0e2..4b9d13d8bafc 100644
@@ -171,10 +170,10 @@ index a0c4c42e56b9..8b651f5f9cac 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index fa71a5d12e87..74ac96ad8003 100644
+index 7b0d4ab894c8..f47ed5751b24 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
-@@ -329,14 +329,6 @@ static void dump_pagetable(unsigned long address)
+@@ -350,14 +350,6 @@ static void dump_pagetable(unsigned long address)
  
  #else /* CONFIG_X86_64: */
  
@@ -189,7 +188,7 @@ index fa71a5d12e87..74ac96ad8003 100644
  
  static int bad_address(void *p)
  {
-@@ -433,7 +425,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+@@ -454,7 +446,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  	address |= 0xffffffffUL << 32;
  	if ((address >= (u64)_stext && address <= (u64)_etext) ||
  	    (address >= MODULES_VADDR && address <= MODULES_END)) {
@@ -256,26 +255,28 @@ index c4f89ae8bc3b..6a3e90d6b5fa 100644
  	}
  	of_clk_parent_fill(d->np, d->parent_names, nr_inputs);
 diff --git a/drivers/iommu/omap-iommu-debug.c b/drivers/iommu/omap-iommu-debug.c
-index a99afb5d9011..60dab42e6538 100644
+index 259f65291d90..64d359732bfd 100644
 --- a/drivers/iommu/omap-iommu-debug.c
 +++ b/drivers/iommu/omap-iommu-debug.c
-@@ -30,9 +30,8 @@ static inline bool is_omap_iommu_detached(struct omap_iommu *obj)
+@@ -30,11 +30,10 @@ static inline bool is_omap_iommu_detached(struct omap_iommu *obj)
  #define pr_reg(name)							\
  	do {								\
  		ssize_t bytes;						\
 -		const char *str = "%20s: %08x\n";			\
  		const int maxcol = 32;					\
--		bytes = snprintf(p, maxcol, str, __stringify(name),	\
-+		bytes = snprintf(p, maxcol, "%20s: %08x\n", __stringify(name),	\
+ 		if (len < maxcol)					\
+ 			goto out;					\
+-		bytes = scnprintf(p, maxcol, str, __stringify(name),	\
++		bytes = scnprintf(p, maxcol, "%20s: %08x\n", __stringify(name),	\
  				 iommu_read_reg(obj, MMU_##name));	\
  		p += bytes;						\
  		len -= bytes;						\
 diff --git a/drivers/misc/habanalabs/gaudi/gaudi.c b/drivers/misc/habanalabs/gaudi/gaudi.c
-index cb2988e2c7a8..060fda468d82 100644
+index 92560414e843..b5ffe7319cc0 100644
 --- a/drivers/misc/habanalabs/gaudi/gaudi.c
 +++ b/drivers/misc/habanalabs/gaudi/gaudi.c
-@@ -8070,9 +8070,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
- 					u8 mask_len, struct seq_file *s)
+@@ -8084,9 +8084,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+ 		struct engines_data *e)
  {
  	struct gaudi_device *gaudi = hdev->asic_specific;
 -	const char *fmt = "%-5d%-9s%#-14x%#-12x%#x\n";
@@ -284,58 +285,58 @@ index cb2988e2c7a8..060fda468d82 100644
  	unsigned long *mask = (unsigned long *)mask_arr;
  	u32 qm_glbl_sts0, qm_cgm_sts, dma_core_sts0, tpc_cfg_sts, mme_arch_sts;
  	bool is_idle = true, is_eng_idle, is_slave;
-@@ -8098,7 +8095,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8112,7 +8109,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  		if (mask && !is_eng_idle)
  			set_bit(GAUDI_ENGINE_ID_DMA_0 + dma_id, mask);
- 		if (s)
--			seq_printf(s, fmt, dma_id,
-+			seq_printf(s, "%-5d%-9s%#-14x%#-12x%#x\n", dma_id,
+ 		if (e)
+-			hl_engine_data_sprintf(e, fmt, dma_id,
++			hl_engine_data_sprintf(e, "%-5d%-9s%#-14x%#-12x%#x\n", dma_id,
  				is_eng_idle ? "Y" : "N", qm_glbl_sts0,
  				qm_cgm_sts, dma_core_sts0);
  	}
-@@ -8120,7 +8117,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8134,7 +8131,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  		if (mask && !is_eng_idle)
  			set_bit(GAUDI_ENGINE_ID_TPC_0 + i, mask);
- 		if (s)
--			seq_printf(s, fmt, i,
-+			seq_printf(s, "%-5d%-9s%#-14x%#-12x%#x\n", i,
+ 		if (e)
+-			hl_engine_data_sprintf(e, fmt, i,
++			hl_engine_data_sprintf(e, "%-5d%-9s%#-14x%#-12x%#x\n", i,
  				is_eng_idle ? "Y" : "N",
  				qm_glbl_sts0, qm_cgm_sts, tpc_cfg_sts);
  	}
-@@ -8149,11 +8146,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8163,11 +8160,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  			set_bit(GAUDI_ENGINE_ID_MME_0 + i, mask);
- 		if (s) {
+ 		if (e) {
  			if (!is_slave)
--				seq_printf(s, fmt, i,
-+				seq_printf(s, "%-5d%-9s%#-14x%#-12x%#x\n", i,
+-				hl_engine_data_sprintf(e, fmt, i,
++				hl_engine_data_sprintf(e, "%-5d%-9s%#-14x%#-12x%#x\n", i,
  					is_eng_idle ? "Y" : "N",
  					qm_glbl_sts0, qm_cgm_sts, mme_arch_sts);
  			else
--				seq_printf(s, mme_slave_fmt, i,
-+				seq_printf(s, "%-5d%-9s%-14s%-12s%#x\n", i,
+-				hl_engine_data_sprintf(e, mme_slave_fmt, i,
++				hl_engine_data_sprintf(e, "%-5d%-9s%-14s%-12s%#x\n", i,
  					is_eng_idle ? "Y" : "N", "-",
  					"-", mme_arch_sts);
  		}
-@@ -8175,7 +8172,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8190,7 +8187,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  			if (mask && !is_eng_idle)
  				set_bit(GAUDI_ENGINE_ID_NIC_0 + port, mask);
- 			if (s)
--				seq_printf(s, nic_fmt, port,
-+				seq_printf(s, "%-5d%-9s%#-14x%#x\n", port,
+ 			if (e)
+-				hl_engine_data_sprintf(e, nic_fmt, port,
++				hl_engine_data_sprintf(e, "%-5d%-9s%#-14x%#x\n", port,
  						is_eng_idle ? "Y" : "N",
  						qm_glbl_sts0, qm_cgm_sts);
  		}
-@@ -8190,7 +8187,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr,
+@@ -8205,7 +8202,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  			if (mask && !is_eng_idle)
  				set_bit(GAUDI_ENGINE_ID_NIC_0 + port, mask);
- 			if (s)
--				seq_printf(s, nic_fmt, port,
-+				seq_printf(s, "%-5d%-9s%#-14x%#x\n", port,
+ 			if (e)
+-				hl_engine_data_sprintf(e, nic_fmt, port,
++				hl_engine_data_sprintf(e, "%-5d%-9s%#-14x%#x\n", port,
  						is_eng_idle ? "Y" : "N",
  						qm_glbl_sts0, qm_cgm_sts);
  		}
 diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index a9b8be9f40dc..dad2e1c1ea90 100644
+index 18aa54460d36..dd4ece9a126c 100644
 --- a/drivers/mtd/mtdcore.c
 +++ b/drivers/mtd/mtdcore.c
 @@ -341,12 +341,10 @@ static bool mtd_expert_analysis_mode;
@@ -404,7 +405,7 @@ index 9fb567524220..b7c79d2c7871 100644
  	return status;
  }
 diff --git a/drivers/net/hamradio/baycom_epp.c b/drivers/net/hamradio/baycom_epp.c
-index 183110f2c265..00af5edd197c 100644
+index c32628f19736..6c5c8ec80e9b 100644
 --- a/drivers/net/hamradio/baycom_epp.c
 +++ b/drivers/net/hamradio/baycom_epp.c
 @@ -49,9 +49,6 @@
@@ -454,7 +455,7 @@ index c251e04ae047..fee253895c85 100644
  	return status;
  }
 diff --git a/drivers/net/wireless/realtek/rtw89/debug.c b/drivers/net/wireless/realtek/rtw89/debug.c
-index 829c61da99bb..34888b7011ea 100644
+index 730e83d54257..9cf0c99d363f 100644
 --- a/drivers/net/wireless/realtek/rtw89/debug.c
 +++ b/drivers/net/wireless/realtek/rtw89/debug.c
 @@ -466,21 +466,16 @@ static const struct txpwr_map __txpwr_map_lmt_ru = {
@@ -483,7 +484,7 @@ index 829c61da99bb..34888b7011ea 100644
  			   buf[cur + 5], buf[cur + 6], buf[cur + 7]);
  		return 8;
 diff --git a/drivers/remoteproc/keystone_remoteproc.c b/drivers/remoteproc/keystone_remoteproc.c
-index 594a9b43b7ae..2089fb697161 100644
+index 95b39741925d..f673c1ca1295 100644
 --- a/drivers/remoteproc/keystone_remoteproc.c
 +++ b/drivers/remoteproc/keystone_remoteproc.c
 @@ -366,7 +366,6 @@ static int keystone_rproc_probe(struct platform_device *pdev)
@@ -560,7 +561,7 @@ index e03967463561..1eab88310fc2 100644
  		tm.tm_hour, tm.tm_min, tm.tm_sec,
  		tdata->time_stamp.tv_nsec, tdata->host_no,
 diff --git a/drivers/tty/serial/st-asc.c b/drivers/tty/serial/st-asc.c
-index cce42f4c9bc2..7e65b35eeaf3 100644
+index fcecea689a0d..2fc6a7aba70a 100644
 --- a/drivers/tty/serial/st-asc.c
 +++ b/drivers/tty/serial/st-asc.c
 @@ -978,10 +978,8 @@ static struct platform_driver asc_serial_driver = {
@@ -576,10 +577,10 @@ index cce42f4c9bc2..7e65b35eeaf3 100644
  	ret = uart_register_driver(&asc_uart_driver);
  	if (ret)
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 9a66abcca1a8..22e92ed1bc25 100644
+index 989365b878a6..5c68fe1be701 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1749,9 +1749,6 @@ static const struct fs_parameter_spec ext4_param_specs[] = {
+@@ -1741,9 +1741,6 @@ static const struct fs_parameter_spec ext4_param_specs[] = {
  
  #define DEFAULT_JOURNAL_IOPRIO (IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 3))
  
@@ -589,30 +590,6 @@ index 9a66abcca1a8..22e92ed1bc25 100644
  
  #define MOPT_SET	0x0001
  #define MOPT_CLEAR	0x0002
-@@ -2122,7 +2119,10 @@ static int ext4_parse_param(struct fs_context *fc, struct fs_parameter *param)
- #endif
- 	case Opt_noacl:
- 	case Opt_nouser_xattr:
--		ext4_msg(NULL, KERN_WARNING, deprecated_msg, param->key, "3.5");
-+		ext4_msg(NULL, KERN_WARNING,
-+		        "Mount option \"%s\" will be removed by %s\n"
-+		        "Contact linux-ext4@vger.kernel.org if you think we should keep it.\n",
-+		        param->key, "3.5");
- 		break;
- 	case Opt_sb:
- 		if (fc->purpose == FS_CONTEXT_FOR_RECONFIGURE) {
-@@ -2141,7 +2141,10 @@ static int ext4_parse_param(struct fs_context *fc, struct fs_parameter *param)
- 		ctx_set_mount_flag(ctx, EXT4_MF_FS_ABORTED);
- 		return 0;
- 	case Opt_i_version:
--		ext4_msg(NULL, KERN_WARNING, deprecated_msg, param->key, "5.20");
-+		ext4_msg(NULL, KERN_WARNING,
-+		        "Mount option \"%s\" will be removed by %s\n"
-+		        "Contact linux-ext4@vger.kernel.org if you think we should keep it.\n",
-+		        param->key, "5.20");
- 		ext4_msg(NULL, KERN_WARNING, "Use iversion instead\n");
- 		ctx_set_flags(ctx, SB_I_VERSION);
- 		return 0;
 diff --git a/fs/nilfs2/sysfs.c b/fs/nilfs2/sysfs.c
 index 379d22e28ed6..2a8c3d49ef4e 100644
 --- a/fs/nilfs2/sysfs.c
@@ -1044,7 +1021,7 @@ index 1406bfdbda13..ddd5a00bd483 100644
  	}
  
 diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index d61afd21aab5..da45c531c0eb 100644
+index 8409d41405df..8820265e6d7a 100644
 --- a/net/core/net-sysfs.c
 +++ b/net/core/net-sysfs.c
 @@ -28,10 +28,6 @@
@@ -1082,15 +1059,15 @@ index d61afd21aab5..da45c531c0eb 100644
  {
  	struct net_device *ndev = to_net_dev(dev);
  
--	return sprintf(buf, fmt_dec, dev_get_iflink(ndev));
-+	return sprintf(buf, "%d\n", dev_get_iflink(ndev));
+-	return sysfs_emit(buf, fmt_dec, dev_get_iflink(ndev));
++	return sysfs_emit(buf, "%d\n", dev_get_iflink(ndev));
  }
  static DEVICE_ATTR_RO(iflink);
  
  static ssize_t format_name_assign_type(const struct net_device *dev, char *buf)
  {
--	return sprintf(buf, fmt_dec, dev->name_assign_type);
-+	return sprintf(buf, "%d\n", dev->name_assign_type);
+-	return sysfs_emit(buf, fmt_dec, dev->name_assign_type);
++	return sysfs_emit(buf, "%d\n", dev->name_assign_type);
  }
  
  static ssize_t name_assign_type_show(struct device *dev,
@@ -1098,8 +1075,8 @@ index d61afd21aab5..da45c531c0eb 100644
  	struct net_device *netdev = to_net_dev(dev);
  
  	if (netif_running(netdev))
--		return sprintf(buf, fmt_dec, !!netif_carrier_ok(netdev));
-+		return sprintf(buf, "%d\n", !!netif_carrier_ok(netdev));
+-		return sysfs_emit(buf, fmt_dec, !!netif_carrier_ok(netdev));
++		return sysfs_emit(buf, "%d\n", !!netif_carrier_ok(netdev));
  
  	return -EINVAL;
  }
@@ -1107,8 +1084,8 @@ index d61afd21aab5..da45c531c0eb 100644
  		struct ethtool_link_ksettings cmd;
  
  		if (!__ethtool_get_link_ksettings(netdev, &cmd))
--			ret = sprintf(buf, fmt_dec, cmd.base.speed);
-+			ret = sprintf(buf, "%d\n", cmd.base.speed);
+-			ret = sysfs_emit(buf, fmt_dec, cmd.base.speed);
++			ret = sysfs_emit(buf, "%d\n", cmd.base.speed);
  	}
  	rtnl_unlock();
  	return ret;
@@ -1116,8 +1093,8 @@ index d61afd21aab5..da45c531c0eb 100644
  	struct net_device *netdev = to_net_dev(dev);
  
  	if (netif_running(netdev))
--		return sprintf(buf, fmt_dec, !!netif_testing(netdev));
-+		return sprintf(buf, "%d\n", !!netif_testing(netdev));
+-		return sysfs_emit(buf, fmt_dec, !!netif_testing(netdev));
++		return sysfs_emit(buf, "%d\n", !!netif_testing(netdev));
  
  	return -EINVAL;
  }
@@ -1125,8 +1102,8 @@ index d61afd21aab5..da45c531c0eb 100644
  	struct net_device *netdev = to_net_dev(dev);
  
  	if (netif_running(netdev))
--		return sprintf(buf, fmt_dec, !!netif_dormant(netdev));
-+		return sprintf(buf, "%d\n", !!netif_dormant(netdev));
+-		return sysfs_emit(buf, fmt_dec, !!netif_dormant(netdev));
++		return sysfs_emit(buf, "%d\n", !!netif_dormant(netdev));
  
  	return -EINVAL;
  }
@@ -1134,17 +1111,17 @@ index d61afd21aab5..da45c531c0eb 100644
  {
  	struct net_device *netdev = to_net_dev(dev);
  
--	return sprintf(buf, fmt_dec,
-+	return sprintf(buf, "%d\n",
- 		       atomic_read(&netdev->carrier_up_count) +
- 		       atomic_read(&netdev->carrier_down_count));
+-	return sysfs_emit(buf, fmt_dec,
++	return sysfs_emit(buf, "%d\n",
+ 			  atomic_read(&netdev->carrier_up_count) +
+ 			  atomic_read(&netdev->carrier_down_count));
  }
 @@ -337,7 +333,7 @@ static ssize_t carrier_up_count_show(struct device *dev,
  {
  	struct net_device *netdev = to_net_dev(dev);
  
--	return sprintf(buf, fmt_dec, atomic_read(&netdev->carrier_up_count));
-+	return sprintf(buf, "%d\n", atomic_read(&netdev->carrier_up_count));
+-	return sysfs_emit(buf, fmt_dec, atomic_read(&netdev->carrier_up_count));
++	return sysfs_emit(buf, "%d\n", atomic_read(&netdev->carrier_up_count));
  }
  static DEVICE_ATTR_RO(carrier_up_count);
  
@@ -1152,8 +1129,8 @@ index d61afd21aab5..da45c531c0eb 100644
  {
  	struct net_device *netdev = to_net_dev(dev);
  
--	return sprintf(buf, fmt_dec, atomic_read(&netdev->carrier_down_count));
-+	return sprintf(buf, "%d\n", atomic_read(&netdev->carrier_down_count));
+-	return sysfs_emit(buf, fmt_dec, atomic_read(&netdev->carrier_down_count));
++	return sysfs_emit(buf, "%d\n", atomic_read(&netdev->carrier_down_count));
  }
  static DEVICE_ATTR_RO(carrier_down_count);
  
@@ -1224,8 +1201,8 @@ index d61afd21aab5..da45c531c0eb 100644
  		return restart_syscall();
  
  	if (dev_isalive(netdev))
--		ret = sprintf(buf, fmt_dec, netdev->threaded);
-+		ret = sprintf(buf, "%d\n", netdev->threaded);
+-		ret = sysfs_emit(buf, fmt_dec, netdev->threaded);
++		ret = sysfs_emit(buf, "%d\n", netdev->threaded);
  
  	rtnl_unlock();
  	return ret;
@@ -1233,8 +1210,8 @@ index d61afd21aab5..da45c531c0eb 100644
  		struct rtnl_link_stats64 temp;
  		const struct rtnl_link_stats64 *stats = dev_get_stats(dev, &temp);
  
--		ret = sprintf(buf, fmt_u64, *(u64 *)(((u8 *)stats) + offset));
-+		ret = sprintf(buf, "%llu\n", *(u64 *)(((u8 *)stats) + offset));
+-		ret = sysfs_emit(buf, fmt_u64, *(u64 *)(((u8 *)stats) + offset));
++		ret = sysfs_emit(buf,  "%llu\n", *(u64 *)(((u8 *)stats) + offset));
  	}
  	read_unlock(&dev_base_lock);
  	return ret;
@@ -1242,31 +1219,11 @@ index d61afd21aab5..da45c531c0eb 100644
  {
  	unsigned long trans_timeout = atomic_long_read(&queue->trans_timeout);
  
--	return sprintf(buf, fmt_ulong, trans_timeout);
-+	return sprintf(buf, "%lu\n", trans_timeout);
+-	return sysfs_emit(buf, fmt_ulong, trans_timeout);
++	return sysfs_emit(buf, "%lu\n", trans_timeout);
  }
  
  static unsigned int get_netdev_queue_index(struct netdev_queue *queue)
-diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
-index 6582dfdfb932..c040770a4618 100644
---- a/net/decnet/af_decnet.c
-+++ b/net/decnet/af_decnet.c
-@@ -2341,14 +2341,11 @@ MODULE_AUTHOR("Linux DECnet Project Team");
- MODULE_LICENSE("GPL");
- MODULE_ALIAS_NETPROTO(PF_DECnet);
- 
--static const char banner[] __initconst = KERN_INFO
--"NET4: DECnet for Linux: V.2.5.68s (C) 1995-2003 Linux DECnet Project Team\n";
--
- static int __init decnet_init(void)
- {
- 	int rc;
- 
--	printk(banner);
-+	printk(KERN_INFO "NET4: DECnet for Linux: V.2.5.68s (C) 1995-2003 Linux DECnet Project Team\n");
- 
- 	rc = proto_register(&dn_proto, 1);
- 	if (rc != 0)
 diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
 index da7fe94bea2e..3c277e55afeb 100644
 --- a/net/llc/af_llc.c

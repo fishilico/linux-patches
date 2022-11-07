@@ -1,27 +1,18 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
-Date: Thu, 19 Sep 2019 21:48:43 +0200
+Date: Sat, 5 Nov 2022 21:43:43 +0100
 Subject: [PATCH] {PRINTF} fs/crypto: do not format unions directly
 
 This makes the printk format checker go wild.
 ---
- fs/crypto/keyring.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/crypto/keyring.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/fs/crypto/keyring.c b/fs/crypto/keyring.c
-index caee9f8620dd..9263a6be724b 100644
+index 1cca09aa43f8..07ca2d545300 100644
 --- a/fs/crypto/keyring.c
 +++ b/fs/crypto/keyring.c
-@@ -176,7 +176,7 @@ static void format_mk_description(
- 			const struct fscrypt_key_specifier *mk_spec)
- {
- 	sprintf(description, "%*phN",
--		master_key_spec_len(mk_spec), (u8 *)&mk_spec->u);
-+		master_key_spec_len(mk_spec), (u8 *)&mk_spec->u.__reserved);
- }
- 
- static void format_mk_users_keyring_description(
-@@ -882,7 +882,7 @@ static int check_for_busy_inodes(struct super_block *sb,
+@@ -936,7 +936,7 @@ static int check_for_busy_inodes(struct super_block *sb,
  	fscrypt_warn(NULL,
  		     "%s: %zu inode(s) still busy after removing key with %s %*phN%s",
  		     sb->s_id, busy_count, master_key_spec_type(&mk->mk_spec),

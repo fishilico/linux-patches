@@ -12,7 +12,7 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
  5 files changed, 39 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 208b87ce8858..7c7d9fef7f01 100644
+index e9bc46684106..7ec18db3a282 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
 @@ -439,6 +439,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
@@ -27,7 +27,7 @@ index 208b87ce8858..7c7d9fef7f01 100644
  	ngroups = real_ngroups;
  	if (flex_size > 1) {
  		ngroups = (real_ngroups + flex_size - 1) >>
-@@ -565,6 +570,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
+@@ -564,6 +569,9 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
  	}
  
  	return -1;
@@ -38,12 +38,12 @@ index 208b87ce8858..7c7d9fef7f01 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 9d780f415be3..49b75a117cf3 100644
+index bf2122af94e7..6b5f3e09fd23 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -710,6 +710,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
- 	long adjust_next = 0;
- 	int remove_next = 0;
+@@ -630,6 +630,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+ 	MA_STATE(mas, &mm->mm_mt, 0, 0);
+ 	struct vm_area_struct *exporter = NULL, *importer = NULL;
  
 +/* Variable "exporter" is not initialized but not used when the goto again branch is taken */
 +#ifndef __clang__
@@ -51,9 +51,9 @@ index 9d780f415be3..49b75a117cf3 100644
 +#pragma GCC diagnostic ignored "-Wjump-misses-init"
 +#endif
  	if (next && !insert) {
- 		struct vm_area_struct *exporter = NULL, *importer = NULL;
- 
-@@ -980,6 +985,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
+ 		if (end >= next->vm_end) {
+ 			/*
+@@ -857,6 +862,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
  	validate_mm(mm);
  
  	return 0;
@@ -64,10 +64,10 @@ index 9d780f415be3..49b75a117cf3 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 417463da4fac..9801c79b947e 100644
+index 1d9719e72f9d..e158e031a47b 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -2142,6 +2142,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -2245,6 +2245,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  	    unlikely((err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC))))
  		return err;
  
@@ -79,7 +79,7 @@ index 417463da4fac..9801c79b947e 100644
  	i = 0;
  	if (offset >= len)
  		goto drop_pages;
-@@ -2158,6 +2163,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -2261,6 +2266,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  
  drop_pages:
  		skb_shinfo(skb)->nr_frags = i;
@@ -115,7 +115,7 @@ index 452ff177e4da..606c478f0805 100644
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
-index 4d27300c287c..739086b48867 100644
+index 34d25f7a0687..3e55b61a9910 100644
 --- a/net/sched/cls_u32.c
 +++ b/net/sched/cls_u32.c
 @@ -103,6 +103,11 @@ static inline unsigned int u32_hash_fold(__be32 key,

@@ -136,7 +136,7 @@ index b9580a6515ee..288d27266674 100644
  		goto unlock;
  	}
 diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-index 32eb623aba5c..5466c9f8a855 100644
+index ac62ffc3d166..54e7325d94d0 100644
 --- a/fs/reiserfs/journal.c
 +++ b/fs/reiserfs/journal.c
 @@ -618,8 +618,8 @@ static void reiserfs_end_buffer_io_sync(struct buffer_head *bh, int uptodate)
@@ -231,7 +231,7 @@ index 32eb623aba5c..5466c9f8a855 100644
  			       get_commit_trans_id(commit),
  			       get_commit_trans_len(commit));
  		brelse(c_bh);
-@@ -2410,7 +2410,7 @@ static int journal_read(struct super_block *sb)
+@@ -2411,7 +2411,7 @@ static int journal_read(struct super_block *sb)
  		reiserfs_debug(sb, REISERFS_DEBUG_CODE,
  			       "journal-1153: found in "
  			       "header: first_unflushed_offset %d, last_flushed_trans_id "
@@ -240,7 +240,7 @@ index 32eb623aba5c..5466c9f8a855 100644
  			       le32_to_cpu(jh->j_last_flush_trans_id));
  		valid_journal_header = 1;
  
-@@ -2461,7 +2461,7 @@ static int journal_read(struct super_block *sb)
+@@ -2462,7 +2462,7 @@ static int journal_read(struct super_block *sb)
  				newest_mount_id = get_desc_mount_id(desc);
  				reiserfs_debug(sb, REISERFS_DEBUG_CODE,
  					       "journal-1179: Setting "
@@ -249,7 +249,7 @@ index 32eb623aba5c..5466c9f8a855 100644
  					       oldest_start -
  					       SB_ONDISK_JOURNAL_1st_BLOCK
  					       (sb), oldest_trans_id);
-@@ -2471,7 +2471,7 @@ static int journal_read(struct super_block *sb)
+@@ -2472,7 +2472,7 @@ static int journal_read(struct super_block *sb)
  				oldest_start = d_bh->b_blocknr;
  				reiserfs_debug(sb, REISERFS_DEBUG_CODE,
  					       "journal-1180: Resetting "
@@ -258,7 +258,7 @@ index 32eb623aba5c..5466c9f8a855 100644
  					       oldest_start -
  					       SB_ONDISK_JOURNAL_1st_BLOCK
  					       (sb), oldest_trans_id);
-@@ -2495,7 +2495,7 @@ static int journal_read(struct super_block *sb)
+@@ -2496,7 +2496,7 @@ static int journal_read(struct super_block *sb)
  	if (oldest_trans_id) {
  		reiserfs_debug(sb, REISERFS_DEBUG_CODE,
  			       "journal-1206: Starting replay "
@@ -267,7 +267,7 @@ index 32eb623aba5c..5466c9f8a855 100644
  			       cur_dblock - SB_ONDISK_JOURNAL_1st_BLOCK(sb),
  			       oldest_trans_id);
  
-@@ -2695,7 +2695,7 @@ static int check_advise_trans_params(struct super_block *sb,
+@@ -2696,7 +2696,7 @@ static int check_advise_trans_params(struct super_block *sb,
  		 * and we need to advise proper values for them
  		 */
  		if (sb->s_blocksize != REISERFS_STANDARD_BLKSIZE) {
@@ -276,7 +276,7 @@ index 32eb623aba5c..5466c9f8a855 100644
  					 sb->s_blocksize);
  			return 1;
  		}
-@@ -2869,7 +2869,7 @@ int journal_init(struct super_block *sb, const char *j_dev_name,
+@@ -2870,7 +2870,7 @@ int journal_init(struct super_block *sb, const char *j_dev_name,
  
  	if (journal->j_cnode_free == 0) {
  		reiserfs_warning(sb, "journal-2004", "Journal cnode memory "
@@ -285,7 +285,7 @@ index 32eb623aba5c..5466c9f8a855 100644
  		                 "too large for available memory. Usually "
  		                 "this is due to a journal that is too large.",
  		                 sizeof (struct reiserfs_journal_cnode) * num_cnodes);
-@@ -3289,7 +3289,7 @@ int journal_mark_dirty(struct reiserfs_transaction_handle *th,
+@@ -3290,7 +3290,7 @@ int journal_mark_dirty(struct reiserfs_transaction_handle *th,
  	PROC_INFO_INC(sb, journal.mark_dirty);
  	if (th->t_trans_id != journal->j_trans_id) {
  		reiserfs_panic(th->t_super, "journal-1577",
@@ -294,7 +294,7 @@ index 32eb623aba5c..5466c9f8a855 100644
  			       th->t_trans_id, journal->j_trans_id);
  	}
  
-@@ -3627,7 +3627,7 @@ static int check_journal_end(struct reiserfs_transaction_handle *th, int flags)
+@@ -3628,7 +3628,7 @@ static int check_journal_end(struct reiserfs_transaction_handle *th, int flags)
  
  	if (th->t_trans_id != journal->j_trans_id) {
  		reiserfs_panic(th->t_super, "journal-1577",
@@ -303,7 +303,7 @@ index 32eb623aba5c..5466c9f8a855 100644
  			       th->t_trans_id, journal->j_trans_id);
  	}
  
-@@ -4148,9 +4148,9 @@ static int do_journal_end(struct reiserfs_transaction_handle *th, int flags)
+@@ -4149,9 +4149,9 @@ static int do_journal_end(struct reiserfs_transaction_handle *th, int flags)
  			if (is_block_in_log_or_reserved_area
  			    (sb, cn->bh->b_blocknr)) {
  				reiserfs_panic(sb, "journal-2332",
@@ -329,7 +329,7 @@ index 7f868569d4d0..d50fffe51c9e 100644
  
  	/* prepare space for headers */
 diff --git a/fs/reiserfs/stree.c b/fs/reiserfs/stree.c
-index 9a293609a022..1907cddbed89 100644
+index 84c12a1947b2..2928552c8e38 100644
 --- a/fs/reiserfs/stree.c
 +++ b/fs/reiserfs/stree.c
 @@ -752,8 +752,8 @@ int search_by_key(struct super_block *sb, const struct cpu_key *key,

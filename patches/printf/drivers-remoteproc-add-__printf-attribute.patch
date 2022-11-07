@@ -10,10 +10,10 @@ Subject: [PATCH] {PRINTF} drivers/remoteproc: add __printf attribute
  3 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/remoteproc/remoteproc_core.c b/drivers/remoteproc/remoteproc_core.c
-index e5279ed9a8d7..292bdef2f591 100644
+index 8768cb64f560..665e803a747b 100644
 --- a/drivers/remoteproc/remoteproc_core.c
 +++ b/drivers/remoteproc/remoteproc_core.c
-@@ -953,7 +953,7 @@ static int rproc_handle_carveout(struct rproc *rproc,
+@@ -838,7 +838,7 @@ static int rproc_handle_carveout(struct rproc *rproc,
  	 * Check carveout rsc already part of a registered carveout,
  	 * Search by name, then check the da and length
  	 */
@@ -22,7 +22,7 @@ index e5279ed9a8d7..292bdef2f591 100644
  
  	if (carveout) {
  		if (carveout->rsc_offset != FW_RSC_ADDR_ANY) {
-@@ -975,7 +975,7 @@ static int rproc_handle_carveout(struct rproc *rproc,
+@@ -860,7 +860,7 @@ static int rproc_handle_carveout(struct rproc *rproc,
  	/* Register carveout in list */
  	carveout = rproc_mem_entry_init(dev, NULL, 0, rsc->len, rsc->da,
  					rproc_alloc_carveout,
@@ -32,23 +32,23 @@ index e5279ed9a8d7..292bdef2f591 100644
  		dev_err(dev, "Can't allocate memory entry structure\n");
  		return -ENOMEM;
 diff --git a/drivers/remoteproc/remoteproc_internal.h b/drivers/remoteproc/remoteproc_internal.h
-index 72d4d3d7d94d..032b7f26f7e8 100644
+index d4dbb8d1d80c..4898fb79cada 100644
 --- a/drivers/remoteproc/remoteproc_internal.h
 +++ b/drivers/remoteproc/remoteproc_internal.h
-@@ -94,7 +94,7 @@ int rproc_elf_load_rsc_table(struct rproc *rproc, const struct firmware *fw);
+@@ -122,7 +122,7 @@ int rproc_elf_load_rsc_table(struct rproc *rproc, const struct firmware *fw);
  struct resource_table *rproc_elf_find_loaded_rsc_table(struct rproc *rproc,
  						       const struct firmware *fw);
  struct rproc_mem_entry *
 -rproc_find_carveout_by_name(struct rproc *rproc, const char *name, ...);
 +rproc_find_carveout_by_name(struct rproc *rproc, const char *name, ...) __printf(2, 3);
+ void rproc_add_rvdev(struct rproc *rproc, struct rproc_vdev *rvdev);
+ void rproc_remove_rvdev(struct rproc_vdev *rvdev);
  
- static inline int rproc_prepare_device(struct rproc *rproc)
- {
 diff --git a/include/linux/remoteproc.h b/include/linux/remoteproc.h
-index aea79c77db0f..e1ca7b182603 100644
+index fe8978eb69f1..0e636600e50e 100644
 --- a/include/linux/remoteproc.h
 +++ b/include/linux/remoteproc.h
-@@ -664,11 +664,11 @@ rproc_mem_entry_init(struct device *dev,
+@@ -678,11 +678,11 @@ rproc_mem_entry_init(struct device *dev,
  		     void *va, dma_addr_t dma, size_t len, u32 da,
  		     int (*alloc)(struct rproc *, struct rproc_mem_entry *),
  		     int (*release)(struct rproc *, struct rproc_mem_entry *),

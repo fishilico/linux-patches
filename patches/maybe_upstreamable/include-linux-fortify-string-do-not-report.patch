@@ -36,30 +36,34 @@ This pattern makes gcc (on x86-64) warns on allmodconfig+warnings:
       328 |                         __write_overflow_field(p_size_field, size);
           |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+(This is a memcpy call in curve25519_set_secret:
+
+    memcpy(secret, buf, CURVE25519_KEY_SIZE);
+
 Silence this by detecting when p_size_field is zero.
 ---
  include/linux/fortify-string.h | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/include/linux/fortify-string.h b/include/linux/fortify-string.h
-index 3b401fa0f374..15819bc1ce47 100644
+index 816d3d1857d3..3fcdbd49725e 100644
 --- a/include/linux/fortify-string.h
 +++ b/include/linux/fortify-string.h
-@@ -254,7 +254,7 @@ __FORTIFY_INLINE void fortify_memset_chk(__kernel_size_t size,
+@@ -297,7 +297,7 @@ __FORTIFY_INLINE void fortify_memset_chk(__kernel_size_t size,
  			__write_overflow();
  
  		/* Warn when write size is larger than dest field. */
--		if (p_size_field < size)
-+		if (p_size_field != 0 && p_size_field < size)
+-		if (__compiletime_lessthan(p_size_field, size))
++		if (p_size_field != 0 && __compiletime_lessthan(p_size_field, size))
  			__write_overflow_field(p_size_field, size);
  	}
  	/*
-@@ -340,7 +340,7 @@ __FORTIFY_INLINE void fortify_memcpy_chk(__kernel_size_t size,
+@@ -387,7 +387,7 @@ __FORTIFY_INLINE bool fortify_memcpy_chk(__kernel_size_t size,
  			__read_overflow2();
  
  		/* Warn when write size argument larger than dest field. */
--		if (p_size_field < size)
-+		if (p_size_field != 0 && p_size_field < size)
+-		if (__compiletime_lessthan(p_size_field, size))
++		if (p_size_field != 0 && __compiletime_lessthan(p_size_field, size))
  			__write_overflow_field(p_size_field, size);
  		/*
  		 * Warn for source field over-read when building with W=1

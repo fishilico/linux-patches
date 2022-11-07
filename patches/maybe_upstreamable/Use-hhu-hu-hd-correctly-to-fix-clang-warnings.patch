@@ -23,14 +23,10 @@ Subject: [PATCH] {MAYBE UPS} Use %hhu/%hu/%hd correctly to fix clang warnings
  fs/afs/flock.c                                 | 2 +-
  fs/ntfs/attrib.c                               | 2 +-
  fs/reiserfs/journal.c                          | 2 +-
- net/ipv4/ah4.c                                 | 2 +-
- net/ipv4/esp4.c                                | 2 +-
- net/ipv6/ah6.c                                 | 2 +-
- net/ipv6/esp6.c                                | 2 +-
  net/netfilter/xt_CONNSECMARK.c                 | 2 +-
  net/netfilter/xt_SECMARK.c                     | 4 ++--
  security/tomoyo/common.c                       | 2 +-
- 26 files changed, 32 insertions(+), 32 deletions(-)
+ 22 files changed, 28 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/acpi/acpica/nsdump.c b/drivers/acpi/acpica/nsdump.c
 index f154824d4eb6..6a3530d2764b 100644
@@ -68,10 +64,10 @@ index c327b4e10549..dd533c887e3a 100644
  					      ACPI_FDE_DWORD_BUFFER_SIZE));
  
 diff --git a/drivers/gpio/gpiolib-acpi.c b/drivers/gpio/gpiolib-acpi.c
-index 9be1376f9a62..7c57676aee0c 100644
+index a7d2358736fe..2d1110df5bbd 100644
 --- a/drivers/gpio/gpiolib-acpi.c
 +++ b/drivers/gpio/gpiolib-acpi.c
-@@ -392,7 +392,7 @@ static acpi_status acpi_gpiochip_alloc_event(struct acpi_resource *ares,
+@@ -400,7 +400,7 @@ static acpi_status acpi_gpiochip_alloc_event(struct acpi_resource *ares,
  		char ev_name[8];
  		sprintf(ev_name, "_%c%02X",
  			agpio->triggering == ACPI_EDGE_SENSITIVE ? 'E' : 'L',
@@ -197,7 +193,7 @@ index c91898be7c03..2c64d3461b06 100644
  		cdev->int_params.in.num_vectors =
  			cdev->int_params.in.min_msix_cnt;
 diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index 2dbb9fc011a7..cbf09323a3b3 100644
+index 6a823b850a77..bb075db46e4e 100644
 --- a/drivers/platform/x86/thinkpad_acpi.c
 +++ b/drivers/platform/x86/thinkpad_acpi.c
 @@ -7473,7 +7473,7 @@ static void volume_exit_software_mute(void)
@@ -225,7 +221,7 @@ index e8e2ab1103fc..eaaef96738cd 100644
  	sp_rtc->irq = platform_get_irq(plat_dev, 0);
  	if (sp_rtc->irq < 0)
 diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index 5d61f58399dc..364e01fc905e 100644
+index c95177ca6ed2..4e2844e72d6c 100644
 --- a/drivers/scsi/scsi_sysfs.c
 +++ b/drivers/scsi/scsi_sysfs.c
 @@ -375,7 +375,7 @@ shost_rd_attr(can_queue, "%d\n");
@@ -277,10 +273,10 @@ index bbcc5afd1576..ea9b0acfaa57 100644
  }
  
 diff --git a/fs/ntfs/attrib.c b/fs/ntfs/attrib.c
-index 52615e6090e1..1ffdc1fce730 100644
+index a3865bc4a0c6..d18e2aae8dc6 100644
 --- a/fs/ntfs/attrib.c
 +++ b/fs/ntfs/attrib.c
-@@ -2489,7 +2489,7 @@ int ntfs_attr_set(ntfs_inode *ni, const s64 ofs, const s64 cnt, const u8 val)
+@@ -2509,7 +2509,7 @@ int ntfs_attr_set(ntfs_inode *ni, const s64 ofs, const s64 cnt, const u8 val)
  	pgoff_t idx, end;
  	unsigned start_ofs, end_ofs, size;
  
@@ -290,10 +286,10 @@ index 52615e6090e1..1ffdc1fce730 100644
  	BUG_ON(ofs < 0);
  	BUG_ON(cnt < 0);
 diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-index 94addfcefede..32eb623aba5c 100644
+index 9f62da7471c9..ac62ffc3d166 100644
 --- a/fs/reiserfs/journal.c
 +++ b/fs/reiserfs/journal.c
-@@ -2545,7 +2545,7 @@ static int journal_read(struct super_block *sb)
+@@ -2546,7 +2546,7 @@ static int journal_read(struct super_block *sb)
  	journal->j_first_unflushed_offset = journal->j_start;
  	if (replay_count > 0) {
  		reiserfs_info(sb,
@@ -302,58 +298,6 @@ index 94addfcefede..32eb623aba5c 100644
  			      replay_count, ktime_get_seconds() - start);
  	}
  	/* needed to satisfy the locking in _update_journal_header_block */
-diff --git a/net/ipv4/ah4.c b/net/ipv4/ah4.c
-index f8ad04470d3a..71843e69946a 100644
---- a/net/ipv4/ah4.c
-+++ b/net/ipv4/ah4.c
-@@ -510,7 +510,7 @@ static int ah_init_state(struct xfrm_state *x)
- 		pr_info("%s: %s digestsize %u != %u\n",
- 			__func__, x->aalg->alg_name,
- 			crypto_ahash_digestsize(ahash),
--			aalg_desc->uinfo.auth.icv_fullbits / 8);
-+			(u16)(aalg_desc->uinfo.auth.icv_fullbits / 8));
- 		goto error;
- 	}
- 
-diff --git a/net/ipv4/esp4.c b/net/ipv4/esp4.c
-index 5c03eba787e5..f8db574ada6b 100644
---- a/net/ipv4/esp4.c
-+++ b/net/ipv4/esp4.c
-@@ -1109,7 +1109,7 @@ static int esp_init_authenc(struct xfrm_state *x)
- 			pr_info("ESP: %s digestsize %u != %u\n",
- 				x->aalg->alg_name,
- 				crypto_aead_authsize(aead),
--				aalg_desc->uinfo.auth.icv_fullbits / 8);
-+				(u16)(aalg_desc->uinfo.auth.icv_fullbits / 8));
- 			goto free_key;
- 		}
- 
-diff --git a/net/ipv6/ah6.c b/net/ipv6/ah6.c
-index b5995c1f4d7a..a06701414bac 100644
---- a/net/ipv6/ah6.c
-+++ b/net/ipv6/ah6.c
-@@ -704,7 +704,7 @@ static int ah6_init_state(struct xfrm_state *x)
- 	    crypto_ahash_digestsize(ahash)) {
- 		pr_info("AH: %s digestsize %u != %u\n",
- 			x->aalg->alg_name, crypto_ahash_digestsize(ahash),
--			aalg_desc->uinfo.auth.icv_fullbits/8);
-+			(u16)(aalg_desc->uinfo.auth.icv_fullbits/8));
- 		goto error;
- 	}
- 
-diff --git a/net/ipv6/esp6.c b/net/ipv6/esp6.c
-index 8220923a12f7..37fb8112e6f4 100644
---- a/net/ipv6/esp6.c
-+++ b/net/ipv6/esp6.c
-@@ -1152,7 +1152,7 @@ static int esp_init_authenc(struct xfrm_state *x)
- 			pr_info("ESP: %s digestsize %u != %u\n",
- 				x->aalg->alg_name,
- 				crypto_aead_authsize(aead),
--				aalg_desc->uinfo.auth.icv_fullbits / 8);
-+				(u16)(aalg_desc->uinfo.auth.icv_fullbits / 8));
- 			goto free_key;
- 		}
- 
 diff --git a/net/netfilter/xt_CONNSECMARK.c b/net/netfilter/xt_CONNSECMARK.c
 index 76acecf3e757..5bbf78e7c9f6 100644
 --- a/net/netfilter/xt_CONNSECMARK.c
@@ -390,7 +334,7 @@ index 498a0bf6f044..43d7701d0dc5 100644
  	}
  
 diff --git a/security/tomoyo/common.c b/security/tomoyo/common.c
-index d7dc753900ab..1eb78f550bbd 100644
+index c322ac3fa4e7..b11d53cf79a4 100644
 --- a/security/tomoyo/common.c
 +++ b/security/tomoyo/common.c
 @@ -2231,7 +2231,7 @@ static void tomoyo_read_query(struct tomoyo_io_buffer *head)

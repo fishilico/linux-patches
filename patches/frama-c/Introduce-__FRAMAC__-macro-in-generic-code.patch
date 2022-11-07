@@ -12,29 +12,28 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
   code as the one used to define syscalls)
 - Use string functions from Frama-C
 ---
- drivers/block/drbd/drbd_int.h   |   2 +-
- include/asm-generic/page.h      |   8 ++
- include/asm-generic/uaccess.h   |  15 ++++
- include/linux/compiler.h        |  21 ++++++
- include/linux/compiler_types.h  |   2 +-
- include/linux/cpumask.h         |   5 ++
- include/linux/crypto.h          |   7 +-
- include/linux/delay.h           |  15 +++-
- include/linux/limits.h          |   6 +-
- include/linux/mfd/wl1273-core.h |   2 +
- include/linux/overflow.h        | 126 ++++++++++++++++++++++++++++++++
- include/linux/pci.h             |   3 +
- include/linux/syscalls.h        |   7 ++
- include/uapi/linux/limits.h     |   8 +-
- include/uapi/linux/types.h      |   2 +-
- include/vdso/limits.h           |   4 +
- kernel/signal.c                 |   2 +-
- kernel/time/time.c              |   4 +
- lib/hexdump.c                   |  10 ++-
- 19 files changed, 237 insertions(+), 12 deletions(-)
+ drivers/block/drbd/drbd_int.h   |  2 +-
+ include/asm-generic/page.h      |  8 ++++++++
+ include/asm-generic/uaccess.h   | 15 +++++++++++++++
+ include/linux/compiler.h        | 21 +++++++++++++++++++++
+ include/linux/compiler_types.h  |  2 +-
+ include/linux/cpumask.h         |  5 +++++
+ include/linux/crypto.h          |  7 ++++++-
+ include/linux/delay.h           | 15 ++++++++++++---
+ include/linux/limits.h          |  6 +++++-
+ include/linux/mfd/wl1273-core.h |  2 ++
+ include/linux/pci.h             |  3 +++
+ include/linux/syscalls.h        |  7 +++++++
+ include/uapi/linux/limits.h     |  8 ++++++--
+ include/uapi/linux/types.h      |  2 +-
+ include/vdso/limits.h           |  4 ++++
+ kernel/signal.c                 |  2 +-
+ kernel/time/time.c              |  4 ++++
+ lib/hexdump.c                   | 10 +++++++++-
+ 18 files changed, 111 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index f15f2f041596..b9667744bb11 100644
+index 4d661282ff41..8b7082c3a24b 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
 @@ -38,7 +38,7 @@
@@ -101,7 +100,7 @@ index a5be9e61a2a2..8c48c1296687 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 062cca37659b..68f89da2a847 100644
+index 1bb24f186edb..43f9d447d26b 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline notrace __used void __same_pointer_depths_with_volatile2_chk(con
@@ -133,10 +132,10 @@ index 062cca37659b..68f89da2a847 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 397d6e8f57c3..3831a4fd77af 100644
+index ce80c43a1bb5..fb658c4bb217 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
-@@ -12,7 +12,7 @@
+@@ -16,7 +16,7 @@
  #endif
  
  /* sparse defines __CHECKER__; see Documentation/dev-tools/sparse.rst */
@@ -146,10 +145,10 @@ index 397d6e8f57c3..3831a4fd77af 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __user		__attribute__((noderef, address_space(__user)))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index e8ad12b5b9d2..41f131166cf5 100644
+index c2aa0aa26b45..28f4ce681459 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -917,9 +917,14 @@ set_cpu_dying(unsigned int cpu, bool dying)
+@@ -982,9 +982,14 @@ set_cpu_dying(unsigned int cpu, bool dying)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -241,152 +240,8 @@ index c28cf76d5c31..ac5f907262a2 100644
  
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
-diff --git a/include/linux/overflow.h b/include/linux/overflow.h
-index 0eb3b192f07a..47d3e358ae93 100644
---- a/include/linux/overflow.h
-+++ b/include/linux/overflow.h
-@@ -51,6 +51,131 @@ static inline bool __must_check __must_check_overflow(bool overflow)
- 	return unlikely(overflow);
- }
- 
-+#if defined(__FRAMAC__)
-+/* Checking for unsigned overflow is relatively easy without causing UB. */
-+#define __unsigned_add_overflow(a, b, d) ({	\
-+	typeof(a) __a = (a);			\
-+	typeof(b) __b = (b);			\
-+	typeof(d) __d = (d);			\
-+	(void) (&__a == &__b);			\
-+	(void) (&__a == __d);			\
-+	*__d = __a + __b;			\
-+	*__d < __a;				\
-+})
-+#define __unsigned_sub_overflow(a, b, d) ({	\
-+	typeof(a) __a = (a);			\
-+	typeof(b) __b = (b);			\
-+	typeof(d) __d = (d);			\
-+	(void) (&__a == &__b);			\
-+	(void) (&__a == __d);			\
-+	*__d = __a - __b;			\
-+	__a < __b;				\
-+})
-+/*
-+ * If one of a or b is a compile-time constant, this avoids a division.
-+ */
-+#define __unsigned_mul_overflow(a, b, d) ({		\
-+	typeof(a) __a = (a);				\
-+	typeof(b) __b = (b);				\
-+	typeof(d) __d = (d);				\
-+	(void) (&__a == &__b);				\
-+	(void) (&__a == __d);				\
-+	*__d = __a * __b;				\
-+	__builtin_constant_p(__b) ?			\
-+	  __b > 0 && __a > type_max(typeof(__a)) / __b : \
-+	  __a > 0 && __b > type_max(typeof(__b)) / __a;	 \
-+})
-+
-+/*
-+ * For signed types, detecting overflow is much harder, especially if
-+ * we want to avoid UB. But the interface of these macros is such that
-+ * we must provide a result in *d, and in fact we must produce the
-+ * result promised by gcc's builtins, which is simply the possibly
-+ * wrapped-around value. Fortunately, we can just formally do the
-+ * operations in the widest relevant unsigned type (u64) and then
-+ * truncate the result - gcc is smart enough to generate the same code
-+ * with and without the (u64) casts.
-+ */
-+
-+/*
-+ * Adding two signed integers can overflow only if they have the same
-+ * sign, and overflow has happened iff the result has the opposite
-+ * sign.
-+ */
-+#define __signed_add_overflow(a, b, d) ({	\
-+	typeof(a) __a = (a);			\
-+	typeof(b) __b = (b);			\
-+	typeof(d) __d = (d);			\
-+	(void) (&__a == &__b);			\
-+	(void) (&__a == __d);			\
-+	*__d = (u64)__a + (u64)__b;		\
-+	(((~(__a ^ __b)) & (*__d ^ __a))	\
-+		& type_min(typeof(__a))) != 0;	\
-+})
-+
-+/*
-+ * Subtraction is similar, except that overflow can now happen only
-+ * when the signs are opposite. In this case, overflow has happened if
-+ * the result has the opposite sign of a.
-+ */
-+#define __signed_sub_overflow(a, b, d) ({	\
-+	typeof(a) __a = (a);			\
-+	typeof(b) __b = (b);			\
-+	typeof(d) __d = (d);			\
-+	(void) (&__a == &__b);			\
-+	(void) (&__a == __d);			\
-+	*__d = (u64)__a - (u64)__b;		\
-+	((((__a ^ __b)) & (*__d ^ __a))		\
-+		& type_min(typeof(__a))) != 0;	\
-+})
-+
-+/*
-+ * Signed multiplication is rather hard. gcc always follows C99, so
-+ * division is truncated towards 0. This means that we can write the
-+ * overflow check like this:
-+ *
-+ * (a > 0 && (b > MAX/a || b < MIN/a)) ||
-+ * (a < -1 && (b > MIN/a || b < MAX/a) ||
-+ * (a == -1 && b == MIN)
-+ *
-+ * The redundant casts of -1 are to silence an annoying -Wtype-limits
-+ * (included in -Wextra) warning: When the type is u8 or u16, the
-+ * __b_c_e in check_mul_overflow obviously selects
-+ * __unsigned_mul_overflow, but unfortunately gcc still parses this
-+ * code and warns about the limited range of __b.
-+ */
-+
-+#define __signed_mul_overflow(a, b, d) ({				\
-+	typeof(a) __a = (a);						\
-+	typeof(b) __b = (b);						\
-+	typeof(d) __d = (d);						\
-+	typeof(a) __tmax = type_max(typeof(a));				\
-+	typeof(a) __tmin = type_min(typeof(a));				\
-+	(void) (&__a == &__b);						\
-+	(void) (&__a == __d);						\
-+	*__d = (u64)__a * (u64)__b;					\
-+	(__b > 0   && (__a > __tmax/__b || __a < __tmin/__b)) ||	\
-+	(__b < (typeof(__b))-1  && (__a > __tmin/__b || __a < __tmax/__b)) || \
-+	(__b == (typeof(__b))-1 && __a == __tmin);			\
-+})
-+
-+
-+#define check_add_overflow(a, b, d)	__must_check_overflow(		\
-+	__builtin_choose_expr(is_signed_type(typeof(a)),		\
-+			__signed_add_overflow(a, b, d),			\
-+			__unsigned_add_overflow(a, b, d)))
-+
-+#define check_sub_overflow(a, b, d)	__must_check_overflow(		\
-+	__builtin_choose_expr(is_signed_type(typeof(a)),		\
-+			__signed_sub_overflow(a, b, d),			\
-+			__unsigned_sub_overflow(a, b, d)))
-+
-+#define check_mul_overflow(a, b, d)	__must_check_overflow(		\
-+	__builtin_choose_expr(is_signed_type(typeof(a)),		\
-+			__signed_mul_overflow(a, b, d),			\
-+			__unsigned_mul_overflow(a, b, d)))
-+
-+#else
- /*
-  * For simplicity and code hygiene, the fallback code below insists on
-  * a, b and *d having the same type (similar to the min() and max()
-@@ -85,6 +210,7 @@ static inline bool __must_check __must_check_overflow(bool overflow)
- 	(void) (&__a == __d);			\
- 	__builtin_mul_overflow(__a, __b, __d);	\
- }))
-+#endif /* __FRAMA_C__ */
- 
- /** check_shl_overflow() - Calculate a left-shifted value and check overflow
-  *
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 060af91bafcd..333ffbcbc95b 100644
+index 2bda4a4e47e8..40461b6b8c68 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -177,6 +177,8 @@ typedef int __bitwise pci_power_t;
@@ -491,10 +346,10 @@ index 0197888ad0e0..ee5b03df8f9b 100644
  
  #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 6f86fda5e432..7545ba5cf686 100644
+index d140672185a4..6928bb69755b 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1257,7 +1257,7 @@ static void print_fatal_signal(int signr)
+@@ -1258,7 +1258,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = signal_pt_regs();
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  

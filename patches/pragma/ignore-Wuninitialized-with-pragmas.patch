@@ -13,7 +13,7 @@ Subject: [PATCH] {PRAGMA} ignore -Wuninitialized with pragmas
  6 files changed, 36 insertions(+)
 
 diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index af4c7d65490b..47a5f78468f2 100644
+index ee69d50ba4fd..ff306dea1f97 100644
 --- a/drivers/block/drbd/drbd_receiver.c
 +++ b/drivers/block/drbd/drbd_receiver.c
 @@ -929,10 +929,13 @@ static int conn_connect(struct drbd_connection *connection)
@@ -31,7 +31,7 @@ index af4c7d65490b..47a5f78468f2 100644
  	clear_bit(DISCONNECT_SENT, &connection->flags);
  	if (conn_request_state(connection, NS(conn, C_WF_CONNECTION), CS_VERBOSE) < SS_SUCCESS)
 diff --git a/include/linux/completion.h b/include/linux/completion.h
-index 51d9ab079629..17a32f3f69d6 100644
+index 62b32b19e0a8..b7139dcd1d6e 100644
 --- a/include/linux/completion.h
 +++ b/include/linux/completion.h
 @@ -65,10 +65,23 @@ static inline void complete_release(struct completion *x) {}
@@ -59,7 +59,7 @@ index 51d9ab079629..17a32f3f69d6 100644
  # define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
  # define DECLARE_COMPLETION_ONSTACK_MAP(work, map) DECLARE_COMPLETION(work)
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 58cfbf81447c..0dd942eb9c19 100644
+index 7f5a51aae0a7..95fc10825e25 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
 @@ -73,8 +73,16 @@ extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *n
@@ -80,7 +80,7 @@ index 58cfbf81447c..0dd942eb9c19 100644
  # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
  #endif
 diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 8c1a2124d0f6..1a0306948d70 100644
+index cedc5dc62b95..903bcd1cb066 100644
 --- a/kernel/kthread.c
 +++ b/kernel/kthread.c
 @@ -1132,10 +1132,13 @@ static void kthread_flush_work_fn(struct kthread_work *work)
@@ -112,10 +112,10 @@ index 8c1a2124d0f6..1a0306948d70 100644
  	kthread_queue_work(worker, &fwork.work);
  	wait_for_completion(&fwork.done);
 diff --git a/kernel/smp.c b/kernel/smp.c
-index 650810a6f29b..84bcd5c3749c 100644
+index 06a413987a14..afd2835ec41d 100644
 --- a/kernel/smp.c
 +++ b/kernel/smp.c
-@@ -1236,12 +1236,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
+@@ -1237,12 +1237,15 @@ static void smp_call_on_cpu_callback(struct work_struct *work)
  
  int smp_call_on_cpu(unsigned int cpu, int (*func)(void *), void *par, bool phys)
  {
@@ -132,7 +132,7 @@ index 650810a6f29b..84bcd5c3749c 100644
  	INIT_WORK_ONSTACK(&sscs.work, smp_call_on_cpu_callback);
  
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 39060a5d0905..c116c97a3214 100644
+index 7cd5f5e7e0a1..4c4ad81d7f88 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
 @@ -2796,11 +2796,14 @@ static bool flush_workqueue_prep_pwqs(struct workqueue_struct *wq,
