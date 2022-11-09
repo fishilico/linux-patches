@@ -318,10 +318,10 @@ index 32c0d981a82a..4f7b0a4ba3ce 100644
  void *memmove(void *dest, const void *src, size_t n);
  
 diff --git a/arch/x86/include/asm/string_64.h b/arch/x86/include/asm/string_64.h
-index 3b87d889b6e1..d75722cb0ead 100644
+index 888731ccf1f6..17156731cf67 100644
 --- a/arch/x86/include/asm/string_64.h
 +++ b/arch/x86/include/asm/string_64.h
-@@ -82,7 +82,21 @@ char *strcpy(char *dest, const char *src);
+@@ -85,7 +85,21 @@ char *strcpy(char *dest, const char *src);
  char *strcat(char *dest, const char *src);
  int strcmp(const char *cs, const char *ct);
  
@@ -343,7 +343,7 @@ index 3b87d889b6e1..d75722cb0ead 100644
  /*
   * For files that not instrumented (e.g. mm/slub.c) we
   * should use not instrumented version of mem* functions.
-@@ -99,6 +113,10 @@ int strcmp(const char *cs, const char *ct);
+@@ -102,6 +116,10 @@ int strcmp(const char *cs, const char *ct);
  #define __NO_FORTIFY /* FORTIFY_SOURCE uses __builtin_memcpy, etc. */
  #endif
  
@@ -1188,10 +1188,10 @@ index 973a1bfd7ef5..d86194d524c8 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/fortify-string.h b/include/linux/fortify-string.h
-index 4029fe368a4f..816d3d1857d3 100644
+index 18a31b125f9d..363e596cf6c0 100644
 --- a/include/linux/fortify-string.h
 +++ b/include/linux/fortify-string.h
-@@ -493,6 +493,20 @@ __FORTIFY_INLINE bool fortify_memcpy_chk(__kernel_size_t size,
+@@ -506,6 +506,20 @@ __FORTIFY_INLINE bool fortify_memcpy_chk(__kernel_size_t size,
   * __struct_size() vs __member_size() must be captured here to avoid
   * evaluating argument side-effects further into the macro layers.
   */
@@ -1212,7 +1212,7 @@ index 4029fe368a4f..816d3d1857d3 100644
  #define memcpy(p, q, s)  __fortify_memcpy_chk(p, q, s,			\
  		__struct_size(p), __struct_size(q),			\
  		__member_size(p), __member_size(q),			\
-@@ -501,6 +515,7 @@ __FORTIFY_INLINE bool fortify_memcpy_chk(__kernel_size_t size,
+@@ -514,6 +528,7 @@ __FORTIFY_INLINE bool fortify_memcpy_chk(__kernel_size_t size,
  		__struct_size(p), __struct_size(q),			\
  		__member_size(p), __member_size(q),			\
  		memmove)
@@ -1605,7 +1605,7 @@ index 4c4ad81d7f88..918b2c4572fe 100644
  	char desc[WORKER_DESC_LEN] = { };
  	struct pool_workqueue *pwq = NULL;
 diff --git a/lib/maple_tree.c b/lib/maple_tree.c
-index e1743803c851..8f70f208ddaf 100644
+index fbde494444b8..ceed43f9fc77 100644
 --- a/lib/maple_tree.c
 +++ b/lib/maple_tree.c
 @@ -1772,7 +1772,11 @@ static inline void mab_shift_right(struct maple_big_node *b_node,
@@ -1682,10 +1682,10 @@ index 2d8549ae1b30..8edccbb22284 100644
  	gfp &= ~OBJCGS_CLEAR_MASK;
  	vec = kcalloc_node(objects, sizeof(struct obj_cgroup *), gfp,
 diff --git a/mm/mmap.c b/mm/mmap.c
-index c30f44df23a6..eb86255de86a 100644
+index 1d067c69c3f6..30f88708c53e 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -3465,7 +3465,9 @@ static DEFINE_MUTEX(mm_all_locks_mutex);
+@@ -3468,7 +3468,9 @@ static DEFINE_MUTEX(mm_all_locks_mutex);
  
  static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
  {
@@ -1696,7 +1696,7 @@ index c30f44df23a6..eb86255de86a 100644
  		/*
  		 * The LSB of head.next can't change from under us
  		 * because we hold the mm_all_locks_mutex.
-@@ -3480,9 +3482,14 @@ static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
+@@ -3483,9 +3485,14 @@ static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
  		 * can't change from under us thanks to the
  		 * anon_vma->root->rwsem.
  		 */
@@ -1714,7 +1714,7 @@ index c30f44df23a6..eb86255de86a 100644
  	}
  }
  
-@@ -3586,7 +3593,9 @@ int mm_take_all_locks(struct mm_struct *mm)
+@@ -3589,7 +3596,9 @@ int mm_take_all_locks(struct mm_struct *mm)
  
  static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
  {
@@ -1725,7 +1725,7 @@ index c30f44df23a6..eb86255de86a 100644
  		/*
  		 * The LSB of head.next can't change to 0 from under
  		 * us because we hold the mm_all_locks_mutex.
-@@ -3599,8 +3608,7 @@ static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
+@@ -3602,8 +3611,7 @@ static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
  		 * can't change from under us until we release the
  		 * anon_vma->root->rwsem.
  		 */
