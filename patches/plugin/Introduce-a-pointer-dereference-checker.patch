@@ -513,7 +513,7 @@ index 695915dba707..6b924e7fb2bf 100644
  	return __raw_readl(mem);
  }
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c
-index 1bbd39b3b0fc..e4a44e3e8b60 100644
+index d371000a5727..4d184fd6ecee 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c
 @@ -213,7 +213,7 @@ static int amdgpu_cs_pass1(struct amdgpu_cs_parser *p,
@@ -1605,10 +1605,10 @@ index 4c4ad81d7f88..918b2c4572fe 100644
  	char desc[WORKER_DESC_LEN] = { };
  	struct pool_workqueue *pwq = NULL;
 diff --git a/lib/maple_tree.c b/lib/maple_tree.c
-index fbde494444b8..ceed43f9fc77 100644
+index df352f6ccc24..3e85d9655bdf 100644
 --- a/lib/maple_tree.c
 +++ b/lib/maple_tree.c
-@@ -1772,7 +1772,11 @@ static inline void mab_shift_right(struct maple_big_node *b_node,
+@@ -1767,7 +1767,11 @@ static inline void mab_shift_right(struct maple_big_node *b_node,
  	unsigned long size = b_node->b_end * sizeof(unsigned long);
  
  	memmove(b_node->pivot + shift, b_node->pivot, size);
@@ -1621,7 +1621,7 @@ index fbde494444b8..ceed43f9fc77 100644
  	if (b_node->type == maple_arange_64)
  		memmove(b_node->gap + shift, b_node->gap, size);
  }
-@@ -1941,7 +1945,11 @@ static inline void mas_mab_cp(struct ma_state *mas, unsigned char mas_start,
+@@ -1936,7 +1940,11 @@ static inline void mas_mab_cp(struct ma_state *mas, unsigned char mas_start,
  	b_node->b_end = ++j;
  	j -= mab_start;
  	slots = ma_slots(node, mt);
@@ -1634,7 +1634,7 @@ index fbde494444b8..ceed43f9fc77 100644
  	if (!ma_is_leaf(mt) && mt_is_alloc(mas->tree)) {
  		gaps = ma_gaps(node, mt);
  		memcpy(b_node->gap + mab_start, gaps + mas_start,
-@@ -2006,8 +2014,12 @@ static inline void mab_mas_cp(struct maple_big_node *b_node,
+@@ -2001,8 +2009,12 @@ static inline void mab_mas_cp(struct maple_big_node *b_node,
  		pivots[j++] = b_node->pivot[i++];
  	} while (i <= mab_end && likely(b_node->pivot[i]));
  
@@ -1650,7 +1650,7 @@ index fbde494444b8..ceed43f9fc77 100644
  	if (new_max)
  		mas->max = b_node->pivot[i - 1];
 diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 546df97c31e4..ae19853f6323 100644
+index e48f8ef45b17..14f0ca07f576 100644
 --- a/mm/hugetlb.c
 +++ b/mm/hugetlb.c
 @@ -1672,8 +1672,12 @@ static void update_and_free_page(struct hstate *h, struct page *page,
@@ -1682,10 +1682,10 @@ index 2d8549ae1b30..8edccbb22284 100644
  	gfp &= ~OBJCGS_CLEAR_MASK;
  	vec = kcalloc_node(objects, sizeof(struct obj_cgroup *), gfp,
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 1d067c69c3f6..30f88708c53e 100644
+index 1f16019c32f4..54178eeacb58 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -3468,7 +3468,9 @@ static DEFINE_MUTEX(mm_all_locks_mutex);
+@@ -3472,7 +3472,9 @@ static DEFINE_MUTEX(mm_all_locks_mutex);
  
  static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
  {
@@ -1696,7 +1696,7 @@ index 1d067c69c3f6..30f88708c53e 100644
  		/*
  		 * The LSB of head.next can't change from under us
  		 * because we hold the mm_all_locks_mutex.
-@@ -3483,9 +3485,14 @@ static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
+@@ -3487,9 +3489,14 @@ static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
  		 * can't change from under us thanks to the
  		 * anon_vma->root->rwsem.
  		 */
@@ -1714,7 +1714,7 @@ index 1d067c69c3f6..30f88708c53e 100644
  	}
  }
  
-@@ -3589,7 +3596,9 @@ int mm_take_all_locks(struct mm_struct *mm)
+@@ -3593,7 +3600,9 @@ int mm_take_all_locks(struct mm_struct *mm)
  
  static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
  {
@@ -1725,7 +1725,7 @@ index 1d067c69c3f6..30f88708c53e 100644
  		/*
  		 * The LSB of head.next can't change to 0 from under
  		 * us because we hold the mm_all_locks_mutex.
-@@ -3602,8 +3611,7 @@ static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
+@@ -3606,8 +3615,7 @@ static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
  		 * can't change from under us until we release the
  		 * anon_vma->root->rwsem.
  		 */
@@ -1805,7 +1805,7 @@ index f084a4a6b7ab..fae3015033c7 100644
  	msg->entries++;
  
 diff --git a/net/core/sock_map.c b/net/core/sock_map.c
-index a660baedd9e7..8f69bd741012 100644
+index 81beb16ab1eb..a6e70c63a1c0 100644
 --- a/net/core/sock_map.c
 +++ b/net/core/sock_map.c
 @@ -432,7 +432,9 @@ static void sock_map_delete_from_link(struct bpf_map *map, struct sock *sk,
