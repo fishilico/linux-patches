@@ -9,15 +9,15 @@ Subject: [PATCH] {PRINTF} drivers/irqchip/irq-gic: silence -Wformat-security
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/irqchip/irq-gic.c b/drivers/irqchip/irq-gic.c
-index 4c7bae0ec8f9..cf5d3498288a 100644
+index 210bc2f4d555..6961e7b5f4d9 100644
 --- a/drivers/irqchip/irq-gic.c
 +++ b/drivers/irqchip/irq-gic.c
-@@ -402,7 +402,7 @@ static void gic_irq_print_chip(struct irq_data *d, struct seq_file *p)
+@@ -403,7 +403,7 @@ static void gic_irq_print_chip(struct irq_data *d, struct seq_file *p)
  	struct gic_chip_data *gic = irq_data_get_irq_chip_data(d);
  
- 	if (gic->domain->dev)
--		seq_printf(p, gic->domain->dev->of_node->name);
-+		seq_printf(p, "%s", gic->domain->dev->of_node->name);
+ 	if (gic->domain->pm_dev)
+-		seq_printf(p, gic->domain->pm_dev->of_node->name);
++		seq_printf(p, "%s", gic->domain->pm_dev->of_node->name);
  	else
  		seq_printf(p, "GIC-%d", (int)(gic - &gic_data[0]));
  }

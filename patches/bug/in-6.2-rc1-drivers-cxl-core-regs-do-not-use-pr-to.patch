@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 5 Feb 2023 19:13:31 +0100
+Subject: [PATCH] {BUG in 6.2-rc1} drivers/cxl/core/regs: do not use %pr to
+ print a pointer
+
+---
+ drivers/cxl/core/regs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cxl/core/regs.c b/drivers/cxl/core/regs.c
+index 1476a0299c9b..2441e8594e0e 100644
+--- a/drivers/cxl/core/regs.c
++++ b/drivers/cxl/core/regs.c
+@@ -355,7 +355,7 @@ resource_size_t cxl_rcrb_to_component(struct device *dev,
+ 		return CXL_RESOURCE_NONE;
+ 	addr = ioremap(rcrb, SZ_4K);
+ 	if (!addr) {
+-		dev_err(dev, "Failed to map region %pr\n", addr);
++		dev_err(dev, "Failed to map region %p\n", addr);
+ 		release_mem_region(rcrb, SZ_4K);
+ 		return CXL_RESOURCE_NONE;
+ 	}
+-- 

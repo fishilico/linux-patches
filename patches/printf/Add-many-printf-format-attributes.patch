@@ -11,18 +11,18 @@ Subject: [PATCH] {PRINTF} Add many printf format attributes
  drivers/scsi/esas2r/esas2r_log.c   |  8 ++++----
  drivers/xen/xenbus/xenbus_client.c | 10 ++++++----
  include/acpi/acpiosxf.h            |  2 +-
- include/linux/trace_events.h       |  3 ++-
+ include/linux/trace_events.h       |  2 +-
  kernel/audit.c                     |  4 ++--
  kernel/trace/trace.h               |  6 +++---
- kernel/trace/trace_output.c        |  6 +++---
+ kernel/trace/trace_output.c        |  2 +-
  scripts/mod/modpost.h              |  2 +-
  scripts/unifdef.c                  |  2 +-
  security/tomoyo/common.c           |  3 ++-
  security/tomoyo/common.h           |  4 ++--
- 15 files changed, 36 insertions(+), 30 deletions(-)
+ 15 files changed, 33 insertions(+), 28 deletions(-)
 
 diff --git a/arch/x86/boot/tools/build.c b/arch/x86/boot/tools/build.c
-index a3725ad46c5a..04616745d029 100644
+index bd247692b701..6e42f755c084 100644
 --- a/arch/x86/boot/tools/build.c
 +++ b/arch/x86/boot/tools/build.c
 @@ -137,7 +137,8 @@ static u32 partial_crc32(const u8 *s, int len, u32 crc)
@@ -163,19 +163,18 @@ index 52844cc5eeb5..0a5b069a40c9 100644
  
  #ifndef ACPI_USE_ALTERNATE_PROTOTYPE_acpi_os_redirect_output
 diff --git a/include/linux/trace_events.h b/include/linux/trace_events.h
-index 20749bd9db71..213863bbfeab 100644
+index 4342e996bcdb..f2b191345abb 100644
 --- a/include/linux/trace_events.h
 +++ b/include/linux/trace_events.h
-@@ -235,7 +235,8 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
+@@ -234,7 +234,7 @@ void tracing_record_taskinfo_sched_switch(struct task_struct *prev,
  void tracing_record_cmdline(struct task_struct *task);
  void tracing_record_tgid(struct task_struct *task);
  
--int trace_output_call(struct trace_iterator *iter, char *name, char *fmt, ...);
-+__printf(3, 4)
-+int trace_output_call(struct trace_iterator *iter, char *name, const char *fmt, ...);
+-int trace_output_call(struct trace_iterator *iter, char *name, char *fmt, ...)
++int trace_output_call(struct trace_iterator *iter, char *name, const char *fmt, ...)
+ 	 __printf(3, 4);
  
  struct event_filter;
- 
 diff --git a/kernel/audit.c b/kernel/audit.c
 index 9bc0b0301198..7e954cd88c71 100644
 --- a/kernel/audit.c
@@ -192,10 +191,10 @@ index 9bc0b0301198..7e954cd88c71 100644
  	int len, avail;
  	struct sk_buff *skb;
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index d42e24507152..8c0cdf8d1e34 100644
+index e46a49269be2..befefb141954 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -771,11 +771,11 @@ static inline void __init disable_tracing_selftest(const char *reason)
+@@ -769,11 +769,11 @@ static inline void __init disable_tracing_selftest(const char *reason)
  
  extern void *head_page(struct trace_array_cpu *data);
  extern unsigned long long ns2usecs(u64 nsec);
@@ -211,21 +210,10 @@ index d42e24507152..8c0cdf8d1e34 100644
  		    unsigned long ip, const char *fmt, va_list args);
  int trace_array_printk_buf(struct trace_buffer *buffer,
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 67f47ea27921..78f39dc8c4ec 100644
+index 57a13b61f186..3c818e63a362 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
-@@ -323,8 +323,8 @@ void trace_event_printf(struct trace_iterator *iter, const char *fmt, ...)
- }
- EXPORT_SYMBOL(trace_event_printf);
- 
--static int trace_output_raw(struct trace_iterator *iter, char *name,
--			    char *fmt, va_list ap)
-+static __printf(3, 0) int trace_output_raw(struct trace_iterator *iter, char *name,
-+			    const char *fmt, va_list ap)
- {
- 	struct trace_seq *s = &iter->seq;
- 
-@@ -334,7 +334,7 @@ static int trace_output_raw(struct trace_iterator *iter, char *name,
+@@ -334,7 +334,7 @@ int trace_output_raw(struct trace_iterator *iter, char *name,
  	return trace_handle_return(s);
  }
  

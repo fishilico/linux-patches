@@ -15,7 +15,7 @@ rdmsr is used.
  6 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/arch/x86/events/intel/p4.c b/arch/x86/events/intel/p4.c
-index 03bbcc2fa2ff..f94eee053e1a 100644
+index 35936188db01..74e8838bef01 100644
 --- a/arch/x86/events/intel/p4.c
 +++ b/arch/x86/events/intel/p4.c
 @@ -1373,6 +1373,7 @@ __init int p4_pmu_init(void)
@@ -27,10 +27,10 @@ index 03bbcc2fa2ff..f94eee053e1a 100644
  		pr_cont("unsupported Netburst CPU model %d ",
  			boot_cpu_data.x86_model);
 diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index 2d7ea5480ec3..5887833a5eba 100644
+index 291d4167fab8..1a32e6ab1326 100644
 --- a/arch/x86/kernel/cpu/intel.c
 +++ b/arch/x86/kernel/cpu/intel.c
-@@ -686,6 +686,7 @@ static void init_intel(struct cpuinfo_x86 *c)
+@@ -828,6 +828,7 @@ static void init_intel(struct cpuinfo_x86 *c)
  			set_cpu_cap(c, X86_FEATURE_BTS);
  		if (!(l1 & MSR_IA32_MISC_ENABLE_PEBS_UNAVAIL))
  			set_cpu_cap(c, X86_FEATURE_PEBS);
@@ -39,10 +39,10 @@ index 2d7ea5480ec3..5887833a5eba 100644
  
  	if (c->x86 == 6 && boot_cpu_has(X86_FEATURE_CLFLUSH) &&
 diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-index 558108296f3c..9ad8708f761f 100644
+index ee09d359e08f..03dc125ae5cd 100644
 --- a/arch/x86/kernel/cpu/mtrr/generic.c
 +++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -476,6 +476,7 @@ bool __init get_mtrr_state(void)
+@@ -460,6 +460,7 @@ bool __init get_mtrr_state(void)
  		get_fixed_ranges(mtrr_state.fixed_ranges);
  
  	rdmsr(MSR_MTRRdefType, lo, dummy);
@@ -51,15 +51,15 @@ index 558108296f3c..9ad8708f761f 100644
  	mtrr_state.enabled = (lo & 0xc00) >> 10;
  
 diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.c b/arch/x86/kernel/cpu/mtrr/mtrr.c
-index 2746cac9d8a9..fef865958893 100644
+index 783f3210d582..402598b6b323 100644
 --- a/arch/x86/kernel/cpu/mtrr/mtrr.c
 +++ b/arch/x86/kernel/cpu/mtrr/mtrr.c
-@@ -123,8 +123,10 @@ static void __init set_num_var_ranges(void)
+@@ -110,8 +110,10 @@ static void __init set_num_var_ranges(bool use_generic)
  {
  	unsigned long config = 0, dummy;
  
--	if (use_intel())
-+	if (use_intel()) {
+-	if (use_generic)
++	if (use_generic) {
  		rdmsr(MSR_MTRRcap, config, dummy);
 +		(void)dummy; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
 +	}
@@ -67,7 +67,7 @@ index 2746cac9d8a9..fef865958893 100644
  		config = 2;
  	else if (is_cpu(CYRIX) || is_cpu(CENTAUR))
 diff --git a/arch/x86/kernel/cpu/resctrl/core.c b/arch/x86/kernel/cpu/resctrl/core.c
-index 3266ea36667c..8889bc3aaae7 100644
+index c98e52ff5f20..6ebb29c1109c 100644
 --- a/arch/x86/kernel/cpu/resctrl/core.c
 +++ b/arch/x86/kernel/cpu/resctrl/core.c
 @@ -130,6 +130,7 @@ static inline void cache_alloc_hsw_probe(void)
@@ -79,7 +79,7 @@ index 3266ea36667c..8889bc3aaae7 100644
  	/* If all the bits were set in MSR, return success */
  	if (l != max_cbm)
 diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index e436c9c1ef3b..0071975557ac 100644
+index 40d156a31676..f76d6a703cf4 100644
 --- a/arch/x86/kernel/process.c
 +++ b/arch/x86/kernel/process.c
 @@ -921,6 +921,7 @@ void __init arch_post_acpi_subsys_init(void)

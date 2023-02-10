@@ -12,7 +12,7 @@ Subject: [PATCH] {PRAGMA} ignore some -Wjump-misses-init
  5 files changed, 39 insertions(+)
 
 diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index e9bc46684106..7ec18db3a282 100644
+index 63f9bb6e8851..61db46734ce9 100644
 --- a/fs/ext4/ialloc.c
 +++ b/fs/ext4/ialloc.c
 @@ -439,6 +439,11 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
@@ -38,7 +38,7 @@ index e9bc46684106..7ec18db3a282 100644
  
  static int find_group_other(struct super_block *sb, struct inode *parent,
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 54abd46e6007..d24e77229175 100644
+index 87d929316d57..71a7cf3c0b22 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
 @@ -630,6 +630,11 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
@@ -64,10 +64,10 @@ index 54abd46e6007..d24e77229175 100644
  
  /*
 diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 88fa40571d0c..9256db4f9662 100644
+index 4a0eb5593275..0c2b38a0a906 100644
 --- a/net/core/skbuff.c
 +++ b/net/core/skbuff.c
-@@ -2245,6 +2245,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -2311,6 +2311,11 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  	    unlikely((err = pskb_expand_head(skb, 0, 0, GFP_ATOMIC))))
  		return err;
  
@@ -79,7 +79,7 @@ index 88fa40571d0c..9256db4f9662 100644
  	i = 0;
  	if (offset >= len)
  		goto drop_pages;
-@@ -2261,6 +2266,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
+@@ -2327,6 +2332,9 @@ int ___pskb_trim(struct sk_buff *skb, unsigned int len)
  
  drop_pages:
  		skb_shinfo(skb)->nr_frags = i;
@@ -115,12 +115,12 @@ index 74d403dbd2b4..1727f1ba40f4 100644
  EXPORT_SYMBOL_GPL(fib_table_lookup);
  
 diff --git a/net/sched/cls_u32.c b/net/sched/cls_u32.c
-index 34d25f7a0687..3e55b61a9910 100644
+index 4e2e269f121f..5fb1996f966f 100644
 --- a/net/sched/cls_u32.c
 +++ b/net/sched/cls_u32.c
-@@ -103,6 +103,11 @@ static inline unsigned int u32_hash_fold(__be32 key,
- static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
- 			struct tcf_result *res)
+@@ -105,6 +105,11 @@ TC_INDIRECT_SCOPE int u32_classify(struct sk_buff *skb,
+ 				   const struct tcf_proto *tp,
+ 				   struct tcf_result *res)
  {
 +/* Variable "key" is not initialized but not used when the goto check_terminal is taken */
 +#ifndef __clang__
@@ -130,7 +130,7 @@ index 34d25f7a0687..3e55b61a9910 100644
  	struct {
  		struct tc_u_knode *knode;
  		unsigned int	  off;
-@@ -249,6 +254,9 @@ static int u32_classify(struct sk_buff *skb, const struct tcf_proto *tp,
+@@ -251,6 +256,9 @@ TC_INDIRECT_SCOPE int u32_classify(struct sk_buff *skb,
  deadloop:
  	net_warn_ratelimited("cls_u32: dead loop\n");
  	return -1;

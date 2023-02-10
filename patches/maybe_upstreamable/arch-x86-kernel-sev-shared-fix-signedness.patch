@@ -1,0 +1,72 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 6 Feb 2023 15:37:20 +0100
+Subject: [PATCH] {MAYBE UPS} arch/x86/kernel/sev-shared: fix signedness
+
+clang on x86-64 reports:
+
+    arch/x86/boot/compressed/../../kernel/sev-shared.c:779:13: error:
+    passing 'u8[2032]' (aka 'unsigned char[2032]') to parameter of type
+    'char *' converts between pointers to integer types where one is of
+    the unique plain 'char' type and the other is not [-Werror,-Wpointer-sign]
+                                                   ghcb->shared_buffer, io_bytes,
+                                                   ^~~~~~~~~~~~~~~~~~~
+    arch/x86/boot/compressed/../../kernel/sev-shared.c:593:25: note:
+    passing argument to parameter 'buf' here
+                                              void *src, char *buf,
+                                                               ^
+    arch/x86/boot/compressed/../../kernel/sev-shared.c:801:10: error:
+    passing 'u8[2032]' (aka 'unsigned char[2032]') to parameter of type
+    'char *' converts between pointers to integer types where one is of
+    the unique plain 'char' type and the other is not [-Werror,-Wpointer-sign]
+                                                       ghcb->shared_buffer, io_bytes,
+                                                       ^~~~~~~~~~~~~~~~~~~
+    arch/x86/boot/compressed/../../kernel/sev-shared.c:614:26: note:
+    passing argument to parameter 'buf' here
+                                               void *dst, char *buf,
+                                                                ^
+---
+ arch/x86/kernel/sev-shared.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kernel/sev-shared.c b/arch/x86/kernel/sev-shared.c
+index aa21eb262aa3..d040d11567de 100644
+--- a/arch/x86/kernel/sev-shared.c
++++ b/arch/x86/kernel/sev-shared.c
+@@ -590,7 +590,7 @@ void __init do_vc_no_ghcb(struct pt_regs *regs, unsigned long exit_code)
+ }
+ 
+ static enum es_result vc_insn_string_read(struct es_em_ctxt *ctxt,
+-					  void *src, char *buf,
++					  void *src, u8 *buf,
+ 					  unsigned int data_size,
+ 					  unsigned int count,
+ 					  bool backwards)
+@@ -600,7 +600,7 @@ static enum es_result vc_insn_string_read(struct es_em_ctxt *ctxt,
+ 
+ 	for (i = 0; i < count; i++) {
+ 		void *s = src + (i * data_size * b);
+-		char *d = buf + (i * data_size);
++		char *d = (char *)(buf + (i * data_size));
+ 
+ 		ret = vc_read_mem(ctxt, s, d, data_size);
+ 		if (ret != ES_OK)
+@@ -611,7 +611,7 @@ static enum es_result vc_insn_string_read(struct es_em_ctxt *ctxt,
+ }
+ 
+ static enum es_result vc_insn_string_write(struct es_em_ctxt *ctxt,
+-					   void *dst, char *buf,
++					   void *dst, u8 *buf,
+ 					   unsigned int data_size,
+ 					   unsigned int count,
+ 					   bool backwards)
+@@ -621,7 +621,7 @@ static enum es_result vc_insn_string_write(struct es_em_ctxt *ctxt,
+ 
+ 	for (i = 0; i < count; i++) {
+ 		void *d = dst + (i * data_size * s);
+-		char *b = buf + (i * data_size);
++		char *b = (char *)(buf + (i * data_size));
+ 
+ 		ret = vc_write_mem(ctxt, d, b, data_size);
+ 		if (ret != ES_OK)
+-- 

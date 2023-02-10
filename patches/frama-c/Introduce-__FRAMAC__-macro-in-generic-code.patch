@@ -33,12 +33,12 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  18 files changed, 111 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index 4d661282ff41..8b7082c3a24b 100644
+index ae713338aa46..e671896764c3 100644
 --- a/drivers/block/drbd/drbd_int.h
 +++ b/drivers/block/drbd/drbd_int.h
-@@ -38,7 +38,7 @@
- #include "drbd_state.h"
+@@ -39,7 +39,7 @@
  #include "drbd_protocol.h"
+ #include "drbd_polymorph_printk.h"
  
 -#ifdef __CHECKER__
 +#if defined(__CHECKER__) && !defined(__FRAMAC__)
@@ -100,7 +100,7 @@ index a5be9e61a2a2..8c48c1296687 100644
  #ifndef __put_user_fn
  
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 1bb24f186edb..43f9d447d26b 100644
+index 2af256dc282a..d9e5395d889b 100644
 --- a/include/linux/compiler.h
 +++ b/include/linux/compiler.h
 @@ -29,6 +29,27 @@ static noinline notrace __used void __same_pointer_depths_with_volatile2_chk(con
@@ -132,7 +132,7 @@ index 1bb24f186edb..43f9d447d26b 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index ce80c43a1bb5..fb658c4bb217 100644
+index f3271aff6d6e..e1628623f75f 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -16,7 +16,7 @@
@@ -164,7 +164,7 @@ index c2aa0aa26b45..28f4ce681459 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index bb107d46e8bf..bf9376b780b1 100644
+index 758b30510b0d..a2798fe13142 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
 @@ -645,7 +645,12 @@ struct crypto_tfm {
@@ -241,10 +241,10 @@ index c28cf76d5c31..ac5f907262a2 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 2bda4a4e47e8..40461b6b8c68 100644
+index adffd65e84b4..fb0669c5b7c2 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -177,6 +177,8 @@ typedef int __bitwise pci_power_t;
+@@ -178,6 +178,8 @@ typedef int __bitwise pci_power_t;
  #define PCI_UNKNOWN	((pci_power_t __force) 5)
  #define PCI_POWER_ERROR	((pci_power_t __force) -1)
  
@@ -253,7 +253,7 @@ index 2bda4a4e47e8..40461b6b8c68 100644
  /* Remember to update this when the list above changes! */
  extern const char *pci_power_names[];
  
-@@ -184,6 +186,7 @@ static inline const char *pci_power_name(pci_power_t state)
+@@ -185,6 +187,7 @@ static inline const char *pci_power_name(pci_power_t state)
  {
  	return pci_power_names[1 + (__force int) state];
  }
@@ -262,7 +262,7 @@ index 2bda4a4e47e8..40461b6b8c68 100644
  /**
   * typedef pci_channel_state_t
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 93c8a2d56f58..1c4d80c6be64 100644
+index d455cb0d3d2e..caba929671cc 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
 @@ -235,6 +235,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
@@ -346,11 +346,11 @@ index 0197888ad0e0..ee5b03df8f9b 100644
  
  #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index d140672185a4..6928bb69755b 100644
+index ae26da61c4d9..57107fb6af20 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1258,7 +1258,7 @@ static void print_fatal_signal(int signr)
- 	struct pt_regs *regs = signal_pt_regs();
+ 	struct pt_regs *regs = task_pt_regs(current);
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  
 -#if defined(__i386__) && !defined(__arch_um__)

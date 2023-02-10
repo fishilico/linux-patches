@@ -8,19 +8,19 @@ list of disabled warnings.
 ---
  Makefile                               | 30 +++++++++++++-------------
  arch/x86/Makefile                      |  2 +-
- arch/x86/boot/compressed/Makefile      |  6 +++---
+ arch/x86/boot/compressed/Makefile      |  4 ++--
  drivers/gpu/drm/i915/Makefile          | 22 +++++++++----------
  drivers/misc/cxl/Makefile              |  2 +-
  drivers/staging/greybus/tools/Makefile |  8 ++++++-
  mm/Makefile                            |  4 ++--
  scripts/Makefile.extrawarn             | 20 ++++++++---------
- 8 files changed, 50 insertions(+), 44 deletions(-)
+ 8 files changed, 49 insertions(+), 43 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 997b67722292..82a63ff06f6d 100644
+index d4b6af8c09e9..80293e8d47ad 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -529,7 +529,7 @@ ZSTD		= zstd
+@@ -540,7 +540,7 @@ ZSTD		= zstd
  PAHOLE_FLAGS	= $(shell PAHOLE=$(PAHOLE) $(srctree)/scripts/pahole-flags.sh)
  
  CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
@@ -29,7 +29,7 @@ index 997b67722292..82a63ff06f6d 100644
  NOSTDINC_FLAGS :=
  CFLAGS_MODULE   =
  RUSTFLAGS_MODULE =
-@@ -559,10 +559,10 @@ LINUXINCLUDE    := \
+@@ -570,10 +570,10 @@ LINUXINCLUDE    := \
  		$(USERINCLUDE)
  
  KBUILD_AFLAGS   := -D__ASSEMBLY__ -fno-PIE
@@ -37,12 +37,12 @@ index 997b67722292..82a63ff06f6d 100644
 +KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes \
  		   -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE \
  		   -Werror=implicit-function-declaration -Werror=implicit-int \
--		   -Werror=return-type -Wno-format-security \
-+		   -Werror=return-type \
+-		   -Werror=return-type -Wno-format-security -funsigned-char \
++		   -Werror=return-type -funsigned-char \
  		   -std=gnu11
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_RUSTFLAGS := $(rust_common_flags) \
-@@ -815,10 +815,10 @@ endif # may-sync-config
+@@ -826,10 +826,10 @@ endif # may-sync-config
  endif # need-config
  
  KBUILD_CFLAGS	+= -fno-delete-null-pointer-checks
@@ -57,7 +57,7 @@ index 997b67722292..82a63ff06f6d 100644
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
  KBUILD_CFLAGS += -O2
-@@ -868,7 +868,7 @@ KBUILD_RUSTFLAGS += $(KBUILD_RUSTFLAGS-y)
+@@ -880,7 +880,7 @@ KBUILD_RUSTFLAGS += $(KBUILD_RUSTFLAGS-y)
  ifdef CONFIG_CC_IS_CLANG
  KBUILD_CPPFLAGS += -Qunused-arguments
  # The kernel builds with '-std=gnu11' so use of GNU extensions is acceptable.
@@ -66,7 +66,7 @@ index 997b67722292..82a63ff06f6d 100644
  else
  
  # gcc inanely warns about local variables called 'main'
-@@ -877,8 +877,8 @@ endif
+@@ -889,8 +889,8 @@ endif
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
@@ -77,7 +77,7 @@ index 997b67722292..82a63ff06f6d 100644
  
  # These result in bogus false positives
  KBUILD_CFLAGS += $(call cc-disable-warning, dangling-pointer)
-@@ -1018,7 +1018,7 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
+@@ -1034,7 +1034,7 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
  KBUILD_CFLAGS += -Wvla
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -86,7 +86,7 @@ index 997b67722292..82a63ff06f6d 100644
  
  # In order to make sure new function cast mismatches are not introduced
  # in the kernel (to avoid tripping CFI checking), the kernel should be
-@@ -1026,17 +1026,17 @@ KBUILD_CFLAGS += -Wno-pointer-sign
+@@ -1042,17 +1042,17 @@ KBUILD_CFLAGS += -Wno-pointer-sign
  KBUILD_CFLAGS += $(call cc-option, -Wcast-function-type)
  
  # disable stringop warnings in gcc 8+
@@ -109,7 +109,7 @@ index 997b67722292..82a63ff06f6d 100644
  
  # The allocators already balk at large sizes, so silence the compiler
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 415a5d138de4..59bae409d9a1 100644
+index 9cf07322875a..3acd7d35123e 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
 @@ -186,7 +186,7 @@ ifeq ($(ACCUMULATE_OUTGOING_ARGS), 1)
@@ -122,24 +122,22 @@ index 415a5d138de4..59bae409d9a1 100644
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  
 diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
-index 3a261abb6d15..b77187944c69 100644
+index 1acff356d97a..7e42154c9dc9 100644
 --- a/arch/x86/boot/compressed/Makefile
 +++ b/arch/x86/boot/compressed/Makefile
-@@ -43,9 +43,9 @@ KBUILD_CFLAGS += $(cflags-y)
- KBUILD_CFLAGS += -mno-mmx -mno-sse
+@@ -44,8 +44,8 @@ KBUILD_CFLAGS += -mno-mmx -mno-sse
  KBUILD_CFLAGS += -ffreestanding -fshort-wchar
  KBUILD_CFLAGS += -fno-stack-protector
--KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
+ KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
 -KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
 -KBUILD_CFLAGS += -Wno-pointer-sign
-+#KBUILD_CFLAGS += $(call cc-disable-warning, address-of-packed-member)
 +#KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
 +#KBUILD_CFLAGS += -Wno-pointer-sign
  KBUILD_CFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  KBUILD_CFLAGS += -D__DISABLE_EXPORTS
 diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
-index cea00aaca04b..11e0602c3861 100644
+index 01974b82d205..0c82c37b104c 100644
 --- a/drivers/gpu/drm/i915/Makefile
 +++ b/drivers/gpu/drm/i915/Makefile
 @@ -12,20 +12,20 @@
@@ -227,7 +225,7 @@ index 8e105e5b3e29..92a6dafcd960 100644
  mmu-y			:= nommu.o
  mmu-$(CONFIG_MMU)	:= highmem.o memory.o mincore.o \
 diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
-index 6bbba36c5969..9646842b5f52 100644
+index 40cd13eca82e..69dcff558549 100644
 --- a/scripts/Makefile.extrawarn
 +++ b/scripts/Makefile.extrawarn
 @@ -6,7 +6,7 @@
@@ -239,7 +237,7 @@ index 6bbba36c5969..9646842b5f52 100644
  
  # backward compatibility
  KBUILD_EXTRA_WARN ?= $(KBUILD_ENABLE_EXTRA_GCC_CHECKS)
-@@ -46,25 +46,25 @@ else
+@@ -47,25 +47,25 @@ else
  # Suppress them by using -Wno... except for W=1.
  
  ifdef CONFIG_CC_IS_CLANG

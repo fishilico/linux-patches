@@ -44,7 +44,7 @@ grsecurity kernels warns:
  4 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 7ca47e5b3c1f..ffb1b8cab1ff 100644
+index 4ec6dbab73be..a129ea5a2d93 100644
 --- a/drivers/base/bus.c
 +++ b/drivers/base/bus.c
 @@ -158,7 +158,7 @@ static void bus_release(struct kobject *kobj)
@@ -57,7 +57,7 @@ index 7ca47e5b3c1f..ffb1b8cab1ff 100644
  	.release	= bus_release,
  };
 diff --git a/include/linux/module.h b/include/linux/module.h
-index ec61fb53979a..6bea669f46f0 100644
+index 8c5909c0076c..701869049be2 100644
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
 @@ -826,7 +826,7 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
@@ -66,14 +66,14 @@ index ec61fb53979a..6bea669f46f0 100644
  extern struct kset *module_kset;
 -extern struct kobj_type module_ktype;
 +extern const struct kobj_type module_ktype;
- extern int module_sysfs_initialized;
  #endif /* CONFIG_SYSFS */
  
+ #define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
 diff --git a/kernel/params.c b/kernel/params.c
-index 5b92310425c5..fdc4834a6f07 100644
+index 14d66070757b..049d7078fb21 100644
 --- a/kernel/params.c
 +++ b/kernel/params.c
-@@ -948,7 +948,7 @@ static void module_kobj_release(struct kobject *kobj)
+@@ -947,7 +947,7 @@ static void module_kobj_release(struct kobject *kobj)
  	complete(mk->kobj_completion);
  }
  
@@ -83,7 +83,7 @@ index 5b92310425c5..fdc4834a6f07 100644
  	.sysfs_ops =	&module_sysfs_ops,
  };
 diff --git a/lib/kobject.c b/lib/kobject.c
-index a0b2dbfcfa23..7003d1768a83 100644
+index 985ee1c4f2c6..52e2f9634f61 100644
 --- a/lib/kobject.c
 +++ b/lib/kobject.c
 @@ -729,7 +729,7 @@ static void dynamic_kobj_release(struct kobject *kobj)
@@ -95,7 +95,7 @@ index a0b2dbfcfa23..7003d1768a83 100644
  	.release	= dynamic_kobj_release,
  	.sysfs_ops	= &kobj_sysfs_ops,
  };
-@@ -906,7 +906,7 @@ static void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
+@@ -913,7 +913,7 @@ static void kset_get_ownership(const struct kobject *kobj, kuid_t *uid, kgid_t *
  		kobject_get_ownership(kobj->parent, uid, gid);
  }
  

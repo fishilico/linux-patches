@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 5 Feb 2023 19:10:49 +0100
+Subject: [PATCH] {BUG in 6.2-rc1} drivers/gpu/drm/tiny/ofdrm: do not
+ dereference %pr arg
+
+---
+ drivers/gpu/drm/tiny/ofdrm.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/tiny/ofdrm.c b/drivers/gpu/drm/tiny/ofdrm.c
+index dc9e4d71b12a..ab71e3faa08c 100644
+--- a/drivers/gpu/drm/tiny/ofdrm.c
++++ b/drivers/gpu/drm/tiny/ofdrm.c
+@@ -1230,13 +1230,13 @@ static struct ofdrm_device *ofdrm_device_create(struct drm_driver *drv,
+ 
+ 	ret = devm_aperture_acquire_from_firmware(dev, fb_pgbase, fb_pgsize);
+ 	if (ret) {
+-		drm_err(dev, "could not acquire memory range %pr: error %d\n", &res, ret);
++		drm_err(dev, "could not acquire memory range %pr: error %d\n", res, ret);
+ 		return ERR_PTR(ret);
+ 	}
+ 
+ 	mem = devm_request_mem_region(&pdev->dev, fb_pgbase, fb_pgsize, drv->name);
+ 	if (!mem) {
+-		drm_warn(dev, "could not acquire memory region %pr\n", &res);
++		drm_warn(dev, "could not acquire memory region %pr\n", res);
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+ 
+-- 

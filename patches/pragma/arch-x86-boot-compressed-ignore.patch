@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 6 Feb 2023 15:35:40 +0100
+Subject: [PATCH] {PRAGMA} arch/x86/boot/compressed: ignore
+ -Wgnu-variable-sized-type-not-at-end
+
+clang reports when compiling the boot compressor code:
+
+    In file included from arch/x86/boot/compressed/sev.c:22:
+    In file included from arch/x86/include/asm/svm.h:8:
+    In file included from arch/x86/include/asm/hyperv-tlfs.h:698:
+    include/asm-generic/hyperv-tlfs.h:486:18: error: field 'hv_vp_set'
+    with variable sized type 'struct hv_vpset' not at the end of a
+    struct or class is a GNU extension
+    [-Werror,-Wgnu-variable-sized-type-not-at-end]
+            struct hv_vpset hv_vp_set;
+                            ^
+    In file included from arch/x86/boot/compressed/sev.c:118:
+    arch/x86/boot/compressed/../../kernel/sev-shared.c:932:20: error:
+    field 'header' with variable sized type 'struct setup_data' not at
+    the end of a struct or class is a GNU extension
+    [-Werror,-Wgnu-variable-sized-type-not-at-end]
+            struct setup_data header;
+                              ^
+---
+ arch/x86/kernel/sev-shared.c      | 3 +++
+ include/asm-generic/hyperv-tlfs.h | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/arch/x86/kernel/sev-shared.c b/arch/x86/kernel/sev-shared.c
+index 3a5b0c9c4fcc..aa21eb262aa3 100644
+--- a/arch/x86/kernel/sev-shared.c
++++ b/arch/x86/kernel/sev-shared.c
+@@ -928,10 +928,13 @@ static enum es_result vc_handle_rdtsc(struct ghcb *ghcb,
+ 	return ES_OK;
+ }
+ 
++__diag_push()
++__diag_ignore(clang, 10, "-Wgnu-variable-sized-type-not-at-end", "header is not at the end on purpose")
+ struct cc_setup_data {
+ 	struct setup_data header;
+ 	u32 cc_blob_address;
+ };
++__diag_pop()
+ 
+ /*
+  * Search for a Confidential Computing blob passed in as a setup_data entry
+diff --git a/include/asm-generic/hyperv-tlfs.h b/include/asm-generic/hyperv-tlfs.h
+index e29ccabf2e09..82ba4a9d1d61 100644
+--- a/include/asm-generic/hyperv-tlfs.h
++++ b/include/asm-generic/hyperv-tlfs.h
+@@ -480,12 +480,15 @@ struct hv_tlb_flush {
+ } __packed;
+ 
+ /* HvFlushVirtualAddressSpaceEx, HvFlushVirtualAddressListEx hypercalls */
++__diag_push()
++__diag_ignore(clang, 10, "-Wgnu-variable-sized-type-not-at-end", "hv_vp_set is not at the end on purpose")
+ struct hv_tlb_flush_ex {
+ 	u64 address_space;
+ 	u64 flags;
+ 	struct hv_vpset hv_vp_set;
+ 	u64 gva_list[];
+ } __packed;
++__diag_pop()
+ 
+ /* HvGetPartitionId hypercall (output only) */
+ struct hv_get_partition_id {
+-- 

@@ -313,6 +313,7 @@ then
     disable_in_hostcflags 'gnu-conditional-omitted-operand' # "value ? : default" construction
     disable_in_hostcflags 'gnu-empty-initializer'
     disable_in_hostcflags 'gnu-statement-expression'
+    disable_in_hostcflags 'gnu-variable-sized-type-not-at-end' # some structures use "header" with variable sized payload, and specific structures with header.
     disable_in_hostcflags 'gnu-zero-variadic-macro-arguments'
     disable_in_hostcflags 'incompatible-pointer-types-discards-qualifiers' # constant strings get assigned to char* variables
     disable_in_hostcflags 'language-extension-token' # "inline"
@@ -482,6 +483,7 @@ then
         echo 'CONFIG_RCU_NOCB_CPU_CB_BOOST=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_XEN_VIRTIO_FORCE_GRANT=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_RV_MON_WIP=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_NVDIMM_SECURITY_TEST=y' >> "$KBUILD_OUTPUT/.config"
     fi
 
     # Merge options
