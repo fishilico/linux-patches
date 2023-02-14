@@ -484,6 +484,7 @@ then
         echo 'CONFIG_XEN_VIRTIO_FORCE_GRANT=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_RV_MON_WIP=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_NVDIMM_SECURITY_TEST=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_DRM_PANFROST=m' >> "$KBUILD_OUTPUT/.config"
     fi
 
     # Merge options
