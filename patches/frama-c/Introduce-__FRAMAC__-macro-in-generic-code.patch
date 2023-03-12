@@ -12,7 +12,6 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
   code as the one used to define syscalls)
 - Use string functions from Frama-C
 ---
- drivers/block/drbd/drbd_int.h   |  2 +-
  include/asm-generic/page.h      |  8 ++++++++
  include/asm-generic/uaccess.h   | 15 +++++++++++++++
  include/linux/compiler.h        | 21 +++++++++++++++++++++
@@ -30,28 +29,15 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  kernel/signal.c                 |  2 +-
  kernel/time/time.c              |  4 ++++
  lib/hexdump.c                   | 10 +++++++++-
- 18 files changed, 111 insertions(+), 12 deletions(-)
+ 17 files changed, 110 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index ae713338aa46..e671896764c3 100644
---- a/drivers/block/drbd/drbd_int.h
-+++ b/drivers/block/drbd/drbd_int.h
-@@ -39,7 +39,7 @@
- #include "drbd_protocol.h"
- #include "drbd_polymorph_printk.h"
- 
--#ifdef __CHECKER__
-+#if defined(__CHECKER__) && !defined(__FRAMAC__)
- # define __protected_by(x)       __attribute__((require_context(x,1,999,"rdwr")))
- # define __protected_read_by(x)  __attribute__((require_context(x,1,999,"read")))
- # define __protected_write_by(x) __attribute__((require_context(x,1,999,"write")))
 diff --git a/include/asm-generic/page.h b/include/asm-generic/page.h
-index 6fc47561814c..70ea99f1931b 100644
+index c0be2edeb484..ad5e384705d0 100644
 --- a/include/asm-generic/page.h
 +++ b/include/asm-generic/page.h
-@@ -86,8 +86,16 @@ extern unsigned long memory_end;
- 
- #define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && ((pfn) - ARCH_PFN_OFFSET) < max_mapnr)
+@@ -84,8 +84,16 @@ extern unsigned long memory_end;
+ #define page_to_phys(page)      ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT)
+ #endif
  
 +#ifdef __FRAMAC__
 +/* Prevent Frama-C from reporting errors about:
@@ -132,7 +118,7 @@ index 2af256dc282a..d9e5395d889b 100644
   * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
   * to disable branch tracing on a per file basis.
 diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index f3271aff6d6e..e1628623f75f 100644
+index 87f390d4312c..f8547383234d 100644
 --- a/include/linux/compiler_types.h
 +++ b/include/linux/compiler_types.h
 @@ -16,7 +16,7 @@
@@ -145,10 +131,10 @@ index f3271aff6d6e..e1628623f75f 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __user		__attribute__((noderef, address_space(__user)))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index c2aa0aa26b45..28f4ce681459 100644
+index 8fbe76607965..81a488edba2c 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -982,9 +982,14 @@ set_cpu_dying(unsigned int cpu, bool dying)
+@@ -1017,9 +1017,14 @@ set_cpu_dying(unsigned int cpu, bool dying)
   *
   * This does the conversion, and can be used as a constant initializer.
   */
@@ -164,7 +150,7 @@ index c2aa0aa26b45..28f4ce681459 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 758b30510b0d..a2798fe13142 100644
+index a8f5e0e23df0..ed15c663a0d2 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
 @@ -645,7 +645,12 @@ struct crypto_tfm {
@@ -241,7 +227,7 @@ index c28cf76d5c31..ac5f907262a2 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 254c8a4126a8..e1d148fc48ba 100644
+index fafd8020c6d7..7e6e2a36fd08 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -178,6 +178,8 @@ typedef int __bitwise pci_power_t;
@@ -346,7 +332,7 @@ index 0197888ad0e0..ee5b03df8f9b 100644
  
  #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index ae26da61c4d9..57107fb6af20 100644
+index 8cb28f1df294..c014f36b209d 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
 @@ -1258,7 +1258,7 @@ static void print_fatal_signal(int signr)

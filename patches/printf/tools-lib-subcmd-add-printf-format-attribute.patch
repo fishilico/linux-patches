@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 12 Mar 2023 09:05:00 +0100
+Subject: [PATCH] {PRINTF} tools/lib/subcmd: add printf format attribute
+
+---
+ tools/lib/subcmd/subcmd-util.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/lib/subcmd/subcmd-util.h b/tools/lib/subcmd/subcmd-util.h
+index b2aec04fce8f..9ae3dd1f5b42 100644
+--- a/tools/lib/subcmd/subcmd-util.h
++++ b/tools/lib/subcmd/subcmd-util.h
+@@ -8,14 +8,14 @@
+ 
+ #define NORETURN __attribute__((__noreturn__))
+ 
+-static inline void report(const char *prefix, const char *err, va_list params)
++static __attribute__((format(printf, 2, 0))) inline void report(const char *prefix, const char *err, va_list params)
+ {
+ 	char msg[1024];
+ 	vsnprintf(msg, sizeof(msg), err, params);
+ 	fprintf(stderr, " %s%s\n", prefix, msg);
+ }
+ 
+-static NORETURN inline void die(const char *err, ...)
++static NORETURN __attribute__((format(printf, 1, 2))) inline void die(const char *err, ...)
+ {
+ 	va_list params;
+ 
+-- 

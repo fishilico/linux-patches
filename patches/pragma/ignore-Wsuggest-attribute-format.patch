@@ -180,26 +180,26 @@ index e7fd55e7dc3d..de05cd5d5dc7 100644
  
  DEFINE_EVENT(qla_log_event, ql_dbg_log,
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
-index af30c6cbd65d..92335a9818d1 100644
+index 5b278a38ae58..b2d596806dd3 100644
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
-@@ -1043,7 +1043,11 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
+@@ -1054,7 +1054,11 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
  	if (err < 0)
  		return err;
  
 +	__diag_push()
 +	__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
 +		      "This function is never called directly")
- 	err = bstr_printf(str, str_size, fmt, bin_args);
+ 	err = bstr_printf(str, str_size, fmt, data.bin_args);
 +	__diag_pop()
  
- 	bpf_bprintf_cleanup();
+ 	bpf_bprintf_cleanup(&data);
  
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 463c9295bc28..241fad5262d7 100644
+index 5cfea8302d23..939e99d2286c 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -653,8 +653,12 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
+@@ -662,8 +662,12 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
  		pr_warn("WARNING: CPU: %d PID: %d at %pS\n",
  			raw_smp_processor_id(), current->pid, caller);
  
@@ -213,32 +213,32 @@ index 463c9295bc28..241fad5262d7 100644
  	print_modules();
  
 diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index c09792c551bf..13a2b081a24c 100644
+index e8da032bb6fc..f5ae414558ad 100644
 --- a/kernel/trace/bpf_trace.c
 +++ b/kernel/trace/bpf_trace.c
-@@ -389,7 +389,11 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
+@@ -387,7 +387,11 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
+ 	if (ret < 0)
  		return ret;
  
- 	raw_spin_lock_irqsave(&trace_printk_lock, flags);
 +	__diag_push()
 +	__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
 +		      "This function does not behave like printf even though it calls bstr_printf")
- 	ret = bstr_printf(buf, sizeof(buf), fmt, bin_args);
+ 	ret = bstr_printf(data.buf, MAX_BPRINTF_BUF, fmt, data.bin_args);
 +	__diag_pop()
  
- 	trace_bpf_trace_printk(buf);
- 	raw_spin_unlock_irqrestore(&trace_printk_lock, flags);
-@@ -427,6 +431,9 @@ const struct bpf_func_proto *bpf_get_trace_printk_proto(void)
+ 	trace_bpf_trace_printk(data.buf);
+ 
+@@ -424,6 +428,9 @@ const struct bpf_func_proto *bpf_get_trace_printk_proto(void)
  	return &bpf_trace_printk_proto;
  }
  
 +__diag_push()
 +__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
 +	"It is not possible to add __printf attribute to this function")
- BPF_CALL_4(bpf_trace_vprintk, char *, fmt, u32, fmt_size, const void *, data,
+ BPF_CALL_4(bpf_trace_vprintk, char *, fmt, u32, fmt_size, const void *, args,
  	   u32, data_len)
  {
-@@ -454,6 +461,7 @@ BPF_CALL_4(bpf_trace_vprintk, char *, fmt, u32, fmt_size, const void *, data,
+@@ -450,6 +457,7 @@ BPF_CALL_4(bpf_trace_vprintk, char *, fmt, u32, fmt_size, const void *, args,
  
  	return ret;
  }
@@ -246,23 +246,23 @@ index c09792c551bf..13a2b081a24c 100644
  
  static const struct bpf_func_proto bpf_trace_vprintk_proto = {
  	.func		= bpf_trace_vprintk,
-@@ -486,7 +494,11 @@ BPF_CALL_5(bpf_seq_printf, struct seq_file *, m, char *, fmt, u32, fmt_size,
+@@ -484,7 +492,11 @@ BPF_CALL_5(bpf_seq_printf, struct seq_file *, m, char *, fmt, u32, fmt_size,
  	if (err < 0)
  		return err;
  
 +	__diag_push()
 +	__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
 +		      "This function does not behave like printf even though it calls seq_bprintf")
- 	seq_bprintf(m, fmt, bin_args);
+ 	seq_bprintf(m, fmt, data.bin_args);
 +	__diag_pop()
  
- 	bpf_bprintf_cleanup();
+ 	bpf_bprintf_cleanup(&data);
  
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index c9e40f692650..bd9e48b08d73 100644
+index 45551c7b4c36..487537bf5b43 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -3804,6 +3804,10 @@ static void test_can_verify(void)
+@@ -3852,6 +3852,10 @@ static void test_can_verify(void)
   * warn and print "[UNSAFE MEMORY]" in place of the dereferenced string
   * pointer.
   */
@@ -273,7 +273,7 @@ index c9e40f692650..bd9e48b08d73 100644
  void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  			 va_list ap)
  {
-@@ -3936,6 +3940,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
+@@ -3984,6 +3988,9 @@ void trace_check_vprintf(struct trace_iterator *iter, const char *fmt,
  	if (*p)
  		trace_seq_vprintf(&iter->seq, p, ap);
  }

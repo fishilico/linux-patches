@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 12 Mar 2023 10:53:50 +0100
+Subject: [PATCH] {PRINTF} drivers/net/dsa/microchip: silence -Wformat-security
+ with "%s"
+
+---
+ drivers/net/dsa/microchip/ksz_ptp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/dsa/microchip/ksz_ptp.c b/drivers/net/dsa/microchip/ksz_ptp.c
+index 4e22a695a64c..5cc48007498a 100644
+--- a/drivers/net/dsa/microchip/ksz_ptp.c
++++ b/drivers/net/dsa/microchip/ksz_ptp.c
+@@ -1109,7 +1109,7 @@ static int ksz_ptp_msg_irq_setup(struct ksz_port *port, u8 n)
+ 	ptpmsg_irq->port = port;
+ 	ptpmsg_irq->ts_reg = ops->get_port_addr(port->num, ts_reg[n]);
+ 
+-	snprintf(ptpmsg_irq->name, sizeof(ptpmsg_irq->name), name[n]);
++	snprintf(ptpmsg_irq->name, sizeof(ptpmsg_irq->name), "%s", name[n]);
+ 
+ 	ptpmsg_irq->num = irq_find_mapping(port->ptpirq.domain, n);
+ 	if (ptpmsg_irq->num < 0)
+-- 

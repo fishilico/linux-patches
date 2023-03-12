@@ -37,30 +37,15 @@ grsecurity kernels warns:
      extern void kobject_init(struct kobject *kobj, struct kobj_type *ktype);
                  ^~~~~~~~~~~~
 ---
- drivers/base/bus.c     | 2 +-
  include/linux/module.h | 2 +-
  kernel/params.c        | 2 +-
- lib/kobject.c          | 4 ++--
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 4ec6dbab73be..a129ea5a2d93 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -158,7 +158,7 @@ static void bus_release(struct kobject *kobj)
- 	bus->p = NULL;
- }
- 
--static struct kobj_type bus_ktype = {
-+static const struct kobj_type bus_ktype = {
- 	.sysfs_ops	= &bus_sysfs_ops,
- 	.release	= bus_release,
- };
 diff --git a/include/linux/module.h b/include/linux/module.h
-index 8c5909c0076c..701869049be2 100644
+index 4435ad9439ab..955ae6cb43b3 100644
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
-@@ -826,7 +826,7 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
+@@ -834,7 +834,7 @@ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
  
  #ifdef CONFIG_SYSFS
  extern struct kset *module_kset;
@@ -70,10 +55,10 @@ index 8c5909c0076c..701869049be2 100644
  
  #define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
 diff --git a/kernel/params.c b/kernel/params.c
-index 14d66070757b..049d7078fb21 100644
+index 6e34ca89ebae..6a7548979aa9 100644
 --- a/kernel/params.c
 +++ b/kernel/params.c
-@@ -947,7 +947,7 @@ static void module_kobj_release(struct kobject *kobj)
+@@ -948,7 +948,7 @@ static void module_kobj_release(struct kobject *kobj)
  	complete(mk->kobj_completion);
  }
  
@@ -82,26 +67,4 @@ index 14d66070757b..049d7078fb21 100644
  	.release   =	module_kobj_release,
  	.sysfs_ops =	&module_sysfs_ops,
  };
-diff --git a/lib/kobject.c b/lib/kobject.c
-index 985ee1c4f2c6..52e2f9634f61 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -729,7 +729,7 @@ static void dynamic_kobj_release(struct kobject *kobj)
- 	kfree(kobj);
- }
- 
--static struct kobj_type dynamic_kobj_ktype = {
-+static const struct kobj_type dynamic_kobj_ktype = {
- 	.release	= dynamic_kobj_release,
- 	.sysfs_ops	= &kobj_sysfs_ops,
- };
-@@ -913,7 +913,7 @@ static void kset_get_ownership(const struct kobject *kobj, kuid_t *uid, kgid_t *
- 		kobject_get_ownership(kobj->parent, uid, gid);
- }
- 
--static struct kobj_type kset_ktype = {
-+static const struct kobj_type kset_ktype = {
- 	.sysfs_ops	= &kobj_sysfs_ops,
- 	.release	= kset_release,
- 	.get_ownership	= kset_get_ownership,
 -- 

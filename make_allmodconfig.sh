@@ -266,7 +266,7 @@ else
 fi
 
 # Initial from Makefile
-HOSTCFLAGS='-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89'
+HOSTCFLAGS='-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu99'
 # Custom addings
 HOSTCFLAGS="$HOSTCFLAGS -g -ggdb"
 HOSTCFLAGS="$HOSTCFLAGS -Wextra -Werror"
@@ -485,6 +485,12 @@ then
         echo 'CONFIG_RV_MON_WIP=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_NVDIMM_SECURITY_TEST=y' >> "$KBUILD_OUTPUT/.config"
         echo 'CONFIG_DRM_PANFROST=m' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_IOMMU_IO_PGTABLE_LPAE_SELFTEST=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_IPMMU_VMSA=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_ARM_SMMU=m' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_ARM_SMMU_QCOM_DEBUG=y' >> "$KBUILD_OUTPUT/.config"
+        echo 'CONFIG_QCOM_IOMMU=y' >> "$KBUILD_OUTPUT/.config"
     fi
 
     # Merge options

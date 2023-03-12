@@ -1,18 +1,28 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
-Date: Sun, 5 Feb 2023 20:20:35 +0100
-Subject: [PATCH] {BUG in 6.2-rc1} drivers/regulator/tps65219-regulator: do not
- check that a pointer is negative
+Date: Sun, 12 Mar 2023 10:57:50 +0100
+Subject: [PATCH] {BUG in 6.3-rc1} drivers/regulator/tps65219-regulator: fix
+ function
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+See with gcc on x86-64:
+
+    drivers/regulator/tps65219-regulator.c: In function ‘tps65219_get_rdev_by_name’:
+    drivers/regulator/tps65219-regulator.c:292:60: error: parameter
+    ‘dev’ set but not used [-Werror=unused-but-set-parameter]
+      292 |                                      struct regulator_dev *dev)
+          |                                      ~~~~~~~~~~~~~~~~~~~~~~^~~
 ---
  drivers/regulator/tps65219-regulator.c | 7 +++----
  1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/regulator/tps65219-regulator.c b/drivers/regulator/tps65219-regulator.c
-index c484c943e467..2f76749b2e56 100644
+index 4b5acaa45049..388ac71c2bbe 100644
 --- a/drivers/regulator/tps65219-regulator.c
 +++ b/drivers/regulator/tps65219-regulator.c
-@@ -307,13 +307,13 @@ static irqreturn_t tps65219_regulator_irq_handler(int irq, void *data)
+@@ -289,13 +289,13 @@ static irqreturn_t tps65219_regulator_irq_handler(int irq, void *data)
  
  static int tps65219_get_rdev_by_name(const char *regulator_name,
  				     struct regulator_dev *rdevtbl[7],
@@ -28,12 +38,12 @@ index c484c943e467..2f76749b2e56 100644
  			return 0;
  		}
  	}
-@@ -366,8 +366,7 @@ static int tps65219_regulator_probe(struct platform_device *pdev)
+@@ -348,8 +348,7 @@ static int tps65219_regulator_probe(struct platform_device *pdev)
  		irq_data[i].dev = tps->dev;
  		irq_data[i].type = irq_type;
  
 -		tps65219_get_rdev_by_name(irq_type->regulator_name, rdevtbl, rdev);
--		if (rdev < 0) {
+-		if (IS_ERR(rdev)) {
 +		if (tps65219_get_rdev_by_name(irq_type->regulator_name, rdevtbl, &rdev) < 0) {
  			dev_err(tps->dev, "Failed to get rdev for %s\n",
  				irq_type->regulator_name);

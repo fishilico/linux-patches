@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 12 Mar 2023 11:06:44 +0100
+Subject: [PATCH] {BUG in 6.3-rc1} drivers/iommu/of_iommu: remove dereference
+ in %pr
+
+---
+ drivers/iommu/of_iommu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/iommu/of_iommu.c b/drivers/iommu/of_iommu.c
+index 40f57d293a79..c860a5bc83b6 100644
+--- a/drivers/iommu/of_iommu.c
++++ b/drivers/iommu/of_iommu.c
+@@ -191,7 +191,7 @@ iommu_resv_region_get_type(struct device *dev,
+ 	if (start == phys->start && end == phys->end)
+ 		return IOMMU_RESV_DIRECT;
+ 
+-	dev_warn(dev, "treating non-direct mapping [%pr] -> [%pap-%pap] as reservation\n", &phys,
++	dev_warn(dev, "treating non-direct mapping [%pr] -> [%pap-%pap] as reservation\n", phys,
+ 		 &start, &end);
+ 	return IOMMU_RESV_RESERVED;
+ }
+-- 

@@ -37,13 +37,13 @@ Subject: [PATCH] {FRAMA-C} Add arch/framac
  arch/framac/kernel/setup.c             |  16 +++
  arch/framac/kernel/time.c              |   5 +
  arch/framac/kernel/traps.c             |  10 ++
- arch/framac/kernel/vmlinux.lds.S       |  56 ++++++++++
+ arch/framac/kernel/vmlinux.lds.S       |  57 ++++++++++
  arch/framac/lib/Makefile               |   2 +
  arch/framac/lib/delay.c                |  27 +++++
  arch/framac/lib/vmalloc_huge.c         |   6 ++
  arch/framac/mm/Makefile                |   1 +
  arch/framac/mm/init.c                  |  14 +++
- 39 files changed, 1073 insertions(+)
+ 39 files changed, 1074 insertions(+)
  create mode 100644 arch/framac/Kconfig
  create mode 100644 arch/framac/Kconfig.debug
  create mode 100644 arch/framac/Makefile
@@ -1248,10 +1248,10 @@ index 000000000000..f2e174a198f1
 +}
 diff --git a/arch/framac/kernel/vmlinux.lds.S b/arch/framac/kernel/vmlinux.lds.S
 new file mode 100644
-index 000000000000..b449862d596d
+index 000000000000..2f2d4ded45a6
 --- /dev/null
 +++ b/arch/framac/kernel/vmlinux.lds.S
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,57 @@
 +/*
 + * See asm-generic/vmlinux.lds.h for expansion of some of these macros.
 + * See asm-generic/sections.h for seemingly required labels.
@@ -1280,10 +1280,10 @@ index 000000000000..b449862d596d
 +	.text : AT(ADDR(.text)) {
 +		_text = .;
 +		TEXT_TEXT
-+		SCHED_TEXT
-+		CPUIDLE_TEXT
-+		LOCK_TEXT
 +		IRQENTRY_TEXT
++		SOFTIRQENTRY_TEXT
++		SCHED_TEXT
++		LOCK_TEXT
 +		KPROBES_TEXT
 +		*(.fixup)
 +	}
@@ -1305,6 +1305,7 @@ index 000000000000..b449862d596d
 +
 +	STABS_DEBUG
 +	DWARF_DEBUG
++	ELF_DETAILS
 +
 +	DISCARDS
 +}

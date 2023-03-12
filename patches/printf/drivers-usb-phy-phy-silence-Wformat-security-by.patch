@@ -9,19 +9,19 @@ Subject: [PATCH] {PRINTF} drivers/usb/phy/phy: silence -Wformat-security by
  1 file changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/usb/phy/phy.c b/drivers/usb/phy/phy.c
-index 1b24492bb4e5..ccc094866731 100644
+index 4b468bde19cf..e8bd58f2d571 100644
 --- a/drivers/usb/phy/phy.c
 +++ b/drivers/usb/phy/phy.c
 @@ -148,8 +148,6 @@ static void usb_phy_notify_charger_work(struct work_struct *work)
- static int usb_phy_uevent(struct device *dev, struct kobj_uevent_env *env)
+ static int usb_phy_uevent(const struct device *dev, struct kobj_uevent_env *env)
  {
- 	struct usb_phy *usb_phy;
+ 	const struct usb_phy *usb_phy;
 -	char uchger_state[50] = { 0 };
 -	char uchger_type[50] = { 0 };
  	unsigned long flags;
  
  	spin_lock_irqsave(&phy_lock, flags);
-@@ -159,16 +157,10 @@ static int usb_phy_uevent(struct device *dev, struct kobj_uevent_env *env)
+@@ -159,16 +157,10 @@ static int usb_phy_uevent(const struct device *dev, struct kobj_uevent_env *env)
  	if (!usb_phy)
  		return -ENODEV;
  

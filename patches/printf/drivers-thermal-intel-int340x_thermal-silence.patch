@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 12 Mar 2023 10:56:31 +0100
+Subject: [PATCH] {PRINTF} drivers/thermal/intel/int340x_thermal: silence
+ -Wformat-security with "%s"
+
+---
+ drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+index d0295123cc3e..be447d122092 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -131,7 +131,7 @@ static ssize_t available_uuids_show(struct device *dev,
+ 
+ 	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; i++) {
+ 		if (priv->uuid_bitmap & (1 << i))
+-			length += sysfs_emit_at(buf, length, int3400_thermal_uuids[i]);
++			length += sysfs_emit_at(buf, length, "%s", int3400_thermal_uuids[i]);
+ 	}
+ 
+ 	return length;
+@@ -149,7 +149,7 @@ static ssize_t current_uuid_show(struct device *dev,
+ 
+ 	for (i = 0; i <= INT3400_THERMAL_CRITICAL; i++) {
+ 		if (priv->os_uuid_mask & BIT(i))
+-			length += sysfs_emit_at(buf, length, int3400_thermal_uuids[i]);
++			length += sysfs_emit_at(buf, length, "%s", int3400_thermal_uuids[i]);
+ 	}
+ 
+ 	if (length)
+-- 

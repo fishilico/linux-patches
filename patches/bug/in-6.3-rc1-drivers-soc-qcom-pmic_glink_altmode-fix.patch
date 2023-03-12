@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 12 Mar 2023 11:05:39 +0100
+Subject: [PATCH] {BUG in 6.3-rc1} drivers/soc/qcom/pmic_glink_altmode: fix
+ pointer format
+
+---
+ drivers/soc/qcom/pmic_glink_altmode.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/soc/qcom/pmic_glink_altmode.c b/drivers/soc/qcom/pmic_glink_altmode.c
+index 4d7895bdeaf2..a424284ab05b 100644
+--- a/drivers/soc/qcom/pmic_glink_altmode.c
++++ b/drivers/soc/qcom/pmic_glink_altmode.c
+@@ -395,7 +395,7 @@ static int pmic_glink_altmode_probe(struct auxiliary_device *adev,
+ 	device_for_each_child_node(dev, fwnode) {
+ 		ret = fwnode_property_read_u32(fwnode, "reg", &port);
+ 		if (ret < 0) {
+-			dev_err(dev, "missing reg property of %pOFn\n", fwnode);
++			dev_err(dev, "missing reg property of %p\n" /* BUG: %pOFn was used on fwnode_handle instead of device_node */, fwnode);
+ 			return ret;
+ 		}
+ 
+-- 
