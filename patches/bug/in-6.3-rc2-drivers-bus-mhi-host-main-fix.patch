@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 15 Mar 2023 08:57:11 +0100
+Subject: [PATCH] {BUG in 6.3-rc2} drivers/bus/mhi/host/main: fix
+ -Wunused-but-set-parameter
+
+clang on x86-64 report:
+
+    drivers/bus/mhi/host/main.c:803:13: error: parameter 'event_quota'
+    set but not used [-Werror,-Wunused-but-set-parameter]
+                                 u32 event_quota)
+                                     ^
+---
+ drivers/bus/mhi/host/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/bus/mhi/host/main.c b/drivers/bus/mhi/host/main.c
+index df0fbfee7b78..c938b8c34ebe 100644
+--- a/drivers/bus/mhi/host/main.c
++++ b/drivers/bus/mhi/host/main.c
+@@ -938,7 +938,7 @@ int mhi_process_ctrl_ev_ring(struct mhi_controller *mhi_cntrl,
+ 				if (!mhi_chan->configured)
+ 					break;
+ 				parse_xfer_event(mhi_cntrl, local_rp, mhi_chan);
+-				event_quota--;
++				/* event_quota--; BUG in 6.3-rc2 */
+ 			}
+ 			break;
+ 		default:
+-- 

@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Wed, 15 Mar 2023 08:52:32 +0100
+Subject: [PATCH] {BUG in 6.3-rc2} lib/radix-tree: fix
+ -Wunused-but-set-parameter
+
+clang on x86-64 reports:
+
+    lib/radix-tree.c:1134:50: error: parameter 'slot' set but not used
+    [-Werror,-Wunused-but-set-parameter]
+    void __rcu **radix_tree_iter_resume(void __rcu **slot,                                                  ^
+---
+ lib/radix-tree.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/radix-tree.c b/lib/radix-tree.c
+index 049ba132f7ef..a6813ff253aa 100644
+--- a/lib/radix-tree.c
++++ b/lib/radix-tree.c
+@@ -1134,7 +1134,7 @@ static void set_iter_tags(struct radix_tree_iter *iter,
+ void __rcu **radix_tree_iter_resume(void __rcu **slot,
+ 					struct radix_tree_iter *iter)
+ {
+-	slot++;
++	/* slot++; BUG in 6.3-rc2 */
+ 	iter->index = __radix_tree_iter_add(iter, 1);
+ 	iter->next_index = iter->index;
+ 	iter->tags = 0;
+-- 
