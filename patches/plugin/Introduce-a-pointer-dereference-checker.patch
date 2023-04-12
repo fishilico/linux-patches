@@ -1459,7 +1459,7 @@ index 95106d02b32d..ba38492ca38a 100644
  	return bit >= sizeof(chunk->data) * 8;
  }
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 7ff02a5250c7..87e359de4332 100644
+index 88d95ddf6920..5f98d7866c38 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
 @@ -8711,7 +8711,12 @@ ftrace_trace_snapshot_callback(struct trace_array *tr, struct ftrace_hash *hash,
@@ -1609,10 +1609,10 @@ index 63047d6805d1..596ca37e5b61 100644
  	char desc[WORKER_DESC_LEN] = { };
  	struct pool_workqueue *pwq = NULL;
 diff --git a/lib/maple_tree.c b/lib/maple_tree.c
-index 9e2735cbc2b4..da3fe74bc583 100644
+index db60edb55f2f..070ee0ce946a 100644
 --- a/lib/maple_tree.c
 +++ b/lib/maple_tree.c
-@@ -1775,7 +1775,11 @@ static inline void mab_shift_right(struct maple_big_node *b_node,
+@@ -1841,7 +1841,11 @@ static inline void mab_shift_right(struct maple_big_node *b_node,
  	unsigned long size = b_node->b_end * sizeof(unsigned long);
  
  	memmove(b_node->pivot + shift, b_node->pivot, size);
@@ -1625,7 +1625,7 @@ index 9e2735cbc2b4..da3fe74bc583 100644
  	if (b_node->type == maple_arange_64)
  		memmove(b_node->gap + shift, b_node->gap, size);
  }
-@@ -1943,7 +1947,11 @@ static inline void mas_mab_cp(struct ma_state *mas, unsigned char mas_start,
+@@ -2009,7 +2013,11 @@ static inline void mas_mab_cp(struct ma_state *mas, unsigned char mas_start,
  	b_node->b_end = ++j;
  	j -= mab_start;
  	slots = ma_slots(node, mt);
@@ -1638,7 +1638,7 @@ index 9e2735cbc2b4..da3fe74bc583 100644
  	if (!ma_is_leaf(mt) && mt_is_alloc(mas->tree)) {
  		gaps = ma_gaps(node, mt);
  		memcpy(b_node->gap + mab_start, gaps + mas_start,
-@@ -2008,8 +2016,12 @@ static inline void mab_mas_cp(struct maple_big_node *b_node,
+@@ -2074,8 +2082,12 @@ static inline void mab_mas_cp(struct maple_big_node *b_node,
  		pivots[j++] = b_node->pivot[i++];
  	} while (i <= mab_end && likely(b_node->pivot[i]));
  
@@ -1654,7 +1654,7 @@ index 9e2735cbc2b4..da3fe74bc583 100644
  	if (new_max)
  		mas->max = b_node->pivot[i - 1];
 diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 07abcb6eb203..5f82c3aac0ed 100644
+index 245038a9fe4e..683d643037de 100644
 --- a/mm/hugetlb.c
 +++ b/mm/hugetlb.c
 @@ -1821,8 +1821,12 @@ static void update_and_free_hugetlb_folio(struct hstate *h, struct folio *folio,
@@ -1686,10 +1686,10 @@ index 5abffe6f8389..92be795f1d33 100644
  	gfp &= ~OBJCGS_CLEAR_MASK;
  	vec = kcalloc_node(objects, sizeof(struct obj_cgroup *), gfp,
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 44d9064a7931..b387240affe0 100644
+index f7784e8a865d..59fd753f34e9 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -3405,7 +3405,9 @@ static DEFINE_MUTEX(mm_all_locks_mutex);
+@@ -3406,7 +3406,9 @@ static DEFINE_MUTEX(mm_all_locks_mutex);
  
  static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
  {
@@ -1700,7 +1700,7 @@ index 44d9064a7931..b387240affe0 100644
  		/*
  		 * The LSB of head.next can't change from under us
  		 * because we hold the mm_all_locks_mutex.
-@@ -3420,9 +3422,14 @@ static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
+@@ -3421,9 +3423,14 @@ static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
  		 * can't change from under us thanks to the
  		 * anon_vma->root->rwsem.
  		 */
@@ -1718,7 +1718,7 @@ index 44d9064a7931..b387240affe0 100644
  	}
  }
  
-@@ -3526,7 +3533,9 @@ int mm_take_all_locks(struct mm_struct *mm)
+@@ -3527,7 +3534,9 @@ int mm_take_all_locks(struct mm_struct *mm)
  
  static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
  {
@@ -1729,7 +1729,7 @@ index 44d9064a7931..b387240affe0 100644
  		/*
  		 * The LSB of head.next can't change to 0 from under
  		 * us because we hold the mm_all_locks_mutex.
-@@ -3539,8 +3548,7 @@ static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
+@@ -3540,8 +3549,7 @@ static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
  		 * can't change from under us until we release the
  		 * anon_vma->root->rwsem.
  		 */
