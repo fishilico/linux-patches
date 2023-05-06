@@ -656,10 +656,10 @@ index d2eab5cd1e0c..0d149be7c66f 100644
  	u32			sw_len;
  };
 diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 2396c28c0122..dbfb044b00da 100644
+index ea1bd4bb326d..8d294df8c3ed 100644
 --- a/drivers/net/virtio_net.c
 +++ b/drivers/net/virtio_net.c
-@@ -1455,7 +1455,7 @@ static void virtio_skb_set_hash(const struct virtio_net_hdr_v1_hash *hdr_hash,
+@@ -1459,7 +1459,7 @@ static void virtio_skb_set_hash(const struct virtio_net_hdr_v1_hash *hdr_hash,
  }
  
  static void receive_buf(struct virtnet_info *vi, struct receive_queue *rq,
@@ -1609,10 +1609,10 @@ index 63047d6805d1..596ca37e5b61 100644
  	char desc[WORKER_DESC_LEN] = { };
  	struct pool_workqueue *pwq = NULL;
 diff --git a/lib/maple_tree.c b/lib/maple_tree.c
-index db60edb55f2f..070ee0ce946a 100644
+index 1281a40d5735..d5e75fae5991 100644
 --- a/lib/maple_tree.c
 +++ b/lib/maple_tree.c
-@@ -1841,7 +1841,11 @@ static inline void mab_shift_right(struct maple_big_node *b_node,
+@@ -1836,7 +1836,11 @@ static inline void mab_shift_right(struct maple_big_node *b_node,
  	unsigned long size = b_node->b_end * sizeof(unsigned long);
  
  	memmove(b_node->pivot + shift, b_node->pivot, size);
@@ -1625,7 +1625,7 @@ index db60edb55f2f..070ee0ce946a 100644
  	if (b_node->type == maple_arange_64)
  		memmove(b_node->gap + shift, b_node->gap, size);
  }
-@@ -2009,7 +2013,11 @@ static inline void mas_mab_cp(struct ma_state *mas, unsigned char mas_start,
+@@ -2004,7 +2008,11 @@ static inline void mas_mab_cp(struct ma_state *mas, unsigned char mas_start,
  	b_node->b_end = ++j;
  	j -= mab_start;
  	slots = ma_slots(node, mt);
@@ -1638,7 +1638,7 @@ index db60edb55f2f..070ee0ce946a 100644
  	if (!ma_is_leaf(mt) && mt_is_alloc(mas->tree)) {
  		gaps = ma_gaps(node, mt);
  		memcpy(b_node->gap + mab_start, gaps + mas_start,
-@@ -2074,8 +2082,12 @@ static inline void mab_mas_cp(struct maple_big_node *b_node,
+@@ -2069,8 +2077,12 @@ static inline void mab_mas_cp(struct maple_big_node *b_node,
  		pivots[j++] = b_node->pivot[i++];
  	} while (i <= mab_end && likely(b_node->pivot[i]));
  
@@ -1686,10 +1686,10 @@ index 5abffe6f8389..92be795f1d33 100644
  	gfp &= ~OBJCGS_CLEAR_MASK;
  	vec = kcalloc_node(objects, sizeof(struct obj_cgroup *), gfp,
 diff --git a/mm/mmap.c b/mm/mmap.c
-index f7784e8a865d..59fd753f34e9 100644
+index 4bbc6a48eb82..fa78fc5e6551 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -3406,7 +3406,9 @@ static DEFINE_MUTEX(mm_all_locks_mutex);
+@@ -3444,7 +3444,9 @@ static DEFINE_MUTEX(mm_all_locks_mutex);
  
  static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
  {
@@ -1700,7 +1700,7 @@ index f7784e8a865d..59fd753f34e9 100644
  		/*
  		 * The LSB of head.next can't change from under us
  		 * because we hold the mm_all_locks_mutex.
-@@ -3421,9 +3423,14 @@ static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
+@@ -3459,9 +3461,14 @@ static void vm_lock_anon_vma(struct mm_struct *mm, struct anon_vma *anon_vma)
  		 * can't change from under us thanks to the
  		 * anon_vma->root->rwsem.
  		 */
@@ -1718,7 +1718,7 @@ index f7784e8a865d..59fd753f34e9 100644
  	}
  }
  
-@@ -3527,7 +3534,9 @@ int mm_take_all_locks(struct mm_struct *mm)
+@@ -3565,7 +3572,9 @@ int mm_take_all_locks(struct mm_struct *mm)
  
  static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
  {
@@ -1729,7 +1729,7 @@ index f7784e8a865d..59fd753f34e9 100644
  		/*
  		 * The LSB of head.next can't change to 0 from under
  		 * us because we hold the mm_all_locks_mutex.
-@@ -3540,8 +3549,7 @@ static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
+@@ -3578,8 +3587,7 @@ static void vm_unlock_anon_vma(struct anon_vma *anon_vma)
  		 * can't change from under us until we release the
  		 * anon_vma->root->rwsem.
  		 */
