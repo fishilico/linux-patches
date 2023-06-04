@@ -21,9 +21,8 @@ Subject: [PATCH] {NOT UPSTREAMABLE} fix harmless uninitialized warnings
  fs/xfs/libxfs/xfs_dir2_node.c                            | 2 ++
  fs/xfs/libxfs/xfs_ialloc.c                               | 2 +-
  fs/xfs/xfs_log_recover.c                                 | 2 +-
- include/linux/sunrpc/cache.h                             | 2 +-
  net/mac80211/mlme.c                                      | 2 +-
- 18 files changed, 28 insertions(+), 11 deletions(-)
+ 17 files changed, 27 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c b/drivers/gpu/drm/amd/pm/powerplay/hwmgr/processpptables.c
 index 182118e3fd5f..e6ec76cd1c01 100644
@@ -41,10 +40,10 @@ index 182118e3fd5f..e6ec76cd1c01 100644
  	return result;
  }
 diff --git a/drivers/gpu/drm/i915/i915_request.c b/drivers/gpu/drm/i915/i915_request.c
-index 7503dcb9043b..5af43eb1e85f 100644
+index 630a732aaecc..3504aa8eede7 100644
 --- a/drivers/gpu/drm/i915/i915_request.c
 +++ b/drivers/gpu/drm/i915/i915_request.c
-@@ -1884,7 +1884,7 @@ static unsigned long local_clock_ns(unsigned int *cpu)
+@@ -1883,7 +1883,7 @@ static unsigned long local_clock_ns(unsigned int *cpu)
  
  static bool busywait_stop(unsigned long timeout, unsigned int cpu)
  {
@@ -67,10 +66,10 @@ index 3a3e127ce297..8e06c821e18b 100644
  	struct qxl_rect *rects;
  	int stride = fb->pitches[0];
 diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-index 0590bb22c73a..9c14e225c7a0 100644
+index 6b9aa2b4ef54..7032beaa2ee6 100644
 --- a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
 +++ b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
-@@ -4207,6 +4207,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
+@@ -4214,6 +4214,7 @@ int vmw_execbuf_process(struct drm_file *file_priv,
  		goto out_err;
  
  	vmw_query_bo_switch_commit(dev_priv, sw_context);
@@ -159,7 +158,7 @@ index f726eb8449c5..8db2d2d8ee95 100644
  		bsg_job = sp->u.bsg_job;
  		bsg_reply = bsg_job->reply;
 diff --git a/drivers/scsi/qla4xxx/ql4_os.c b/drivers/scsi/qla4xxx/ql4_os.c
-index 005502125b27..9cd77604f420 100644
+index ee6d784c095c..4cb8d6b00402 100644
 --- a/drivers/scsi/qla4xxx/ql4_os.c
 +++ b/drivers/scsi/qla4xxx/ql4_os.c
 @@ -5902,7 +5902,7 @@ static void qla4xxx_boot_release(void *data)
@@ -211,10 +210,10 @@ index 7a03aeb9f4c9..dc108ad9b133 100644
  
  	/*
 diff --git a/fs/xfs/libxfs/xfs_ialloc.c b/fs/xfs/libxfs/xfs_ialloc.c
-index 7ee292aecbeb..5681624c7a58 100644
+index a16d5de16933..581ec1ec852c 100644
 --- a/fs/xfs/libxfs/xfs_ialloc.c
 +++ b/fs/xfs/libxfs/xfs_ialloc.c
-@@ -2025,7 +2025,7 @@ xfs_difree_finobt(
+@@ -2049,7 +2049,7 @@ xfs_difree_finobt(
  {
  	struct xfs_mount		*mp = pag->pag_mount;
  	struct xfs_btree_cur		*cur;
@@ -236,21 +235,8 @@ index 322eb2ee6c55..1ccf3d3d62d8 100644
  	xfs_daddr_t		orig_tail = *tail_blk;
  
  	buffer = xlog_alloc_buffer(log, 1);
-diff --git a/include/linux/sunrpc/cache.h b/include/linux/sunrpc/cache.h
-index ec5a555df96f..5df74974badb 100644
---- a/include/linux/sunrpc/cache.h
-+++ b/include/linux/sunrpc/cache.h
-@@ -302,7 +302,7 @@ static inline int get_time(char **bpp, time64_t *time)
- 
- static inline time64_t get_expiry(char **bpp)
- {
--	time64_t rv;
-+	time64_t rv = 0; /* gcc -Wmaybe-uninitialized false positive */
- 	struct timespec64 boot;
- 
- 	if (get_time(bpp, &rv))
 diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 60792dfabc9d..482f63c0ddd2 100644
+index e13a0354c397..ea7f129a2463 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
 @@ -2119,7 +2119,7 @@ static u32 ieee80211_handle_pwr_constr(struct ieee80211_link_data *link,

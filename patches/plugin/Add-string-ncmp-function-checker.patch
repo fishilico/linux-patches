@@ -14,9 +14,9 @@ It has also detected some bugs reported and fixed by other people:
 ---
  scripts/Makefile.gcc-plugins                  |   2 +
  scripts/gcc-plugins/Kconfig                   |   6 +
- scripts/gcc-plugins/string_ncmp_size_plugin.c | 241 ++++++++++++++++++
+ scripts/gcc-plugins/string_ncmp_size_plugin.c | 242 ++++++++++++++++++
  sound/soc/intel/boards/bxt_rt298.c            |   9 +-
- 4 files changed, 252 insertions(+), 6 deletions(-)
+ 4 files changed, 253 insertions(+), 6 deletions(-)
  create mode 100644 scripts/gcc-plugins/string_ncmp_size_plugin.c
 
 diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
@@ -49,10 +49,10 @@ index 26a29088e274..2b7cc63fe5bb 100644
  endif
 diff --git a/scripts/gcc-plugins/string_ncmp_size_plugin.c b/scripts/gcc-plugins/string_ncmp_size_plugin.c
 new file mode 100644
-index 000000000000..7fac3e1508f8
+index 000000000000..a07fa606b7d8
 --- /dev/null
 +++ b/scripts/gcc-plugins/string_ncmp_size_plugin.c
-@@ -0,0 +1,241 @@
+@@ -0,0 +1,242 @@
 +/*
 + * Copyright 2016-2022 by Nicolas Iooss
 + * Licensed under the GPL v2, or (at your option) v3
@@ -66,7 +66,7 @@ index 000000000000..7fac3e1508f8
 +int plugin_is_GPL_compatible;
 +
 +static struct plugin_info string_ncmp_size_plugin_info = {
-+	.version	= "20220410",
++	.version	= "20230602",
 +	.help		= "String n-copy/compare functions size checker\n",
 +};
 +
@@ -149,6 +149,7 @@ index 000000000000..7fac3e1508f8
 +	is_memcmp = (identifier_is(fnident, "__builtin_memcmp") ||
 +		     identifier_is(fnident, "__underlying_memcmp") ||
 +		     identifier_is(fnident, "memcmp") ||
++		     identifier_is(fnident, "memcmp_diff_len") ||
 +		     identifier_is(fnident, "reverse_memcmp") ||
 +		     identifier_is(fnident, "stackdepot_memcmp"));
 +	is_strncmp = (identifier_is(fnident, "strncmp") ||
@@ -248,7 +249,7 @@ index 000000000000..7fac3e1508f8
 +	}
 +	warning_at(
 +		gimple_location(stmt), 0,
-+		G_("Invalid call to %qF: length %"HOST_WIDE_INT_PRINT"d but string size %lu\n"),
++		G_("Invalid call to %qF: length %" HOST_WIDE_INT_PRINT "d but string size %lu\n"),
 +		fndecl, len_from_arg, srclen);
 +}
 +

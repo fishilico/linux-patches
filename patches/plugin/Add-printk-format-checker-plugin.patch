@@ -71,18 +71,18 @@ It has also detected some bugs reported and fixed by other people:
  net/tipc/crypto.c                             |   3 +
  scripts/Makefile.gcc-plugins                  |   7 +
  scripts/gcc-plugins/Kconfig                   |   7 +
- scripts/gcc-plugins/printk_format_plugin.c    | 916 ++++++++++++++++++
+ scripts/gcc-plugins/printk_format_plugin.c    | 919 ++++++++++++++++++
  security/apparmor/mount.c                     |  10 +-
  sound/soc/apple/mca.c                         |   4 +-
  sound/soc/intel/boards/sof_sdw.c              |   7 +-
  sound/soc/stm/stm32_sai_sub.c                 |   2 +-
  sound/soc/ti/omap-mcbsp-st.c                  |   3 +
  tools/lib/bpf/relo_core.c                     |   6 +
- 65 files changed, 1154 insertions(+), 97 deletions(-)
+ 65 files changed, 1157 insertions(+), 97 deletions(-)
  create mode 100644 scripts/gcc-plugins/printk_format_plugin.c
 
 diff --git a/drivers/accel/habanalabs/common/decoder.c b/drivers/accel/habanalabs/common/decoder.c
-index 2aab14d74b53..f3226ff7b9a8 100644
+index c03a6da45d00..bc1547b32187 100644
 --- a/drivers/accel/habanalabs/common/decoder.c
 +++ b/drivers/accel/habanalabs/common/decoder.c
 @@ -19,7 +19,6 @@
@@ -103,52 +103,69 @@ index 2aab14d74b53..f3226ff7b9a8 100644
  }
  
 diff --git a/drivers/accel/habanalabs/gaudi2/gaudi2.c b/drivers/accel/habanalabs/gaudi2/gaudi2.c
-index 50f91c2b45d0..db0731ac3cbb 100644
+index 9126c802934b..839b6420bca6 100644
 --- a/drivers/accel/habanalabs/gaudi2/gaudi2.c
 +++ b/drivers/accel/habanalabs/gaudi2/gaudi2.c
-@@ -6424,14 +6424,7 @@ static bool gaudi2_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask
- 	u32 qm_glbl_sts0, qm_glbl_sts1, qm_cgm_sts, dma_core_idle_ind_mask,
- 		mme_arch_sts, dec_swreg15, dec_enabled_bit;
+@@ -7000,7 +7000,6 @@ static bool gaudi2_get_edma_idle_status(struct hl_device *hdev, u64 *mask_arr, u
+ 	u32 qm_glbl_sts0, qm_glbl_sts1, qm_cgm_sts, dma_core_sts0, dma_core_sts1;
  	struct asic_fixed_properties *prop = &hdev->asic_prop;
--	const char *rot_fmt = "%-6d%-5d%-9s%#-14x%#-12x%s\n";
  	unsigned long *mask = (unsigned long *) mask_arr;
--	const char *edma_fmt = "%-6d%-6d%-9s%#-14x%#x\n";
--	const char *mme_fmt = "%-5d%-6s%-9s%#-14x%#x\n";
--	const char *nic_fmt = "%-5d%-9s%#-14x%#-12x\n";
--	const char *pdma_fmt = "%-6d%-9s%#-14x%#x\n";
--	const char *pcie_dec_fmt = "%-10d%-9s%#x\n";
--	const char *dec_fmt = "%-6d%-5d%-9s%#x\n";
+-	const char *edma_fmt = "%-6d%-6d%-9s%#-14x%#-15x%#x\n";
  	bool is_idle = true, is_eng_idle;
+ 	int engine_idx, i, j;
  	u64 offset;
- 
-@@ -6480,7 +6473,7 @@ static bool gaudi2_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask
+@@ -7036,7 +7035,7 @@ static bool gaudi2_get_edma_idle_status(struct hl_device *hdev, u64 *mask_arr, u
  				set_bit(engine_idx, mask);
  
  			if (e)
--				hl_engine_data_sprintf(e, edma_fmt, i, j,
-+				hl_engine_data_sprintf(e, "%-6d%-6d%-9s%#-14x%#x\n", i, j,
- 							is_eng_idle ? "Y" : "N",
- 							qm_glbl_sts0,
- 							dma_core_idle_ind_mask);
-@@ -6510,7 +6503,7 @@ static bool gaudi2_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask
+-				hl_engine_data_sprintf(e, edma_fmt, i, j, is_eng_idle ? "Y" : "N",
++				hl_engine_data_sprintf(e, "%-6d%-6d%-9s%#-14x%#-15x%#x\n", i, j, is_eng_idle ? "Y" : "N",
+ 							qm_glbl_sts0, dma_core_sts0, dma_core_sts1);
+ 		}
+ 	}
+@@ -7049,7 +7048,6 @@ static bool gaudi2_get_pdma_idle_status(struct hl_device *hdev, u64 *mask_arr, u
+ {
+ 	u32 qm_glbl_sts0, qm_glbl_sts1, qm_cgm_sts, dma_core_sts0, dma_core_sts1;
+ 	unsigned long *mask = (unsigned long *) mask_arr;
+-	const char *pdma_fmt = "%-6d%-9s%#-14x%#-15x%#x\n";
+ 	bool is_idle = true, is_eng_idle;
+ 	int engine_idx, i;
+ 	u64 offset;
+@@ -7077,7 +7075,7 @@ static bool gaudi2_get_pdma_idle_status(struct hl_device *hdev, u64 *mask_arr, u
  			set_bit(engine_idx, mask);
  
  		if (e)
 -			hl_engine_data_sprintf(e, pdma_fmt, i, is_eng_idle ? "Y" : "N",
-+			hl_engine_data_sprintf(e, "%-6d%-9s%#-14x%#x\n", i, is_eng_idle ? "Y" : "N",
- 						qm_glbl_sts0, dma_core_idle_ind_mask);
++			hl_engine_data_sprintf(e, "%-6d%-9s%#-14x%#-15x%#x\n", i, is_eng_idle ? "Y" : "N",
+ 						qm_glbl_sts0, dma_core_sts0, dma_core_sts1);
  	}
  
-@@ -6543,7 +6536,7 @@ static bool gaudi2_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask
+@@ -7088,7 +7086,6 @@ static bool gaudi2_get_nic_idle_status(struct hl_device *hdev, u64 *mask_arr, u8
+ 		struct engines_data *e)
+ {
+ 	unsigned long *mask = (unsigned long *) mask_arr;
+-	const char *nic_fmt = "%-5d%-9s%#-14x%#-12x\n";
+ 	u32 qm_glbl_sts0, qm_glbl_sts1, qm_cgm_sts;
+ 	bool is_idle = true, is_eng_idle;
+ 	int engine_idx, i;
+@@ -7123,7 +7120,7 @@ static bool gaudi2_get_nic_idle_status(struct hl_device *hdev, u64 *mask_arr, u8
  			set_bit(engine_idx, mask);
  
  		if (e)
 -			hl_engine_data_sprintf(e, nic_fmt, i, is_eng_idle ? "Y" : "N",
-+			hl_engine_data_sprintf(e, "%-5d%-9s%#-14x%#-12x\n", i, is_eng_idle ? "Y" : "N",
++			hl_engine_data_sprintf(e, "%-5d%-6s%#-14x%#x\n", i, is_eng_idle ? "Y" : "N",
  						qm_glbl_sts0, qm_cgm_sts);
  	}
  
-@@ -6568,7 +6561,7 @@ static bool gaudi2_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask
+@@ -7135,7 +7132,6 @@ static bool gaudi2_get_mme_idle_status(struct hl_device *hdev, u64 *mask_arr, u8
+ {
+ 	u32 qm_glbl_sts0, qm_glbl_sts1, qm_cgm_sts, mme_arch_sts;
+ 	unsigned long *mask = (unsigned long *) mask_arr;
+-	const char *mme_fmt = "%-5d%-6s%-9s%#-14x%#x\n";
+ 	bool is_idle = true, is_eng_idle;
+ 	int engine_idx, i;
+ 	u64 offset;
+@@ -7161,7 +7157,7 @@ static bool gaudi2_get_mme_idle_status(struct hl_device *hdev, u64 *mask_arr, u8
  		is_idle &= is_eng_idle;
  
  		if (e)
@@ -157,7 +174,16 @@ index 50f91c2b45d0..db0731ac3cbb 100644
  				is_eng_idle ? "Y" : "N",
  				qm_glbl_sts0,
  				mme_arch_sts);
-@@ -6611,7 +6604,7 @@ static bool gaudi2_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask
+@@ -7242,8 +7238,6 @@ static bool gaudi2_get_decoder_idle_status(struct hl_device *hdev, u64 *mask_arr
+ {
+ 	struct asic_fixed_properties *prop = &hdev->asic_prop;
+ 	unsigned long *mask = (unsigned long *) mask_arr;
+-	const char *pcie_dec_fmt = "%-10d%-9s%#x\n";
+-	const char *dec_fmt = "%-6d%-5d%-9s%#x\n";
+ 	bool is_idle = true, is_eng_idle;
+ 	u32 dec_swreg15, dec_enabled_bit;
+ 	int engine_idx, i, j;
+@@ -7273,7 +7267,7 @@ static bool gaudi2_get_decoder_idle_status(struct hl_device *hdev, u64 *mask_arr
  				set_bit(engine_idx, mask);
  
  			if (e)
@@ -166,7 +192,7 @@ index 50f91c2b45d0..db0731ac3cbb 100644
  							is_eng_idle ? "Y" : "N", dec_swreg15);
  		}
  	}
-@@ -6637,7 +6630,7 @@ static bool gaudi2_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask
+@@ -7299,7 +7293,7 @@ static bool gaudi2_get_decoder_idle_status(struct hl_device *hdev, u64 *mask_arr
  			set_bit(engine_idx, mask);
  
  		if (e)
@@ -175,20 +201,28 @@ index 50f91c2b45d0..db0731ac3cbb 100644
  						is_eng_idle ? "Y" : "N", dec_swreg15);
  	}
  
-@@ -6662,7 +6655,7 @@ static bool gaudi2_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask
+@@ -7309,7 +7303,6 @@ static bool gaudi2_get_decoder_idle_status(struct hl_device *hdev, u64 *mask_arr
+ static bool gaudi2_get_rotator_idle_status(struct hl_device *hdev, u64 *mask_arr, u8 mask_len,
+ 		struct engines_data *e)
+ {
+-	const char *rot_fmt = "%-6d%-5d%-9s%#-14x%#-14x%#x\n";
+ 	unsigned long *mask = (unsigned long *) mask_arr;
+ 	u32 qm_glbl_sts0, qm_glbl_sts1, qm_cgm_sts;
+ 	bool is_idle = true, is_eng_idle;
+@@ -7337,7 +7330,7 @@ static bool gaudi2_get_rotator_idle_status(struct hl_device *hdev, u64 *mask_arr
  			set_bit(engine_idx, mask);
  
  		if (e)
 -			hl_engine_data_sprintf(e, rot_fmt, i, 0, is_eng_idle ? "Y" : "N",
-+			hl_engine_data_sprintf(e, "%-6d%-5d%-9s%#-14x%#-12x%s\n", i, 0, is_eng_idle ? "Y" : "N",
- 					qm_glbl_sts0, qm_cgm_sts, "-");
++			hl_engine_data_sprintf(e, "%-6d%-5d%-9s%#-14x%#-14x%#x\n", i, 0, is_eng_idle ? "Y" : "N",
+ 						qm_glbl_sts0, qm_glbl_sts1, qm_cgm_sts);
  	}
  
 diff --git a/drivers/accel/habanalabs/gaudi2/gaudi2_security.c b/drivers/accel/habanalabs/gaudi2/gaudi2_security.c
-index a212f82e6604..26f52c890817 100644
+index 694735f9e6e6..892b1a7fcea3 100644
 --- a/drivers/accel/habanalabs/gaudi2/gaudi2_security.c
 +++ b/drivers/accel/habanalabs/gaudi2/gaudi2_security.c
-@@ -3821,9 +3821,6 @@ void gaudi2_pb_print_security_errors(struct hl_device *hdev, u32 block_addr, u32
+@@ -3822,9 +3822,6 @@ void gaudi2_pb_print_security_errors(struct hl_device *hdev, u32 block_addr, u32
  					u32 offended_addr)
  {
  	int i = 0;
@@ -198,7 +232,7 @@ index a212f82e6604..26f52c890817 100644
  	char *mcause[8] = {"Unknown", "", "", "", "", "", "", "" };
  
  	if (!cause)
-@@ -3853,7 +3850,10 @@ void gaudi2_pb_print_security_errors(struct hl_device *hdev, u32 block_addr, u32
+@@ -3854,7 +3851,10 @@ void gaudi2_pb_print_security_errors(struct hl_device *hdev, u32 block_addr, u32
  	if (cause & SPECIAL_GLBL_ERR_CAUSE_EXT_UNMAPPED_WR)
  		mcause[i++] = "APB_EXT_UNMAPPED_WR";
  
@@ -211,10 +245,10 @@ index a212f82e6604..26f52c890817 100644
  			mcause[4], mcause[5], mcause[6], mcause[7]);
  }
 diff --git a/drivers/accel/habanalabs/goya/goya.c b/drivers/accel/habanalabs/goya/goya.c
-index ed7747629ac6..82aee2e9fe94 100644
+index 703bfa22aec1..e4f96820a59b 100644
 --- a/drivers/accel/habanalabs/goya/goya.c
 +++ b/drivers/accel/habanalabs/goya/goya.c
-@@ -5129,8 +5129,8 @@ int goya_cpucp_info_get(struct hl_device *hdev)
+@@ -5137,8 +5137,8 @@ int goya_cpucp_info_get(struct hl_device *hdev)
  static bool goya_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_len,
  				struct engines_data *e)
  {
@@ -225,7 +259,7 @@ index ed7747629ac6..82aee2e9fe94 100644
  	unsigned long *mask = (unsigned long *)mask_arr;
  	u32 qm_glbl_sts0, cmdq_glbl_sts0, dma_core_sts0, tpc_cfg_sts,
  		mme_arch_sts;
-@@ -5201,7 +5201,8 @@ static bool goya_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_l
+@@ -5209,7 +5209,8 @@ static bool goya_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_l
  				cmdq_glbl_sts0, mme_arch_sts);
  		hl_engine_data_sprintf(e, "\n");
  	}
@@ -249,7 +283,7 @@ index fb56bfc45096..0ebd2e8de794 100644
  }
  
 diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index 5cb008b9700a..f51a4900d489 100644
+index 84ad3b17956f..8ec9061774ca 100644
 --- a/drivers/block/rbd.c
 +++ b/drivers/block/rbd.c
 @@ -1430,9 +1430,15 @@ __rbd_obj_add_osd_request(struct rbd_obj_request *obj_req,
@@ -286,10 +320,10 @@ index e1a227e7ff2a..abded4874a85 100644
  		dev_err(&mgr->dev, "Timeout after config data transfer\n");
  	}
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c
-index 2e08fce87521..a6694572adc1 100644
+index c2c2a7718613..5c1d2fc011f0 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c
-@@ -956,12 +956,15 @@ static ssize_t amdgpu_ras_debugfs_table_read(struct file *f, char __user *buf,
+@@ -913,12 +913,15 @@ static ssize_t amdgpu_ras_debugfs_table_read(struct file *f, char __user *buf,
  		u8 data[tbl_hdr_fmt_size + 1];
  		loff_t lpos;
  
@@ -305,7 +339,7 @@ index 2e08fce87521..a6694572adc1 100644
  
  		data_len -= *pos;
  		data_len = min_t(size_t, data_len, size);
-@@ -1011,6 +1014,8 @@ static ssize_t amdgpu_ras_debugfs_table_read(struct file *f, char __user *buf,
+@@ -968,6 +971,8 @@ static ssize_t amdgpu_ras_debugfs_table_read(struct file *f, char __user *buf,
  			if (res)
  				goto Out;
  			__decode_table_record_from_buf(control, &record, dare);
@@ -314,7 +348,7 @@ index 2e08fce87521..a6694572adc1 100644
  			snprintf(data, sizeof(data), rec_hdr_fmt,
  				 s,
  				 RAS_INDEX_TO_OFFSET(control, ai),
-@@ -1021,6 +1026,7 @@ static ssize_t amdgpu_ras_debugfs_table_read(struct file *f, char __user *buf,
+@@ -978,6 +983,7 @@ static ssize_t amdgpu_ras_debugfs_table_read(struct file *f, char __user *buf,
  				 record.mem_channel,
  				 record.mcumc_id,
  				 record.retired_page);
@@ -323,7 +357,7 @@ index 2e08fce87521..a6694572adc1 100644
  			data_len = min_t(size_t, rec_hdr_fmt_size - r, size);
  			if (copy_to_user(buf, &data[r], data_len)) {
 diff --git a/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c b/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
-index a683bd9b5a04..7b91150a7ec4 100644
+index 0e7a68714e9e..10e4d198eb55 100644
 --- a/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
 +++ b/drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
 @@ -219,7 +219,7 @@ static int dpu_regset32_show(struct seq_file *s, void *data)
@@ -336,10 +370,10 @@ index a683bd9b5a04..7b91150a7ec4 100644
  	}
  	seq_puts(s, "\n");
 diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
-index d24dd65b33d4..25cfd20142bd 100644
+index 1c65a6dfb9fa..5996194a608f 100644
 --- a/drivers/hv/vmbus_drv.c
 +++ b/drivers/hv/vmbus_drv.c
-@@ -714,9 +714,8 @@ __ATTRIBUTE_GROUPS(vmbus_bus);
+@@ -653,9 +653,8 @@ __ATTRIBUTE_GROUPS(vmbus_bus);
  static int vmbus_uevent(const struct device *device, struct kobj_uevent_env *env)
  {
  	const struct hv_device *dev = device_to_hv_device(device);
@@ -380,10 +414,10 @@ index 85d8a6b04885..0bff4c906c08 100644
  			"Master aborted read transaction\n");
  		/* re-initialize i2c for recovery */
 diff --git a/drivers/i3c/master.c b/drivers/i3c/master.c
-index 54e4c34b4a22..27759afa6e43 100644
+index 08aeb69a7800..23260b84d54a 100644
 --- a/drivers/i3c/master.c
 +++ b/drivers/i3c/master.c
-@@ -220,8 +220,11 @@ static ssize_t hdrcap_show(struct device *dev,
+@@ -221,8 +221,11 @@ static ssize_t hdrcap_show(struct device *dev,
  		if (!hdrcap_strings[mode])
  			continue;
  
@@ -396,7 +430,7 @@ index 54e4c34b4a22..27759afa6e43 100644
  			goto out;
  
 diff --git a/drivers/iio/adc/ad7606.c b/drivers/iio/adc/ad7606.c
-index dd6b603f65ea..e6b1a40b82c5 100644
+index 1928d9ae5bcf..a7ff2e4450ff 100644
 --- a/drivers/iio/adc/ad7606.c
 +++ b/drivers/iio/adc/ad7606.c
 @@ -205,8 +205,11 @@ static ssize_t ad7606_show_avail(char *buf, const unsigned int *vals,
@@ -454,7 +488,7 @@ index c6f677059214..996ad77593eb 100644
  	out[-1] = '\n';
  	return out - buf;
 diff --git a/drivers/md/dm-ebs-target.c b/drivers/md/dm-ebs-target.c
-index b1068a68bc46..a821dbb2e494 100644
+index 435b45201f4d..e02cf1da2919 100644
 --- a/drivers/md/dm-ebs-target.c
 +++ b/drivers/md/dm-ebs-target.c
 @@ -400,8 +400,13 @@ static void ebs_status(struct dm_target *ti, status_type_t type,
@@ -507,10 +541,10 @@ index 8ab9f68434f5..3708dfeae822 100644
  	rc = request_irq(funq_irq(funq), handler, 0, funq->irqname, data);
  	if (rc)
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 7c30abd0dfc2..e5fa71411083 100644
+index b847bd105b16..6ca5e755b381 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9278,7 +9278,7 @@ void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags, bool lock_acquired)
+@@ -9291,7 +9291,7 @@ void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags, bool lock_acquired)
  		 */
  		i40e_prep_for_reset(pf);
  		i40e_reset_and_rebuild(pf, true, lock_acquired);
@@ -519,7 +553,7 @@ index 7c30abd0dfc2..e5fa71411083 100644
  			 pf->flags & I40E_FLAG_DISABLE_FW_LLDP ?
  			 "FW LLDP is disabled\n" :
  			 "FW LLDP is enabled\n");
-@@ -15908,7 +15908,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -15922,7 +15922,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  	 lldp_status == I40E_GET_FW_LLDP_STATUS_ENABLED) ?
  		(pf->flags &= ~I40E_FLAG_DISABLE_FW_LLDP) :
  		(pf->flags |= I40E_FLAG_DISABLE_FW_LLDP);
@@ -577,10 +611,10 @@ index 980d4124fa28..df7272cef5a1 100644
  	return skb;
  }
 diff --git a/drivers/net/wireless/ath/ath11k/mac.c b/drivers/net/wireless/ath/ath11k/mac.c
-index 110a38cce0a7..9883b12d1dc9 100644
+index 1c93f1afccc5..6c1701dfbdf8 100644
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -3441,7 +3441,7 @@ static void ath11k_mac_op_bss_info_changed(struct ieee80211_hw *hw,
+@@ -3564,7 +3564,7 @@ static void ath11k_mac_op_bss_info_changed(struct ieee80211_hw *hw,
  
  		ath11k_dbg(ar->ab, ATH11K_DBG_MAC, "mac arp_addr_cnt %d vif->addr %pM, offload_addr %pI4\n",
  			   vif->cfg.arp_addr_cnt,
@@ -590,7 +624,7 @@ index 110a38cce0a7..9883b12d1dc9 100644
  
  	mutex_unlock(&ar->conf_mutex);
 diff --git a/drivers/net/wireless/ath/ath12k/wmi.c b/drivers/net/wireless/ath/ath12k/wmi.c
-index f6df14149531..c4664ad12f57 100644
+index 7ae0bb78b2b5..ba7900aa687c 100644
 --- a/drivers/net/wireless/ath/ath12k/wmi.c
 +++ b/drivers/net/wireless/ath/ath12k/wmi.c
 @@ -1204,7 +1204,7 @@ int ath12k_wmi_set_peer_param(struct ath12k *ar, const u8 *peer_addr,
@@ -603,7 +637,7 @@ index f6df14149531..c4664ad12f57 100644
  
  	ret = ath12k_wmi_cmd_send(wmi, skb, WMI_PEER_SET_PARAM_CMDID);
 diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/debugfs-vif.c b/drivers/net/wireless/intel/iwlwifi/mvm/debugfs-vif.c
-index 3779ac040ba0..6975cd38e968 100644
+index 3613b1fdc5d9..6e25a7fb0b97 100644
 --- a/drivers/net/wireless/intel/iwlwifi/mvm/debugfs-vif.c
 +++ b/drivers/net/wireless/intel/iwlwifi/mvm/debugfs-vif.c
 @@ -523,7 +523,7 @@ static ssize_t iwl_dbgfs_low_latency_read(struct file *file,
@@ -676,7 +710,7 @@ index 21d9f263b3cd..d1b384426a27 100644
  		}
  
 diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index b5a7a31d8bd2..b8addeae7719 100644
+index 2191c0136531..9f53e453ca6e 100644
 --- a/drivers/of/unittest.c
 +++ b/drivers/of/unittest.c
 @@ -288,7 +288,10 @@ static void __init of_unittest_printf_one(struct device_node *np, const char *fm
@@ -748,7 +782,7 @@ index 05ddbb9bb7d8..caba260d5367 100644
  		return rc;
  	}
 diff --git a/drivers/scsi/fcoe/fcoe.c b/drivers/scsi/fcoe/fcoe.c
-index 38774a272e62..de286d70dce0 100644
+index f1429f270170..a3763de4d377 100644
 --- a/drivers/scsi/fcoe/fcoe.c
 +++ b/drivers/scsi/fcoe/fcoe.c
 @@ -2655,7 +2655,7 @@ static int fcoe_vport_create(struct fc_vport *vport, bool disabled)
@@ -761,7 +795,7 @@ index 38774a272e62..de286d70dce0 100644
  		return rc;
  	}
 diff --git a/drivers/scsi/fcoe/fcoe_transport.c b/drivers/scsi/fcoe/fcoe_transport.c
-index 62341c6353a7..98d8e845e71a 100644
+index 46b0bf237be1..49e30220a64e 100644
 --- a/drivers/scsi/fcoe/fcoe_transport.c
 +++ b/drivers/scsi/fcoe/fcoe_transport.c
 @@ -259,7 +259,7 @@ int fcoe_validate_vport_create(struct fc_vport *vport)
@@ -783,7 +817,7 @@ index 62341c6353a7..98d8e845e71a 100644
  			rc = -EINVAL;
  			break;
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index f6da34850af9..89ec6e35def0 100644
+index af18d20f3079..0708735c85a7 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
 @@ -6856,7 +6856,7 @@ static int fill_cmd(struct CommandList *c, u8 cmd, struct ctlr_info *h,
@@ -796,7 +830,7 @@ index f6da34850af9..89ec6e35def0 100644
  		}
  	} else if (cmd_type == TYPE_MSG) {
 diff --git a/drivers/scsi/qedf/qedf_main.c b/drivers/scsi/qedf/qedf_main.c
-index 35e16600fc63..09e39ba2dd33 100644
+index 3b64de81ea0d..fdb7d52e1e56 100644
 --- a/drivers/scsi/qedf/qedf_main.c
 +++ b/drivers/scsi/qedf/qedf_main.c
 @@ -1829,7 +1829,7 @@ static int qedf_vport_create(struct fc_vport *vport, bool disabled)
@@ -809,7 +843,7 @@ index 35e16600fc63..09e39ba2dd33 100644
  	}
  
 diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index f2ee49756df8..f21c8155742f 100644
+index 45d359554182..ac1245b42bf8 100644
 --- a/drivers/scsi/qedi/qedi_main.c
 +++ b/drivers/scsi/qedi/qedi_main.c
 @@ -2047,7 +2047,8 @@ static ssize_t qedi_show_boot_eth_info(void *data, int type, char *buf)
@@ -841,7 +875,7 @@ index f2ee49756df8..f21c8155742f 100644
  	return rc;
  }
 diff --git a/drivers/scsi/smartpqi/smartpqi_init.c b/drivers/scsi/smartpqi/smartpqi_init.c
-index c8c41284b725..c04160bc31c8 100644
+index a90a5a31ffa5..7339f5eb8afb 100644
 --- a/drivers/scsi/smartpqi/smartpqi_init.c
 +++ b/drivers/scsi/smartpqi/smartpqi_init.c
 @@ -647,7 +647,7 @@ static int pqi_build_raid_path_request(struct pqi_ctrl_info *ctrl_info,
@@ -854,7 +888,7 @@ index c8c41284b725..c04160bc31c8 100644
  	}
  
 diff --git a/drivers/staging/pi433/pi433_if.c b/drivers/staging/pi433/pi433_if.c
-index b59f6a4cb611..d31b8461d594 100644
+index f08fdf06d566..fb508db33e27 100644
 --- a/drivers/staging/pi433/pi433_if.c
 +++ b/drivers/staging/pi433/pi433_if.c
 @@ -1106,7 +1106,7 @@ static int pi433_debugfs_regs_show(struct seq_file *m, void *p)
@@ -905,7 +939,7 @@ index c8a248bd11be..95ad4674829d 100644
  out:
  	kfree_sensitive(desc);
 diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 1493b1d01194..aa5a867915f3 100644
+index d19ec4e6a4c0..b21ba7d2ba21 100644
 --- a/drivers/target/target_core_pr.c
 +++ b/drivers/target/target_core_pr.c
 @@ -50,7 +50,7 @@ void core_pr_dump_initiator_port(
@@ -958,7 +992,7 @@ index 0219cd79493a..1d1eb1311e9a 100644
  #define UAC2_ATTRIBUTE(type, name)					\
  static ssize_t f_uac2_opts_##name##_show(struct config_item *item,	\
 diff --git a/fs/afs/dir.c b/fs/afs/dir.c
-index 82690d1dd49a..5ebda4218104 100644
+index 4dd97afa536c..8381c81944a3 100644
 --- a/fs/afs/dir.c
 +++ b/fs/afs/dir.c
 @@ -206,8 +206,11 @@ static void afs_dir_dump(struct afs_vnode *dvnode, struct afs_read *req)
@@ -975,7 +1009,7 @@ index 82690d1dd49a..5ebda4218104 100644
  		}
  	}
 diff --git a/fs/crypto/keysetup.c b/fs/crypto/keysetup.c
-index aa94fba9d17e..f6a3144b3844 100644
+index 361f41ef46c7..0b8fce35fcc5 100644
 --- a/fs/crypto/keysetup.c
 +++ b/fs/crypto/keysetup.c
 @@ -418,7 +418,7 @@ static bool fscrypt_valid_master_key_size(const struct fscrypt_master_key *mk,
@@ -1071,10 +1105,10 @@ index bd29c58ccbd8..31324124b84b 100644
  reiserfs-objs += procfs.o
  endif
 diff --git a/include/trace/events/dlm.h b/include/trace/events/dlm.h
-index 37eb79e29b28..ec9f9e378273 100644
+index 2b09574e1243..b6a79ea134ef 100644
 --- a/include/trace/events/dlm.h
 +++ b/include/trace/events/dlm.h
-@@ -383,7 +383,7 @@ DECLARE_EVENT_CLASS(dlm_rcom_template,
+@@ -375,7 +375,7 @@ DECLARE_EVENT_CLASS(dlm_rcom_template,
  	TP_printk("dst=%u h_seq=%u h_version=%s h_lockspace=%u h_nodeid=%u "
  		  "h_length=%u h_cmd=%s rc_type=%s rc_result=%d "
  		  "rc_id=%llu rc_seq=%llu rc_seq_reply=%llu "
@@ -1083,7 +1117,7 @@ index 37eb79e29b28..ec9f9e378273 100644
  		  show_message_version(__entry->h_version),
  		  __entry->h_lockspace, __entry->h_nodeid, __entry->h_length,
  		  show_header_cmd(__entry->h_cmd),
-@@ -479,7 +479,7 @@ TRACE_EVENT(dlm_send_message,
+@@ -471,7 +471,7 @@ TRACE_EVENT(dlm_send_message,
  		  "m_parent_remid=%u m_exflags=%s m_sbflags=%s m_flags=%s "
  		  "m_lvbseq=%u m_hash=%u m_status=%d m_grmode=%s "
  		  "m_rqmode=%s m_bastmode=%s m_asts=%d m_result=%d "
@@ -1092,7 +1126,7 @@ index 37eb79e29b28..ec9f9e378273 100644
  		  __entry->h_seq, show_message_version(__entry->h_version),
  		  __entry->h_lockspace, __entry->h_nodeid, __entry->h_length,
  		  show_header_cmd(__entry->h_cmd),
-@@ -573,7 +573,7 @@ TRACE_EVENT(dlm_recv_message,
+@@ -565,7 +565,7 @@ TRACE_EVENT(dlm_recv_message,
  		  "m_parent_remid=%u m_exflags=%s m_sbflags=%s m_flags=%s "
  		  "m_lvbseq=%u m_hash=%u m_status=%d m_grmode=%s "
  		  "m_rqmode=%s m_bastmode=%s m_asts=%d m_result=%d "
@@ -1102,10 +1136,10 @@ index 37eb79e29b28..ec9f9e378273 100644
  		  __entry->h_lockspace, __entry->h_nodeid, __entry->h_length,
  		  show_header_cmd(__entry->h_cmd),
 diff --git a/kernel/bpf/btf.c b/kernel/bpf/btf.c
-index 73780748404c..52e2771ba617 100644
+index 6b682b8e4b50..d3055ee60bbf 100644
 --- a/kernel/bpf/btf.c
 +++ b/kernel/bpf/btf.c
-@@ -4129,9 +4129,12 @@ static s32 btf_enum_check_meta(struct btf_verifier_env *env,
+@@ -4101,9 +4101,12 @@ static s32 btf_enum_check_meta(struct btf_verifier_env *env,
  		if (env->log.level == BPF_LOG_KERNEL)
  			continue;
  		fmt_str = btf_type_kflag(t) ? "\t%s val=%d\n" : "\t%s val=%u\n";
@@ -1118,7 +1152,7 @@ index 73780748404c..52e2771ba617 100644
  	}
  
  	return meta_needed;
-@@ -4238,9 +4241,12 @@ static s32 btf_enum64_check_meta(struct btf_verifier_env *env,
+@@ -4210,9 +4213,12 @@ static s32 btf_enum64_check_meta(struct btf_verifier_env *env,
  			continue;
  
  		fmt_str = btf_type_kflag(t) ? "\t%s val=%lld\n" : "\t%s val=%llu\n";
@@ -1132,22 +1166,25 @@ index 73780748404c..52e2771ba617 100644
  
  	return meta_needed;
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 3bf45d7149bb..87e8452c23be 100644
+index 0d5b61b7fd57..9393500bfdcd 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
-@@ -221,8 +221,11 @@ trace_print_hex_seq(struct trace_seq *p, const unsigned char *buf, int buf_len,
+@@ -221,11 +221,14 @@ trace_print_hex_seq(struct trace_seq *p, const unsigned char *buf, int buf_len,
  	const char *ret = trace_seq_buffer_ptr(p);
  	const char *fmt = concatenate ? "%*phN" : "%*ph";
  
 +#pragma GCC diagnostic push
 +#pragma GCC diagnostic ignored "-Wformat-security"
- 	for (i = 0; i < buf_len; i += 16)
+ 	for (i = 0; i < buf_len; i += 16) {
+ 		if (!concatenate && i != 0)
+ 			trace_seq_putc(p, ' ');
  		trace_seq_printf(p, fmt, min(buf_len - i, 16), &buf[i]);
+ 	}
 +#pragma GCC diagnostic pop
  	trace_seq_putc(p, 0);
  
  	return ret;
-@@ -323,8 +326,8 @@ void trace_event_printf(struct trace_iterator *iter, const char *fmt, ...)
+@@ -326,8 +329,8 @@ void trace_event_printf(struct trace_iterator *iter, const char *fmt, ...)
  EXPORT_SYMBOL(trace_event_printf);
  
  static __printf(3, 0)
@@ -1261,12 +1298,12 @@ index e383cda05367..5c95a0914d1c 100644
  endif
 diff --git a/scripts/gcc-plugins/printk_format_plugin.c b/scripts/gcc-plugins/printk_format_plugin.c
 new file mode 100644
-index 000000000000..4c15009b26de
+index 000000000000..a650ca070e14
 --- /dev/null
 +++ b/scripts/gcc-plugins/printk_format_plugin.c
-@@ -0,0 +1,916 @@
+@@ -0,0 +1,919 @@
 +/*
-+ * Copyright 2016-2022 by Nicolas Iooss
++ * Copyright 2016-2023 by Nicolas Iooss
 + *
 + * Check printf format string with kernel-style formatting
 + */
@@ -1663,6 +1700,9 @@ index 000000000000..4c15009b26de
 +			return true;
 +		if (TREE_CODE(subtype) == INTEGER_TYPE &&
 +		    identifier_is(TYPE_IDENTIFIER(subtype), "long unsigned int"))
++			return true;
++		if (TREE_CODE(subtype) == INTEGER_TYPE &&
++		    identifier_is(TYPE_IDENTIFIER(subtype), "unsigned int"))
 +			return true;
 +		if (TREE_CODE(subtype) == INTEGER_TYPE &&
 +		    identifier_is(TYPE_IDENTIFIER(subtype), "vm_flags_t"))
@@ -2216,7 +2256,7 @@ index cdfa430ae216..19c0565f4b9e 100644
  	if (flags & MS_RELATIME)
  		audit_log_format(ab, ", relatime");
 diff --git a/sound/soc/apple/mca.c b/sound/soc/apple/mca.c
-index 64750db9b963..4ea2ce9f225f 100644
+index ce77934f3eef..16059c591131 100644
 --- a/sound/soc/apple/mca.c
 +++ b/sound/soc/apple/mca.c
 @@ -898,10 +898,10 @@ static struct dma_chan *mca_request_dma_channel(struct mca_cluster *cl, unsigned
@@ -2233,10 +2273,10 @@ index 64750db9b963..4ea2ce9f225f 100644
  	return of_dma_request_slave_channel(cl->host->dev->of_node, name);
  
 diff --git a/sound/soc/intel/boards/sof_sdw.c b/sound/soc/intel/boards/sof_sdw.c
-index dc528294eb2b..3b284b7295c6 100644
+index 51b9449633a1..fe65572ce4f4 100644
 --- a/sound/soc/intel/boards/sof_sdw.c
 +++ b/sound/soc/intel/boards/sof_sdw.c
-@@ -844,7 +844,6 @@ static int create_codec_dai_name(struct device *dev,
+@@ -847,7 +847,6 @@ static int create_codec_dai_name(struct device *dev,
  		unsigned int sdw_version, unique_id, mfg_id;
  		unsigned int link_id, part_id, class_id;
  		int codec_index, comp_index;
@@ -2244,8 +2284,8 @@ index dc528294eb2b..3b284b7295c6 100644
  		u64 adr;
  
  		adr = link->adr_d[i].adr;
-@@ -859,15 +858,13 @@ static int create_codec_dai_name(struct device *dev,
- 		comp_index = i + offset;
+@@ -862,15 +861,13 @@ static int create_codec_dai_name(struct device *dev,
+ 		comp_index = i - adr_index + offset;
  		if (is_unique_device(link, sdw_version, mfg_id, part_id,
  				     class_id, i)) {
 -			codec_str = "sdw:%01x:%04x:%04x:%02x";
@@ -2263,7 +2303,7 @@ index dc528294eb2b..3b284b7295c6 100644
  					       class_id, unique_id);
  		}
 diff --git a/sound/soc/stm/stm32_sai_sub.c b/sound/soc/stm/stm32_sai_sub.c
-index eb31b49e6597..f2bd6b7a3b23 100644
+index f6695dee353b..c7c7bfb3b682 100644
 --- a/sound/soc/stm/stm32_sai_sub.c
 +++ b/sound/soc/stm/stm32_sai_sub.c
 @@ -575,7 +575,7 @@ static int stm32_sai_set_sysclk(struct snd_soc_dai *cpu_dai,
@@ -2293,7 +2333,7 @@ index 8163f453bf36..60ed51b4d107 100644
  		status += sysfs_emit_at(buf, status, "\n");
  	spin_unlock_irq(&mcbsp->lock);
 diff --git a/tools/lib/bpf/relo_core.c b/tools/lib/bpf/relo_core.c
-index c4b0e81ae293..f50ba4c85508 100644
+index a26b2f5fa0fc..3fd8739409d0 100644
 --- a/tools/lib/bpf/relo_core.c
 +++ b/tools/lib/bpf/relo_core.c
 @@ -1191,7 +1191,10 @@ int bpf_core_format_spec(char *buf, size_t buf_sz, const struct bpf_core_spec *s

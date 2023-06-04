@@ -7,7 +7,7 @@ Subject: [PATCH] {MAYBE UPS} Make request_module() callable without a format
 This avoid having to use %s when using format strings
 ---
  include/linux/kmod.h | 18 ++++++++++++------
- kernel/kmod.c        | 45 +++++++++++++++++++++++++++++++++-----------
+ kernel/module/kmod.c | 45 +++++++++++++++++++++++++++++++++-----------
  2 files changed, 46 insertions(+), 17 deletions(-)
 
 diff --git a/include/linux/kmod.h b/include/linux/kmod.h
@@ -42,11 +42,11 @@ index 68f69362d427..c44a5c04feb2 100644
  #define try_then_request_module(x, mod...) (x)
  #endif
  
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index 230235c935f4..633349ff7d6a 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -109,8 +109,7 @@ static int call_modprobe(const char *modname, int wait)
+diff --git a/kernel/module/kmod.c b/kernel/module/kmod.c
+index e80975067c7f..f9e39918906a 100644
+--- a/kernel/module/kmod.c
++++ b/kernel/module/kmod.c
+@@ -116,8 +116,7 @@ static int call_modprobe(const char *orig_module_name, int wait)
  /**
   * __request_module - try to load a kernel module
   * @wait: wait (or not) for the operation to complete
@@ -56,7 +56,7 @@ index 230235c935f4..633349ff7d6a 100644
   *
   * Load a module using the user mode module loader. The function returns
   * zero on success or a negative errno code or positive exit code from
-@@ -122,10 +121,8 @@ static int call_modprobe(const char *modname, int wait)
+@@ -129,10 +128,8 @@ static int call_modprobe(const char *orig_module_name, int wait)
   * If module auto-loading support is disabled then this function
   * simply returns -ENOENT.
   */
@@ -65,10 +65,10 @@ index 230235c935f4..633349ff7d6a 100644
  {
 -	va_list args;
 -	char module_name[MODULE_NAME_LEN];
- 	int ret;
+ 	int ret, dup_ret;
  
  	/*
-@@ -139,12 +136,6 @@ int __request_module(bool wait, const char *fmt, ...)
+@@ -146,12 +143,6 @@ int __request_module(bool wait, const char *fmt, ...)
  	if (!modprobe_path[0])
  		return -ENOENT;
  
@@ -81,7 +81,7 @@ index 230235c935f4..633349ff7d6a 100644
  	ret = security_kernel_module_request(module_name);
  	if (ret)
  		return ret;
-@@ -176,3 +167,35 @@ int __request_module(bool wait, const char *fmt, ...)
+@@ -178,3 +169,35 @@ int __request_module(bool wait, const char *fmt, ...)
  	return ret;
  }
  EXPORT_SYMBOL(__request_module);

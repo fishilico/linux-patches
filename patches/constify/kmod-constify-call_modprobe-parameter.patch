@@ -4,35 +4,77 @@ Date: Sat, 22 Oct 2016 11:42:32 +0200
 Subject: [PATCH] {CONSTIFY} kmod: constify call_modprobe() parameter
 
 ---
- kernel/kmod.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ kernel/module/dups.c     | 6 +++---
+ kernel/module/internal.h | 8 ++++----
+ kernel/module/kmod.c     | 2 +-
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index b717134ebe17..230235c935f4 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -66,7 +66,7 @@ static void free_modprobe_argv(struct subprocess_info *info)
+diff --git a/kernel/module/dups.c b/kernel/module/dups.c
+index f3d7ea1e96d8..e440661aed11 100644
+--- a/kernel/module/dups.c
++++ b/kernel/module/dups.c
+@@ -54,7 +54,7 @@ struct kmod_dup_req {
+ 	int dup_ret;
+ };
+ 
+-static struct kmod_dup_req *kmod_dup_request_lookup(char *module_name)
++static struct kmod_dup_req *kmod_dup_request_lookup(const char *module_name)
+ {
+ 	struct kmod_dup_req *kmod_req;
+ 
+@@ -117,7 +117,7 @@ static void kmod_dup_request_complete(struct work_struct *work)
+ 	queue_delayed_work(system_wq, &kmod_req->delete_work, 60 * HZ);
+ }
+ 
+-bool kmod_dup_request_exists_wait(char *module_name, bool wait, int *dup_ret)
++bool kmod_dup_request_exists_wait(const char *module_name, bool wait, int *dup_ret)
+ {
+ 	struct kmod_dup_req *kmod_req, *new_kmod_req;
+ 	int ret;
+@@ -219,7 +219,7 @@ bool kmod_dup_request_exists_wait(char *module_name, bool wait, int *dup_ret)
+ 	return true;
+ }
+ 
+-void kmod_dup_request_announce(char *module_name, int ret)
++void kmod_dup_request_announce(const char *module_name, int ret)
+ {
+ 	struct kmod_dup_req *kmod_req;
+ 
+diff --git a/kernel/module/internal.h b/kernel/module/internal.h
+index dc7b0160c480..c87ebbf6d1ba 100644
+--- a/kernel/module/internal.h
++++ b/kernel/module/internal.h
+@@ -223,15 +223,15 @@ static inline void mod_stat_bump_becoming(struct load_info *info, int flags)
+ #endif /* CONFIG_MODULE_STATS */
+ 
+ #ifdef CONFIG_MODULE_DEBUG_AUTOLOAD_DUPS
+-bool kmod_dup_request_exists_wait(char *module_name, bool wait, int *dup_ret);
+-void kmod_dup_request_announce(char *module_name, int ret);
++bool kmod_dup_request_exists_wait(const char *module_name, bool wait, int *dup_ret);
++void kmod_dup_request_announce(const char *module_name, int ret);
+ #else
+-static inline bool kmod_dup_request_exists_wait(char *module_name, bool wait, int *dup_ret)
++static inline bool kmod_dup_request_exists_wait(const char *module_name, bool wait, int *dup_ret)
+ {
+ 	return false;
+ }
+ 
+-static inline void kmod_dup_request_announce(char *module_name, int ret)
++static inline void kmod_dup_request_announce(const char *module_name, int ret)
+ {
+ }
+ #endif
+diff --git a/kernel/module/kmod.c b/kernel/module/kmod.c
+index 0800d9891692..e80975067c7f 100644
+--- a/kernel/module/kmod.c
++++ b/kernel/module/kmod.c
+@@ -69,7 +69,7 @@ static void free_modprobe_argv(struct subprocess_info *info)
  	kfree(info->argv);
  }
  
--static int call_modprobe(char *module_name, int wait)
-+static int call_modprobe(const char *modname, int wait)
+-static int call_modprobe(char *orig_module_name, int wait)
++static int call_modprobe(const char *orig_module_name, int wait)
  {
  	struct subprocess_info *info;
  	static char *envp[] = {
-@@ -75,12 +75,13 @@ static int call_modprobe(char *module_name, int wait)
- 		"PATH=/sbin:/usr/sbin:/bin:/usr/bin",
- 		NULL
- 	};
-+	char *module_name;
- 
- 	char **argv = kmalloc(sizeof(char *[5]), GFP_KERNEL);
- 	if (!argv)
- 		goto out;
- 
--	module_name = kstrdup(module_name, GFP_KERNEL);
-+	module_name = kstrdup(modname, GFP_KERNEL);
- 	if (!module_name)
- 		goto free_argv;
- 
 -- 

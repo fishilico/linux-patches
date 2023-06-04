@@ -41,7 +41,6 @@ This fixes errors like:
  drivers/net/wireless/realtek/rtw89/debug.c   |  11 +-
  drivers/remoteproc/keystone_remoteproc.c     |   5 +-
  drivers/scsi/esas2r/esas2r_log.c             |   6 +-
- drivers/scsi/fnic/fnic_trace.c               |   5 +-
  drivers/tty/serial/st-asc.c                  |   4 +-
  fs/nilfs2/sysfs.c                            | 168 +++++++++----------
  fs/ntfs/super.c                              |   7 +-
@@ -51,7 +50,7 @@ This fixes errors like:
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
  sound/usb/mixer_scarlett_gen2.c              |  12 +-
- 25 files changed, 171 insertions(+), 262 deletions(-)
+ 24 files changed, 169 insertions(+), 259 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
 index 3353b0a923d9..0a3c0cc59109 100644
@@ -169,10 +168,10 @@ index 18fa52f828dc..caf11b1f077a 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index a498ae1fbe66..e70667f0b068 100644
+index e4399983c50c..0b3dfc30d20d 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
-@@ -329,14 +329,6 @@ static void dump_pagetable(unsigned long address)
+@@ -330,14 +330,6 @@ static void dump_pagetable(unsigned long address)
  
  #else /* CONFIG_X86_64: */
  
@@ -187,7 +186,7 @@ index a498ae1fbe66..e70667f0b068 100644
  
  static int bad_address(void *p)
  {
-@@ -433,7 +425,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+@@ -434,7 +426,12 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
  	address |= 0xffffffffUL << 32;
  	if ((address >= (u64)_stext && address <= (u64)_etext) ||
  	    (address >= MODULES_VADDR && address <= MODULES_END)) {
@@ -235,10 +234,10 @@ index 761f3689f60a..06a6811c5111 100644
  	/* Test that a 1 KiB IMR @ zero with read/write all will bomb out. */
  	ret = imr_add_range(0, IMR_ALIGN, IMR_READ_ACCESS_ALL,
 diff --git a/drivers/accel/habanalabs/gaudi/gaudi.c b/drivers/accel/habanalabs/gaudi/gaudi.c
-index bb858b94e1e8..c3754438eee4 100644
+index a29aa8f7b6f3..e5eb08154117 100644
 --- a/drivers/accel/habanalabs/gaudi/gaudi.c
 +++ b/drivers/accel/habanalabs/gaudi/gaudi.c
-@@ -8079,9 +8079,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8025,9 +8025,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  		struct engines_data *e)
  {
  	struct gaudi_device *gaudi = hdev->asic_specific;
@@ -248,7 +247,7 @@ index bb858b94e1e8..c3754438eee4 100644
  	unsigned long *mask = (unsigned long *)mask_arr;
  	u32 qm_glbl_sts0, qm_cgm_sts, dma_core_sts0, tpc_cfg_sts, mme_arch_sts;
  	bool is_idle = true, is_eng_idle, is_slave;
-@@ -8107,7 +8104,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8053,7 +8050,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  		if (mask && !is_eng_idle)
  			set_bit(GAUDI_ENGINE_ID_DMA_0 + dma_id, mask);
  		if (e)
@@ -257,7 +256,7 @@ index bb858b94e1e8..c3754438eee4 100644
  				is_eng_idle ? "Y" : "N", qm_glbl_sts0,
  				qm_cgm_sts, dma_core_sts0);
  	}
-@@ -8129,7 +8126,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8075,7 +8072,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  		if (mask && !is_eng_idle)
  			set_bit(GAUDI_ENGINE_ID_TPC_0 + i, mask);
  		if (e)
@@ -266,7 +265,7 @@ index bb858b94e1e8..c3754438eee4 100644
  				is_eng_idle ? "Y" : "N",
  				qm_glbl_sts0, qm_cgm_sts, tpc_cfg_sts);
  	}
-@@ -8158,11 +8155,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8104,11 +8101,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  			set_bit(GAUDI_ENGINE_ID_MME_0 + i, mask);
  		if (e) {
  			if (!is_slave)
@@ -280,7 +279,7 @@ index bb858b94e1e8..c3754438eee4 100644
  					is_eng_idle ? "Y" : "N", "-",
  					"-", mme_arch_sts);
  		}
-@@ -8185,7 +8182,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8131,7 +8128,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  			if (mask && !is_eng_idle)
  				set_bit(GAUDI_ENGINE_ID_NIC_0 + port, mask);
  			if (e)
@@ -289,7 +288,7 @@ index bb858b94e1e8..c3754438eee4 100644
  						is_eng_idle ? "Y" : "N",
  						qm_glbl_sts0, qm_cgm_sts);
  		}
-@@ -8200,7 +8197,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8146,7 +8143,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  			if (mask && !is_eng_idle)
  				set_bit(GAUDI_ENGINE_ID_NIC_0 + port, mask);
  			if (e)
@@ -299,7 +298,7 @@ index bb858b94e1e8..c3754438eee4 100644
  						qm_glbl_sts0, qm_cgm_sts);
  		}
 diff --git a/drivers/clk/ti/adpll.c b/drivers/clk/ti/adpll.c
-index c4f89ae8bc3b..6a3e90d6b5fa 100644
+index 6a3542cf910b..b28ee4956602 100644
 --- a/drivers/clk/ti/adpll.c
 +++ b/drivers/clk/ti/adpll.c
 @@ -801,13 +801,12 @@ static int ti_adpll_init_registers(struct ti_adpll_data *d)
@@ -335,10 +334,10 @@ index 259f65291d90..64d359732bfd 100644
  		p += bytes;						\
  		len -= bytes;						\
 diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index 0feacb9fbdac..554ee7114cc5 100644
+index 60670b2f70b9..8ead53642882 100644
 --- a/drivers/mtd/mtdcore.c
 +++ b/drivers/mtd/mtdcore.c
-@@ -342,12 +342,10 @@ static bool mtd_expert_analysis_mode;
+@@ -341,12 +341,10 @@ static bool mtd_expert_analysis_mode;
  #ifdef CONFIG_DEBUG_FS
  bool mtd_check_expert_analysis_mode(void)
  {
@@ -454,7 +453,7 @@ index c251e04ae047..fee253895c85 100644
  	return status;
  }
 diff --git a/drivers/net/wireless/realtek/rtw89/debug.c b/drivers/net/wireless/realtek/rtw89/debug.c
-index 0e0e1483c099..247b710cb554 100644
+index 1e5b7a998716..f1c5ac713846 100644
 --- a/drivers/net/wireless/realtek/rtw89/debug.c
 +++ b/drivers/net/wireless/realtek/rtw89/debug.c
 @@ -483,21 +483,16 @@ static const struct txpwr_map __txpwr_map_lmt_ru = {
@@ -534,31 +533,6 @@ index 1672c52f855d..566e15d040b7 100644
  				 ESAS2R_DRVR_NAME,
  				 (dev->driver ? dev->driver->name : "unknown"),
  				 (dev->bus ? dev->bus->name : "unknown"),
-diff --git a/drivers/scsi/fnic/fnic_trace.c b/drivers/scsi/fnic/fnic_trace.c
-index e03967463561..1eab88310fc2 100644
---- a/drivers/scsi/fnic/fnic_trace.c
-+++ b/drivers/scsi/fnic/fnic_trace.c
-@@ -783,7 +783,7 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
- {
- 	struct tm tm;
- 	int j, i = 1, len;
--	char *fc_trace, *fmt;
-+	char *fc_trace;
- 	int ethhdr_len = sizeof(struct ethhdr) - 1;
- 	int fcoehdr_len = sizeof(struct fcoe_hdr);
- 	int fchdr_len = sizeof(struct fc_frame_header);
-@@ -795,10 +795,9 @@ void copy_and_format_trace_data(struct fc_trace_hdr *tdata,
- 
- 	time64_to_tm(tdata->time_stamp.tv_sec, 0, &tm);
- 
--	fmt = "%02d:%02d:%04ld %02d:%02d:%02d.%09lu ns%8x       %c%8x\t";
- 	len += scnprintf(fnic_dbgfs_prt->buffer + len,
- 		max_size - len,
--		fmt,
-+		"%02d:%02d:%04ld %02d:%02d:%02d.%09lu ns%8x       %c%8x\t",
- 		tm.tm_mon + 1, tm.tm_mday, tm.tm_year + 1900,
- 		tm.tm_hour, tm.tm_min, tm.tm_sec,
- 		tdata->time_stamp.tv_nsec, tdata->host_no,
 diff --git a/drivers/tty/serial/st-asc.c b/drivers/tty/serial/st-asc.c
 index 5215e6910f68..859605c0083d 100644
 --- a/drivers/tty/serial/st-asc.c

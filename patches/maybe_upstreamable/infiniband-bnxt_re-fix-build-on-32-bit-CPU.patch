@@ -11,10 +11,10 @@ over-sized left shifts (-Wshift-count-overflow).
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/infiniband/hw/bnxt_re/qplib_fp.c b/drivers/infiniband/hw/bnxt_re/qplib_fp.c
-index 96e581ced50e..d422b8cadb7d 100644
+index f139d4cd1712..1ad41c82816f 100644
 --- a/drivers/infiniband/hw/bnxt_re/qplib_fp.c
 +++ b/drivers/infiniband/hw/bnxt_re/qplib_fp.c
-@@ -358,11 +358,11 @@ static void bnxt_qplib_service_nq(struct tasklet_struct *t)
+@@ -354,11 +354,11 @@ static void bnxt_qplib_service_nq(struct tasklet_struct *t)
  			q_handle = le32_to_cpu(nqsrqe->srq_handle_low);
  			q_handle |= (u64)le32_to_cpu(nqsrqe->srq_handle_high)
  				     << 32;
@@ -22,10 +22,10 @@ index 96e581ced50e..d422b8cadb7d 100644
 +			srq = (struct bnxt_qplib_srq *)(uintptr_t)q_handle;
  			bnxt_qplib_armen_db(&srq->dbinfo,
  					    DBC_DBC_TYPE_SRQ_ARMENA);
- 			if (!nq->srqn_handler(nq,
--					      (struct bnxt_qplib_srq *)q_handle,
-+					      (struct bnxt_qplib_srq *)(uintptr_t)q_handle,
- 					      nqsrqe->event))
- 				num_srqne_processed++;
- 			else
+ 			if (nq->srqn_handler(nq,
+-					     (struct bnxt_qplib_srq *)q_handle,
++					     (struct bnxt_qplib_srq *)(uintptr_t)q_handle,
+ 					     nqsrqe->event))
+ 				dev_warn(&nq->pdev->dev,
+ 					 "SRQ event 0x%x not handled\n",
 -- 

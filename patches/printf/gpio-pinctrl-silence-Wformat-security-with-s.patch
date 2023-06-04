@@ -1,0 +1,177 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Fri, 2 Jun 2023 18:16:49 +0200
+Subject: [PATCH] {PRINTF} gpio, pinctrl: silence -Wformat-security with %s
+
+---
+ drivers/gpio/gpio-aspeed-sgpio.c         | 2 +-
+ drivers/gpio/gpio-aspeed.c               | 2 +-
+ drivers/gpio/gpio-hlwd.c                 | 2 +-
+ drivers/gpio/gpio-mlxbf2.c               | 2 +-
+ drivers/gpio/gpio-omap.c                 | 2 +-
+ drivers/gpio/gpio-tqmx86.c               | 2 +-
+ drivers/gpio/gpio-visconti.c             | 2 +-
+ drivers/gpio/gpio-xgs-iproc.c            | 2 +-
+ drivers/pinctrl/bcm/pinctrl-iproc-gpio.c | 2 +-
+ drivers/pinctrl/pinctrl-mcp23s08.c       | 2 +-
+ drivers/pinctrl/pinctrl-stmfx.c          | 2 +-
+ drivers/pinctrl/pinctrl-sx150x.c         | 2 +-
+ 12 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/gpio/gpio-aspeed-sgpio.c b/drivers/gpio/gpio-aspeed-sgpio.c
+index 72755fee6478..ecc73a86fee4 100644
+--- a/drivers/gpio/gpio-aspeed-sgpio.c
++++ b/drivers/gpio/gpio-aspeed-sgpio.c
+@@ -420,7 +420,7 @@ static void aspeed_sgpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 	int offset;
+ 
+ 	irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
+-	seq_printf(p, dev_name(gpio->dev));
++	seq_printf(p, "%s", dev_name(gpio->dev));
+ }
+ 
+ static const struct irq_chip aspeed_sgpio_irq_chip = {
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index da33bbbdacb9..fc794d434f68 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -1100,7 +1100,7 @@ static void aspeed_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 	if (rc)
+ 		return;
+ 
+-	seq_printf(p, dev_name(gpio->dev));
++	seq_printf(p, "%s", dev_name(gpio->dev));
+ }
+ 
+ static const struct irq_chip aspeed_gpio_irq_chip = {
+diff --git a/drivers/gpio/gpio-hlwd.c b/drivers/gpio/gpio-hlwd.c
+index c208ac1c54a6..6fd65cf26808 100644
+--- a/drivers/gpio/gpio-hlwd.c
++++ b/drivers/gpio/gpio-hlwd.c
+@@ -210,7 +210,7 @@ static void hlwd_gpio_irq_print_chip(struct irq_data *data, struct seq_file *p)
+ 	struct hlwd_gpio *hlwd =
+ 		gpiochip_get_data(irq_data_get_irq_chip_data(data));
+ 
+-	seq_printf(p, dev_name(hlwd->dev));
++	seq_printf(p, "%s", dev_name(hlwd->dev));
+ }
+ 
+ static const struct irq_chip hlwd_gpio_irq_chip = {
+diff --git a/drivers/gpio/gpio-mlxbf2.c b/drivers/gpio/gpio-mlxbf2.c
+index 6abe01bc39c3..1c47cf8e9def 100644
+--- a/drivers/gpio/gpio-mlxbf2.c
++++ b/drivers/gpio/gpio-mlxbf2.c
+@@ -331,7 +331,7 @@ static void mlxbf2_gpio_irq_print_chip(struct irq_data *irqd,
+ 	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
+ 	struct mlxbf2_gpio_context *gs = gpiochip_get_data(gc);
+ 
+-	seq_printf(p, dev_name(gs->dev));
++	seq_printf(p, "%s", dev_name(gs->dev));
+ }
+ 
+ static const struct irq_chip mlxbf2_gpio_irq_chip = {
+diff --git a/drivers/gpio/gpio-omap.c b/drivers/gpio/gpio-omap.c
+index a08be5bf6808..993fb560055e 100644
+--- a/drivers/gpio/gpio-omap.c
++++ b/drivers/gpio/gpio-omap.c
+@@ -716,7 +716,7 @@ static void omap_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ {
+ 	struct gpio_bank *bank = omap_irq_data_get_bank(d);
+ 
+-	seq_printf(p, dev_name(bank->dev));
++	seq_printf(p, "%s", dev_name(bank->dev));
+ }
+ 
+ static const struct irq_chip omap_gpio_irq_chip = {
+diff --git a/drivers/gpio/gpio-tqmx86.c b/drivers/gpio/gpio-tqmx86.c
+index 6f8bd1155db7..8d1930ba87c4 100644
+--- a/drivers/gpio/gpio-tqmx86.c
++++ b/drivers/gpio/gpio-tqmx86.c
+@@ -232,7 +232,7 @@ static void tqmx86_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ {
+ 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+ 
+-	seq_printf(p, gc->label);
++	seq_printf(p, "%s", gc->label);
+ }
+ 
+ static const struct irq_chip tqmx86_gpio_irq_chip = {
+diff --git a/drivers/gpio/gpio-visconti.c b/drivers/gpio/gpio-visconti.c
+index 6734e7e1e2a4..e80d3a9297ef 100644
+--- a/drivers/gpio/gpio-visconti.c
++++ b/drivers/gpio/gpio-visconti.c
+@@ -141,7 +141,7 @@ static void visconti_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+ 	struct visconti_gpio *priv = gpiochip_get_data(gc);
+ 
+-	seq_printf(p, dev_name(priv->dev));
++	seq_printf(p, "%s", dev_name(priv->dev));
+ }
+ 
+ static const struct irq_chip visconti_gpio_irq_chip = {
+diff --git a/drivers/gpio/gpio-xgs-iproc.c b/drivers/gpio/gpio-xgs-iproc.c
+index 2d23b27d55af..e3085b8c5eba 100644
+--- a/drivers/gpio/gpio-xgs-iproc.c
++++ b/drivers/gpio/gpio-xgs-iproc.c
+@@ -198,7 +198,7 @@ static void iproc_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+ 	struct iproc_gpio_chip *chip = to_iproc_gpio(gc);
+ 
+-	seq_printf(p, dev_name(chip->dev));
++	seq_printf(p, "%s", dev_name(chip->dev));
+ }
+ 
+ static const struct irq_chip iproc_gpio_irq_chip = {
+diff --git a/drivers/pinctrl/bcm/pinctrl-iproc-gpio.c b/drivers/pinctrl/bcm/pinctrl-iproc-gpio.c
+index cc3eb7409ab3..7b60d383b905 100644
+--- a/drivers/pinctrl/bcm/pinctrl-iproc-gpio.c
++++ b/drivers/pinctrl/bcm/pinctrl-iproc-gpio.c
+@@ -309,7 +309,7 @@ static void iproc_gpio_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+ 	struct iproc_gpio *chip = gpiochip_get_data(gc);
+ 
+-	seq_printf(p, dev_name(chip->dev));
++	seq_printf(p, "%s", dev_name(chip->dev));
+ }
+ 
+ static const struct irq_chip iproc_gpio_irq_chip = {
+diff --git a/drivers/pinctrl/pinctrl-mcp23s08.c b/drivers/pinctrl/pinctrl-mcp23s08.c
+index 4551575e4e7d..3915a5a9d7b3 100644
+--- a/drivers/pinctrl/pinctrl-mcp23s08.c
++++ b/drivers/pinctrl/pinctrl-mcp23s08.c
+@@ -562,7 +562,7 @@ static void mcp23s08_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+ 	struct mcp23s08 *mcp = gpiochip_get_data(gc);
+ 
+-	seq_printf(p, dev_name(mcp->dev));
++	seq_printf(p, "%s", dev_name(mcp->dev));
+ }
+ 
+ static const struct irq_chip mcp23s08_irq_chip = {
+diff --git a/drivers/pinctrl/pinctrl-stmfx.c b/drivers/pinctrl/pinctrl-stmfx.c
+index ab23d7ac3107..d6947256f208 100644
+--- a/drivers/pinctrl/pinctrl-stmfx.c
++++ b/drivers/pinctrl/pinctrl-stmfx.c
+@@ -598,7 +598,7 @@ static void stmfx_pinctrl_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 	struct gpio_chip *gpio_chip = irq_data_get_irq_chip_data(d);
+ 	struct stmfx_pinctrl *pctl = gpiochip_get_data(gpio_chip);
+ 
+-	seq_printf(p, dev_name(pctl->dev));
++	seq_printf(p, "%s", dev_name(pctl->dev));
+ }
+ 
+ static const struct irq_chip stmfx_pinctrl_irq_chip = {
+diff --git a/drivers/pinctrl/pinctrl-sx150x.c b/drivers/pinctrl/pinctrl-sx150x.c
+index 7632ffc3946f..a753901d6c9e 100644
+--- a/drivers/pinctrl/pinctrl-sx150x.c
++++ b/drivers/pinctrl/pinctrl-sx150x.c
+@@ -585,7 +585,7 @@ static void sx150x_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+ 	struct sx150x_pinctrl *pctl = gpiochip_get_data(gc);
+ 
+-	seq_printf(p, pctl->client->name);
++	seq_printf(p, "%s", pctl->client->name);
+ }
+ 
+ static const struct irq_chip sx150x_irq_chip = {
+-- 
