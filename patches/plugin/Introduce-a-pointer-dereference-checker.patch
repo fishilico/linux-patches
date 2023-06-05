@@ -72,10 +72,10 @@ It has also detected some bugs reported and fixed by other people:
  drivers/usb/host/xhci-debugfs.c               |   4 +-
  drivers/vhost/scsi.c                          |   6 +-
  drivers/xen/xenbus/xenbus_xs.c                |   4 +-
- fs/cifs/cifsacl.c                             |  12 +-
  fs/debugfs/file.c                             |   4 +-
  fs/ocfs2/aops.h                               |  14 +-
  fs/proc/proc_sysctl.c                         |   8 +-
+ fs/smb/client/cifsacl.c                       |  12 +-
  include/asm-generic/asm-prototypes.h          |   6 +
  include/linux/bitops.h                        |  12 +-
  include/linux/compiler.h                      |  21 +
@@ -991,35 +991,6 @@ index 12e02eb01f59..c0c6301d5132 100644
  	kfree(strings);
  
  	strings = (char *)&ret[*num];
-diff --git a/fs/cifs/cifsacl.c b/fs/cifs/cifsacl.c
-index f5b6df82e857..a28cc18c00ac 100644
---- a/fs/cifs/cifsacl.c
-+++ b/fs/cifs/cifsacl.c
-@@ -420,16 +420,20 @@ sid_to_id(struct cifs_sb_info *cifs_sb, struct cifs_sid *psid,
- 	}
- 
- 	if (sidtype == SIDOWNER) {
--		kuid_t uid;
-+		kuid_t uid, *ppayload_uid;
- 		uid_t id;
--		memcpy(&id, &sidkey->payload.data[0], sizeof(uid_t));
-+		/* Play nice with the pointer deref checker */
-+		ppayload_uid = (kuid_t *)&sidkey->payload.data[0];
-+		memcpy(&id, ppayload_uid, sizeof(uid_t));
- 		uid = make_kuid(&init_user_ns, id);
- 		if (uid_valid(uid))
- 			fuid = uid;
- 	} else {
--		kgid_t gid;
-+		kgid_t gid, *ppayload_gid;
- 		gid_t id;
--		memcpy(&id, &sidkey->payload.data[0], sizeof(gid_t));
-+		/* Play nice with the pointer deref checker */
-+		ppayload_gid = (kgid_t *)&sidkey->payload.data[0];
-+		memcpy(&id, ppayload_gid, sizeof(gid_t));
- 		gid = make_kgid(&init_user_ns, id);
- 		if (gid_valid(gid))
- 			fgid = gid;
 diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
 index 1f971c880dde..6dbfc5b7acc4 100644
 --- a/fs/debugfs/file.c
@@ -1085,6 +1056,35 @@ index 8038833ff5b0..c375326df4fe 100644
  
  	if (proc_mnt)
  		kern_unmount(proc_mnt);
+diff --git a/fs/smb/client/cifsacl.c b/fs/smb/client/cifsacl.c
+index f5b6df82e857..a28cc18c00ac 100644
+--- a/fs/smb/client/cifsacl.c
++++ b/fs/smb/client/cifsacl.c
+@@ -420,16 +420,20 @@ sid_to_id(struct cifs_sb_info *cifs_sb, struct cifs_sid *psid,
+ 	}
+ 
+ 	if (sidtype == SIDOWNER) {
+-		kuid_t uid;
++		kuid_t uid, *ppayload_uid;
+ 		uid_t id;
+-		memcpy(&id, &sidkey->payload.data[0], sizeof(uid_t));
++		/* Play nice with the pointer deref checker */
++		ppayload_uid = (kuid_t *)&sidkey->payload.data[0];
++		memcpy(&id, ppayload_uid, sizeof(uid_t));
+ 		uid = make_kuid(&init_user_ns, id);
+ 		if (uid_valid(uid))
+ 			fuid = uid;
+ 	} else {
+-		kgid_t gid;
++		kgid_t gid, *ppayload_gid;
+ 		gid_t id;
+-		memcpy(&id, &sidkey->payload.data[0], sizeof(gid_t));
++		/* Play nice with the pointer deref checker */
++		ppayload_gid = (kgid_t *)&sidkey->payload.data[0];
++		memcpy(&id, ppayload_gid, sizeof(gid_t));
+ 		gid = make_kgid(&init_user_ns, id);
+ 		if (gid_valid(gid))
+ 			fgid = gid;
 diff --git a/include/asm-generic/asm-prototypes.h b/include/asm-generic/asm-prototypes.h
 index 2fa2bc208383..7c392857a3d3 100644
 --- a/include/asm-generic/asm-prototypes.h
@@ -1321,10 +1321,10 @@ index 2058e89b5ddd..5a36b5bd15be 100644
  				off += size;
  			}
 diff --git a/kernel/bpf/hashtab.c b/kernel/bpf/hashtab.c
-index 00c253b84bf5..67caf4c970a8 100644
+index 9901efee4339..6025860050f4 100644
 --- a/kernel/bpf/hashtab.c
 +++ b/kernel/bpf/hashtab.c
-@@ -2506,7 +2506,13 @@ int bpf_fd_htab_map_update_elem(struct bpf_map *map, struct file *map_file,
+@@ -2508,7 +2508,13 @@ int bpf_fd_htab_map_update_elem(struct bpf_map *map, struct file *map_file,
  	if (IS_ERR(ptr))
  		return PTR_ERR(ptr);
  
@@ -1796,7 +1796,7 @@ index aff31cd944c2..91291001da16 100644
  	msg->entries++;
  
 diff --git a/net/core/sock_map.c b/net/core/sock_map.c
-index 7c189c2e2fbf..f0bcefc5cb7f 100644
+index 00afb66cd095..e575522b9ce8 100644
 --- a/net/core/sock_map.c
 +++ b/net/core/sock_map.c
 @@ -434,7 +434,9 @@ static void sock_map_delete_from_link(struct bpf_map *map, struct sock *sk,
