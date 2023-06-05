@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 5 Jun 2023 22:57:08 +0200
+Subject: [PATCH] {PRINTF} fs/ext4/inode: silence -Wformat-security with "%s"
+
+---
+ fs/ext4/inode.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 02de439bf1f0..4509760fad87 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -4698,7 +4698,7 @@ struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
+ 		return ERR_PTR(-ENOMEM);
+ 	if (!(inode->i_state & I_NEW)) {
+ 		if ((err_str = check_igot_inode(inode, flags)) != NULL) {
+-			ext4_error_inode(inode, function, line, 0, err_str);
++			ext4_error_inode(inode, function, line, 0, "%s", err_str);
+ 			iput(inode);
+ 			return ERR_PTR(-EFSCORRUPTED);
+ 		}
+@@ -4970,7 +4970,7 @@ struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
+ 		ext4_error_inode(inode, function, line, 0,
+ 				 "casefold flag without casefold feature");
+ 	if ((err_str = check_igot_inode(inode, flags)) != NULL) {
+-		ext4_error_inode(inode, function, line, 0, err_str);
++		ext4_error_inode(inode, function, line, 0, "%s", err_str);
+ 		ret = -EFSCORRUPTED;
+ 		goto bad_inode;
+ 	}
+-- 
