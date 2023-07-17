@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2014-2022 Nicolas Iooss
+# Copyright (c) 2014-2023 Nicolas Iooss
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -326,6 +326,7 @@ then
     disable_in_hostcflags 'reserved-identifier'
     disable_in_hostcflags 'switch-enum' # Show values in switch on enum can be skipped
     disable_in_hostcflags 'unreachable-code-break'
+    disable_in_hostcflags 'unreachable-code-return'
     disable_in_hostcflags 'unused-macros'
     disable_in_hostcflags 'used-but-marked-unused'
     disable_in_hostcflags 'variadic-macros'
