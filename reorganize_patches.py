@@ -57,7 +57,7 @@ def get_patch_path(patchdir, name):
 
     subject = subject.strip()
 
-    # If the subject starts with a bracket (eg. [media]), git removes it when
+    # If the subject starts with a drivers/platform/x86/intel/int3472/clk_and_regulator:bracket (eg. [media]), git removes it when
     # applying the patch, which leads to information loss.
     # This can be fixed by adding tag {SENT} for example.
     if subject.startswith('['):
@@ -80,7 +80,7 @@ def get_patch_path(patchdir, name):
         '{TYPO}': 'typo',
     }
     for topic, topicdir in KNOWN_TOPICS.items():
-        if subject.startswith(topic + ' '):
+        if subject.startswith(topic + ' ') or subject == topic:
             directory = topicdir
             subject = subject[len(topic) + 1:]
             break
