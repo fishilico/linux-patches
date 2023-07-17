@@ -7,15 +7,15 @@ Subject: [PATCH] {CONSTIFY} init/do_mounts: constify a few things including
 ---
  fs/namespace.c           | 10 +++++-----
  include/linux/syscalls.h | 10 +++++-----
- init/do_mounts.c         |  2 +-
- init/do_mounts.h         |  4 ++--
- 4 files changed, 13 insertions(+), 13 deletions(-)
+ init/do_mounts.c         | 14 +++++++-------
+ init/do_mounts.h         |  6 +++---
+ 4 files changed, 20 insertions(+), 20 deletions(-)
 
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 54847db5b819..15f974b69f51 100644
+index e157efc54023..4f0d49a91fc6 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1809,7 +1809,7 @@ int path_umount(struct path *path, int flags)
+@@ -1899,7 +1899,7 @@ int path_umount(struct path *path, int flags)
  	return ret;
  }
  
@@ -24,7 +24,7 @@ index 54847db5b819..15f974b69f51 100644
  {
  	int lookup_flags = LOOKUP_MOUNTPOINT;
  	struct path path;
-@@ -1827,7 +1827,7 @@ static int ksys_umount(char __user *name, int flags)
+@@ -1917,7 +1917,7 @@ static int ksys_umount(char __user *name, int flags)
  	return path_umount(&path, flags);
  }
  
@@ -33,7 +33,7 @@ index 54847db5b819..15f974b69f51 100644
  {
  	return ksys_umount(name, flags);
  }
-@@ -1837,7 +1837,7 @@ SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
+@@ -1927,7 +1927,7 @@ SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
  /*
   *	The 2.0 compatible umount. No flags.
   */
@@ -42,7 +42,7 @@ index 54847db5b819..15f974b69f51 100644
  {
  	return ksys_umount(name, 0);
  }
-@@ -3565,8 +3565,8 @@ struct dentry *mount_subtree(struct vfsmount *m, const char *name)
+@@ -3858,8 +3858,8 @@ struct dentry *mount_subtree(struct vfsmount *m, const char *name)
  }
  EXPORT_SYMBOL(mount_subtree);
  
@@ -54,13 +54,13 @@ index 54847db5b819..15f974b69f51 100644
  	int ret;
  	char *kernel_type;
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 33a0ee3bcb2e..d455cb0d3d2e 100644
+index 03e3d0121d5e..c63d067d9a87 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -433,10 +433,10 @@ asmlinkage long sys_renameat(int olddfd, const char __user * oldname,
+@@ -411,10 +411,10 @@ asmlinkage long sys_linkat(int olddfd, const char __user *oldname,
+ 			   int newdfd, const char __user *newname, int flags);
+ asmlinkage long sys_renameat(int olddfd, const char __user * oldname,
  			     int newdfd, const char __user * newname);
- 
- /* fs/namespace.c */
 -asmlinkage long sys_umount(char __user *name, int flags);
 -asmlinkage long sys_mount(char __user *dev_name, char __user *dir_name,
 -				char __user *type, unsigned long flags,
@@ -71,8 +71,8 @@ index 33a0ee3bcb2e..d455cb0d3d2e 100644
 +				const void __user *data);
  asmlinkage long sys_pivot_root(const char __user *new_root,
  				const char __user *put_old);
- 
-@@ -1165,7 +1165,7 @@ asmlinkage long sys_ustat(unsigned dev, struct ustat __user *ubuf);
+ asmlinkage long sys_statfs(const char __user * path,
+@@ -1060,7 +1060,7 @@ asmlinkage long sys_ustat(unsigned dev, struct ustat __user *ubuf);
  asmlinkage long sys_vfork(void);
  asmlinkage long sys_recv(int, void __user *, size_t, unsigned);
  asmlinkage long sys_send(int, void __user *, size_t, unsigned);
@@ -82,29 +82,81 @@ index 33a0ee3bcb2e..d455cb0d3d2e 100644
  asmlinkage long sys_sysfs(int option,
  				unsigned long arg1, unsigned long arg2);
 diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 96043125eef1..b8e5fe057afe 100644
+index 1aa015883519..d972aaaa9162 100644
 --- a/init/do_mounts.c
 +++ b/init/do_mounts.c
-@@ -391,7 +391,7 @@ static int __init do_mount_root(const char *name, const char *fs,
+@@ -156,7 +156,7 @@ static int __init do_mount_root(const char *name, const char *fs,
  	return ret;
  }
  
--void __init mount_block_root(char *name, int flags)
-+void __init mount_block_root(const char *name, int flags)
+-void __init mount_root_generic(char *name, char *pretty_name, int flags)
++void __init mount_root_generic(const char *name, const char *pretty_name, int flags)
  {
  	struct page *page = alloc_page(GFP_KERNEL);
  	char *fs_names = page_address(page);
+@@ -315,7 +315,7 @@ static bool __init fs_is_nodev(char *fstype)
+ 	return ret;
+ }
+ 
+-static int __init mount_nodev_root(char *root_device_name)
++static int __init mount_nodev_root(const char *root_device_name)
+ {
+ 	char *fs_names, *fstype;
+ 	int err = -EINVAL;
+@@ -343,7 +343,7 @@ static int __init mount_nodev_root(char *root_device_name)
+ }
+ 
+ #ifdef CONFIG_BLOCK
+-static void __init mount_block_root(char *root_device_name)
++static void __init mount_block_root(const char *root_device_name)
+ {
+ 	int err = create_dev("/dev/root", ROOT_DEV);
+ 
+@@ -352,12 +352,12 @@ static void __init mount_block_root(char *root_device_name)
+ 	mount_root_generic("/dev/root", root_device_name, root_mountflags);
+ }
+ #else
+-static inline void mount_block_root(char *root_device_name)
++static inline void mount_block_root(const char *root_device_name)
+ {
+ }
+ #endif /* CONFIG_BLOCK */
+ 
+-void __init mount_root(char *root_device_name)
++void __init mount_root(const char *root_device_name)
+ {
+ 	switch (ROOT_DEV) {
+ 	case Root_NFS:
+@@ -382,7 +382,7 @@ void __init mount_root(char *root_device_name)
+ }
+ 
+ /* wait for any asynchronous scanning to complete */
+-static void __init wait_for_root(char *root_device_name)
++static void __init wait_for_root(const char *root_device_name)
+ {
+ 	if (ROOT_DEV != 0)
+ 		return;
+@@ -396,7 +396,7 @@ static void __init wait_for_root(char *root_device_name)
+ 
+ }
+ 
+-static dev_t __init parse_root_device(char *root_device_name)
++static dev_t __init parse_root_device(const char *root_device_name)
+ {
+ 	int error;
+ 	dev_t dev;
 diff --git a/init/do_mounts.h b/init/do_mounts.h
-index 7a29ac3e427b..254ceb15c132 100644
+index 15e372b00ce7..6d15c4a2312b 100644
 --- a/init/do_mounts.h
 +++ b/init/do_mounts.h
 @@ -10,11 +10,11 @@
  #include <linux/root_dev.h>
  #include <linux/init_syscalls.h>
  
--void  mount_block_root(char *name, int flags);
-+void  mount_block_root(const char *name, int flags);
- void  mount_root(void);
+-void  mount_root_generic(char *name, char *pretty_name, int flags);
+-void  mount_root(char *root_device_name);
++void  mount_root_generic(const char *name, const char *pretty_name, int flags);
++void  mount_root(const char *root_device_name);
  extern int root_mountflags;
  
 -static inline __init int create_dev(char *name, dev_t dev)

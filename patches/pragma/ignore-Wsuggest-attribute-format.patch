@@ -4,8 +4,7 @@ Date: Sat, 4 Jul 2015 11:50:02 +0800
 Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
 
 ---
- .../broadcom/brcm80211/brcmfmac/tracepoint.h         |  8 ++++++++
- .../brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h    |  8 ++++++++
+ .../broadcom/brcm80211/brcmfmac/tracepoint.h         |  1 -
  .../net/wireless/intel/iwlwifi/iwl-devtrace-msg.h    |  8 ++++++++
  include/linux/compiler-gcc.h                         |  2 ++
  include/trace/events/qla.h                           |  1 -
@@ -15,82 +14,20 @@ Subject: [PATCH] {PRAGMA} ignore -Wsuggest-attribute=format
  kernel/trace/trace.c                                 |  7 +++++++
  lib/vsprintf.c                                       |  4 ++++
  samples/trace_events/trace-events-sample.h           |  4 ++++
- 11 files changed, 61 insertions(+), 1 deletion(-)
+ 10 files changed, 45 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h
-index 5a139d7ed47a..5b8e149fe291 100644
+index 5d66e94c806d..488a1bc5c39c 100644
 --- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h
 +++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/tracepoint.h
-@@ -28,6 +28,9 @@ static inline void trace_ ## name(proto) {}
- 
- #define MAX_MSG_LEN		100
- 
-+__diag_push()
-+__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
-+	      "This function uses a va_format, which is impossible to declare in __printf")
- TRACE_EVENT(brcmf_err,
- 	TP_PROTO(const char *func, struct va_format *vaf),
- 	TP_ARGS(func, vaf),
-@@ -41,7 +44,11 @@ TRACE_EVENT(brcmf_err,
+@@ -46,7 +46,6 @@ TRACE_EVENT(brcmf_err,
  	),
  	TP_printk("%s: %s", __get_str(func), __get_str(msg))
  );
-+__diag_pop()
- 
-+__diag_push()
-+__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
-+	      "This function uses a va_format, which is impossible to declare in __printf")
+-
  TRACE_EVENT(brcmf_dbg,
  	TP_PROTO(u32 level, const char *func, struct va_format *vaf),
  	TP_ARGS(level, func, vaf),
-@@ -57,6 +64,7 @@ TRACE_EVENT(brcmf_dbg,
- 	),
- 	TP_printk("%s: %s", __get_str(func), __get_str(msg))
- );
-+__diag_pop()
- 
- TRACE_EVENT(brcmf_hexdump,
- 	TP_PROTO(void *data, size_t len),
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h b/drivers/net/wireless/broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h
-index 488456420353..b634dab837db 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmsmac/brcms_trace_brcmsmac_msg.h
-@@ -24,6 +24,9 @@
- 
- #define MAX_MSG_LEN	100
- 
-+__diag_push()
-+__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
-+	      "This function uses a va_format, which is impossible to declare in __printf")
- DECLARE_EVENT_CLASS(brcms_msg_event,
- 	TP_PROTO(struct va_format *vaf),
- 	TP_ARGS(vaf),
-@@ -35,6 +38,7 @@ DECLARE_EVENT_CLASS(brcms_msg_event,
- 	),
- 	TP_printk("%s", __get_str(msg))
- );
-+__diag_pop()
- 
- DEFINE_EVENT(brcms_msg_event, brcms_info,
- 	TP_PROTO(struct va_format *vaf),
-@@ -56,6 +60,9 @@ DEFINE_EVENT(brcms_msg_event, brcms_crit,
- 	TP_ARGS(vaf)
- );
- 
-+__diag_push()
-+__diag_ignore(GCC, 4, "-Wsuggest-attribute=format",
-+	      "This function uses a va_format, which is impossible to declare in __printf")
- TRACE_EVENT(brcms_dbg,
- 	TP_PROTO(u32 level, const char *func, struct va_format *vaf),
- 	TP_ARGS(level, func, vaf),
-@@ -71,6 +78,7 @@ TRACE_EVENT(brcms_dbg,
- 	),
- 	TP_printk("%s: %s", __get_str(func), __get_str(msg))
- );
-+__diag_pop()
- #endif /* __TRACE_BRCMSMAC_MSG_H */
- 
- #ifdef CONFIG_BRCM_TRACING
 diff --git a/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h b/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
 index 1d6c292cf545..5cfea6cc466c 100644
 --- a/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
@@ -157,7 +94,7 @@ index e7fd55e7dc3d..de05cd5d5dc7 100644
  
  DEFINE_EVENT(qla_log_event, ql_dbg_log,
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
-index 8d368fa353f9..b0d2984f434e 100644
+index 9e80efa59a5d..91f496173340 100644
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
 @@ -1055,7 +1055,11 @@ BPF_CALL_5(bpf_snprintf, char *, str, u32, str_size, char *, fmt,
@@ -173,7 +110,7 @@ index 8d368fa353f9..b0d2984f434e 100644
  	bpf_bprintf_cleanup(&data);
  
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 886d2ebd0a0d..920a2a1a223b 100644
+index 10effe40a3fa..b1ed33a6ebc1 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
 @@ -662,8 +662,12 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
@@ -190,7 +127,7 @@ index 886d2ebd0a0d..920a2a1a223b 100644
  	print_modules();
  
 diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index 1f4b07da327a..f7cfe25300a3 100644
+index 5f2dcabad202..b4bf1fc519f3 100644
 --- a/kernel/trace/bpf_trace.c
 +++ b/kernel/trace/bpf_trace.c
 @@ -387,7 +387,11 @@ BPF_CALL_5(bpf_trace_printk, char *, fmt, u32, fmt_size, u64, arg1,
@@ -236,7 +173,7 @@ index 1f4b07da327a..f7cfe25300a3 100644
  	bpf_bprintf_cleanup(&data);
  
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 64a4dde073ef..f4cb8d8c1003 100644
+index 4529e264cb86..919a9be2e153 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
 @@ -3880,6 +3880,10 @@ static void test_can_verify(void)

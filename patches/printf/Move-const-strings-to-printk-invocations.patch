@@ -26,8 +26,7 @@ This fixes errors like:
         printk(smep_warning, from_kuid(&init_user_ns, current_uid()));
         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ---
- arch/arm/mach-omap2/board-n8x0.c             |   3 +-
- arch/arm/mach-omap2/usb-tusb6010.c           |  23 +--
+ arch/arm/mach-omap2/usb-tusb6010.c           |  21 +--
  arch/x86/mm/fault.c                          |  15 +-
  arch/x86/platform/intel-quark/imr_selftest.c |   7 +-
  drivers/accel/habanalabs/gaudi/gaudi.c       |  15 +-
@@ -50,31 +49,10 @@ This fixes errors like:
  net/llc/af_llc.c                             |  13 +-
  security/apparmor/lib.c                      |   6 +-
  sound/usb/mixer_scarlett_gen2.c              |  12 +-
- 24 files changed, 169 insertions(+), 259 deletions(-)
+ 23 files changed, 167 insertions(+), 256 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
-index 3353b0a923d9..0a3c0cc59109 100644
---- a/arch/arm/mach-omap2/board-n8x0.c
-+++ b/arch/arm/mach-omap2/board-n8x0.c
-@@ -111,7 +111,6 @@ static struct musb_hdrc_platform_data tusb_data = {
- static void __init n8x0_usb_init(void)
- {
- 	int ret = 0;
--	static const char announce[] __initconst = KERN_INFO "TUSB 6010\n";
- 
- 	/* PM companion chip power control pin */
- 	ret = gpio_request_one(TUSB6010_GPIO_ENABLE, GPIOF_OUT_INIT_LOW,
-@@ -129,7 +128,7 @@ static void __init n8x0_usb_init(void)
- 	if (ret != 0)
- 		goto err;
- 
--	printk(announce);
-+	printk(KERN_INFO "TUSB 6010\n");
- 
- 	return;
- 
 diff --git a/arch/arm/mach-omap2/usb-tusb6010.c b/arch/arm/mach-omap2/usb-tusb6010.c
-index 18fa52f828dc..caf11b1f077a 100644
+index b46c254c2bc4..a1420ae1d1c1 100644
 --- a/arch/arm/mach-omap2/usb-tusb6010.c
 +++ b/arch/arm/mach-omap2/usb-tusb6010.c
 @@ -99,9 +99,6 @@ static int tusb_set_sync_mode(unsigned sysclk_ps)
@@ -102,8 +80,8 @@ index 18fa52f828dc..caf11b1f077a 100644
  done:
  	return status;
  }
-@@ -159,14 +156,12 @@ int __init tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
- 		unsigned irq, unsigned dmachan)
+@@ -155,14 +152,12 @@ int __init tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+ 		unsigned int dmachan)
  {
  	int		status;
 -	static char	error[] __initdata =
@@ -118,7 +96,7 @@ index 18fa52f828dc..caf11b1f077a 100644
  		return status;
  	}
  	tusb_resources[0].end = tusb_resources[0].start + 0x9ff;
-@@ -181,7 +176,7 @@ int __init tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+@@ -177,7 +172,7 @@ int __init tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
  	status = gpmc_cs_request(sync, SZ_16M, (unsigned long *)
  				&tusb_resources[1].start);
  	if (status < 0) {
@@ -127,15 +105,7 @@ index 18fa52f828dc..caf11b1f077a 100644
  		return status;
  	}
  	tusb_resources[1].end = tusb_resources[1].start + 0x9ff;
-@@ -195,26 +190,26 @@ int __init tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
- 	/* IRQ */
- 	status = gpio_request_one(irq, GPIOF_IN, "TUSB6010 irq");
- 	if (status < 0) {
--		printk(error, 3, status);
-+		printk(KERN_ERR "tusb6010 init error %d, %d\n", 3, status);
- 		return status;
- 	}
- 	tusb_resources[2].start = gpio_to_irq(irq);
+@@ -190,19 +185,19 @@ int __init tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
  
  	/* set up memory timings ... can speed them up later */
  	if (!ps_refclk) {
@@ -158,7 +128,7 @@ index 18fa52f828dc..caf11b1f077a 100644
  		return -ENODEV;
  	}
  	tusb_device.dev.platform_data = data;
-@@ -222,7 +217,7 @@ int __init tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
+@@ -210,7 +205,7 @@ int __init tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
  	/* so far so good ... register the device */
  	status = platform_device_register(&tusb_device);
  	if (status < 0) {
@@ -168,7 +138,7 @@ index 18fa52f828dc..caf11b1f077a 100644
  	}
  	return 0;
 diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index e4399983c50c..0b3dfc30d20d 100644
+index e8711b2cafaf..f65dc79c64cd 100644
 --- a/arch/x86/mm/fault.c
 +++ b/arch/x86/mm/fault.c
 @@ -330,14 +330,6 @@ static void dump_pagetable(unsigned long address)
@@ -234,10 +204,10 @@ index 761f3689f60a..06a6811c5111 100644
  	/* Test that a 1 KiB IMR @ zero with read/write all will bomb out. */
  	ret = imr_add_range(0, IMR_ALIGN, IMR_READ_ACCESS_ALL,
 diff --git a/drivers/accel/habanalabs/gaudi/gaudi.c b/drivers/accel/habanalabs/gaudi/gaudi.c
-index a29aa8f7b6f3..e5eb08154117 100644
+index 056e2ef44afb..b4c913e78ebf 100644
 --- a/drivers/accel/habanalabs/gaudi/gaudi.c
 +++ b/drivers/accel/habanalabs/gaudi/gaudi.c
-@@ -8025,9 +8025,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8014,9 +8014,6 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  		struct engines_data *e)
  {
  	struct gaudi_device *gaudi = hdev->asic_specific;
@@ -247,7 +217,7 @@ index a29aa8f7b6f3..e5eb08154117 100644
  	unsigned long *mask = (unsigned long *)mask_arr;
  	u32 qm_glbl_sts0, qm_cgm_sts, dma_core_sts0, tpc_cfg_sts, mme_arch_sts;
  	bool is_idle = true, is_eng_idle, is_slave;
-@@ -8053,7 +8050,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8042,7 +8039,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  		if (mask && !is_eng_idle)
  			set_bit(GAUDI_ENGINE_ID_DMA_0 + dma_id, mask);
  		if (e)
@@ -256,7 +226,7 @@ index a29aa8f7b6f3..e5eb08154117 100644
  				is_eng_idle ? "Y" : "N", qm_glbl_sts0,
  				qm_cgm_sts, dma_core_sts0);
  	}
-@@ -8075,7 +8072,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8064,7 +8061,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  		if (mask && !is_eng_idle)
  			set_bit(GAUDI_ENGINE_ID_TPC_0 + i, mask);
  		if (e)
@@ -265,7 +235,7 @@ index a29aa8f7b6f3..e5eb08154117 100644
  				is_eng_idle ? "Y" : "N",
  				qm_glbl_sts0, qm_cgm_sts, tpc_cfg_sts);
  	}
-@@ -8104,11 +8101,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8093,11 +8090,11 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  			set_bit(GAUDI_ENGINE_ID_MME_0 + i, mask);
  		if (e) {
  			if (!is_slave)
@@ -279,7 +249,7 @@ index a29aa8f7b6f3..e5eb08154117 100644
  					is_eng_idle ? "Y" : "N", "-",
  					"-", mme_arch_sts);
  		}
-@@ -8131,7 +8128,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8120,7 +8117,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  			if (mask && !is_eng_idle)
  				set_bit(GAUDI_ENGINE_ID_NIC_0 + port, mask);
  			if (e)
@@ -288,7 +258,7 @@ index a29aa8f7b6f3..e5eb08154117 100644
  						is_eng_idle ? "Y" : "N",
  						qm_glbl_sts0, qm_cgm_sts);
  		}
-@@ -8146,7 +8143,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
+@@ -8135,7 +8132,7 @@ static bool gaudi_is_device_idle(struct hl_device *hdev, u64 *mask_arr, u8 mask_
  			if (mask && !is_eng_idle)
  				set_bit(GAUDI_ENGINE_ID_NIC_0 + port, mask);
  			if (e)
@@ -334,10 +304,10 @@ index 259f65291d90..64d359732bfd 100644
  		p += bytes;						\
  		len -= bytes;						\
 diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index 60670b2f70b9..8ead53642882 100644
+index e00b12aa5ec9..cb27a9880dbd 100644
 --- a/drivers/mtd/mtdcore.c
 +++ b/drivers/mtd/mtdcore.c
-@@ -341,12 +341,10 @@ static bool mtd_expert_analysis_mode;
+@@ -342,12 +342,10 @@ static bool mtd_expert_analysis_mode;
  #ifdef CONFIG_DEBUG_FS
  bool mtd_check_expert_analysis_mode(void)
  {
@@ -453,10 +423,10 @@ index c251e04ae047..fee253895c85 100644
  	return status;
  }
 diff --git a/drivers/net/wireless/realtek/rtw89/debug.c b/drivers/net/wireless/realtek/rtw89/debug.c
-index 1e5b7a998716..f1c5ac713846 100644
+index 1db2d59d33ff..73ec9ec24a40 100644
 --- a/drivers/net/wireless/realtek/rtw89/debug.c
 +++ b/drivers/net/wireless/realtek/rtw89/debug.c
-@@ -483,21 +483,16 @@ static const struct txpwr_map __txpwr_map_lmt_ru = {
+@@ -504,21 +504,16 @@ static const struct txpwr_map __txpwr_map_lmt_ru = {
  static u8 __print_txpwr_ent(struct seq_file *m, const struct txpwr_ent *ent,
  			    const s8 *buf, const u8 cur)
  {
@@ -482,7 +452,7 @@ index 1e5b7a998716..f1c5ac713846 100644
  			   buf[cur + 5], buf[cur + 6], buf[cur + 7]);
  		return 8;
 diff --git a/drivers/remoteproc/keystone_remoteproc.c b/drivers/remoteproc/keystone_remoteproc.c
-index 95b39741925d..f673c1ca1295 100644
+index 7e57b90bcaf8..21168ccbce46 100644
 --- a/drivers/remoteproc/keystone_remoteproc.c
 +++ b/drivers/remoteproc/keystone_remoteproc.c
 @@ -366,7 +366,6 @@ static int keystone_rproc_probe(struct platform_device *pdev)
@@ -534,10 +504,10 @@ index 1672c52f855d..566e15d040b7 100644
  				 (dev->driver ? dev->driver->name : "unknown"),
  				 (dev->bus ? dev->bus->name : "unknown"),
 diff --git a/drivers/tty/serial/st-asc.c b/drivers/tty/serial/st-asc.c
-index 5215e6910f68..859605c0083d 100644
+index aa471c9c24d9..35c54bc046fb 100644
 --- a/drivers/tty/serial/st-asc.c
 +++ b/drivers/tty/serial/st-asc.c
-@@ -940,10 +940,8 @@ static struct platform_driver asc_serial_driver = {
+@@ -942,10 +942,8 @@ static struct platform_driver asc_serial_driver = {
  static int __init asc_init(void)
  {
  	int ret;
@@ -811,7 +781,7 @@ index 379d22e28ed6..2a8c3d49ef4e 100644
  
  NILFS_FEATURE_RO_ATTR(revision);
 diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
-index 2643a08182e1..f5e658d1df9a 100644
+index 56a7d5bd33e4..1a993d6e46d4 100644
 --- a/fs/ntfs/super.c
 +++ b/fs/ntfs/super.c
 @@ -670,7 +670,6 @@ static bool is_boot_sector_ntfs(const struct super_block *sb,
@@ -1184,11 +1154,11 @@ index 15e3f4606b5f..e7bebe662f9c 100644
  
  static unsigned int get_netdev_queue_index(struct netdev_queue *queue)
 diff --git a/net/llc/af_llc.c b/net/llc/af_llc.c
-index 9ffbc667be6c..6e2622b66ed5 100644
+index 57c35c960b2c..e7928cba2f88 100644
 --- a/net/llc/af_llc.c
 +++ b/net/llc/af_llc.c
-@@ -1235,13 +1235,6 @@ static const struct proto_ops llc_ui_ops = {
- 	.sendpage    = sock_no_sendpage,
+@@ -1234,13 +1234,6 @@ static const struct proto_ops llc_ui_ops = {
+ 	.mmap	     = sock_no_mmap,
  };
  
 -static const char llc_proc_err_msg[] __initconst =
@@ -1201,7 +1171,7 @@ index 9ffbc667be6c..6e2622b66ed5 100644
  static int __init llc2_init(void)
  {
  	int rc = proto_register(&llc_proto, 0);
-@@ -1254,17 +1247,17 @@ static int __init llc2_init(void)
+@@ -1253,17 +1246,17 @@ static int __init llc2_init(void)
  	llc_ui_sap_last_autoport = LLC_SAP_DYN_START;
  	rc = llc_proc_init();
  	if (rc != 0) {

@@ -32,10 +32,10 @@ Subject: [PATCH] {FRAMA-C} Introduce __FRAMAC__ macro in generic code
  17 files changed, 110 insertions(+), 11 deletions(-)
 
 diff --git a/include/asm-generic/page.h b/include/asm-generic/page.h
-index c0be2edeb484..ad5e384705d0 100644
+index 9773582fd96e..78195a484649 100644
 --- a/include/asm-generic/page.h
 +++ b/include/asm-generic/page.h
-@@ -84,8 +84,16 @@ extern unsigned long memory_end;
+@@ -92,8 +92,16 @@ static inline void *pfn_to_virt(unsigned long pfn)
  #define page_to_phys(page)      ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT)
  #endif
  
@@ -131,7 +131,7 @@ index 87f390d4312c..f8547383234d 100644
  # define __kernel	__attribute__((address_space(0)))
  # define __user		__attribute__((noderef, address_space(__user)))
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index ca736b05ec7b..5fa50c7431e5 100644
+index 0d2e2a38b92d..9546f8fbea2e 100644
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
 @@ -1034,9 +1034,14 @@ set_cpu_dying(unsigned int cpu, bool dying)
@@ -150,10 +150,10 @@ index ca736b05ec7b..5fa50c7431e5 100644
  static inline int __check_is_bitmap(const unsigned long *bitmap)
  {
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index cc2fd55f532b..8b6b85a8190a 100644
+index 1cdbcec068e2..3d738b90998c 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -429,7 +429,12 @@ struct crypto_tfm {
+@@ -430,7 +430,12 @@ struct crypto_tfm {
  	
  	struct crypto_alg *__crt_alg;
  
@@ -168,7 +168,7 @@ index cc2fd55f532b..8b6b85a8190a 100644
  
  struct crypto_comp {
 diff --git a/include/linux/delay.h b/include/linux/delay.h
-index 039e7e0c7378..a256a7ca47cf 100644
+index ff9cda975e30..08a8134ed4d8 100644
 --- a/include/linux/delay.h
 +++ b/include/linux/delay.h
 @@ -41,9 +41,18 @@ extern unsigned long loops_per_jiffy;
@@ -227,7 +227,7 @@ index c28cf76d5c31..ac5f907262a2 100644
  #define WL1273_FR_EVENT			BIT(0)
  #define WL1273_BL_EVENT			BIT(1)
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 60b8772b5bd4..a126ff0ea029 100644
+index c69a2cc1f412..857354ec42e5 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -178,6 +178,8 @@ typedef int __bitwise pci_power_t;
@@ -248,10 +248,10 @@ index 60b8772b5bd4..a126ff0ea029 100644
  /**
   * typedef pci_channel_state_t
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index d455cb0d3d2e..caba929671cc 100644
+index c63d067d9a87..203da56e83e2 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -235,6 +235,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -237,6 +237,12 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
   * done within __do_sys_*().
   */
  #ifndef __SYSCALL_DEFINEx
@@ -264,7 +264,7 @@ index d455cb0d3d2e..caba929671cc 100644
  #define __SYSCALL_DEFINEx(x, name, ...)					\
  	__diag_push();							\
  	__diag_ignore(GCC, 8, "-Wattribute-alias",			\
-@@ -253,6 +259,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+@@ -255,6 +261,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
  	}								\
  	__diag_pop();							\
  	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
@@ -297,10 +297,10 @@ index 6bcbe3068761..5bfdfa419121 100644
  #define XATTR_NAME_MAX   255	/* # chars in an extended attribute name */
  #define XATTR_SIZE_MAX 65536	/* size of an extended attribute value (64k) */
 diff --git a/include/uapi/linux/types.h b/include/uapi/linux/types.h
-index 308433be33c2..46b49dca37f5 100644
+index 6375a0684052..d3a96d43577b 100644
 --- a/include/uapi/linux/types.h
 +++ b/include/uapi/linux/types.h
-@@ -20,7 +20,7 @@
+@@ -24,7 +24,7 @@ typedef unsigned __int128 __u128 __attribute__((aligned(16)));
   */
  
  /* sparse defines __CHECKER__; see Documentation/dev-tools/sparse.rst */
@@ -332,10 +332,10 @@ index 0197888ad0e0..ee5b03df8f9b 100644
  
  #endif /* __VDSO_LIMITS_H */
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 2547fa73bde5..6a5d073281a8 100644
+index b5370fe5c198..d3914b1f42b1 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1257,7 +1257,7 @@ static void print_fatal_signal(int signr)
+@@ -1258,7 +1258,7 @@ static void print_fatal_signal(int signr)
  	struct pt_regs *regs = task_pt_regs(current);
  	pr_info("potentially unexpected fatal signal %d.\n", signr);
  

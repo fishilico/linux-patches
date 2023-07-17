@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 16 Jul 2023 20:57:42 +0200
+Subject: [PATCH] {MAYBE UPS} sound/soc/intel/boards/sof_es8336: lower the
+ strncmp arg
+
+strncmp(mach->id, "ESSX8326", SND_ACPI_I2C_ID_LEN) with
+SND_ACPI_I2C_ID_LEN=24 is too large.
+---
+ sound/soc/intel/boards/sof_es8336.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/soc/intel/boards/sof_es8336.c b/sound/soc/intel/boards/sof_es8336.c
+index d6c38d8ea2ff..5fab004ac162 100644
+--- a/sound/soc/intel/boards/sof_es8336.c
++++ b/sound/soc/intel/boards/sof_es8336.c
+@@ -677,7 +677,7 @@ static int sof_es8336_probe(struct platform_device *pdev)
+ 		dai_links[0].codecs->name = codec_name;
+ 
+ 		/* also fixup codec dai name if relevant */
+-		if (!strncmp(mach->id, "ESSX8326", SND_ACPI_I2C_ID_LEN))
++		if (!strncmp(mach->id, "ESSX8326", 9 /* SND_ACPI_I2C_ID_LEN */))
+ 			dai_links[0].codecs->dai_name = "ES8326 HiFi";
+ 	} else {
+ 		dev_err(dev, "Error cannot find '%s' dev\n", mach->id);
+-- 

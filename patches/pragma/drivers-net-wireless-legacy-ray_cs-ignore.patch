@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Sun, 16 Jul 2023 14:59:51 +0200
+Subject: [PATCH] {PRAGMA} drivers/net/wireless/legacy/ray_cs: ignore
+ -Warray-bounds-pointer-arithmetic
+
+clang reports:
+
+    drivers/net/wireless/legacy/ray_cs.c:2698:27: error: the pointer
+    incremented by 2 refers past the end of the array (that contains 1
+    element) [-Werror,-Warray-bounds-pointer-arithmetic]
+            writeb(auth_type & 0xff, ptx->var + 2);
+                                     ^          ~
+    drivers/net/wireless/legacy/rayctl.h:580:5: note: array 'var' declared here
+        UCHAR  var[1];
+        ^
+---
+ drivers/net/wireless/legacy/ray_cs.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/net/wireless/legacy/ray_cs.c b/drivers/net/wireless/legacy/ray_cs.c
+index 8ace797ce951..9fce96d3135c 100644
+--- a/drivers/net/wireless/legacy/ray_cs.c
++++ b/drivers/net/wireless/legacy/ray_cs.c
+@@ -2695,7 +2695,11 @@ static int build_auth_frame(ray_dev_t *local, UCHAR *dest, int auth_type)
+ 
+ 	/* Fill in msg body with protocol 00 00, sequence 01 00 ,status 00 00 */
+ 	memset_io(ptx->var, 0, 6);
++	__diag_push()
++	__diag_ignore(clang, 10, "-Warray-bounds-pointer-arithmetic",
++		      "ptx->var is not a flexible array")
+ 	writeb(auth_type & 0xff, ptx->var + 2);
++	__diag_pop()
+ 
+ 	/* Interrupt the firmware to process the command */
+ 	if (interrupt_ecf(local, ccsindex)) {
+-- 

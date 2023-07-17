@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
+Date: Mon, 17 Jul 2023 08:05:37 +0200
+Subject: [PATCH] {BUG in 6.5-rc1} include/asm-generic/page: fix shift
+
+https://github.com/torvalds/linux/commit/2d78057f0dd41c5e24b824a3ea254a0672ec73eb
+broke pfn_to_virt
+---
+ include/asm-generic/page.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/asm-generic/page.h b/include/asm-generic/page.h
+index 78195a484649..c93b75b6b513 100644
+--- a/include/asm-generic/page.h
++++ b/include/asm-generic/page.h
+@@ -81,7 +81,7 @@ static inline unsigned long virt_to_pfn(const void *kaddr)
+ #define virt_to_pfn virt_to_pfn
+ static inline void *pfn_to_virt(unsigned long pfn)
+ {
+-	return __va(pfn) << PAGE_SHIFT;
++	return __va(pfn << PAGE_SHIFT);
+ }
+ #define pfn_to_virt pfn_to_virt
+ 
+-- 

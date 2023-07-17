@@ -8,11 +8,9 @@ rdmsr is used.
 ---
  arch/x86/events/intel/p4.c         | 1 +
  arch/x86/kernel/cpu/intel.c        | 1 +
- arch/x86/kernel/cpu/mtrr/generic.c | 1 +
- arch/x86/kernel/cpu/mtrr/mtrr.c    | 4 +++-
  arch/x86/kernel/cpu/resctrl/core.c | 1 +
  arch/x86/kernel/process.c          | 1 +
- 6 files changed, 8 insertions(+), 1 deletion(-)
+ 4 files changed, 4 insertions(+)
 
 diff --git a/arch/x86/events/intel/p4.c b/arch/x86/events/intel/p4.c
 index 35936188db01..74e8838bef01 100644
@@ -38,34 +36,6 @@ index 1c4639588ff9..a85bb2941c04 100644
  	}
  
  	if (c->x86 == 6 && boot_cpu_has(X86_FEATURE_CLFLUSH) &&
-diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-index ee09d359e08f..03dc125ae5cd 100644
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -460,6 +460,7 @@ bool __init get_mtrr_state(void)
- 		get_fixed_ranges(mtrr_state.fixed_ranges);
- 
- 	rdmsr(MSR_MTRRdefType, lo, dummy);
-+	(void)dummy; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
- 	mtrr_state.def_type = (lo & 0xff);
- 	mtrr_state.enabled = (lo & 0xc00) >> 10;
- 
-diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.c b/arch/x86/kernel/cpu/mtrr/mtrr.c
-index 783f3210d582..402598b6b323 100644
---- a/arch/x86/kernel/cpu/mtrr/mtrr.c
-+++ b/arch/x86/kernel/cpu/mtrr/mtrr.c
-@@ -110,8 +110,10 @@ static void __init set_num_var_ranges(bool use_generic)
- {
- 	unsigned long config = 0, dummy;
- 
--	if (use_generic)
-+	if (use_generic) {
- 		rdmsr(MSR_MTRRcap, config, dummy);
-+		(void)dummy; /* Mark the variable as unused to please clang's -Wunused-but-set-variable */
-+	}
- 	else if (is_cpu(AMD) || is_cpu(HYGON))
- 		config = 2;
- 	else if (is_cpu(CYRIX) || is_cpu(CENTAUR))
 diff --git a/arch/x86/kernel/cpu/resctrl/core.c b/arch/x86/kernel/cpu/resctrl/core.c
 index 030d3b409768..23aff2c2b1c9 100644
 --- a/arch/x86/kernel/cpu/resctrl/core.c
@@ -79,10 +49,10 @@ index 030d3b409768..23aff2c2b1c9 100644
  	/* If all the bits were set in MSR, return success */
  	if (l != max_cbm)
 diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index dac41a0072ea..fadbf8852f6e 100644
+index ff9b80a0e3e3..68fb18e86cb3 100644
 --- a/arch/x86/kernel/process.c
 +++ b/arch/x86/kernel/process.c
-@@ -928,6 +928,7 @@ void __init arch_post_acpi_subsys_init(void)
+@@ -948,6 +948,7 @@ void __init arch_post_acpi_subsys_init(void)
  	rdmsr(MSR_K8_INT_PENDING_MSG, lo, hi);
  	if (!(lo & K8_INTP_C1E_ACTIVE_MASK))
  		return;

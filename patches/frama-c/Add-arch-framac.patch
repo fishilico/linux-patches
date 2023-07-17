@@ -646,7 +646,7 @@ index 000000000000..e0e9063faea0
 +#endif /* _ASM_FRAMA_C_MMU_CONTEXT_H */
 diff --git a/arch/framac/include/asm/pgtable.h b/arch/framac/include/asm/pgtable.h
 new file mode 100644
-index 000000000000..31946e695fda
+index 000000000000..09931b62d67e
 --- /dev/null
 +++ b/arch/framac/include/asm/pgtable.h
 @@ -0,0 +1,77 @@
@@ -684,7 +684,7 @@ index 000000000000..31946e695fda
 +
 +#define swapper_pg_dir	((pgd_t *) NULL)
 +
-+extern unsigned long empty_zero_page;
++extern void *empty_zero_page;
 +#define ZERO_PAGE(vaddr) virt_to_page(empty_zero_page)
 +
 +/*
@@ -1373,19 +1373,19 @@ index 000000000000..eb072c016176
 +obj-y += init.o
 diff --git a/arch/framac/mm/init.c b/arch/framac/mm/init.c
 new file mode 100644
-index 000000000000..0636eb11b193
+index 000000000000..1a77daf7a334
 --- /dev/null
 +++ b/arch/framac/mm/init.c
 @@ -0,0 +1,14 @@
 +#include <linux/mm.h>
 +
-+unsigned long empty_zero_page;
++void *empty_zero_page;
 +unsigned long empty_zero_page_content[PAGE_SIZE / sizeof(unsigned long)];
 +
 +void __init mem_init(void)
 +{
-+    empty_zero_page = (unsigned long)&empty_zero_page_content;
-+    memset((void *)empty_zero_page, 0, PAGE_SIZE);
++    empty_zero_page = &empty_zero_page_content;
++    memset(empty_zero_page, 0, PAGE_SIZE);
 +}
 +
 +void free_initmem(void)
