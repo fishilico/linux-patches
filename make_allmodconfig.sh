@@ -254,6 +254,7 @@ then
     disable_in_kcflags 'packed-not-aligned' # gcc 8 warns about __attribute__((packed, aligned(4))) because 4 < 8
     disable_in_kcflags 'restrict' # gcc 10 warns about sprintf with overlapping arguments
     disable_in_kcflags 'sizeof-pointer-memaccess' # gcc 8 warns about using the size of the source buffer
+    disable_in_kcflags 'stringop-overread' # gcc 13 warns about out-of-bound reads, even with regions of size 0
     disable_in_kcflags 'stringop-truncation' # gcc 8 warns about using strncpy with a dest buffer having the specified size
     disable_in_kcflags 'stringop-overflow' # gcc 8 warns about using strncpy when "specified bound depends on the length of the source argument"
     disable_in_kcflags 'zero-length-bound' # bound-checking zero-length arrays does not work
