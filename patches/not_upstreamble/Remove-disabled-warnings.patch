@@ -16,7 +16,7 @@ list of disabled warnings.
  7 files changed, 41 insertions(+), 41 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 658ec2b8aa74..ea7829d9c8fa 100644
+index 22e392649b02..ed1697038675 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -525,7 +525,7 @@ ZSTD		= zstd
@@ -28,20 +28,18 @@ index 658ec2b8aa74..ea7829d9c8fa 100644
  NOSTDINC_FLAGS :=
  CFLAGS_MODULE   =
  RUSTFLAGS_MODULE =
-@@ -555,10 +555,10 @@ LINUXINCLUDE    := \
- 		$(USERINCLUDE)
+@@ -569,8 +569,8 @@ KBUILD_CFLAGS += -Werror=implicit-function-declaration
+ KBUILD_CFLAGS += -Werror=implicit-int
+ KBUILD_CFLAGS += -Werror=return-type
+ KBUILD_CFLAGS += -Werror=strict-prototypes
+-KBUILD_CFLAGS += -Wno-format-security
+-KBUILD_CFLAGS += -Wno-trigraphs
++#KBUILD_CFLAGS += -Wno-format-security
++#KBUILD_CFLAGS += -Wno-trigraphs
  
- KBUILD_AFLAGS   := -D__ASSEMBLY__ -fno-PIE
--KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
-+KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes \
- 		   -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE \
- 		   -Werror=implicit-function-declaration -Werror=implicit-int \
--		   -Werror=return-type -Wno-format-security -funsigned-char \
-+		   -Werror=return-type -funsigned-char \
- 		   -std=gnu11
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_RUSTFLAGS := $(rust_common_flags) \
-@@ -811,10 +811,10 @@ endif # may-sync-config
+@@ -823,10 +823,10 @@ endif # may-sync-config
  endif # need-config
  
  KBUILD_CFLAGS	+= -fno-delete-null-pointer-checks
@@ -56,7 +54,7 @@ index 658ec2b8aa74..ea7829d9c8fa 100644
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
  KBUILD_CFLAGS += -O2
-@@ -864,7 +864,7 @@ KBUILD_RUSTFLAGS += $(KBUILD_RUSTFLAGS-y)
+@@ -876,7 +876,7 @@ KBUILD_RUSTFLAGS += $(KBUILD_RUSTFLAGS-y)
  
  ifdef CONFIG_CC_IS_CLANG
  # The kernel builds with '-std=gnu11' so use of GNU extensions is acceptable.
@@ -65,7 +63,7 @@ index 658ec2b8aa74..ea7829d9c8fa 100644
  else
  
  # gcc inanely warns about local variables called 'main'
-@@ -873,8 +873,8 @@ endif
+@@ -885,8 +885,8 @@ endif
  
  # These warnings generated too much noise in a regular build.
  # Use make W=1 to enable them (see scripts/Makefile.extrawarn)
@@ -76,7 +74,7 @@ index 658ec2b8aa74..ea7829d9c8fa 100644
  
  # These result in bogus false positives
  KBUILD_CFLAGS += $(call cc-disable-warning, dangling-pointer)
-@@ -1017,7 +1017,7 @@ NOSTDINC_FLAGS += -nostdinc
+@@ -1029,7 +1029,7 @@ NOSTDINC_FLAGS += -nostdinc
  KBUILD_CFLAGS += -Wvla
  
  # disable pointer signed / unsigned warnings in gcc 4.0
@@ -85,7 +83,7 @@ index 658ec2b8aa74..ea7829d9c8fa 100644
  
  # In order to make sure new function cast mismatches are not introduced
  # in the kernel (to avoid tripping CFI checking), the kernel should be
-@@ -1031,17 +1031,17 @@ KBUILD_CFLAGS += $(call cc-option, -Wcast-function-type)
+@@ -1043,17 +1043,17 @@ KBUILD_CFLAGS += $(call cc-option, -Wcast-function-type)
  KBUILD_CFLAGS += $(call cc-option, -fstrict-flex-arrays=3)
  
  # disable stringop warnings in gcc 8+
@@ -136,7 +134,7 @@ index 40d2ff503079..a1d0f2bea496 100644
  KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
  KBUILD_CFLAGS += -D__DISABLE_EXPORTS
 diff --git a/drivers/gpu/drm/i915/Makefile b/drivers/gpu/drm/i915/Makefile
-index 789dce9e2608..057933ee216c 100644
+index dcbda9ba32dd..29c4335cfb8c 100644
 --- a/drivers/gpu/drm/i915/Makefile
 +++ b/drivers/gpu/drm/i915/Makefile
 @@ -12,16 +12,16 @@
@@ -164,8 +162,8 @@ index 789dce9e2608..057933ee216c 100644
 +#subdir-ccflags-y += $(call cc-disable-warning, frame-address)
 +#subdir-ccflags-$(CONFIG_DRM_I915_WERROR) += -Werror
  
- subdir-ccflags-y += -I$(srctree)/$(src)
- 
+ # Fine grained warnings disable
+ CFLAGS_i915_pci.o = $(call cc-disable-warning, override-init)
 diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
 index 5eea61b9584f..70b26dc7d8c3 100644
 --- a/drivers/misc/cxl/Makefile
